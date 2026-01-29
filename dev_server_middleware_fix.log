@@ -1,0 +1,114 @@
+
+> temp_app@0.1.0 dev
+> next dev
+
+▲ Next.js 16.1.6 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.2:3000
+- Environments: .env
+
+✓ Starting...
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+✓ Ready in 1228ms
+ HEAD /en/admin/files 200 in 1462ms (compile: 1068ms, proxy.ts: 6ms, render: 388ms)
+ GET /en/admin/login 200 in 1030ms (compile: 813ms, proxy.ts: 6ms, render: 211ms)
+Error: Route "/[locale]/admin/login" used `cookies().set`. `cookies()` returns a Promise and must be unwrapped with `await` or `React.use()` before accessing its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at login (app/actions/auth.ts:13:12)
+  11 |
+  12 |   if (password === ADMIN_PASSWORD) {
+> 13 |     cookies().set(COOKIE_NAME, 'authenticated', {
+     |            ^
+  14 |       httpOnly: true,
+  15 |       secure: process.env.NODE_ENV === 'production',
+  16 |       maxAge: 60 * 60 * 24, // 1 day
+⨯ TypeError: {imported module ./nodemodules/next/headers.js}.cookies(...).set is not a function
+    at login (app/actions/auth.ts:13:15)
+  11 |
+  12 |   if (password === ADMIN_PASSWORD) {
+> 13 |     cookies().set(COOKIE_NAME, 'authenticated', {
+     |               ^
+  14 |       httpOnly: true,
+  15 |       secure: process.env.NODE_ENV === 'production',
+  16 |       maxAge: 60 * 60 * 24, // 1 day {
+  digest: '995454371'
+}
+ POST /en/admin/login 500 in 1224ms (compile: 31ms, proxy.ts: 10ms, render: 1184ms)
+ GET /en/admin/login 200 in 190ms (compile: 34ms, proxy.ts: 8ms, render: 148ms)
+Error: Route "/[locale]/admin/login" used `cookies().set`. `cookies()` returns a Promise and must be unwrapped with `await` or `React.use()` before accessing its properties. Learn more: https://nextjs.org/docs/messages/sync-dynamic-apis
+    at login (app/actions/auth.ts:13:12)
+  11 |
+  12 |   if (password === ADMIN_PASSWORD) {
+> 13 |     cookies().set(COOKIE_NAME, 'authenticated', {
+     |            ^
+  14 |       httpOnly: true,
+  15 |       secure: process.env.NODE_ENV === 'production',
+  16 |       maxAge: 60 * 60 * 24, // 1 day
+⨯ TypeError: {imported module ./nodemodules/next/headers.js}.cookies(...).set is not a function
+    at login (app/actions/auth.ts:13:15)
+  11 |
+  12 |   if (password === ADMIN_PASSWORD) {
+> 13 |     cookies().set(COOKIE_NAME, 'authenticated', {
+     |               ^
+  14 |       httpOnly: true,
+  15 |       secure: process.env.NODE_ENV === 'production',
+  16 |       maxAge: 60 * 60 * 24, // 1 day {
+  digest: '995454371'
+}
+ POST /en/admin/login 500 in 1084ms (compile: 35ms, proxy.ts: 9ms, render: 1040ms)
+ GET /en/admin/login 200 in 253ms (compile: 63ms, proxy.ts: 9ms, render: 182ms)
+✓ Compiled in 81ms
+ GET /en/admin/login 200 in 502ms (compile: 202ms, proxy.ts: 5ms, render: 295ms)
+ POST /en/admin/login 200 in 116ms (compile: 32ms, proxy.ts: 7ms, render: 77ms)
+⨯ Error [PrismaClientKnownRequestError]:
+Invalid `{imported module ./lib/prisma.ts}["prisma"].page.count()` invocation in
+/app/.next/dev/server/chunks/ssr/[root-of-the-server]__a0d4eef4._.js:36:154
+
+  33 ;
+  34 ;
+  35 async function AdminDashboard() {
+→ 36     const pageCount = await {imported module ./lib/prisma.ts}["prisma"].page.count(
+The table `main.Page` does not exist in the current database.
+    at <unknown> (app/[locale]/admin/page.tsx:4:39)
+    at async AdminDashboard (app/[locale]/admin/page.tsx:4:21)
+  2 |
+  3 | export default async function AdminDashboard() {
+> 4 |   const pageCount = await prisma.page.count()
+    |                                       ^
+  5 |   const widgetCount = await prisma.widget.count()
+  6 |   const activeChats = await prisma.chatSession.count({ where: { status: 'active' } })
+  7 |   const mediaCount = await prisma.media.count() {
+  code: 'P2021',
+  clientVersion: '5.22.0',
+  meta: [Object],
+  digest: '1934774305'
+}
+ GET /en/admin 200 in 793ms (compile: 687ms, proxy.ts: 7ms, render: 99ms)
+⨯ Error [PrismaClientKnownRequestError]:
+Invalid `{imported module ./lib/prisma.ts}["prisma"].page.count()` invocation in
+/app/.next/dev/server/chunks/ssr/[root-of-the-server]__a0d4eef4._.js:36:154
+
+  33 ;
+  34 ;
+  35 async function AdminDashboard() {
+→ 36     const pageCount = await {imported module ./lib/prisma.ts}["prisma"].page.count(
+The table `main.Page` does not exist in the current database.
+    at <unknown> (app/[locale]/admin/page.tsx:4:39)
+    at async AdminDashboard (app/[locale]/admin/page.tsx:4:21)
+  2 |
+  3 | export default async function AdminDashboard() {
+> 4 |   const pageCount = await prisma.page.count()
+    |                                       ^
+  5 |   const widgetCount = await prisma.widget.count()
+  6 |   const activeChats = await prisma.chatSession.count({ where: { status: 'active' } })
+  7 |   const mediaCount = await prisma.media.count() {
+  code: 'P2021',
+  clientVersion: '5.22.0',
+  meta: [Object],
+  digest: '1934774305'
+}
+ GET /en/admin 200 in 122ms (compile: 38ms, proxy.ts: 6ms, render: 78ms)
+ GET /en/admin/login 200 in 145ms (compile: 33ms, proxy.ts: 5ms, render: 107ms)
+ POST /en/admin/login 200 in 99ms (compile: 27ms, proxy.ts: 8ms, render: 64ms)
+ GET /en/admin 200 in 94ms (compile: 35ms, proxy.ts: 4ms, render: 55ms)
+ GET /en/admin 200 in 99ms (compile: 26ms, proxy.ts: 4ms, render: 69ms)
+ GET /en/admin/files 200 in 129ms (compile: 39ms, proxy.ts: 4ms, render: 86ms)
