@@ -1,0 +1,55 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Page {
+  id              String   @id @default(uuid())
+  slug            String
+  locale          String
+  title           String
+  metaDescription String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  widgets         Widget[]
+
+  @@unique([slug, locale])
+}
+
+model Widget {
+  id        String   @id @default(uuid())
+  type      String
+  data      String   // Storing JSON as string
+  order     Int
+  pageId    String
+  page      Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
+}
+
+model ChatSession {
+  id           String        @id @default(uuid())
+  customerName String?
+  status       String        @default("active") // active, closed
+  createdAt    DateTime      @default(now())
+  messages     ChatMessage[]
+}
+
+model ChatMessage {
+  id        String      @id @default(uuid())
+  sessionId String
+  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sender    String      // 'user', 'agent', 'bot'
+  content   String
+  createdAt DateTime    @default(now())
+}
+
+model Media {
+  id        String   @id @default(uuid())
+  url       String
+  name      String
+  type      String
+  createdAt DateTime @default(now())
+}
