@@ -3,20 +3,26 @@ import Link from 'next/link'
 import {
   LayoutDashboard,
   FileText,
-  FolderOpen,
-  MessageSquare,
-  Settings,
   Menu as MenuIcon,
+  Settings,
+  MessageSquare,
+  Image as ImageIcon,
   Globe,
-  Image as ImageIcon
+  BarChart3,
+  Calendar,
+  Code,
+  ExternalLink
 } from 'lucide-react'
 
 const navItems = [
   { href: '', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/pages', label: 'Pages', icon: FileText },
-  { href: '/menu', label: 'Menu', icon: MenuIcon },
-  { href: '/files', label: 'Media Library', icon: ImageIcon },
-  { href: '/settings', label: 'Site Settings', icon: Settings },
+  { href: '/statistics', label: 'İstatistikler', icon: BarChart3 },
+  { href: '/reservations', label: 'Rezervasyonlar', icon: Calendar },
+  { href: '/pages', label: 'Sayfalar', icon: FileText },
+  { href: '/menu', label: 'Menü', icon: MenuIcon },
+  { href: '/files', label: 'Medya', icon: ImageIcon },
+  { href: '/settings', label: 'Ayarlar', icon: Settings },
+  { href: '/analytics', label: 'Analytics', icon: Code },
   { href: '/chat', label: 'Blue Concierge', icon: MessageSquare },
 ]
 
@@ -30,46 +36,85 @@ export default async function AdminLayout({
   const { locale } = await params
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-[#0f172a]">
       {/* Sidebar */}
-      <aside className="w-64 bg-gradient-to-b from-slate-900 to-slate-800 text-white flex flex-col">
+      <aside className="w-64 bg-gradient-to-b from-[#0f172a] to-[#1e293b] text-white flex flex-col border-r border-white/10">
         {/* Logo */}
-        <div className="p-6 border-b border-slate-700">
-          <h1 className="text-xl font-bold tracking-wider">BLUE DREAMS</h1>
-          <p className="text-xs text-slate-400 mt-1">Content Management</p>
+        <div className="p-6 border-b border-white/10">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-cyan-400 to-cyan-600 rounded-lg flex items-center justify-center">
+              <span className="text-lg font-bold">BD</span>
+            </div>
+            <div>
+              <h1 className="text-lg font-bold tracking-wider text-white">BLUE DREAMS</h1>
+              <p className="text-[10px] text-cyan-400 uppercase tracking-widest">Admin Panel</p>
+            </div>
+          </div>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-1">
-          {navItems.map((item) => {
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+          <p className="text-[10px] text-slate-500 uppercase tracking-widest px-4 mb-2">Ana Menü</p>
+          {navItems.slice(0, 3).map((item) => {
             const Icon = item.icon
             return (
               <Link
                 key={item.href}
                 href={`/${locale}/admin${item.href}`}
-                className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-700 hover:text-white transition-colors group"
+                className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-white/5 hover:text-white transition-all group"
               >
-                <Icon size={18} className="text-slate-400 group-hover:text-blue-400" />
-                <span className="font-medium">{item.label}</span>
+                <Icon size={18} className="text-slate-500 group-hover:text-cyan-400 transition-colors" />
+                <span className="font-medium text-sm">{item.label}</span>
+              </Link>
+            )
+          })}
+
+          <p className="text-[10px] text-slate-500 uppercase tracking-widest px-4 mb-2 mt-6">İçerik</p>
+          {navItems.slice(3, 7).map((item) => {
+            const Icon = item.icon
+            return (
+              <Link
+                key={item.href}
+                href={`/${locale}/admin${item.href}`}
+                className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-white/5 hover:text-white transition-all group"
+              >
+                <Icon size={18} className="text-slate-500 group-hover:text-cyan-400 transition-colors" />
+                <span className="font-medium text-sm">{item.label}</span>
+              </Link>
+            )
+          })}
+
+          <p className="text-[10px] text-slate-500 uppercase tracking-widest px-4 mb-2 mt-6">Entegrasyonlar</p>
+          {navItems.slice(7).map((item) => {
+            const Icon = item.icon
+            return (
+              <Link
+                key={item.href}
+                href={`/${locale}/admin${item.href}`}
+                className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-white/5 hover:text-white transition-all group"
+              >
+                <Icon size={18} className="text-slate-500 group-hover:text-cyan-400 transition-colors" />
+                <span className="font-medium text-sm">{item.label}</span>
               </Link>
             )
           })}
         </nav>
 
-        {/* Language Indicator */}
-        <div className="p-4 border-t border-slate-700">
-          <div className="flex items-center gap-2 px-4 py-2 bg-slate-700/50 rounded-lg">
-            <Globe size={16} className="text-blue-400" />
-            <span className="text-sm">Editing: <strong>{locale.toUpperCase()}</strong></span>
+        {/* Language Selector */}
+        <div className="p-4 border-t border-white/10">
+          <div className="flex items-center gap-2 px-3 py-2 bg-white/5 rounded-lg mb-3">
+            <Globe size={14} className="text-cyan-400" />
+            <span className="text-xs text-slate-400">Düzenleme:</span>
+            <span className="text-xs font-bold text-white">{locale.toUpperCase()}</span>
           </div>
-          <div className="mt-3 flex gap-1">
-            {['en', 'tr', 'de', 'ru'].map((lang) => (
+          <div className="grid grid-cols-4 gap-1">
+            {['tr', 'en', 'de', 'ru'].map((lang) => (
               <Link
                 key={lang}
                 href={`/${lang}/admin`}
-                className={`flex-1 text-center py-1.5 rounded text-xs font-medium transition ${locale === lang
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                className={`text-center py-2 rounded text-xs font-medium transition-all ${locale === lang
+                  ? 'bg-cyan-600 text-white'
+                  : 'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white'
                   }`}
               >
                 {lang.toUpperCase()}
@@ -78,20 +123,21 @@ export default async function AdminLayout({
           </div>
         </div>
 
-        {/* View Site Link */}
-        <div className="p-4 border-t border-slate-700">
+        {/* View Site */}
+        <div className="p-4 border-t border-white/10">
           <Link
             href={`/${locale}`}
             target="_blank"
-            className="flex items-center justify-center gap-2 w-full py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm font-medium transition"
+            className="flex items-center justify-center gap-2 w-full py-3 bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 rounded-lg text-sm font-bold transition-all shadow-lg shadow-cyan-600/20"
           >
-            View Site →
+            <ExternalLink size={16} />
+            Siteyi Görüntüle
           </Link>
         </div>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 overflow-auto bg-[#0f172a]">
         <div className="p-8">
           {children}
         </div>
