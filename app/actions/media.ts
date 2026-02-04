@@ -30,7 +30,7 @@ export async function uploadFile(formData: FormData) {
 
     await prisma.media.create({
       data: {
-        filename: file.name,
+        name: file.name,
         url: publicUrl,
         type: file.type,
       },
