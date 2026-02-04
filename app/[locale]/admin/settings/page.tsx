@@ -5,6 +5,20 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
     const { locale } = await params
     const settings = await getSiteSettings(locale)
 
+    // Convert null values to undefined to match component prop types
+    const safeSettings = {
+        siteName: settings.siteName ?? undefined,
+        logo: settings.logo ?? undefined,
+        favicon: settings.favicon ?? undefined,
+        phone: settings.phone ?? undefined,
+        email: settings.email ?? undefined,
+        address: settings.address ?? undefined,
+        socialLinks: settings.socialLinks ?? undefined,
+        footerText: settings.footerText ?? undefined,
+        footerCopyright: settings.footerCopyright ?? undefined,
+        headerStyle: settings.headerStyle ?? undefined,
+    }
+
     return (
         <div className="max-w-3xl">
             <div className="mb-8">
@@ -14,7 +28,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
                 </p>
             </div>
 
-            <SiteSettingsForm locale={locale} initialSettings={settings} />
+            <SiteSettingsForm locale={locale} initialSettings={safeSettings} />
         </div>
     )
 }

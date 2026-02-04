@@ -22,6 +22,20 @@ export default async function LocaleLayout({
     getActiveLanguages()
   ])
 
+  // Transform settings with null-to-undefined conversion
+  const safeSettings = {
+    siteName: settings.siteName ?? undefined,
+    logo: settings.logo ?? undefined,
+    favicon: settings.favicon ?? undefined,
+    phone: settings.phone ?? undefined,
+    email: settings.email ?? undefined,
+    address: settings.address ?? undefined,
+    socialLinks: settings.socialLinks ?? undefined,
+    footerText: settings.footerText ?? undefined,
+    footerCopyright: settings.footerCopyright ?? undefined,
+    headerStyle: settings.headerStyle ?? undefined,
+  }
+
   // Transform menu items for Header component
   const headerMenuItems = menuItems.map(item => ({
     id: item.id,
@@ -34,14 +48,14 @@ export default async function LocaleLayout({
   const headerLanguages = languages.map(lang => ({
     code: lang.code,
     name: lang.name,
-    nativeName: lang.nativeName || undefined,
-    flag: lang.flag || undefined
+    nativeName: lang.nativeName ?? undefined,
+    flag: lang.flag ?? undefined
   }))
 
   return (
     <div className="min-h-screen flex flex-col font-sans text-slate-800">
       <Header
-        settings={settings}
+        settings={safeSettings}
         menuItems={headerMenuItems}
         languages={headerLanguages}
         locale={locale}
@@ -51,7 +65,7 @@ export default async function LocaleLayout({
         {children}
       </main>
 
-      <Footer settings={settings} locale={locale} />
+      <Footer settings={safeSettings} locale={locale} />
 
       <ChatWidget />
     </div>
