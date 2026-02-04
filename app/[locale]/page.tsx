@@ -1,26 +1,29 @@
-import { getPage } from '@/app/actions/page-actions'
-import { WidgetRenderer } from '@/components/widgets/WidgetRenderer'
+import Hero from '@/components/sections/Hero'
+import About from '@/components/sections/About'
+import Rooms from '@/components/sections/Rooms'
+import Experience from '@/components/sections/Experience'
+import LocalGuide from '@/components/sections/LocalGuide'
+import Gallery from '@/components/sections/Gallery'
+import Reviews from '@/components/sections/Reviews'
+import Sustainability from '@/components/sections/Sustainability'
+import LocationMap from '@/components/sections/LocationMap'
 
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params
 
-  // We assume the home page is stored with slug "home"
-  const page = await getPage(['home'], locale)
-
-  if (!page) {
-    return (
-        <div className="min-h-[50vh] flex items-center justify-center">
-            <div className="text-center">
-                <h1 className="text-4xl font-bold mb-4">Welcome to Blue Dreams Resort</h1>
-                <p>Please configure the home page in the Admin Panel.</p>
-            </div>
-        </div>
-    )
-  }
-
   return (
-    <div>
-        <WidgetRenderer widgets={page.widgets} />
+    <div className="font-sans antialiased text-gray-900 bg-sand">
+      <main>
+        <Hero />
+        <About />
+        <Rooms />
+        <Experience />
+        <LocalGuide />
+        <Gallery />
+        <Reviews />
+        <Sustainability />
+        <LocationMap />
+      </main>
     </div>
   )
 }
