@@ -45,9 +45,18 @@ export async function uploadFile(formData: FormData) {
 }
 
 export async function getFiles() {
-  return await prisma.media.findMany({
+  const mediaFiles = await prisma.media.findMany({
     orderBy: { createdAt: 'desc' },
   });
+
+  // Map 'name' to 'filename' to match MediaFile interface
+  return mediaFiles.map(file => ({
+    id: file.id,
+    url: file.url,
+    filename: file.name,
+    type: file.type,
+    createdAt: file.createdAt,
+  }));
 }
 
 export async function deleteFile(id: string) {
@@ -57,15 +66,15 @@ export async function deleteFile(id: string) {
     });
 
     if (!file) {
-        return { success: false, error: 'File not found' };
+      return { success: false, error: 'File not found' };
     }
 
     // Delete from disk
     const filepath = path.join(process.cwd(), 'public', file.url); // url starts with /uploads/...
     try {
-        await fs.unlink(filepath);
+      await fs.unlink(filepath);
     } catch (e) {
-        console.warn("File not found on disk, deleting from DB anyway", e);
+      console.warn("File not found on disk, deleting from DB anyway", e);
     }
 
     await prisma.media.delete({
