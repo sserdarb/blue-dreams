@@ -53,3 +53,49 @@ model Media {
   type      String
   createdAt DateTime @default(now())
 }
+
+// ===== CMS Models =====
+
+model SiteSettings {
+  id           String   @id @default(uuid())
+  locale       String   @unique
+  siteName     String   @default("Blue Dreams Resort")
+  logo         String?  // URL to logo image
+  favicon      String?  // URL to favicon
+  phone        String?
+  email        String?
+  address      String?
+  socialLinks  String?  // JSON: { facebook, instagram, twitter, youtube }
+  footerText   String?
+  footerCopyright String?
+  headerStyle  String   @default("default") // default, transparent, dark
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model MenuItem {
+  id        String     @id @default(uuid())
+  locale    String
+  label     String
+  url       String
+  target    String     @default("_self") // _self, _blank
+  order     Int        @default(0)
+  parentId  String?
+  parent    MenuItem?  @relation("MenuHierarchy", fields: [parentId], references: [id])
+  children  MenuItem[] @relation("MenuHierarchy")
+  isActive  Boolean    @default(true)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Language {
+  id        String   @id @default(uuid())
+  code      String   @unique  // en, tr, de, ru
+  name      String            // English, Türkçe, Deutsch, Русский
+  nativeName String?          // English, Türkçe, Deutsch, Русский
+  flag      String?           // 🇺🇸, 🇹🇷, 🇩🇪, 🇷🇺 or URL
+  isActive  Boolean  @default(true)
+  isDefault Boolean  @default(false)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+}
