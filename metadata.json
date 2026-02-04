@@ -1,0 +1,7 @@
+{
+  "name": "Blue Dreams Resort Redesign",
+  "description": "A modern, luxury redesign of the Blue Dreams Resort website featuring a turquoise theme, responsive layout, and premium UI components.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
