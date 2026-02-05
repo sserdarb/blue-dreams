@@ -135,3 +135,21 @@ model Language {
   order     Int      @default(0)
   createdAt DateTime @default(now())
 }
+
+// ===== CTA Bar Model =====
+
+model CtaBar {
+  id              String    @id @default(uuid())
+  title           String    // Main headline
+  subtitle        String?   // Secondary text
+  buttonText      String?   // Button label
+  buttonUrl       String?   // Button link
+  backgroundColor String    @default("#2563eb") // Tailwind blue-600
+  textColor       String    @default("#ffffff")
+  startDate       DateTime? // Schedule start
+  endDate         DateTime? // Schedule end
+  isActive        Boolean   @default(false) // Starts disabled
+  clickCount      Int       @default(0) // Analytics tracking
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
