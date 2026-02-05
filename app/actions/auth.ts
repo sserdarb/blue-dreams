@@ -3,13 +3,15 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'blueconcierge';
 const COOKIE_NAME = 'admin_session';
 
 export async function login(formData: FormData) {
+  const username = formData.get('username');
   const password = formData.get('password');
 
-  if (password === ADMIN_PASSWORD) {
+  if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
     (await cookies()).set(COOKIE_NAME, 'authenticated', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
