@@ -70,7 +70,7 @@ export default function AboutPage() {
                             <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <Users size={32} />
                             </div>
-                            <span className="text-4xl font-serif font-bold block">500+</span>
+                            <span className="text-4xl font-serif font-bold block">340+</span>
                             <span className="text-white/70 text-sm">Oda Kapasitesi</span>
                         </div>
                         <div className="text-center">

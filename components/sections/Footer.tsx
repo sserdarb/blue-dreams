@@ -67,7 +67,7 @@ export default function Footer() {
                             <li><a href="#rooms" className="hover:text-brand transition-colors">Odalar & Suitler</a></li>
                             <li><a href="#gallery" className="hover:text-brand transition-colors">Fotoğraf Galerisi</a></li>
                             <li><a href="#experience" className="hover:text-brand transition-colors">Spa & Wellness</a></li>
-                            <li><a href="#" className="hover:text-brand transition-colors">Toplantı & Etkinlik</a></li>
+                            <li><a href="/tr/toplanti-salonu" className="hover:text-brand transition-colors">Toplantı & Etkinlik</a></li>
                             <li><a href="#" className="hover:text-brand transition-colors">İnsan Kaynakları</a></li>
                         </ul>
                     </div>
