@@ -1,8 +1,11 @@
 import { getAllMenuItems } from '@/app/actions/settings'
 import { MenuManager } from '@/components/admin/MenuManager'
 
-export default async function MenuPage({ params }: { params: Promise<{ locale: string }> }) {
-    const { locale } = await params
+// Default locale for admin panel (no longer under [locale] route)
+const DEFAULT_LOCALE = 'tr'
+
+export default async function MenuPage() {
+    const locale = DEFAULT_LOCALE
     const menuItems = await getAllMenuItems(locale)
 
     // Flatten for the manager (we'll handle hierarchy separately)
@@ -18,9 +21,9 @@ export default async function MenuPage({ params }: { params: Promise<{ locale: s
     return (
         <div className="max-w-3xl">
             <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-900">Menu Management</h1>
-                <p className="text-gray-500 mt-1">
-                    Manage navigation menu for <span className="font-medium">{locale.toUpperCase()}</span> locale
+                <h1 className="text-3xl font-bold text-white">Menü Yönetimi</h1>
+                <p className="text-gray-400 mt-1">
+                    Navigasyon menüsünü yönetin (<span className="font-medium">{locale.toUpperCase()}</span>)
                 </p>
             </div>
 
