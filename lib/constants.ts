@@ -22,11 +22,12 @@ export interface Review {
 }
 
 export const NAV_ITEMS: NavItem[] = [
-    { label: 'Otelimiz', href: '#about' },
-    { label: 'Odalar', href: '#rooms' },
-    { label: 'Restoranlar', href: '#experience' },
-    { label: 'Etkinlikler', href: '#experience' },
-    { label: 'Galeri', href: '#gallery' },
+    { label: 'Hakkımızda', href: '/tr/hakkimizda' },
+    { label: 'Odalar', href: '/tr/odalar' },
+    { label: 'Restoran & Barlar', href: '/tr/restoran' },
+    { label: 'Spa & Wellness', href: '/tr/spa' },
+    { label: 'Galeri', href: '/tr/galeri' },
+    { label: 'İletişim', href: '/tr/iletisim' },
 ]
 
 export const ROOMS: Room[] = [

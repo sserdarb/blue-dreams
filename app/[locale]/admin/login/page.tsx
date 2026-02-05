@@ -38,13 +38,24 @@ export default function LoginPage() {
 
         <form action={formAction} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Password</label>
+            <label className="block text-sm font-medium text-gray-700">Kullanıcı Adı</label>
+            <input
+              type="text"
+              name="username"
+              required
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Kullanıcı adınızı girin"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Şifre</label>
             <input
               type="password"
               name="password"
               required
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Enter admin password"
+              placeholder="Şifrenizi girin"
             />
           </div>
 
