@@ -1,0 +1,144 @@
+{
+    "common": {
+        "home": "Ana Sayfa",
+        "rooms": "Odalar",
+        "restaurant": "Restoran",
+        "spa": "Spa & Wellness",
+        "meeting": "Toplantı & Etkinlik",
+        "gallery": "Galeri",
+        "about": "Hakkımızda",
+        "contact": "İletişim",
+        "bookNow": "Hemen Rezervasyon",
+        "learnMore": "Daha Fazla Bilgi",
+        "viewAll": "Tümünü Gör",
+        "close": "Kapat",
+        "send": "Gönder",
+        "loading": "Yükleniyor..."
+    },
+    "hero": {
+        "title": "Her Güzel Rüya Blue Dreams'te Başlar",
+        "subtitle": "Bodrum'un eşsiz Torba Koyu'nda, doğayla iç içe lüks bir tatil deneyimi sizi bekliyor.",
+        "exploreRooms": "Odaları Keşfet",
+        "makeReservation": "Rezervasyon Yap"
+    },
+    "about": {
+        "title": "Hakkımızda",
+        "subtitle": "1998'den bu yana Bodrum'da misafirperverlik geleneğini sürdürüyoruz.",
+        "roomCount": "340+",
+        "roomsLabel": "Lüks Oda & Suite",
+        "guestsCount": "500K+",
+        "guestsLabel": "Mutlu Misafir",
+        "yearsCount": "25+",
+        "yearsLabel": "Yıllık Deneyim",
+        "beachLength": "250m",
+        "beachLabel": "Özel Plaj",
+        "story": "Hikayemiz",
+        "storyText": "Blue Dreams Resort, 1998 yılında Torba Koyu'nun eşsiz güzelliğine hayran kalan bir ailenin hayaliyle başladı. Bugün, 340'tan fazla odamız ve dünya standartlarında hizmetimizle, her yıl binlerce misafirimize unutulmaz anılar yaşatıyoruz."
+    },
+    "rooms": {
+        "title": "Odalar & Suitler",
+        "subtitle": "Her biri özenle tasarlanmış odalarımızda konfor ve lüksü bir arada yaşayın.",
+        "club": {
+            "title": "Club Odalar",
+            "description": "Konforlu ve şık tasarımıyla mükemmel bir konaklama deneyimi."
+        },
+        "deluxe": {
+            "title": "Deluxe Odalar",
+            "description": "Geniş alanı ve premium özellikleriyle üst düzey konfor."
+        },
+        "family": {
+            "title": "Aile Odaları",
+            "description": "Aileler için ideal, geniş ve konforlu yaşam alanları."
+        },
+        "size": "Büyüklük",
+        "capacity": "Kapasite",
+        "view": "Manzara",
+        "amenities": "Olanaklar",
+        "bookRoom": "Bu Odayı Rezerve Et"
+    },
+    "spa": {
+        "title": "Spa & Wellness",
+        "subtitle": "Naya Spa'da ruhunuzu dinlendirin, bedeninizi yenileyin.",
+        "nayaSpa": "Naya Spa",
+        "description": "Ege'nin büyüleyici atmosferinde, doğanın huzur veren dokunuşuyla bütünleşen Naya Spa, sizi benzersiz bir yenilenme deneyimine davet ediyor.",
+        "services": "Hizmetlerimiz",
+        "stoneMassage": "Sıcak Taş Masajı",
+        "backMassage": "Sırt Masajı",
+        "seaweedMassage": "Yosun Masajı",
+        "facialCare": "Yüz Bakımı",
+        "bodyWrap": "Vücut Sarma",
+        "aromatherapy": "Aromaterapi",
+        "hours": "Çalışma Saatleri",
+        "hoursValue": "09:00 - 21:00",
+        "reservation": "Rezervasyon",
+        "contact": "İletişim"
+    },
+    "meeting": {
+        "title": "Toplantı & Etkinlik Alanları",
+        "subtitle": "Profesyonel toplantılarınız ve özel etkinlikleriniz için ideal mekanlar.",
+        "istanbulHall": "İstanbul Salonu",
+        "istanbulDesc": "770 m² büyüklüğündeki ana balo salonumuz, 2 bölüme ayrılabilir yapısıyla her türlü etkinlik için uygundur.",
+        "capacity": "Kapasite",
+        "size": "Alan",
+        "equipment": "Teknik Donanım",
+        "meetingRooms": "Toplantı Odaları",
+        "getQuote": "Teklif Alın"
+    },
+    "restaurant": {
+        "title": "Restoran & Barlar",
+        "subtitle": "Ege'nin en güzel gün batımına açılan restoranlarımızda lezzet yolculuğuna çıkın.",
+        "mainRestaurant": "Ana Restoran",
+        "alaCarteRestaurant": "A La Carte Restoran",
+        "poolBar": "Havuz Bar",
+        "beachBar": "Plaj Bar",
+        "lobbyBar": "Lobi Bar"
+    },
+    "contact": {
+        "title": "İletişim",
+        "subtitle": "Sorularınız için bize ulaşın, size yardımcı olmaktan mutluluk duyarız.",
+        "address": "Adres",
+        "phone": "Telefon",
+        "email": "E-posta",
+        "sendMessage": "Mesaj Gönder",
+        "name": "Adınız",
+        "yourMessage": "Mesajınız",
+        "submit": "Gönder"
+    },
+    "gallery": {
+        "title": "Galeri",
+        "subtitle": "Otelimizden kareler ile tanışın.",
+        "all": "Tümü",
+        "roomsCategory": "Odalar",
+        "beachPool": "Plaj & Havuz",
+        "gastronomy": "Gastronomi"
+    },
+    "reviews": {
+        "title": "Misafir Yorumları",
+        "subtitle": "Misafirlerimizin deneyimleri",
+        "bookingScore": "Booking.com Puanı",
+        "basedOn": "yoruma göre",
+        "cleanliness": "Temizlik",
+        "comfort": "Konfor",
+        "location": "Konum",
+        "facilities": "Olanaklar",
+        "staff": "Personel",
+        "valueForMoney": "Fiyat/Performans"
+    },
+    "chat": {
+        "title": "Blue Concierge",
+        "subtitle": "Size yardımcı olmak için buradayız",
+        "welcome": "Hoş geldiniz! Size nasıl yardımcı olabiliriz?",
+        "placeholder": "Mesajınızı yazın...",
+        "aiAssistant": "AI Asistan",
+        "concierge": "Concierge"
+    },
+    "footer": {
+        "description": "Bodrum'un en güzel koyunda, doğayla iç içe lüks bir tatil deneyimi.",
+        "quickLinks": "Hızlı Bağlantılar",
+        "contact": "İletişim",
+        "followUs": "Bizi Takip Edin",
+        "rights": "Tüm hakları saklıdır.",
+        "privacy": "Gizlilik Politikası",
+        "terms": "Kullanım Koşulları"
+    }
+}

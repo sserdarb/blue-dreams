@@ -2,23 +2,89 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { createSession, getSession, sendMessage } from '@/app/actions/chat'
-import { MessageSquare, X, Send } from 'lucide-react'
+import { MessageSquare, X, Send, Sparkles } from 'lucide-react'
+import { BlueConciergeFull } from './BlueConciergeFull'
 
-export function ChatWidget() {
+// Multi-language support
+const translations = {
+  tr: {
+    title: 'Blue Concierge',
+    subtitle: 'Size yardımcı olmak için buradayız',
+    welcome: 'Hoş geldiniz! Size nasıl yardımcı olabiliriz?',
+    placeholder: 'Mesajınızı yazın...',
+    aiAssistant: 'AI Asistan',
+    concierge: 'Concierge',
+    typing: 'Yazıyor...',
+    openAi: 'AI Asistan Başlat'
+  },
+  en: {
+    title: 'Blue Concierge',
+    subtitle: "We're here to help you",
+    welcome: 'Welcome! How can we assist you today?',
+    placeholder: 'Type your message...',
+    aiAssistant: 'AI Assistant',
+    concierge: 'Concierge',
+    typing: 'Typing...',
+    openAi: 'Start AI Assistant'
+  },
+  de: {
+    title: 'Blue Concierge',
+    subtitle: 'Wir sind hier, um Ihnen zu helfen',
+    welcome: 'Willkommen! Wie können wir Ihnen helfen?',
+    placeholder: 'Schreiben Sie Ihre Nachricht...',
+    aiAssistant: 'KI-Assistent',
+    concierge: 'Concierge',
+    typing: 'Schreibt...',
+    openAi: 'KI-Assistent starten'
+  },
+  ru: {
+    title: 'Blue Concierge',
+    subtitle: 'Мы здесь, чтобы помочь вам',
+    welcome: 'Добро пожаловать! Чем мы можем вам помочь?',
+    placeholder: 'Введите сообщение...',
+    aiAssistant: 'AI Ассистент',
+    concierge: 'Консьерж',
+    typing: 'Печатает...',
+    openAi: 'Запустить AI Ассистента'
+  }
+}
+
+type Locale = keyof typeof translations
+
+interface ChatWidgetProps {
+  locale?: Locale
+  shouldPulse?: boolean // For admin "attract attention" feature
+}
+
+export function ChatWidget({ locale = 'tr', shouldPulse = false }: ChatWidgetProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const [isAiOpen, setIsAiOpen] = useState(false)
   const [sessionId, setSessionId] = useState<string | null>(null)
   const [messages, setMessages] = useState<any[]>([])
   const [inputValue, setInputValue] = useState('')
   const [loading, setLoading] = useState(false)
+  const [isPulsing, setIsPulsing] = useState(shouldPulse)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
+  const t = translations[locale] || translations.tr
+
+  // Listen for pulse trigger from admin
   useEffect(() => {
-    // Load session from storage or create new
+    const handlePulse = () => {
+      setIsPulsing(true)
+      setTimeout(() => setIsPulsing(false), 5000)
+    }
+
+    window.addEventListener('blueConcierge:pulse', handlePulse)
+    return () => window.removeEventListener('blueConcierge:pulse', handlePulse)
+  }, [])
+
+  useEffect(() => {
     if (typeof window !== 'undefined') {
-        const stored = localStorage.getItem('chatSessionId')
-        if (stored) {
-          setSessionId(stored)
-        }
+      const stored = localStorage.getItem('chatSessionId')
+      if (stored) {
+        setSessionId(stored)
+      }
     }
   }, [])
 
@@ -31,7 +97,6 @@ export function ChatWidget() {
     }
   }, [isOpen, sessionId])
 
-  // Polling for messages
   useEffect(() => {
     if (!sessionId || !isOpen) return
 
@@ -47,7 +112,6 @@ export function ChatWidget() {
     return () => clearInterval(interval)
   }, [sessionId, isOpen])
 
-  // Auto scroll
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
@@ -60,75 +124,148 @@ export function ChatWidget() {
     const content = inputValue
     setInputValue('')
 
-    // Optimistic update
     setMessages(prev => [...prev, { id: 'temp-' + Date.now(), sender: 'user', content, createdAt: new Date() }])
 
     await sendMessage(sessionId, content, 'user')
     setLoading(false)
   }
 
+  // Full-screen AI Assistant
+  if (isAiOpen) {
+    return <BlueConciergeFull isOpen={isAiOpen} onClose={() => setIsAiOpen(false)} locale={locale} />
+  }
+
   return (
     <div className="fixed bottom-6 right-6 z-50">
+      {/* Toggle Button */}
       {!isOpen && (
-        <button
-          onClick={() => setIsOpen(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg transition-transform hover:scale-105"
-        >
-          <MessageSquare size={24} />
-        </button>
+        <div className="flex flex-col items-end gap-3">
+          {/* AI Assistant Button - Primary */}
+          <button
+            onClick={() => setIsAiOpen(true)}
+            className={`group relative bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-5 py-3 rounded-full shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl flex items-center gap-2 ${isPulsing ? 'animate-pulse ring-4 ring-purple-400 ring-opacity-50' : ''}`}
+            aria-label="Open AI Assistant"
+          >
+            <Sparkles size={20} className={isPulsing ? 'animate-spin' : ''} />
+            <span className="font-medium text-sm">{t.openAi}</span>
+            {isPulsing && (
+              <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-ping" />
+            )}
+          </button>
+
+          {/* Regular Chat Button - Secondary */}
+          <button
+            onClick={() => setIsOpen(true)}
+            className="group relative bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white p-4 rounded-full shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl"
+            aria-label="Open chat"
+          >
+            <MessageSquare size={24} />
+            <span className="absolute -top-2 -right-2 w-4 h-4 bg-green-500 rounded-full border-2 border-white animate-pulse" />
+          </button>
+        </div>
       )}
 
+      {/* Chat Window */}
       {isOpen && (
-        <div className="bg-white w-80 md:w-96 h-[500px] rounded-lg shadow-2xl flex flex-col overflow-hidden border">
-          <div className="bg-blue-600 text-white p-4 flex justify-between items-center">
-            <div>
-                <h3 className="font-bold">Blue Concierge</h3>
-                <p className="text-xs text-blue-100">Always here to help</p>
+        <div className="bg-white w-80 md:w-96 h-[520px] rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-gray-100 animate-in slide-in-from-bottom-4 duration-300">
+          {/* Header */}
+          <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                  <Sparkles size={20} />
+                </div>
+                <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 rounded-full border-2 border-blue-600" />
+              </div>
+              <div>
+                <h3 className="font-bold text-lg">{t.title}</h3>
+                <p className="text-xs text-blue-100">{t.subtitle}</p>
+              </div>
             </div>
-            <button onClick={() => setIsOpen(false)} className="hover:bg-blue-700 p-1 rounded">
+            <button
+              onClick={() => setIsOpen(false)}
+              className="hover:bg-white/10 p-2 rounded-full transition-colors"
+              aria-label="Close chat"
+            >
               <X size={20} />
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-4 bg-gray-50 space-y-4">
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto p-4 bg-gradient-to-b from-gray-50 to-white space-y-4">
             {messages.length === 0 && (
-                <div className="text-center text-gray-500 text-sm mt-10">
-                    <p>Welcome! How can we assist you today?</p>
+              <div className="text-center mt-6">
+                <div className="w-16 h-16 bg-blue-100 rounded-full mx-auto mb-4 flex items-center justify-center">
+                  <MessageSquare size={28} className="text-blue-600" />
                 </div>
+                <p className="text-gray-600 text-sm mb-4">{t.welcome}</p>
+                {/* Quick AI button inside chat */}
+                <button
+                  onClick={() => { setIsOpen(false); setIsAiOpen(true); }}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-full text-sm font-medium hover:from-purple-700 hover:to-blue-700 transition-all"
+                >
+                  <Sparkles size={16} />
+                  {t.openAi}
+                </button>
+              </div>
             )}
             {messages.map((msg, i) => (
               <div key={i} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div
-                  className={`max-w-[80%] p-3 rounded-lg text-sm ${
-                    msg.sender === 'user'
-                      ? 'bg-blue-600 text-white rounded-tr-none'
-                      : msg.sender === 'bot'
-                        ? 'bg-gray-200 text-gray-800 rounded-tl-none border border-blue-200'
-                        : 'bg-white border text-gray-800 rounded-tl-none shadow-sm' // Agent
-                  }`}
+                  className={`max-w-[80%] p-3 rounded-2xl text-sm shadow-sm ${msg.sender === 'user'
+                    ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-br-md'
+                    : msg.sender === 'bot' || msg.sender === 'ai'
+                      ? 'bg-white text-gray-800 rounded-bl-md border border-gray-100'
+                      : 'bg-gradient-to-r from-emerald-50 to-teal-50 text-gray-800 rounded-bl-md border border-emerald-100'
+                    }`}
                 >
-                  {msg.sender === 'bot' && <span className="text-xs text-blue-600 font-bold block mb-1">AI Assistant</span>}
-                  {msg.sender === 'agent' && <span className="text-xs text-green-600 font-bold block mb-1">Concierge</span>}
+                  {(msg.sender === 'bot' || msg.sender === 'ai') && (
+                    <span className="text-xs text-blue-600 font-semibold flex items-center gap-1 mb-1">
+                      <Sparkles size={12} />
+                      {t.aiAssistant}
+                    </span>
+                  )}
+                  {msg.sender === 'agent' && (
+                    <span className="text-xs text-emerald-600 font-semibold block mb-1">
+                      {t.concierge}
+                    </span>
+                  )}
                   {msg.content}
                 </div>
               </div>
             ))}
+            {loading && (
+              <div className="flex justify-start">
+                <div className="bg-white p-3 rounded-2xl rounded-bl-md border border-gray-100 shadow-sm">
+                  <div className="flex items-center gap-2">
+                    <div className="flex gap-1">
+                      <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                    </div>
+                    <span className="text-xs text-gray-400">{t.typing}</span>
+                  </div>
+                </div>
+              </div>
+            )}
             <div ref={messagesEndRef} />
           </div>
 
-          <form onSubmit={handleSend} className="p-3 bg-white border-t flex gap-2">
+          {/* Input */}
+          <form onSubmit={handleSend} className="p-3 bg-white border-t border-gray-100 flex gap-2">
             <input
               type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Type your message..."
-              className="flex-1 border rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+              placeholder={t.placeholder}
+              className="flex-1 border border-gray-200 rounded-full px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
               disabled={loading}
             />
             <button
               type="submit"
-              disabled={loading}
-              className="bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 disabled:opacity-50"
+              disabled={loading || !inputValue.trim()}
+              className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-2.5 rounded-full hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:shadow-lg"
+              aria-label="Send message"
             >
               <Send size={18} />
             </button>
