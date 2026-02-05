@@ -15,7 +15,8 @@ import {
   Code,
   ExternalLink,
   ChevronDown,
-  Sparkles
+  Sparkles,
+  Megaphone
 } from 'lucide-react'
 
 const navItems = [
@@ -29,6 +30,7 @@ const navItems = [
   { href: '/analytics', label: 'Analytics', icon: Code },
   { href: '/chat', label: 'Blue Concierge', icon: MessageSquare },
   { href: '/ai-training', label: 'AI Eğitim', icon: Sparkles },
+  { href: '/cta-bar', label: 'CTA Bar', icon: Megaphone },
 ]
 
 const languages = [

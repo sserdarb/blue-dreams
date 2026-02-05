@@ -1,4 +1,5 @@
 import Hero from '@/components/sections/Hero'
+import CtaBar from '@/components/shared/CtaBar'
 import About from '@/components/sections/About'
 import Rooms from '@/components/sections/Rooms'
 import Experience from '@/components/sections/Experience'
@@ -15,6 +16,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         <div className="font-sans antialiased text-gray-900 bg-sand">
             <main>
                 <Hero />
+                <CtaBar />
                 <About />
                 <Rooms />
                 <Experience />
