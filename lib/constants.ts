@@ -26,6 +26,7 @@ export const NAV_ITEMS: NavItem[] = [
     { label: 'Odalar', href: '/tr/odalar' },
     { label: 'Restoran & Barlar', href: '/tr/restoran' },
     { label: 'Spa & Wellness', href: '/tr/spa' },
+    { label: 'Toplantı & Etkinlik', href: '/tr/toplanti-salonu' },
     { label: 'Galeri', href: '/tr/galeri' },
     { label: 'İletişim', href: '/tr/iletisim' },
 ]

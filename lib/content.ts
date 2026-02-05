@@ -184,6 +184,27 @@ export interface SpaService {
 
 export const SPA_SERVICES: SpaService[] = [
     {
+        id: 'hot-stone',
+        title: 'Taş Masajı',
+        description: 'Sıcak volkanik taşlarla derin kas gevşetme ve enerji dengeleme terapisi.',
+        duration: '60 dk',
+        image: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/INFINITY-POOL-2.jpg',
+    },
+    {
+        id: 'back-massage',
+        title: 'Sırt Masajı',
+        description: 'Sırt ve omuz bölgesine odaklanan rahatlatıcı masaj uygulaması.',
+        duration: '30 dk',
+        image: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/INFINITY-POOL-1.jpg',
+    },
+    {
+        id: 'seaweed-massage',
+        title: 'Yosun Masajı',
+        description: 'Deniz yosunu özleriyle detoks ve cilt yenileme terapisi.',
+        duration: '45 dk',
+        image: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/SANDY-BEACH-1.jpg',
+    },
+    {
         id: 'turkish-bath',
         title: 'Türk Hamamı',
         description: 'Geleneksel köpük ve kese ritüeli ile derin temizlik ve cilt yenilenmesi.',
