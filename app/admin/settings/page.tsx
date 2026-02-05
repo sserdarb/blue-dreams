@@ -1,8 +1,11 @@
 import { getSiteSettings } from '@/app/actions/settings'
 import { SiteSettingsForm } from '@/components/admin/SiteSettingsForm'
 
-export default async function SettingsPage({ params }: { params: Promise<{ locale: string }> }) {
-    const { locale } = await params
+// Default locale for admin panel (no longer under [locale] route)
+const DEFAULT_LOCALE = 'tr'
+
+export default async function SettingsPage() {
+    const locale = DEFAULT_LOCALE
     const settings = await getSiteSettings(locale)
 
     // Convert null values to undefined to match component prop types
@@ -22,9 +25,9 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
     return (
         <div className="max-w-3xl">
             <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-900">Site Settings</h1>
-                <p className="text-gray-500 mt-1">
-                    Configure global site settings for <span className="font-medium">{locale.toUpperCase()}</span> locale
+                <h1 className="text-3xl font-bold text-white">Site Ayarları</h1>
+                <p className="text-gray-400 mt-1">
+                    Site ayarlarını yapılandırın (<span className="font-medium">{locale.toUpperCase()}</span>)
                 </p>
             </div>
 
@@ -32,3 +35,4 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
         </div>
     )
 }
+
