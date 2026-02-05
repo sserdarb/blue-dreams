@@ -1,0 +1,144 @@
+{
+    "common": {
+        "home": "Home",
+        "rooms": "Rooms",
+        "restaurant": "Restaurant",
+        "spa": "Spa & Wellness",
+        "meeting": "Meeting & Events",
+        "gallery": "Gallery",
+        "about": "About Us",
+        "contact": "Contact",
+        "bookNow": "Book Now",
+        "learnMore": "Learn More",
+        "viewAll": "View All",
+        "close": "Close",
+        "send": "Send",
+        "loading": "Loading..."
+    },
+    "hero": {
+        "title": "Every Beautiful Dream Begins at Blue Dreams",
+        "subtitle": "A luxury vacation experience in harmony with nature awaits you in Bodrum's unique Torba Bay.",
+        "exploreRooms": "Explore Rooms",
+        "makeReservation": "Make Reservation"
+    },
+    "about": {
+        "title": "About Us",
+        "subtitle": "We have been continuing the tradition of hospitality in Bodrum since 1998.",
+        "roomCount": "340+",
+        "roomsLabel": "Luxury Rooms & Suites",
+        "guestsCount": "500K+",
+        "guestsLabel": "Happy Guests",
+        "yearsCount": "25+",
+        "yearsLabel": "Years of Experience",
+        "beachLength": "250m",
+        "beachLabel": "Private Beach",
+        "story": "Our Story",
+        "storyText": "Blue Dreams Resort began in 1998 with the dream of a family captivated by the unique beauty of Torba Bay. Today, with over 340 rooms and world-class service, we create unforgettable memories for thousands of guests every year."
+    },
+    "rooms": {
+        "title": "Rooms & Suites",
+        "subtitle": "Experience comfort and luxury together in our carefully designed rooms.",
+        "club": {
+            "title": "Club Rooms",
+            "description": "A perfect accommodation experience with comfortable and stylish design."
+        },
+        "deluxe": {
+            "title": "Deluxe Rooms",
+            "description": "Premium comfort with spacious areas and premium features."
+        },
+        "family": {
+            "title": "Family Rooms",
+            "description": "Ideal for families, spacious and comfortable living spaces."
+        },
+        "size": "Size",
+        "capacity": "Capacity",
+        "view": "View",
+        "amenities": "Amenities",
+        "bookRoom": "Book This Room"
+    },
+    "spa": {
+        "title": "Spa & Wellness",
+        "subtitle": "Rest your soul and rejuvenate your body at Naya Spa.",
+        "nayaSpa": "Naya Spa",
+        "description": "In the enchanting atmosphere of the Aegean, Naya Spa invites you to a unique renewal experience, integrated with nature's soothing touch.",
+        "services": "Our Services",
+        "stoneMassage": "Hot Stone Massage",
+        "backMassage": "Back Massage",
+        "seaweedMassage": "Seaweed Massage",
+        "facialCare": "Facial Care",
+        "bodyWrap": "Body Wrap",
+        "aromatherapy": "Aromatherapy",
+        "hours": "Working Hours",
+        "hoursValue": "09:00 - 21:00",
+        "reservation": "Reservation",
+        "contact": "Contact"
+    },
+    "meeting": {
+        "title": "Meeting & Event Spaces",
+        "subtitle": "Ideal venues for your professional meetings and special events.",
+        "istanbulHall": "Istanbul Hall",
+        "istanbulDesc": "Our 770 m² main ballroom can be divided into 2 sections, suitable for all types of events.",
+        "capacity": "Capacity",
+        "size": "Area",
+        "equipment": "Technical Equipment",
+        "meetingRooms": "Meeting Rooms",
+        "getQuote": "Get a Quote"
+    },
+    "restaurant": {
+        "title": "Restaurant & Bars",
+        "subtitle": "Embark on a culinary journey at our restaurants overlooking the Aegean's most beautiful sunset.",
+        "mainRestaurant": "Main Restaurant",
+        "alaCarteRestaurant": "A La Carte Restaurant",
+        "poolBar": "Pool Bar",
+        "beachBar": "Beach Bar",
+        "lobbyBar": "Lobby Bar"
+    },
+    "contact": {
+        "title": "Contact",
+        "subtitle": "Contact us for your questions, we are happy to help.",
+        "address": "Address",
+        "phone": "Phone",
+        "email": "Email",
+        "sendMessage": "Send Message",
+        "name": "Your Name",
+        "yourMessage": "Your Message",
+        "submit": "Submit"
+    },
+    "gallery": {
+        "title": "Gallery",
+        "subtitle": "Discover our hotel through photos.",
+        "all": "All",
+        "roomsCategory": "Rooms",
+        "beachPool": "Beach & Pool",
+        "gastronomy": "Gastronomy"
+    },
+    "reviews": {
+        "title": "Guest Reviews",
+        "subtitle": "Experiences from our guests",
+        "bookingScore": "Booking.com Score",
+        "basedOn": "based on reviews",
+        "cleanliness": "Cleanliness",
+        "comfort": "Comfort",
+        "location": "Location",
+        "facilities": "Facilities",
+        "staff": "Staff",
+        "valueForMoney": "Value for Money"
+    },
+    "chat": {
+        "title": "Blue Concierge",
+        "subtitle": "We're here to help you",
+        "welcome": "Welcome! How can we assist you today?",
+        "placeholder": "Type your message...",
+        "aiAssistant": "AI Assistant",
+        "concierge": "Concierge"
+    },
+    "footer": {
+        "description": "A luxury vacation experience in harmony with nature in Bodrum's most beautiful bay.",
+        "quickLinks": "Quick Links",
+        "contact": "Contact",
+        "followUs": "Follow Us",
+        "rights": "All rights reserved.",
+        "privacy": "Privacy Policy",
+        "terms": "Terms of Use"
+    }
+}

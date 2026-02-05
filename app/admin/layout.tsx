@@ -14,7 +14,8 @@ import {
   Calendar,
   Code,
   ExternalLink,
-  ChevronDown
+  ChevronDown,
+  Sparkles
 } from 'lucide-react'
 
 const navItems = [
@@ -27,6 +28,7 @@ const navItems = [
   { href: '/settings', label: 'Ayarlar', icon: Settings },
   { href: '/analytics', label: 'Analytics', icon: Code },
   { href: '/chat', label: 'Blue Concierge', icon: MessageSquare },
+  { href: '/ai-training', label: 'AI Eğitim', icon: Sparkles },
 ]
 
 const languages = [
@@ -136,8 +138,8 @@ export default function AdminLayout({
                       setLangDropdownOpen(false)
                     }}
                     className={`w-full flex items-center gap-2 px-3 py-2 text-left text-sm transition-all ${currentLang === lang.code
-                        ? 'bg-cyan-600 text-white'
-                        : 'text-slate-300 hover:bg-white/5'
+                      ? 'bg-cyan-600 text-white'
+                      : 'text-slate-300 hover:bg-white/5'
                       }`}
                   >
                     <span>{lang.flag}</span>
