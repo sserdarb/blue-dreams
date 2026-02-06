@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Menu, X, Phone, Calendar, Facebook, Instagram, Youtube, Search, Sparkles } from 'lucide-react'
 import { NAV_ITEMS } from '@/lib/constants'
 import { WeatherWidget } from '@/components/layout/WeatherWidget'
+import { usePathname, useRouter } from 'next/navigation'
 
 // WhatsApp Icon SVG
 const WhatsAppIcon = ({ size = 20, className = "" }: { size?: number, className?: string }) => (
@@ -15,6 +16,14 @@ const WhatsAppIcon = ({ size = 20, className = "" }: { size?: number, className?
 export default function Navbar() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const [isScrolled, setIsScrolled] = useState(false)
+    const pathname = usePathname()
+    const router = useRouter()
+
+    const handleLanguageChange = (langCode: string) => {
+        const currentLocale = pathname.split('/')[1]
+        const newPath = pathname.replace(`/${currentLocale}`, `/${langCode.toLowerCase()}`)
+        router.push(newPath)
+    }
 
     useEffect(() => {
         const handleScroll = () => {
@@ -81,7 +90,11 @@ export default function Navbar() {
                         {/* Languages */}
                         <div className="flex items-center space-x-3 text-[10px] font-bold tracking-widest text-white/80 border-r border-white/20 pr-6">
                             {languages.map((lang) => (
-                                <button key={lang.code} className="hover:text-brand transition-colors">
+                                <button
+                                    key={lang.code}
+                                    onClick={() => handleLanguageChange(lang.code)}
+                                    className={`hover:text-brand transition-colors ${pathname.startsWith(`/${lang.code.toLowerCase()}`) ? 'text-brand' : ''}`}
+                                >
                                     {lang.code}
                                 </button>
                             ))}
@@ -261,7 +274,13 @@ export default function Navbar() {
                     {/* Languages Mobile */}
                     <div className="flex justify-center flex-wrap gap-6 mt-10 md:mt-8 text-white/60 text-xs font-bold tracking-widest uppercase animate-fade-in-up">
                         {languages.map((lang) => (
-                            <button key={lang.code} className="hover:text-white">{lang.code}</button>
+                            <button
+                                key={lang.code}
+                                onClick={() => handleLanguageChange(lang.code)}
+                                className={`hover:text-white ${pathname.startsWith(`/${lang.code.toLowerCase()}`) ? 'text-brand' : ''}`}
+                            >
+                                {lang.code}
+                            </button>
                         ))}
                     </div>
 
