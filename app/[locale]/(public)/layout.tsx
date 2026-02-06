@@ -1,6 +1,7 @@
 import Navbar from '@/components/sections/Navbar'
 import Footer from '@/components/sections/Footer'
 import BookingWidget from '@/components/widgets/BookingWidget'
+import { ChatWidget } from '@/components/chat/ChatWidget'
 
 export default async function PublicLayout({
     children,
@@ -19,6 +20,7 @@ export default async function PublicLayout({
             </div>
             <Footer />
             <BookingWidget />
+            <ChatWidget locale={locale as any} />
         </div>
     )
 }
