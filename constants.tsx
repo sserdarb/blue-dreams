@@ -3,11 +3,12 @@ import { Wifi, Utensils, Droplets, Sun, Activity, Waves, Wine, Bike, Dog, Shoppi
 import React from 'react';
 
 export const NAV_ITEMS: NavItem[] = [
-  { label: 'Otelimiz', href: '#about' },
-  { label: 'Odalar', href: '#rooms' },
-  { label: 'Restoranlar', href: '#experience' },
-  { label: 'Etkinlikler', href: '#experience' },
-  { label: 'Galeri', href: '#gallery' },
+  { label: 'Otelimiz', href: '/#about' },
+  { label: 'Odalar', href: '/#rooms' },
+  { label: 'Restoranlar', href: '/#experience' },
+  { label: 'Düğün & Davet', href: '/dugun-davet' },
+  { label: 'Etkinlikler', href: '/#experience' },
+  { label: 'Galeri', href: '/#gallery' },
 ];
 
 export const ROOMS: Room[] = [
