@@ -136,7 +136,7 @@ export default function Navbar() {
                             className="bg-gradient-to-r from-cyan-400 to-cyan-500 hover:from-cyan-500 hover:to-cyan-600 text-white px-4 py-2 rounded-full text-[11px] font-bold uppercase tracking-wide shadow-lg shadow-cyan-500/30 transition-all duration-300 hover:scale-105 flex items-center gap-2"
                         >
                             <Sparkles size={14} />
-                            AI Concierge
+                            Blue Concierge
                         </button>
 
                         {/* Reservation Button */}
@@ -243,7 +243,7 @@ export default function Navbar() {
                             className="bg-gradient-to-r from-cyan-400 to-cyan-500 hover:from-cyan-500 hover:to-cyan-600 text-white w-full md:w-auto md:px-8 py-4 text-sm font-bold tracking-widest uppercase rounded shadow-lg shadow-cyan-500/30 flex items-center justify-center gap-3 transition-transform hover:-translate-y-1"
                         >
                             <Sparkles size={18} />
-                            AI Concierge
+                            Blue Concierge
                         </button>
 
                         <a

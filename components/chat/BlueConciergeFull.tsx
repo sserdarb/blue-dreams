@@ -1,7 +1,43 @@
 'use client'
 
 import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { X, Send, Sparkles, Mic, MicOff, RefreshCw, ChevronRight, Phone, MapPin, ArrowLeft, ArrowRight, Download, Share2, BedDouble, Users, Scan, CheckCircle2, Plane, Car, Map, Check, Star } from 'lucide-react'
+import { X, Send, Sparkles, Mic, MicOff, RefreshCw, ChevronRight, Phone, MapPin, ArrowLeft, ArrowRight, Download, Share2, BedDouble, Users, Scan, CheckCircle2, Plane, Car, Map, Check, Star, Volume2, StopCircle } from 'lucide-react'
+
+// TTS Helper
+const speakText = (text: string, lang: string = 'tr-TR') => {
+    if (typeof window === 'undefined' || !window.speechSynthesis) return null
+    window.speechSynthesis.cancel()
+    const utterance = new SpeechSynthesisUtterance(text)
+    const voices = window.speechSynthesis.getVoices()
+    const voice = voices.find(v => v.lang.includes(lang.split('-')[0])) || voices[0]
+    if (voice) utterance.voice = voice
+    utterance.lang = lang
+    utterance.rate = 0.9
+    window.speechSynthesis.speak(utterance)
+    return utterance
+}
+
+// Voice Button Component
+const VoiceButton = ({ text, lang = 'tr', className = '' }: { text: string; lang?: string; className?: string }) => {
+    const [isSpeaking, setIsSpeaking] = useState(false)
+    const toggleSpeak = (e: React.MouseEvent) => {
+        e.stopPropagation()
+        if (isSpeaking) {
+            window.speechSynthesis.cancel()
+            setIsSpeaking(false)
+        } else {
+            setIsSpeaking(true)
+            const langMap: Record<string, string> = { tr: 'tr-TR', en: 'en-US', de: 'de-DE', ru: 'ru-RU' }
+            const utterance = speakText(text, langMap[lang] || 'tr-TR')
+            if (utterance) utterance.onend = () => setIsSpeaking(false)
+        }
+    }
+    return (
+        <button onClick={toggleSpeak} className={`p-2 rounded-full bg-white/20 hover:bg-white/40 backdrop-blur-md transition-all ${className} ${isSpeaking ? 'text-cyan-400 animate-pulse' : 'text-white'}`} title="Sesli Dinle">
+            {isSpeaking ? <StopCircle size={18} /> : <Volume2 size={18} />}
+        </button>
+    )
+}
 
 // Types
 interface Message {
@@ -170,86 +206,96 @@ const ROOM_DETAILS: Record<string, any> = {
 }
 
 // UI Widgets
-const RoomsWidget = ({ onInteract }: { onInteract: (text: string) => void }) => (
+const RoomsWidget = ({ onInteract, locale = 'tr' }: { onInteract: (text: string) => void; locale?: string }) => (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
         {ROOMS.map(room => (
-            <div key={room.id} className="bg-white rounded-xl overflow-hidden shadow-lg group">
-                <div className="h-32 overflow-hidden">
+            <div key={room.id} className="bg-white rounded-xl overflow-hidden shadow-lg group relative">
+                <div className="h-40 overflow-hidden relative">
                     <img src={room.image} alt={room.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                    <div className="absolute top-2 right-2">
+                        <VoiceButton text={`${room.title}. ${room.description}`} lang={locale} />
+                    </div>
+                    <div className="absolute bottom-3 left-3 text-white">
+                        <h4 className="font-bold text-lg">{room.title}</h4>
+                        <span className="text-xs bg-white/20 backdrop-blur px-2 py-0.5 rounded">{room.size}</span>
+                    </div>
                 </div>
                 <div className="p-4">
-                    <h4 className="font-bold text-gray-900">{room.title}</h4>
-                    <p className="text-xs text-gray-600 mt-1">{room.description}</p>
-                    <div className="mt-3 flex items-center justify-between">
-                        <span className="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full">{room.size}</span>
-                        <button
-                            onClick={() => onInteract(`${room.title} detaylarını göster`)}
-                            className="text-xs font-bold text-blue-600 hover:bg-blue-600 hover:text-white border border-blue-600 px-3 py-1 rounded-full transition-all flex items-center gap-1"
-                        >
-                            İncele <ChevronRight size={12} />
-                        </button>
-                    </div>
+                    <p className="text-xs text-gray-600 mt-1 line-clamp-2">{room.description}</p>
+                    <button
+                        onClick={() => onInteract(`${room.title} detaylarını göster`)}
+                        className="mt-3 w-full text-xs font-bold text-blue-600 hover:bg-blue-600 hover:text-white border border-blue-600 px-3 py-2 rounded-full transition-all flex items-center justify-center gap-1"
+                    >
+                        İncele <ChevronRight size={12} />
+                    </button>
                 </div>
             </div>
         ))}
     </div>
 )
 
-const RoomDetailWidget = ({ data }: { data: any }) => (
-    <div className="bg-white rounded-2xl overflow-hidden mt-4 shadow-xl">
-        <div className="h-48 relative">
-            <img src={data.image} alt={data.title} className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-            <div className="absolute bottom-4 left-4 text-white">
-                <h3 className="text-2xl font-bold">{data.title}</h3>
-                <p className="text-sm opacity-90">{data.view}</p>
-            </div>
-        </div>
-        <div className="grid grid-cols-3 divide-x divide-gray-100 border-b bg-gray-50">
-            <div className="p-3 text-center">
-                <Scan size={16} className="mx-auto text-blue-600 mb-1" />
-                <span className="text-xs font-bold text-gray-600">{data.size}</span>
-            </div>
-            <div className="p-3 text-center">
-                <Users size={16} className="mx-auto text-blue-600 mb-1" />
-                <span className="text-xs font-bold text-gray-600">{data.capacity}</span>
-            </div>
-            <div className="p-3 text-center">
-                <BedDouble size={16} className="mx-auto text-blue-600 mb-1" />
-                <span className="text-xs font-bold text-gray-600">Konfor</span>
-            </div>
-        </div>
-        <div className="p-5 space-y-4">
-            <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
-                <h4 className="text-sm font-bold text-blue-600 mb-2 flex items-center gap-2">
-                    <Sparkles size={14} /> Neden Bu Odayı Seçmelisiniz?
-                </h4>
-                <p className="text-xs text-gray-700">{data.whyChoose}</p>
-            </div>
-            <div>
-                <h4 className="text-xs font-bold uppercase text-gray-400 mb-2">Oda Özellikleri</h4>
-                <div className="grid grid-cols-2 gap-2">
-                    {data.features?.map((feat: string, i: number) => (
-                        <div key={i} className="flex items-center gap-2 text-xs text-gray-600">
-                            <CheckCircle2 size={12} className="text-green-500" />
-                            {feat}
-                        </div>
-                    ))}
+const RoomDetailWidget = ({ data, locale = 'tr' }: { data: any; locale?: string }) => {
+    const speakContent = `${data.title}. ${data.whyChoose || ''}. ${data.view} manzaralı. ${data.size} büyüklüğünde.`
+    return (
+        <div className="bg-white rounded-2xl overflow-hidden mt-4 shadow-xl">
+            <div className="h-56 relative">
+                <img src={data.image} alt={data.title} className="w-full h-full object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20" />
+                <div className="absolute top-3 right-3">
+                    <VoiceButton text={speakContent} lang={locale} className="bg-black/30 hover:bg-black/50" />
+                </div>
+                <div className="absolute bottom-4 left-4 text-white">
+                    <h3 className="text-2xl font-bold">{data.title}</h3>
+                    <p className="text-sm opacity-90">{data.view}</p>
                 </div>
             </div>
-            <div className="grid grid-cols-2 gap-3 pt-2">
-                <a href="tel:+902523371111" className="bg-gray-100 hover:bg-gray-200 text-gray-800 py-3 rounded-lg text-xs font-bold flex items-center justify-center gap-2">
-                    <Phone size={14} /> Call Center
-                </a>
-                <a href="https://bluedreamsresort.com/rezervasyon" target="_blank" rel="noreferrer" className="bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg text-xs font-bold flex items-center justify-center gap-2">
-                    Rezervasyon
-                </a>
+            <div className="grid grid-cols-3 divide-x divide-gray-100 border-b bg-gray-50">
+                <div className="p-3 text-center">
+                    <Scan size={16} className="mx-auto text-blue-600 mb-1" />
+                    <span className="text-xs font-bold text-gray-600">{data.size}</span>
+                </div>
+                <div className="p-3 text-center">
+                    <Users size={16} className="mx-auto text-blue-600 mb-1" />
+                    <span className="text-xs font-bold text-gray-600">{data.capacity}</span>
+                </div>
+                <div className="p-3 text-center">
+                    <BedDouble size={16} className="mx-auto text-blue-600 mb-1" />
+                    <span className="text-xs font-bold text-gray-600">Konfor</span>
+                </div>
+            </div>
+            <div className="p-5 space-y-4">
+                <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                    <h4 className="text-sm font-bold text-blue-600 mb-2 flex items-center gap-2">
+                        <Sparkles size={14} /> Neden Bu Odayı Seçmelisiniz?
+                    </h4>
+                    <p className="text-xs text-gray-700">{data.whyChoose}</p>
+                </div>
+                <div>
+                    <h4 className="text-xs font-bold uppercase text-gray-400 mb-2">Oda Özellikleri</h4>
+                    <div className="grid grid-cols-2 gap-2">
+                        {data.features?.map((feat: string, i: number) => (
+                            <div key={i} className="flex items-center gap-2 text-xs text-gray-600">
+                                <CheckCircle2 size={12} className="text-green-500" />
+                                {feat}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3 pt-2">
+                    <a href="tel:+902523371111" className="bg-gray-100 hover:bg-gray-200 text-gray-800 py-3 rounded-lg text-xs font-bold flex items-center justify-center gap-2">
+                        <Phone size={14} /> Call Center
+                    </a>
+                    <a href="https://bluedreamsresort.com/rezervasyon" target="_blank" rel="noreferrer" className="bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg text-xs font-bold flex items-center justify-center gap-2">
+                        Rezervasyon
+                    </a>
+                </div>
             </div>
         </div>
-    </div>
-)
+    )
+}
 
-const LocationWidget = ({ onInteract }: { onInteract: (text: string) => void }) => (
+const LocationWidget = ({ onInteract, locale = 'tr' }: { onInteract: (text: string) => void; locale?: string }) => (
     <div className="bg-white p-2 rounded-2xl shadow-lg mt-4">
         <div className="h-48 w-full rounded-xl overflow-hidden">
             <iframe
@@ -264,10 +310,11 @@ const LocationWidget = ({ onInteract }: { onInteract: (text: string) => void }) 
         <div className="p-4">
             <div className="flex items-start gap-3 mb-4 border-b pb-4">
                 <MapPin size={24} className="text-blue-600 shrink-0" />
-                <div>
+                <div className="flex-1">
                     <h5 className="font-bold text-gray-900">Blue Dreams Resort</h5>
                     <p className="text-xs text-gray-600 mt-1">Torba Mah. Herodot Bulvarı No:11<br />Bodrum/Muğla</p>
                 </div>
+                <VoiceButton text="Blue Dreams Resort, Torba Mahallesinde, Bodrum merkeze 10 kilometre, havalimanına 25 kilometre uzaklıktadır." lang={locale} className="bg-gray-100 text-gray-600" />
             </div>
             <div className="grid grid-cols-2 gap-4 mb-4">
                 <div className="flex items-center gap-2 text-xs text-gray-700 bg-gray-50 p-2 rounded-lg">
@@ -574,6 +621,9 @@ export function BlueConciergeFull({ isOpen, onClose, locale = 'tr' }: BlueConcie
                                     >
                                         <img src={categoryImages[cat.id]} alt={cat.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+                                        <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <VoiceButton text={`${cat.title}. ${cat.subtitle}`} lang={locale} />
+                                        </div>
                                         <div className="absolute bottom-0 left-0 p-5 text-left w-full">
                                             <h3 className="text-lg font-bold text-white mb-1 group-hover:text-blue-300 transition-colors">{cat.title}</h3>
                                             <p className="text-xs text-white/60 mb-2">{cat.subtitle}</p>
@@ -602,12 +652,17 @@ export function BlueConciergeFull({ isOpen, onClose, locale = 'tr' }: BlueConcie
                                     </div>
 
                                     <div className={`relative max-w-[90%] md:max-w-[80%] p-4 md:p-5 text-sm md:text-base leading-relaxed shadow-xl backdrop-blur-md ${msg.role === 'user'
-                                            ? 'bg-blue-600 text-white rounded-2xl rounded-tr-sm'
-                                            : msg.isFunctionCall
-                                                ? 'bg-white/10 text-white/80 border border-white/20 italic rounded-2xl'
-                                                : 'bg-white/95 text-gray-800 rounded-2xl rounded-tl-sm'
+                                        ? 'bg-blue-600 text-white rounded-2xl rounded-tr-sm'
+                                        : msg.isFunctionCall
+                                            ? 'bg-white/10 text-white/80 border border-white/20 italic rounded-2xl'
+                                            : 'bg-white/95 text-gray-800 rounded-2xl rounded-tl-sm'
                                         }`}>
                                         {msg.text}
+                                        {msg.role === 'model' && !msg.isFunctionCall && (
+                                            <div className="absolute -bottom-8 left-0">
+                                                <VoiceButton text={msg.text} lang={locale} className="bg-white/5 hover:bg-white/20 scale-90" />
+                                            </div>
+                                        )}
                                     </div>
 
                                     {msg.uiPayload && (
