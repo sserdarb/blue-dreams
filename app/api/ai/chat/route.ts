@@ -1,206 +1,173 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
+import { GoogleGenAI, Type, FunctionDeclaration } from "@google/genai"
 import { prisma } from '@/lib/prisma'
 
-// System prompt for the AI
-const getSystemPrompt = async (locale: string): Promise<string> => {
-    // Try to get custom system prompt from database
-    const settings = await prisma.aiSettings.findFirst({
-        where: { isActive: true }
-    })
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY
 
-    // Get training documents
-    const documents = await prisma.aiTrainingDocument.findMany()
-    const trainingContent = documents.map(d => d.content).join('\n\n')
-
-    const basePrompt = settings?.systemPrompt || `Sen Blue Dreams Resort'un dijital konsiyerjisin.
-
-KİMLİK VE TON:
-- Sofistike, çok bilgili, misafirperver ve çözüm odaklısın.
-- Cevapların detaylı, betimleyici ve hikayeleştirici olsun.
-
-OTEL BİLGİLERİ:
-
-GENEL:
-- Konum: Torba Zeytinlikahve Mevkii, Bodrum.
-- Arazi: 52.000 m², doğayla iç içe.
-- Uzaklık: Milas-Bodrum Havalimanı 25 km (25 dk), Bodrum Merkez 10 km (10 dk).
-- Toplam oda sayısı: 340+
-- Sertifika: Güvenli Turizm Sertifikası, Sürdürülebilir Turizm.
-
-ODALAR:
-- Club Odalar: 20-22 m², modern tasarım, deniz veya bahçe manzarası.
-- Deluxe Odalar: 25-28 m², geniş yaşam alanı, deniz manzarası, jakuzi.
-- Aile Suitleri: 35 m², 2 yatak odası, 4 kişilik kapasite.
-
-YEME İÇME:
-- Begonvil Ana Restoran: 550 kişilik açık büfe.
-- Halicarnassus Restoran: Deniz Ürünleri A'la Carte.
-- Le Kebab: Türk Mutfağı A'la Carte.
-- La Lokanta: İtalyan Mutfağı A'la Carte.
-- 10+ farklı bar noktası.
-
-SPA & WELLNESS (NAYA SPA):
-- Türk Hamamı, Sauna, Buhar Odası.
-- Masaj ve Bakım Terapileri.
-
-TOPLANTI & ETKİNLİK:
-- İstanbul Salonu: 770 m², 700 Kişi, 3.5-4m Yükseklik.
-- Turunç, Salamis, Belek, Marmaris, Stockholm salonları.
-
-AKTİVİTELER:
-- Sonsuzluk Havuzu, Aqua Park, Su Sporları, Yoga, Canlı Müzik.`
-
-    return `${basePrompt}
-
-${trainingContent ? `EK EĞİTİM BİLGİLERİ:\n${trainingContent}` : ''}
-
-DİL: ${locale === 'tr' ? 'Türkçe' : locale === 'en' ? 'English' : locale === 'de' ? 'Deutsch' : 'Русский'} dilinde yanıt ver.
-
-GÖRSEL WIDGET KULLANIMI:
-- Kullanıcı "odalar" derse -> type: 'rooms' döndür
-- Belirli bir oda sorulursa -> type: 'room_detail', detailId: oda_ismi
-- "konum", "nerede" -> type: 'location'
-- "transfer" -> type: 'transfer_form'
-- "yorumlar" -> type: 'reviews'
-- "iletişim" -> type: 'contact'`
+// Tool Definitions
+const priceCheckTool: FunctionDeclaration = {
+    name: "check_room_availability",
+    description: "Checks room prices and availability for specific dates.",
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            checkInDate: { type: Type.STRING },
+            adults: { type: Type.NUMBER }
+        },
+        required: ["checkInDate", "adults"]
+    }
 }
 
-// Function declarations for Gemini
-const functionDeclarations = [
-    {
-        name: 'render_ui',
-        description: 'Renders a specific visual UI component.',
-        parameters: {
-            type: 'object',
-            properties: {
-                componentType: {
-                    type: 'string',
-                    enum: ['rooms', 'location', 'contact', 'reviews', 'dining', 'room_detail', 'transfer_form', 'meeting'],
-                },
-                detailId: {
-                    type: 'string',
-                    description: 'Optional: The name of the item to show details for.'
-                },
-                message: {
-                    type: 'string',
-                    description: 'A helpful response text to display above the widget.'
-                }
+const renderUiTool: FunctionDeclaration = {
+    name: "render_ui",
+    description: "Renders a specific visual UI component.",
+    parameters: {
+        type: Type.OBJECT,
+        properties: {
+            componentType: {
+                type: Type.STRING,
+                enum: ["rooms", "location", "contact", "reviews", "amenities", "dining", "room_detail", "transfer_form", "meeting"],
+                description: "The type of UI widget to render."
             },
-            required: ['componentType', 'message']
-        }
+            detailId: {
+                type: Type.STRING,
+                description: "Optional: The name or ID of the item to show details for (e.g., specific room title)."
+            },
+            message: {
+                type: Type.STRING,
+                description: "A specific, helpful response text to display to the user above the widget."
+            }
+        },
+        required: ["componentType", "message"]
     }
-]
+}
 
-export async function POST(request: NextRequest) {
+async function getContextData(locale: string) {
+    const [rooms, dining, meeting, amenities, settings] = await Promise.all([
+        prisma.room.findMany({ where: { locale }, orderBy: { order: 'asc' } }),
+        prisma.dining.findMany({ where: { locale }, orderBy: { order: 'asc' } }),
+        prisma.meetingRoom.findMany({ where: { locale }, orderBy: { order: 'asc' } }),
+        prisma.amenity.findMany({ where: { locale }, orderBy: { order: 'asc' } }),
+        prisma.aiSettings.findFirst({ where: { language: locale } })
+    ])
+
+    return { rooms, dining, meeting, amenities, settings }
+}
+
+export async function POST(request: Request) {
     try {
         const { messages, locale = 'tr' } = await request.json()
 
-        const apiKey = process.env.GEMINI_API_KEY
-        if (!apiKey) {
-            // Fallback response when no API key
-            return NextResponse.json({
-                text: getFallbackResponse(messages[messages.length - 1]?.text || '', locale)
-            })
+        if (!GEMINI_API_KEY) {
+            return NextResponse.json({ error: 'API Key missing' }, { status: 500 })
         }
 
-        const systemPrompt = await getSystemPrompt(locale)
+        // 1. Fetch Dynamic Content from DB
+        const context = await getContextData(locale)
 
-        // Call Gemini API
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: messages.map((m: any) => ({
-                    role: m.role === 'user' ? 'user' : 'model',
-                    parts: [{ text: m.text }]
-                })),
-                systemInstruction: {
-                    parts: [{ text: systemPrompt }]
-                },
-                tools: [{
-                    functionDeclarations
-                }],
-                generationConfig: {
-                    temperature: 0.7,
-                    maxOutputTokens: 1024
-                }
-            })
+        // 2. Construct System Prompt
+        let systemPrompt = context.settings?.systemPrompt || `Sen Blue Dreams Resort'un dijital konsiyerjisin.
+    
+    KİMLİK VE TON:
+    - Sofistike, çok bilgili, misafirperver ve çözüm odaklısın.
+    - "Satış yap" modundan önce "Bilgi Ver ve Etkile" modundasın.
+    
+    KURALLAR:
+    - Cevapların detaylı ve betimleyici olsun.
+    - Kullanıcı bir oda, restoran veya hizmet hakkında bilgi isterse, ilgili UI Widget'ını render et ('render_ui' fonksiyonunu kullan).
+    
+    GÜNCEL OTEL BİLGİLERİ (VERİTABANI):
+    
+    ODALAR:
+    ${context.rooms.map(r => `- ${r.title}: ${r.description} (${r.size}, ${r.view})`).join('\n')}
+    
+    RESTORANLAR:
+    ${context.dining.map(d => `- ${d.title} (${d.type}): ${d.description}`).join('\n')}
+    
+    TOPLANTI SALONLARI:
+    ${context.meeting.map(m => `- ${m.title}: ${m.capacity}, ${m.area}`).join('\n')}
+    
+    HİZMETLER:
+    ${context.amenities.map(a => `- ${a.title}`).join('\n')}
+    
+    Genel Bilgiler:
+    - Konum: Torba, Bodrum (Havalimanı 25km, Merkez 10km).
+    - İletişim: +90 252 337 11 11
+    `
+
+        const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY })
+
+        // Transform messages for Gemini
+        const chatHistory = messages.map((m: any) => ({
+            role: m.role,
+            parts: [{ text: m.text }]
+        }))
+
+        // 3. Generate Content
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.0-flash-exp', // Or verified available model
+            contents: chatHistory,
+            config: {
+                systemInstruction: systemPrompt,
+                tools: [{ functionDeclarations: [priceCheckTool, renderUiTool] }],
+            }
         })
 
-        if (!response.ok) {
-            const error = await response.text()
-            console.error('Gemini API error:', error)
-            return NextResponse.json({
-                text: getFallbackResponse(messages[messages.length - 1]?.text || '', locale)
-            })
+        // 4. Handle Response & Tools
+        const calls = response.functionCalls
+        let finalResponse = {
+            text: response.text() || "",
+            uiPayload: null as any,
+            data: null as any // extra data for the widget
         }
 
-        const data = await response.json()
-        const candidate = data.candidates?.[0]?.content?.parts?.[0]
+        if (calls && calls.length > 0) {
+            const call = calls[0]
 
-        // Check for function call
-        if (candidate?.functionCall) {
-            const { name, args } = candidate.functionCall
-            if (name === 'render_ui') {
-                return NextResponse.json({
-                    text: args.message || 'İşte istediğiniz bilgiler:',
-                    uiPayload: {
-                        type: args.componentType,
-                        detailId: args.detailId,
-                        message: args.message
-                    }
-                })
+            if (call.name === 'check_room_availability') {
+                // Mock logic for prices - in real app connect to reservation system
+                finalResponse.text = "Müsaitlik durumunu kontrol ettim. İşte fiyatlar:"
+                finalResponse.uiPayload = { type: 'price_result' }
+                // Pass mock data so frontend can display it
+                finalResponse.data = {
+                    checkIn: call.args.checkInDate,
+                    rooms: context.rooms.map(r => ({
+                        name: r.title,
+                        price: parseInt(r.priceStart?.replace(/\D/g, '') || "250"),
+                        specialOffer: false
+                    }))
+                }
+            }
+            else if (call.name === 'render_ui') {
+                const { componentType, detailId, message } = call.args as any
+                finalResponse.text = message || "İşte detaylar:"
+
+                // Build payload with DB data
+                let payloadData = null
+
+                if (componentType === 'rooms') {
+                    payloadData = context.rooms
+                } else if (componentType === 'dining') {
+                    payloadData = context.dining
+                } else if (componentType === 'amenities') {
+                    payloadData = context.amenities
+                } else if (componentType === 'meeting') {
+                    payloadData = context.meeting
+                } else if (componentType === 'room_detail' && detailId) {
+                    // Find matching room
+                    payloadData = context.rooms.find(r => r.title.toLowerCase().includes(detailId.toLowerCase()))
+                        || context.rooms[0]
+                }
+
+                finalResponse.uiPayload = { type: componentType }
+                finalResponse.data = payloadData
             }
         }
 
-        // Text response
-        const text = candidate?.text || getFallbackResponse(messages[messages.length - 1]?.text || '', locale)
-
-        return NextResponse.json({ text })
+        return NextResponse.json(finalResponse)
 
     } catch (error) {
-        console.error('AI Chat error:', error)
-        return NextResponse.json({
-            text: 'Üzgünüm, bir hata oluştu. Lütfen tekrar deneyin.'
-        }, { status: 500 })
+        console.error('AI API Error:', error)
+        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
     }
-}
-
-// Fallback responses when AI is not available
-function getFallbackResponse(query: string, locale: string): string {
-    const q = query.toLowerCase()
-
-    if (q.includes('oda') || q.includes('room')) {
-        return locale === 'tr'
-            ? 'Blue Dreams Resort\'ta Club, Deluxe ve Aile odaları bulunmaktadır. Club odalar 20-22 m², Deluxe odalar 25-28 m² ve Aile suitleri 35 m² büyüklüğündedir. Tüm odalarımız deniz veya bahçe manzaralıdır.'
-            : 'Blue Dreams Resort offers Club, Deluxe and Family rooms. Club rooms are 20-22 m², Deluxe rooms are 25-28 m² and Family suites are 35 m². All rooms have sea or garden views.'
-    }
-
-    if (q.includes('restoran') || q.includes('yemek') || q.includes('dining')) {
-        return locale === 'tr'
-            ? 'Otelimizde 4 restoran bulunmaktadır: Begonvil Ana Restoran (açık büfe), Halicarnassus (deniz ürünleri), Le Kebab (Türk mutfağı) ve La Lokanta (İtalyan mutfağı).'
-            : 'We have 4 restaurants: Begonvil Main Restaurant (buffet), Halicarnassus (seafood), Le Kebab (Turkish cuisine) and La Lokanta (Italian cuisine).'
-    }
-
-    if (q.includes('spa') || q.includes('masaj')) {
-        return locale === 'tr'
-            ? 'Naya Spa merkezimizde Türk hamamı, sauna, buhar odası ve çeşitli masaj terapileri sunulmaktadır.'
-            : 'Our Naya Spa center offers Turkish bath, sauna, steam room and various massage therapies.'
-    }
-
-    if (q.includes('konum') || q.includes('nerede') || q.includes('location')) {
-        return locale === 'tr'
-            ? 'Blue Dreams Resort, Bodrum Torba\'da yer almaktadır. Milas-Bodrum Havalimanı\'na 25 km (25 dakika), Bodrum merkezine 10 km uzaklıktadır.'
-            : 'Blue Dreams Resort is located in Torba, Bodrum. It is 25 km from Milas-Bodrum Airport (25 minutes) and 10 km from Bodrum center.'
-    }
-
-    if (q.includes('transfer')) {
-        return locale === 'tr'
-            ? 'VIP transfer hizmetimiz mevcuttur. Havalimanından otelimize konforlu bir ulaşım sağlıyoruz. Detaylar için formu doldurun veya +90 252 337 11 11 numarasını arayın.'
-            : 'VIP transfer service is available. We provide comfortable transportation from the airport to our hotel. Fill out the form or call +90 252 337 11 11 for details.'
-    }
-
-    return locale === 'tr'
-        ? 'Blue Dreams Resort hakkında size yardımcı olmaktan mutluluk duyarım. Odalar, restoranlar, spa, konum veya diğer hizmetlerimiz hakkında soru sorabilirsiniz.'
-        : 'I\'m happy to help you with information about Blue Dreams Resort. You can ask about rooms, restaurants, spa, location or our other services.'
 }

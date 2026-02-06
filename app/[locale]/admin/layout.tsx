@@ -11,8 +11,14 @@ import {
   BarChart3,
   Calendar,
   Code,
-  ExternalLink
+  Code,
+  ExternalLink,
+  BedDouble,
+  UtensilsCrossed,
+  Users,
+  Sparkles
 } from 'lucide-react'
+
 
 const navItems = [
   { href: '', label: 'Dashboard', icon: LayoutDashboard },
@@ -24,6 +30,10 @@ const navItems = [
   { href: '/settings', label: 'Ayarlar', icon: Settings },
   { href: '/analytics', label: 'Analytics', icon: Code },
   { href: '/chat', label: 'Blue Concierge', icon: MessageSquare },
+  { href: '/content/rooms', label: 'Odalar', icon: BedDouble },
+  { href: '/content/dining', label: 'Restoranlar', icon: UtensilsCrossed },
+  { href: '/content/meeting', label: 'Toplantı', icon: Users },
+  { href: '/ai', label: 'AI Ayarları', icon: Sparkles },
 ]
 
 export default async function AdminLayout({
