@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Menu, X, Phone, Calendar, Facebook, Instagram, Youtube, Search } from 'lucide-react'
+import { Menu, X, Phone, Calendar, Facebook, Instagram, Youtube, Search, Sparkles } from 'lucide-react'
 import { NAV_ITEMS } from '@/lib/constants'
+import { WeatherWidget } from '@/components/layout/WeatherWidget'
 
 // WhatsApp Icon SVG
 const WhatsAppIcon = ({ size = 20, className = "" }: { size?: number, className?: string }) => (
@@ -109,6 +110,22 @@ export default function Navbar() {
                             </a>
                         </div>
 
+                        {/* Weather Widget */}
+                        <WeatherWidget />
+
+                        {/* Blue Concierge Button */}
+                        <button
+                            onClick={() => {
+                                if (typeof window !== 'undefined') {
+                                    window.dispatchEvent(new CustomEvent('openBlueConcierge'))
+                                }
+                            }}
+                            className="bg-gradient-to-r from-cyan-400 to-cyan-500 hover:from-cyan-500 hover:to-cyan-600 text-white px-4 py-2 rounded-full text-[11px] font-bold uppercase tracking-wide shadow-lg shadow-cyan-500/30 transition-all duration-300 hover:scale-105 flex items-center gap-2"
+                        >
+                            <Sparkles size={14} />
+                            AI Concierge
+                        </button>
+
                         {/* Reservation Button */}
                         <a
                             href="https://blue-dreams.rezervasyonal.com/"
@@ -202,6 +219,20 @@ export default function Navbar() {
 
                     {/* Action Buttons */}
                     <div className="flex flex-col md:flex-row gap-4 w-full max-w-md md:max-w-2xl justify-center animate-fade-in-up">
+                        {/* Blue Concierge - Mobile */}
+                        <button
+                            onClick={() => {
+                                setIsMobileMenuOpen(false)
+                                if (typeof window !== 'undefined') {
+                                    window.dispatchEvent(new CustomEvent('openBlueConcierge'))
+                                }
+                            }}
+                            className="bg-gradient-to-r from-cyan-400 to-cyan-500 hover:from-cyan-500 hover:to-cyan-600 text-white w-full md:w-auto md:px-8 py-4 text-sm font-bold tracking-widest uppercase rounded shadow-lg shadow-cyan-500/30 flex items-center justify-center gap-3 transition-transform hover:-translate-y-1"
+                        >
+                            <Sparkles size={18} />
+                            AI Concierge
+                        </button>
+
                         <a
                             href="https://blue-dreams.rezervasyonal.com/"
                             className="bg-brand hover:bg-brand-light text-white w-full md:w-auto md:px-8 py-4 text-sm font-bold tracking-widest uppercase rounded shadow-lg flex items-center justify-center gap-3 transition-transform hover:-translate-y-1"
