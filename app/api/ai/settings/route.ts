@@ -1,56 +1,54 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
-// GET - Fetch AI settings
-export async function GET() {
+export async function GET(request: Request) {
+    const { searchParams } = new URL(request.url)
+    const locale = searchParams.get('locale') || 'tr'
+
     try {
         let settings = await prisma.aiSettings.findFirst({
-            where: { isActive: true }
+            where: { language: locale }
         })
 
+        // Create default if not exists
         if (!settings) {
-            // Create default settings
+            return NextResponse.json({ systemPrompt: '', tone: 'friendly' })
+        }
+
+        return NextResponse.json(settings)
+    } catch (error) {
+        return NextResponse.json({ error: 'Failed to fetch settings' }, { status: 500 })
+    }
+}
+
+export async function POST(request: Request) {
+    try {
+        const body = await request.json()
+        const { systemPrompt, language = 'tr', tone = 'friendly' } = body
+
+        // Upsert settings
+        const existing = await prisma.aiSettings.findFirst({ where: { language } })
+
+        let settings;
+        if (existing) {
+            settings = await prisma.aiSettings.update({
+                where: { id: existing.id },
+                data: { systemPrompt, tone }
+            })
+        } else {
             settings = await prisma.aiSettings.create({
                 data: {
-                    systemPrompt: `Sen Blue Dreams Resort'un dijital konsiyerjisin. Misafirperver, profesyonel ve yardımsever ol.`,
-                    language: 'tr',
-                    tone: 'friendly',
-                    isActive: true
+                    systemPrompt,
+                    language,
+                    tone
                 }
             })
         }
 
         return NextResponse.json(settings)
+
     } catch (error) {
-        console.error('Get AI settings error:', error)
-        return NextResponse.json({ error: 'Failed to get settings' }, { status: 500 })
-    }
-}
-
-// POST - Update AI settings
-export async function POST(request: NextRequest) {
-    try {
-        const { systemPrompt, language, tone, isActive } = await request.json()
-
-        // Deactivate all existing settings
-        await prisma.aiSettings.updateMany({
-            where: { isActive: true },
-            data: { isActive: false }
-        })
-
-        // Create new settings
-        const settings = await prisma.aiSettings.create({
-            data: {
-                systemPrompt: systemPrompt || '',
-                language: language || 'tr',
-                tone: tone || 'friendly',
-                isActive: isActive !== false
-            }
-        })
-
-        return NextResponse.json(settings)
-    } catch (error) {
-        console.error('Update AI settings error:', error)
-        return NextResponse.json({ error: 'Failed to update settings' }, { status: 500 })
+        console.error('Settings API Error:', error)
+        return NextResponse.json({ error: 'Failed to save settings' }, { status: 500 })
     }
 }
