@@ -26,7 +26,7 @@ const navItems = [
   { href: '/menu', label: 'Menü', icon: MenuIcon },
   { href: '/files', label: 'Medya', icon: ImageIcon },
   { href: '/settings', label: 'Ayarlar', icon: Settings },
-  { href: '/analytics', label: 'Analytics', icon: Code },
+  { href: '/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/chat', label: 'Blue Concierge', icon: MessageSquare },
   { href: '/content/rooms', label: 'Odalar', icon: BedDouble },
   { href: '/content/dining', label: 'Restoranlar', icon: UtensilsCrossed },
