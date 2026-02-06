@@ -10,8 +10,6 @@ import {
   Globe,
   BarChart3,
   Calendar,
-  Code,
-  Code,
   ExternalLink,
   BedDouble,
   UtensilsCrossed,
