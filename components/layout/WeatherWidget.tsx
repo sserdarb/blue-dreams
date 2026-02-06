@@ -103,7 +103,7 @@ export function WeatherWidget() {
     if (!weather) return null
 
     return (
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-sm" title={weather.condition}>
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-sm text-white" title={weather.condition}>
             {getWeatherIcon(weather.icon)}
             <span className="text-sm font-semibold">{weather.temp}°C</span>
             <span className="text-xs opacity-75 hidden lg:inline">Bodrum</span>
