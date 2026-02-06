@@ -75,8 +75,17 @@ export function ChatWidget({ locale = 'tr', shouldPulse = false }: ChatWidgetPro
       setTimeout(() => setIsPulsing(false), 5000)
     }
 
+    // Listen for header button click to open AI assistant
+    const handleOpenConcierge = () => {
+      setIsAiOpen(true)
+    }
+
     window.addEventListener('blueConcierge:pulse', handlePulse)
-    return () => window.removeEventListener('blueConcierge:pulse', handlePulse)
+    window.addEventListener('openBlueConcierge', handleOpenConcierge)
+    return () => {
+      window.removeEventListener('blueConcierge:pulse', handlePulse)
+      window.removeEventListener('openBlueConcierge', handleOpenConcierge)
+    }
   }, [])
 
   useEffect(() => {
