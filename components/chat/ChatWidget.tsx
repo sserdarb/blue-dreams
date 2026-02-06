@@ -77,7 +77,7 @@ export function ChatWidget({ locale = 'tr', shouldPulse = false }: ChatWidgetPro
 
     // Listen for header button click to open AI assistant
     const handleOpenConcierge = () => {
-      setIsAiOpen(true)
+      setIsOpen(true)
     }
 
     window.addEventListener('blueConcierge:pulse', handlePulse)
