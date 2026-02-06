@@ -11,7 +11,7 @@ const translations = {
   ru: { title: 'Blue Concierge' }
 }
 
-export default function ChatWidget({ locale = 'tr' }: { locale?: string }) {
+export function ChatWidget({ locale = 'tr' }: { locale?: string }) {
   const [isOpen, setIsOpen] = useState(false)
 
   // Listen for header button click to open AI assistant
