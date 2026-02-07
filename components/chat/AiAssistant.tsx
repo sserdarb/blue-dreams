@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Send, Sparkles, Mic, MicOff, RefreshCw, ChevronRight, Phone, MapPin, Download, ExternalLink, BedDouble, Users, Scan, CheckCircle2, Plane, Car, Map, Check, Maximize, Volume2, StopCircle } from 'lucide-react';
+import { X, Send, Sparkles, Mic, MicOff, RefreshCw, ChevronRight, Phone, MapPin, Download, ExternalLink, BedDouble, Users, Scan, CheckCircle2, Plane, Car, Map, Check, Maximize, Volume2, StopCircle, ArrowRight, ArrowLeft } from 'lucide-react';
 import { jsPDF } from "jspdf";
 
 // --- TYPES ---
@@ -417,8 +417,8 @@ const AiAssistant: React.FC<AiAssistantProps> = ({ isOpen, onClose }) => {
 
                                     {msg.text && !msg.isFunctionCall && (
                                         <div className={`relative max-w-[90%] md:max-w-[70%] p-6 text-lg leading-relaxed shadow-2xl backdrop-blur-xl ${msg.role === 'user'
-                                                ? 'bg-gradient-to-br from-cyan-600 to-cyan-700 text-white rounded-3xl rounded-tr-sm'
-                                                : 'bg-white/10 border border-white/10 text-white rounded-3xl rounded-tl-sm'
+                                            ? 'bg-gradient-to-br from-cyan-600 to-cyan-700 text-white rounded-3xl rounded-tr-sm'
+                                            : 'bg-white/10 border border-white/10 text-white rounded-3xl rounded-tl-sm'
                                             }`}>
                                             {msg.text}
                                             {msg.role === 'model' && (
@@ -479,8 +479,8 @@ const AiAssistant: React.FC<AiAssistantProps> = ({ isOpen, onClose }) => {
                         <button
                             onClick={startListening}
                             className={`p-3 rounded-full transition-all duration-300 ${isListening
-                                    ? 'bg-red-500 text-white animate-pulse shadow-[0_0_20px_rgba(239,68,68,0.5)]'
-                                    : 'hover:bg-white/10 text-white/80 hover:text-cyan-400'
+                                ? 'bg-red-500 text-white animate-pulse shadow-[0_0_20px_rgba(239,68,68,0.5)]'
+                                : 'hover:bg-white/10 text-white/80 hover:text-cyan-400'
                                 }`}
                         >
                             {isListening ? <MicOff size={22} /> : <Mic size={22} />}
