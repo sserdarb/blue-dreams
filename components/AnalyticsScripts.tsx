@@ -1,6 +1,5 @@
-import fs from 'fs'
-import path from 'path'
 import Script from 'next/script'
+import { prisma } from '@/lib/prisma'
 
 interface AnalyticsSettings {
     gaId: string
@@ -8,12 +7,16 @@ interface AnalyticsSettings {
     fbPixelId: string
 }
 
-function getAnalyticsSettings(): AnalyticsSettings {
+async function getAnalyticsSettings(): Promise<AnalyticsSettings> {
     try {
-        const settingsFile = path.join(process.cwd(), 'data', 'analytics-settings.json')
-        if (fs.existsSync(settingsFile)) {
-            const data = fs.readFileSync(settingsFile, 'utf-8')
-            return JSON.parse(data)
+        const db = prisma as any
+        const config = await db.analyticsConfig.findFirst()
+        if (config) {
+            return {
+                gaId: config.gaId || '',
+                gtmId: config.gtmId || '',
+                fbPixelId: config.fbPixelId || '',
+            }
         }
     } catch (error) {
         console.error('Error reading analytics settings:', error)
@@ -21,8 +24,8 @@ function getAnalyticsSettings(): AnalyticsSettings {
     return { gaId: '', gtmId: '', fbPixelId: '' }
 }
 
-export default function AnalyticsScripts() {
-    const settings = getAnalyticsSettings()
+export default async function AnalyticsScripts() {
+    const settings = await getAnalyticsSettings()
 
     return (
         <>
@@ -93,8 +96,8 @@ export default function AnalyticsScripts() {
 }
 
 // GTM noscript fallback component for body
-export function GTMNoScript() {
-    const settings = getAnalyticsSettings()
+export async function GTMNoScript() {
+    const settings = await getAnalyticsSettings()
 
     if (!settings.gtmId) return null
 
