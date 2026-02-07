@@ -116,7 +116,7 @@ export async function POST(request: Request) {
         // 4. Handle Response & Tools
         const calls = response.functionCalls
         let finalResponse = {
-            text: response.text() || "",
+            text: (response as any).text?.() || response.text || "",
             uiPayload: null as any,
             data: null as any // extra data for the widget
         }
