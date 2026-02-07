@@ -123,6 +123,7 @@ export async function POST(request: Request) {
 
         if (calls && calls.length > 0) {
             const call = calls[0]
+            const args = (call.args || {}) as Record<string, any>
 
             if (call.name === 'check_room_availability') {
                 // Mock logic for prices - in real app connect to reservation system
@@ -130,7 +131,7 @@ export async function POST(request: Request) {
                 finalResponse.uiPayload = { type: 'price_result' }
                 // Pass mock data so frontend can display it
                 finalResponse.data = {
-                    checkIn: call.args.checkInDate,
+                    checkIn: args.checkInDate,
                     rooms: context.rooms.map(r => ({
                         name: r.title,
                         price: parseInt(r.priceStart?.replace(/\D/g, '') || "250"),
@@ -139,7 +140,7 @@ export async function POST(request: Request) {
                 }
             }
             else if (call.name === 'render_ui') {
-                const { componentType, detailId, message } = call.args as any
+                const { componentType, detailId, message } = args
                 finalResponse.text = message || "İşte detaylar:"
 
                 // Build payload with DB data
