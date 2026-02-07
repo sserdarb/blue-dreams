@@ -210,3 +210,33 @@ model MeetingRoom {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+
+// ===== Analytics Models =====
+
+model PageView {
+  id          String   @id @default(uuid())
+  path        String   // e.g. /tr, /en/rooms, /tr/admin
+  locale      String   @default("tr")
+  referrer    String?  // Where user came from
+  userAgent   String?
+  country     String?
+  device      String?  // mobile, desktop, tablet
+  browser     String?
+  sessionId   String?  // Cookie-based session tracking
+  duration    Int      @default(0) // Time on page in seconds
+  createdAt   DateTime @default(now())
+}
+
+model AnalyticsConfig {
+  id              String   @id @default(uuid())
+  gaId            String?  // GA4 Measurement ID: G-XXXXXXXXXX
+  gtmId           String?  // Google Tag Manager: GTM-XXXXXXX
+  fbPixelId       String?  // Facebook Pixel ID
+  gaApiSecret     String?  // GA4 Data API - API Secret (for server-side)
+  gaPropertyId    String?  // GA4 Property ID (numeric, for Data API)
+  gaServiceKey    String?  // GA4 Service Account JSON key (base64 encoded)
+  useGaApi        Boolean  @default(false) // If true, pull data from GA4 API instead of internal
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+

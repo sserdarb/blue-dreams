@@ -2,6 +2,7 @@ import Navbar from '@/components/sections/Navbar'
 import Footer from '@/components/sections/Footer'
 import BookingWidget from '@/components/widgets/BookingWidget'
 import { ChatWidget } from '@/components/chat/ChatWidget'
+import AnalyticsTracker from '@/components/analytics/AnalyticsTracker'
 
 export default async function PublicLayout({
     children,
@@ -14,6 +15,7 @@ export default async function PublicLayout({
 
     return (
         <div className="min-h-screen flex flex-col">
+            <AnalyticsTracker />
             <Navbar />
             <div className="flex-1">
                 {children}
@@ -24,3 +26,4 @@ export default async function PublicLayout({
         </div>
     )
 }
+
