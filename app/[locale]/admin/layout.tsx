@@ -14,7 +14,9 @@ import {
   BedDouble,
   UtensilsCrossed,
   Users,
-  Sparkles
+  Sparkles,
+  PartyPopper,
+  UserCog
 } from 'lucide-react'
 
 
@@ -31,7 +33,9 @@ const navItems = [
   { href: '/content/rooms', label: 'Odalar', icon: BedDouble },
   { href: '/content/dining', label: 'Restoranlar', icon: UtensilsCrossed },
   { href: '/content/meeting', label: 'Toplantı', icon: Users },
+  { href: '/activities', label: 'Aktiviteler', icon: PartyPopper },
   { href: '/ai', label: 'AI Ayarları', icon: Sparkles },
+  { href: '/users', label: 'Kullanıcılar', icon: UserCog },
 ]
 
 export default async function AdminLayout({

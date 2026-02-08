@@ -1,15 +1,19 @@
 import PageHeader from '@/components/shared/PageHeader'
 import RoomCard from '@/components/shared/RoomCard'
 import { ROOM_TYPES } from '@/lib/content'
+import { getRoomsPageContent } from '@/lib/translations'
 
-export default function RoomsPage() {
+export default async function RoomsPage({ params }: { params: Promise<{ locale: string }> }) {
+    const { locale } = await params
+    const t = getRoomsPageContent(locale as any)
+
     return (
         <div>
             <PageHeader
-                title="Odalar & Suitler"
-                subtitle="Bodrum'un kalbinde, denize nazır konforlu odalarımızda unutulmaz bir konaklama deneyimi yaşayın."
+                title={t.title}
+                subtitle={t.subtitle}
                 backgroundImage="https://bluedreamsresort.com/wp-content/uploads/2023/03/Deluxe-Room-5.jpg"
-                breadcrumbs={[{ label: 'Odalar', href: '/tr/odalar' }]}
+                breadcrumbs={[{ label: t.breadcrumb, href: `/${locale}/odalar` }]}
             />
 
             {/* Intro Section */}
@@ -17,14 +21,13 @@ export default function RoomsPage() {
                 <div className="container mx-auto px-6">
                     <div className="max-w-3xl mx-auto text-center">
                         <span className="text-brand text-xs font-bold tracking-widest uppercase mb-4 block">
-                            Konaklama Seçenekleri
+                            {t.badge}
                         </span>
                         <h2 className="text-4xl font-serif text-gray-900 mb-6">
-                            Odalarımızı <span className="italic text-brand">İnceleyin</span>
+                            {t.heading} <span className="italic text-brand">{t.headingAccent}</span>
                         </h2>
                         <p className="text-gray-600 leading-relaxed">
-                            Otelimiz odaları yamaca yerleşik bungalovlar ve denizle iç içe ana binaya yerleşik şekildedir.
-                            Her biri özenle tasarlanmış odalarımız, Bodrum'un büyüleyici atmosferini odanıza taşır.
+                            {t.intro}
                         </p>
                     </div>
                 </div>
@@ -48,7 +51,7 @@ export default function RoomsPage() {
                                 amenities: room.amenities.map(a => a.label),
                             }}
                             variant="horizontal"
-                            href={`/tr/odalar/${room.slug}`}
+                            href={`/${locale}/odalar/${room.slug}`}
                         />
                     ))}
                 </div>
@@ -57,15 +60,17 @@ export default function RoomsPage() {
             {/* CTA Section */}
             <section className="py-20 bg-brand-dark text-white text-center">
                 <div className="container mx-auto px-6">
-                    <h2 className="text-4xl font-serif mb-4">Size Uygun Odayı Bulun</h2>
+                    <h2 className="text-4xl font-serif mb-4">{t.ctaTitle}</h2>
                     <p className="text-white/70 mb-8 max-w-xl mx-auto">
-                        Müsaitlik kontrolü yapın ve en uygun fiyatlarla rezervasyon oluşturun.
+                        {t.ctaSub}
                     </p>
                     <a
                         href="https://blue-dreams.rezervasyonal.com/"
+                        target="_blank"
+                        rel="noreferrer"
                         className="inline-block bg-white text-brand-dark px-8 py-4 font-bold uppercase tracking-widest text-sm hover:bg-brand-light hover:text-white transition-colors"
                     >
-                        Online Rezervasyon
+                        {t.ctaBtn}
                     </a>
                 </div>
             </section>

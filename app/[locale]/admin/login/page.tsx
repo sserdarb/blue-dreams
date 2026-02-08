@@ -2,7 +2,7 @@
 
 import { useFormState } from 'react-dom';
 import { login } from '@/app/actions/auth';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 
 const initialState = {
@@ -12,62 +12,68 @@ const initialState = {
 
 export default function LoginPage() {
   const router = useRouter();
+  const pathname = usePathname();
+  const locale = pathname.split('/')[1] || 'tr';
 
-  // wrapper to handle redirect on client side after success
   async function handleLogin(prevState: any, formData: FormData) {
     const result = await login(formData);
     if (result.success) {
       return { success: true, error: '' };
     }
-    return { success: false, error: result.error || 'Login failed' };
+    return { success: false, error: result.error || 'Giriş başarısız' };
   }
 
   const [state, formAction] = useFormState(handleLogin, initialState);
 
   useEffect(() => {
     if (state.success) {
-      router.push('/en/admin'); // Default to EN admin, middleware might handle this better or logic could be improved, but this works for now.
+      router.push(`/${locale}/admin`);
       router.refresh();
     }
-  }, [state.success, router]);
+  }, [state.success, router, locale]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
-        <h1 className="text-2xl font-bold mb-6 text-center text-blue-900">Admin Login</h1>
+    <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a]">
+      <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-10 rounded-2xl shadow-2xl w-full max-w-md">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-serif text-white mb-2">Blue Dreams</h1>
+          <p className="text-white/50 text-sm tracking-widest uppercase">Yönetim Paneli</p>
+        </div>
 
-        <form action={formAction} className="space-y-4">
+        <form action={formAction} className="space-y-5">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Kullanıcı Adı</label>
+            <label className="block text-xs font-bold text-white/60 uppercase tracking-wider mb-2">E-posta</label>
             <input
-              type="text"
-              name="username"
+              type="email"
+              name="email"
               required
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Kullanıcı adınızı girin"
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 transition-all"
+              placeholder="E-posta adresinizi girin"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">Şifre</label>
+            <label className="block text-xs font-bold text-white/60 uppercase tracking-wider mb-2">Şifre</label>
             <input
               type="password"
               name="password"
               required
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500"
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 transition-all"
               placeholder="Şifrenizi girin"
             />
           </div>
 
           {state.error && (
-            <p className="text-red-500 text-sm">{state.error}</p>
+            <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3 text-red-400 text-sm">
+              {state.error}
+            </div>
           )}
 
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition"
+            className="w-full bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white py-3 px-4 rounded-lg font-bold tracking-wider uppercase text-sm transition-all shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40"
           >
-            Login
+            Giriş Yap
           </button>
         </form>
       </div>

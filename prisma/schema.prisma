@@ -211,6 +211,20 @@ model MeetingRoom {
   updatedAt   DateTime @updatedAt
 }
 
+// ===== Admin User Models =====
+
+model AdminUser {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String   @default("Admin")
+  role      String   @default("admin") // superadmin, admin, editor
+  isActive  Boolean  @default(true)
+  lastLogin DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 // ===== Analytics Models =====
 
 model PageView {

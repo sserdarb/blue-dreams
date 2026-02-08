@@ -8,6 +8,7 @@ import Gallery from '@/components/sections/Gallery'
 import Reviews from '@/components/sections/Reviews'
 import Sustainability from '@/components/sections/Sustainability'
 import LocationMap from '@/components/sections/LocationMap'
+import MonthlyWeather from '@/components/sections/MonthlyWeather'
 
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
     const { locale } = await params
@@ -20,6 +21,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                 <About />
                 <Rooms />
                 <Experience />
+                <MonthlyWeather />
                 <LocalGuide />
                 <Gallery />
                 <Reviews />

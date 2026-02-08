@@ -16,14 +16,13 @@ export default async function PublicLayout({
     return (
         <div className="min-h-screen flex flex-col">
             <AnalyticsTracker />
-            <Navbar />
+            <Navbar locale={locale} />
             <div className="flex-1">
                 {children}
             </div>
-            <Footer />
+            <Footer locale={locale} />
             <BookingWidget />
             <ChatWidget locale={locale as any} />
         </div>
     )
 }
-

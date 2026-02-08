@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Menu, X, Phone, Calendar, Facebook, Instagram, Youtube, Search, Sparkles } from 'lucide-react'
-import { NAV_ITEMS } from '@/lib/constants'
+import { getNavItems } from '@/lib/constants'
 import { WeatherWidget } from '@/components/layout/WeatherWidget'
 import { usePathname, useRouter } from 'next/navigation'
 
@@ -13,15 +13,19 @@ const WhatsAppIcon = ({ size = 20, className = "" }: { size?: number, className?
     </svg>
 )
 
-export default function Navbar() {
+export default function Navbar({ locale = 'tr' }: { locale?: string }) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const [isScrolled, setIsScrolled] = useState(false)
     const pathname = usePathname()
     const router = useRouter()
 
+    // Detect locale from pathname if not provided
+    const currentLocale = locale || pathname.split('/')[1] || 'tr'
+    const navItems = getNavItems(currentLocale)
+
     const handleLanguageChange = (langCode: string) => {
-        const currentLocale = pathname.split('/')[1]
-        const newPath = pathname.replace(`/${currentLocale}`, `/${langCode.toLowerCase()}`)
+        const pathLocale = pathname.split('/')[1]
+        const newPath = pathname.replace(`/${pathLocale}`, `/${langCode.toLowerCase()}`)
         router.push(newPath)
     }
 
@@ -55,13 +59,16 @@ export default function Navbar() {
         { icon: <Youtube size={16} />, href: 'https://www.youtube.com/@BlueDreamsResort' },
     ]
 
+    const menuLabel = currentLocale === 'en' ? 'Menu' : currentLocale === 'de' ? 'Menü' : currentLocale === 'ru' ? 'Меню' : 'Menü'
+    const reservationLabel = currentLocale === 'en' ? 'Online Reservation' : currentLocale === 'de' ? 'Online Reservierung' : currentLocale === 'ru' ? 'Онлайн бронирование' : 'Online Rezervasyon'
+
     return (
         <>
             <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${isScrolled ? 'bg-black/95 backdrop-blur-sm shadow-lg' : 'bg-gradient-to-b from-black/80 to-transparent'}`}>
                 <div className={`flex items-center justify-between px-4 md:px-8 lg:px-12 transition-all duration-500 ${isScrolled ? 'h-16 md:h-20' : 'h-20 md:h-32'}`}>
 
                     {/* Logo Area */}
-                    <a href="#" className="flex flex-col justify-center leading-tight z-50 group">
+                    <a href={`/${currentLocale}`} className="flex flex-col justify-center leading-tight z-50 group">
                         <img
                             src="https://bluedreamsresort.com/wp-content/uploads/2023/03/bdrlogonewwhites.png"
                             alt="Blue Dreams Resort"
@@ -102,9 +109,6 @@ export default function Navbar() {
 
                         {/* Quick Contact Icons */}
                         <div className="flex items-center space-x-4">
-                            <button className="text-white hover:text-brand transition-colors" title="Ara">
-                                <Search size={18} />
-                            </button>
                             <a
                                 href="https://wa.me/902523371111"
                                 target="_blank"
@@ -142,9 +146,11 @@ export default function Navbar() {
                         {/* Reservation Button */}
                         <a
                             href="https://blue-dreams.rezervasyonal.com/"
+                            target="_blank"
+                            rel="noreferrer"
                             className="bg-white hover:bg-gray-100 text-dark px-6 py-2 text-[11px] font-bold tracking-[0.15em] uppercase transition-all duration-300 rounded-sm"
                         >
-                            Online Rezervasyon
+                            {reservationLabel}
                         </a>
 
                         {/* Menu Toggle Text */}
@@ -152,7 +158,7 @@ export default function Navbar() {
                             className="flex items-center space-x-2 text-white hover:text-brand transition-colors group ml-4"
                             onClick={() => setIsMobileMenuOpen(true)}
                         >
-                            <span className="text-xs font-bold tracking-widest uppercase hidden 2xl:block">Menü</span>
+                            <span className="text-xs font-bold tracking-widest uppercase hidden 2xl:block">{menuLabel}</span>
                             <div className="space-y-1.5 p-2">
                                 <span className="block w-6 h-0.5 bg-current group-hover:w-8 transition-all duration-300"></span>
                                 <span className="block w-6 h-0.5 bg-current transition-all duration-300"></span>
@@ -184,9 +190,11 @@ export default function Navbar() {
 
                         <a
                             href="https://blue-dreams.rezervasyonal.com/"
+                            target="_blank"
+                            rel="noreferrer"
                             className="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 text-[9px] font-bold tracking-widest uppercase rounded-sm border border-white/10 hidden sm:block"
                         >
-                            Rezervasyon
+                            {currentLocale === 'en' ? 'Reservation' : 'Rezervasyon'}
                         </a>
                         <button
                             className="text-white p-2"
@@ -216,7 +224,7 @@ export default function Navbar() {
 
                     {/* Menu Items */}
                     <div className="flex flex-col items-center space-y-6 md:space-y-4 mb-12 md:mb-8 text-center animate-fade-in-up">
-                        {NAV_ITEMS.map((item) => (
+                        {navItems.map((item) => (
                             <a
                                 key={item.label}
                                 href={item.href}
@@ -248,14 +256,18 @@ export default function Navbar() {
 
                         <a
                             href="https://blue-dreams.rezervasyonal.com/"
+                            target="_blank"
+                            rel="noreferrer"
                             className="bg-brand hover:bg-brand-light text-white w-full md:w-auto md:px-8 py-4 text-sm font-bold tracking-widest uppercase rounded shadow-lg flex items-center justify-center gap-3 transition-transform hover:-translate-y-1"
                         >
                             <Calendar size={18} />
-                            <span className="md:hidden lg:inline">Online</span> Rezervasyon
+                            <span className="md:hidden lg:inline">Online</span> {currentLocale === 'en' ? 'Reservation' : 'Rezervasyon'}
                         </a>
 
                         <a
                             href="https://wa.me/902523371111"
+                            target="_blank"
+                            rel="noreferrer"
                             className="border border-white/20 hover:border-[#25D366] hover:bg-[#25D366] hover:text-white text-white px-6 py-4 rounded text-xs font-bold tracking-widest uppercase flex items-center justify-center gap-2 transition-all flex-1 md:flex-none"
                         >
                             <WhatsAppIcon size={18} />
@@ -267,7 +279,7 @@ export default function Navbar() {
                             className="border border-white/20 hover:border-brand hover:bg-brand text-white px-6 py-4 rounded text-xs font-bold tracking-widest uppercase flex items-center justify-center gap-2 transition-all flex-1 md:flex-none"
                         >
                             <Phone size={18} />
-                            Ara
+                            {currentLocale === 'en' ? 'Call' : 'Ara'}
                         </a>
                     </div>
 
@@ -290,6 +302,8 @@ export default function Navbar() {
                             <a
                                 key={index}
                                 href={social.href}
+                                target="_blank"
+                                rel="noopener noreferrer"
                                 className="text-white/60 hover:text-brand transition-colors"
                             >
                                 {social.icon}

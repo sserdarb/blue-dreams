@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Calendar, Users, ChevronDown, ArrowRight, Phone, Search, Facebook, Instagram, Youtube } from 'lucide-react'
+import { Calendar, Users, ChevronDown, ArrowRight, Phone, Facebook, Instagram, Youtube } from 'lucide-react'
+import { usePathname } from 'next/navigation'
 
 // WhatsApp Icon Component
 const WhatsAppIcon = ({ size = 16, className = "" }: { size?: number, className?: string }) => (
@@ -12,18 +13,37 @@ const WhatsAppIcon = ({ size = 16, className = "" }: { size?: number, className?
 
 export default function BookingWidget() {
     const [isVisible, setIsVisible] = useState(false)
+    const pathname = usePathname()
+    const locale = pathname?.split('/')[1] || 'tr'
 
     const getToday = () => new Date().toISOString().split('T')[0]
-    const getTomorrow = () => {
-        const today = new Date()
-        const tomorrow = new Date(today)
-        tomorrow.setDate(tomorrow.getDate() + 1)
-        return tomorrow.toISOString().split('T')[0]
+    const getNextDay = (dateStr: string) => {
+        const date = new Date(dateStr)
+        date.setDate(date.getDate() + 1)
+        return date.toISOString().split('T')[0]
     }
 
     const [checkIn, setCheckIn] = useState(getToday())
-    const [checkOut, setCheckOut] = useState(getTomorrow())
+    const [checkOut, setCheckOut] = useState(getNextDay(getToday()))
     const [guests, setGuests] = useState('2')
+
+    // Auto-adjust checkout when checkin changes
+    const handleCheckInChange = (newCheckIn: string) => {
+        setCheckIn(newCheckIn)
+        // If checkout is on or before new checkin, shift checkout to day after
+        if (checkOut <= newCheckIn) {
+            setCheckOut(getNextDay(newCheckIn))
+        }
+    }
+
+    // Prevent checkout from being before checkin
+    const handleCheckOutChange = (newCheckOut: string) => {
+        if (newCheckOut > checkIn) {
+            setCheckOut(newCheckOut)
+        } else {
+            setCheckOut(getNextDay(checkIn))
+        }
+    }
 
     useEffect(() => {
         const handleScroll = () => {
@@ -47,17 +67,22 @@ export default function BookingWidget() {
             departure: checkOut,
             adults: guests
         })
-        window.location.href = `${baseUrl}?${params.toString()}`
+        window.open(`${baseUrl}?${params.toString()}`, '_blank')
     }
+
+    const t = {
+        tr: { checkin: 'Giriş', checkout: 'Çıkış', guest: 'Misafir', search: 'Müsaitlik Ara', book: 'Rezervasyon Yap', adults: 'Yetişkin' },
+        en: { checkin: 'Check-in', checkout: 'Check-out', guest: 'Guests', search: 'Check Availability', book: 'Book Now', adults: 'Adults' },
+        de: { checkin: 'Anreise', checkout: 'Abreise', guest: 'Gäste', search: 'Verfügbarkeit Prüfen', book: 'Jetzt Buchen', adults: 'Erwachsene' },
+        ru: { checkin: 'Заезд', checkout: 'Выезд', guest: 'Гости', search: 'Проверить', book: 'Забронировать', adults: 'Взрослых' },
+    }
+    const texts = t[locale as keyof typeof t] || t.tr
 
     const socialIconClass = "text-gray-400 hover:text-brand transition-colors p-1.5 border border-transparent hover:border-gray-200 rounded-sm"
     const contactIconClass = "text-gray-500 hover:text-brand transition-colors p-1.5 bg-gray-50 hover:bg-white border border-gray-200 rounded-sm"
 
     const renderIcons = () => (
         <>
-            <button className={contactIconClass} title="Ara">
-                <Search size={16} />
-            </button>
             <a href="https://wa.me/902523371111" target="_blank" rel="noreferrer" className={`${contactIconClass} hover:text-[#25D366]`} title="WhatsApp">
                 <WhatsAppIcon size={16} />
             </a>
@@ -90,21 +115,23 @@ export default function BookingWidget() {
                         <div className="flex gap-2">
                             {/* Mobile Check-in */}
                             <div className="flex-1 bg-gray-50 rounded-lg p-2 flex flex-col justify-center border border-gray-200">
-                                <span className="text-[9px] text-gray-500 font-bold uppercase tracking-wide">Giriş</span>
+                                <span className="text-[9px] text-gray-500 font-bold uppercase tracking-wide">{texts.checkin}</span>
                                 <input
                                     type="date"
                                     value={checkIn}
-                                    onChange={(e) => setCheckIn(e.target.value)}
+                                    min={getToday()}
+                                    onChange={(e) => handleCheckInChange(e.target.value)}
                                     className="bg-transparent text-xs font-bold text-gray-900 w-full outline-none p-0"
                                 />
                             </div>
                             {/* Mobile Check-out */}
                             <div className="flex-1 bg-gray-50 rounded-lg p-2 flex flex-col justify-center border border-gray-200">
-                                <span className="text-[9px] text-gray-500 font-bold uppercase tracking-wide">Çıkış</span>
+                                <span className="text-[9px] text-gray-500 font-bold uppercase tracking-wide">{texts.checkout}</span>
                                 <input
                                     type="date"
                                     value={checkOut}
-                                    onChange={(e) => setCheckOut(e.target.value)}
+                                    min={getNextDay(checkIn)}
+                                    onChange={(e) => handleCheckOutChange(e.target.value)}
                                     className="bg-transparent text-xs font-bold text-gray-900 w-full outline-none p-0"
                                 />
                             </div>
@@ -115,7 +142,7 @@ export default function BookingWidget() {
                             type="submit"
                             className="bg-brand text-white h-[40px] w-full text-xs font-bold tracking-widest uppercase rounded-lg shadow-lg flex items-center justify-center gap-2 active:scale-95 transition-transform"
                         >
-                            Rezervasyon Yap
+                            {texts.book}
                             <ArrowRight size={14} />
                         </button>
                     </div>
@@ -128,12 +155,13 @@ export default function BookingWidget() {
                             <div className="flex items-center relative">
                                 <Calendar className="text-gray-400 group-hover:text-brand w-4 h-4 mr-3 transition-colors absolute left-2 pointer-events-none" />
                                 <div className="flex flex-col text-left pl-8 w-full">
-                                    <label htmlFor="checkin" className="text-[9px] text-gray-400 font-bold uppercase tracking-wider cursor-pointer">Giriş</label>
+                                    <label htmlFor="checkin" className="text-[9px] text-gray-400 font-bold uppercase tracking-wider cursor-pointer">{texts.checkin}</label>
                                     <input
                                         type="date"
                                         id="checkin"
                                         value={checkIn}
-                                        onChange={(e) => setCheckIn(e.target.value)}
+                                        min={getToday()}
+                                        onChange={(e) => handleCheckInChange(e.target.value)}
                                         className="bg-transparent border-none outline-none text-xs font-semibold text-gray-800 w-full p-0 cursor-pointer"
                                     />
                                 </div>
@@ -145,12 +173,13 @@ export default function BookingWidget() {
                             <div className="flex items-center relative">
                                 <Calendar className="text-gray-400 group-hover:text-brand w-4 h-4 mr-3 transition-colors absolute left-2 pointer-events-none" />
                                 <div className="flex flex-col text-left pl-8 w-full">
-                                    <label htmlFor="checkout" className="text-[9px] text-gray-400 font-bold uppercase tracking-wider cursor-pointer">Çıkış</label>
+                                    <label htmlFor="checkout" className="text-[9px] text-gray-400 font-bold uppercase tracking-wider cursor-pointer">{texts.checkout}</label>
                                     <input
                                         type="date"
                                         id="checkout"
                                         value={checkOut}
-                                        onChange={(e) => setCheckOut(e.target.value)}
+                                        min={getNextDay(checkIn)}
+                                        onChange={(e) => handleCheckOutChange(e.target.value)}
                                         className="bg-transparent border-none outline-none text-xs font-semibold text-gray-800 w-full p-0 cursor-pointer"
                                     />
                                 </div>
@@ -163,17 +192,17 @@ export default function BookingWidget() {
                                 <div className="flex items-center w-full">
                                     <Users className="text-gray-400 group-hover:text-brand w-4 h-4 mr-3 transition-colors absolute left-2 pointer-events-none" />
                                     <div className="flex flex-col text-left pl-8 w-full">
-                                        <label htmlFor="guests" className="text-[9px] text-gray-400 font-bold uppercase tracking-wider cursor-pointer">Misafir</label>
+                                        <label htmlFor="guests" className="text-[9px] text-gray-400 font-bold uppercase tracking-wider cursor-pointer">{texts.guest}</label>
                                         <select
                                             id="guests"
                                             value={guests}
                                             onChange={(e) => setGuests(e.target.value)}
                                             className="bg-transparent border-none outline-none text-xs font-semibold text-gray-800 w-full p-0 cursor-pointer appearance-none"
                                         >
-                                            <option value="1">1 Yetişkin</option>
-                                            <option value="2">2 Yetişkin</option>
-                                            <option value="3">3 Yetişkin</option>
-                                            <option value="4">4 Yetişkin</option>
+                                            <option value="1">1 {texts.adults}</option>
+                                            <option value="2">2 {texts.adults}</option>
+                                            <option value="3">3 {texts.adults}</option>
+                                            <option value="4">4 {texts.adults}</option>
                                         </select>
                                     </div>
                                 </div>
@@ -186,7 +215,7 @@ export default function BookingWidget() {
                             type="submit"
                             className="bg-brand hover:bg-brand-dark text-white h-[42px] px-6 rounded-sm flex items-center justify-center text-xs font-bold tracking-widest uppercase shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 min-w-[160px]"
                         >
-                            Müsaitlik Ara
+                            {texts.search}
                             <ArrowRight className="ml-2 w-3 h-3" />
                         </button>
 
