@@ -1,5 +1,6 @@
 import React from 'react'
 import Link from 'next/link'
+import { headers } from 'next/headers'
 import {
   LayoutDashboard,
   FileText,
@@ -46,6 +47,15 @@ export default async function AdminLayout({
   params: Promise<{ locale: string }>
 }) {
   const { locale } = await params
+
+  // Check if this is the login page — render without sidebar
+  const headersList = await headers()
+  const pathname = headersList.get('x-next-url') || headersList.get('x-invoke-path') || ''
+  const isLoginPage = pathname.includes('/login')
+
+  if (isLoginPage) {
+    return <>{children}</>
+  }
 
   return (
     <div className="flex h-screen bg-[#0f172a]">
