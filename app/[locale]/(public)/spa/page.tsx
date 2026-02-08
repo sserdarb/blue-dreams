@@ -1,19 +1,22 @@
 import PageHeader from '@/components/shared/PageHeader'
 import { SPA_SERVICES } from '@/lib/content'
 import { Clock, Phone, Sparkles, Leaf, Droplets, Heart } from 'lucide-react'
+import { getSpaPageContent } from '@/lib/translations'
 
-export default function SpaPage() {
-    // Featured spa services (with images)
+export default async function SpaPage({ params }: { params: Promise<{ locale: string }> }) {
+    const { locale } = await params
+    const t = getSpaPageContent(locale as any)
+
     const featuredServices = SPA_SERVICES.filter(s => s.image)
     const otherServices = SPA_SERVICES.filter(s => !s.image)
 
     return (
         <div>
             <PageHeader
-                title="Spa & Wellness"
-                subtitle="Ege'nin büyüleyici atmosferinde, doğanın huzur veren dokunuşuyla bütünleşen Naya Spa."
+                title={t.title}
+                subtitle={t.subtitle}
                 backgroundImage="https://bluedreamsresort.com/wp-content/uploads/2023/03/INFINITY-POOL-1.jpg"
-                breadcrumbs={[{ label: 'Spa & Wellness', href: '/tr/spa' }]}
+                breadcrumbs={[{ label: t.breadcrumb, href: `/${locale}/spa` }]}
             />
 
             {/* Naya Spa Intro */}
@@ -26,34 +29,26 @@ export default function SpaPage() {
                                 <span className="text-brand text-xs font-bold tracking-widest uppercase">Naya Spa</span>
                             </div>
                             <h2 className="text-4xl font-serif text-gray-900 mb-6">
-                                Kendinizi <span className="italic text-brand">Yenileyin</span>
+                                {t.introH2} <span className="italic text-brand">{t.introH2accent}</span>
                             </h2>
-                            <p className="text-gray-600 leading-relaxed mb-6">
-                                Ege&apos;nin büyüleyici atmosferinde, doğanın huzur veren dokunuşuyla bütünleşen
-                                Naya Spa, sizi benzersiz bir yenilenme deneyimine davet ediyor.
-                            </p>
-                            <p className="text-gray-600 leading-relaxed mb-6">
-                                Geleneksel spa ritüellerini modern dokunuşlarla harmanladığımız özel bakımlarımız;
-                                ruhsal, bedensel ve zihinsel olarak arınarak rahatlamanızı sağlıyor.
-                            </p>
-                            <p className="text-gray-600 leading-relaxed mb-8">
-                                Doğadan ilham alarak dizayn ettiğimiz özel masaj odalarımızda, uzman terapistlerimizin
-                                sunduğu kişiye özel bakımlarla stresinizi geride bırakın. Dünya çapında organik
-                                sertifikalarına sahip özel bakım ürünlerimizle kendinizi şımartın.
-                            </p>
+                            <p className="text-gray-600 leading-relaxed mb-6">{t.introP1}</p>
+                            <p className="text-gray-600 leading-relaxed mb-6">{t.introP2}</p>
+                            <p className="text-gray-600 leading-relaxed mb-8">{t.introP3}</p>
 
                             <div className="flex flex-wrap gap-4">
                                 <a
                                     href="https://wa.me/905495167801"
+                                    target="_blank"
+                                    rel="noreferrer"
                                     className="inline-flex items-center gap-2 bg-brand text-white px-6 py-3 font-bold uppercase tracking-widest text-sm hover:bg-brand-dark transition-colors"
                                 >
-                                    <Phone size={16} /> Rezervasyon Yapın
+                                    <Phone size={16} /> {t.bookBtn}
                                 </a>
                                 <a
                                     href="tel:+902523371111"
                                     className="inline-flex items-center gap-2 border border-brand text-brand px-6 py-3 font-bold uppercase tracking-widest text-sm hover:bg-brand hover:text-white transition-colors"
                                 >
-                                    Bugüne Özel Fırsat
+                                    {t.offerBtn}
                                 </a>
                             </div>
                         </div>
@@ -78,26 +73,15 @@ export default function SpaPage() {
             <section className="py-16 bg-sand">
                 <div className="container mx-auto px-6">
                     <div className="text-center mb-12">
-                        <span className="text-brand text-xs font-bold tracking-widest uppercase mb-4 block">
-                            Öne Çıkan Bakımlar
-                        </span>
-                        <h2 className="text-4xl font-serif text-gray-900">
-                            Masaj Terapileri
-                        </h2>
+                        <span className="text-brand text-xs font-bold tracking-widest uppercase mb-4 block">{t.featuredLabel}</span>
+                        <h2 className="text-4xl font-serif text-gray-900">{t.featuredH2}</h2>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         {featuredServices.map((service) => (
-                            <div
-                                key={service.id}
-                                className="bg-white rounded-lg overflow-hidden shadow-lg group hover:shadow-xl transition-all duration-300"
-                            >
+                            <div key={service.id} className="bg-white rounded-lg overflow-hidden shadow-lg group hover:shadow-xl transition-all duration-300">
                                 <div className="relative h-64 overflow-hidden">
-                                    <img
-                                        src={service.image}
-                                        alt={service.title}
-                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                                    />
+                                    <img src={service.image} alt={service.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                                     <div className="absolute bottom-4 left-4 right-4 text-white">
                                         <h3 className="text-2xl font-serif">{service.title}</h3>
@@ -120,32 +104,19 @@ export default function SpaPage() {
             <section className="py-16 bg-white">
                 <div className="container mx-auto px-6">
                     <div className="text-center mb-12">
-                        <span className="text-brand text-xs font-bold tracking-widest uppercase mb-4 block">
-                            Hizmetlerimiz
-                        </span>
-                        <h2 className="text-4xl font-serif text-gray-900">
-                            Spa Menüsü
-                        </h2>
+                        <span className="text-brand text-xs font-bold tracking-widest uppercase mb-4 block">{t.menuLabel}</span>
+                        <h2 className="text-4xl font-serif text-gray-900">{t.menuH2}</h2>
                     </div>
-
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         {otherServices.map((service) => (
-                            <div
-                                key={service.id}
-                                className="bg-sand p-6 rounded-lg hover:shadow-xl transition-all duration-300 group"
-                            >
+                            <div key={service.id} className="bg-sand p-6 rounded-lg hover:shadow-xl transition-all duration-300 group">
                                 <div className="w-12 h-12 bg-brand/10 rounded-full flex items-center justify-center mb-4 group-hover:bg-brand group-hover:text-white transition-colors">
                                     <Sparkles size={24} className="text-brand group-hover:text-white" />
                                 </div>
-                                <h3 className="text-xl font-serif text-gray-900 mb-2 group-hover:text-brand transition-colors">
-                                    {service.title}
-                                </h3>
-                                <p className="text-gray-600 text-sm mb-4">
-                                    {service.description}
-                                </p>
+                                <h3 className="text-xl font-serif text-gray-900 mb-2 group-hover:text-brand transition-colors">{service.title}</h3>
+                                <p className="text-gray-600 text-sm mb-4">{service.description}</p>
                                 <div className="flex items-center text-sm text-gray-500">
-                                    <Clock size={14} className="mr-1" />
-                                    {service.duration}
+                                    <Clock size={14} className="mr-1" /> {service.duration}
                                 </div>
                             </div>
                         ))}
@@ -157,35 +128,23 @@ export default function SpaPage() {
             <section className="py-16 bg-brand-dark text-white">
                 <div className="container mx-auto px-6">
                     <div className="text-center mb-12">
-                        <h2 className="text-4xl font-serif">Neden Naya Spa?</h2>
+                        <h2 className="text-4xl font-serif">{t.whyH2}</h2>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         <div className="text-center">
-                            <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Leaf size={32} />
-                            </div>
-                            <h3 className="text-xl font-serif mb-2">Organik Ürünler</h3>
-                            <p className="text-white/70 text-sm">
-                                Dünya çapında organik sertifikalarına sahip özel bakım ürünleri
-                            </p>
+                            <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4"><Leaf size={32} /></div>
+                            <h3 className="text-xl font-serif mb-2">{t.organic}</h3>
+                            <p className="text-white/70 text-sm">{t.organicDesc}</p>
                         </div>
                         <div className="text-center">
-                            <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Heart size={32} />
-                            </div>
-                            <h3 className="text-xl font-serif mb-2">Uzman Terapistler</h3>
-                            <p className="text-white/70 text-sm">
-                                Kişiye özel bakımlar sunan deneyimli profesyonel ekip
-                            </p>
+                            <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4"><Heart size={32} /></div>
+                            <h3 className="text-xl font-serif mb-2">{t.therapists}</h3>
+                            <p className="text-white/70 text-sm">{t.therapistsDesc}</p>
                         </div>
                         <div className="text-center">
-                            <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Droplets size={32} />
-                            </div>
-                            <h3 className="text-xl font-serif mb-2">Eşsiz Atmosfer</h3>
-                            <p className="text-white/70 text-sm">
-                                Doğadan ilham alan özel tasarım masaj odaları
-                            </p>
+                            <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4"><Droplets size={32} /></div>
+                            <h3 className="text-xl font-serif mb-2">{t.atmosphere}</h3>
+                            <p className="text-white/70 text-sm">{t.atmosphereDesc}</p>
                         </div>
                     </div>
                 </div>
@@ -195,47 +154,30 @@ export default function SpaPage() {
             <section className="py-16 bg-white">
                 <div className="container mx-auto px-6">
                     <div className="text-center mb-12">
-                        <span className="text-brand text-xs font-bold tracking-widest uppercase mb-4 block">
-                            Tesisler
-                        </span>
-                        <h2 className="text-4xl font-serif text-gray-900">
-                            Wellness Olanakları
-                        </h2>
+                        <span className="text-brand text-xs font-bold tracking-widest uppercase mb-4 block">{t.facilitiesLabel}</span>
+                        <h2 className="text-4xl font-serif text-gray-900">{t.facilitiesH2}</h2>
                     </div>
-
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         <div className="text-center group">
                             <div className="overflow-hidden rounded-lg mb-4">
-                                <img
-                                    src="https://bluedreamsresort.com/wp-content/uploads/2023/03/INFINITY-POOL-1.jpg"
-                                    alt="Sonsuzluk Havuzu"
-                                    className="w-full h-[200px] object-cover group-hover:scale-110 transition-transform duration-500"
-                                />
+                                <img src="https://bluedreamsresort.com/wp-content/uploads/2023/03/INFINITY-POOL-1.jpg" alt={t.pool} className="w-full h-[200px] object-cover group-hover:scale-110 transition-transform duration-500" />
                             </div>
-                            <h3 className="text-xl font-serif text-gray-900 mb-2">Sonsuzluk Havuzu</h3>
-                            <p className="text-gray-600 text-sm">Ege&apos;ye nazır, muhteşem gün batımı manzarası</p>
+                            <h3 className="text-xl font-serif text-gray-900 mb-2">{t.pool}</h3>
+                            <p className="text-gray-600 text-sm">{t.poolDesc}</p>
                         </div>
                         <div className="text-center group">
                             <div className="overflow-hidden rounded-lg mb-4">
-                                <img
-                                    src="https://bluedreamsresort.com/wp-content/uploads/2023/03/SANDY-BEACH-1.jpg"
-                                    alt="Özel Plaj"
-                                    className="w-full h-[200px] object-cover group-hover:scale-110 transition-transform duration-500"
-                                />
+                                <img src="https://bluedreamsresort.com/wp-content/uploads/2023/03/SANDY-BEACH-1.jpg" alt={t.beach} className="w-full h-[200px] object-cover group-hover:scale-110 transition-transform duration-500" />
                             </div>
-                            <h3 className="text-xl font-serif text-gray-900 mb-2">Özel Plaj</h3>
-                            <p className="text-gray-600 text-sm">700 metre kumsal ve cabana alanları</p>
+                            <h3 className="text-xl font-serif text-gray-900 mb-2">{t.beach}</h3>
+                            <p className="text-gray-600 text-sm">{t.beachDesc}</p>
                         </div>
                         <div className="text-center group">
                             <div className="overflow-hidden rounded-lg mb-4">
-                                <img
-                                    src="https://bluedreamsresort.com/wp-content/uploads/2023/03/Club-Room-Sea-View-3.jpg"
-                                    alt="Fitness Center"
-                                    className="w-full h-[200px] object-cover group-hover:scale-110 transition-transform duration-500"
-                                />
+                                <img src="https://bluedreamsresort.com/wp-content/uploads/2023/03/Club-Room-Sea-View-3.jpg" alt={t.fitness} className="w-full h-[200px] object-cover group-hover:scale-110 transition-transform duration-500" />
                             </div>
-                            <h3 className="text-xl font-serif text-gray-900 mb-2">Fitness Center</h3>
-                            <p className="text-gray-600 text-sm">Modern ekipmanlarla donatılmış spor salonu</p>
+                            <h3 className="text-xl font-serif text-gray-900 mb-2">{t.fitness}</h3>
+                            <p className="text-gray-600 text-sm">{t.fitnessDesc}</p>
                         </div>
                     </div>
                 </div>
@@ -244,21 +186,13 @@ export default function SpaPage() {
             {/* CTA */}
             <section className="py-20 bg-gradient-to-r from-brand to-brand-dark text-white text-center">
                 <div className="container mx-auto px-6">
-                    <h2 className="text-4xl font-serif mb-4">Kendinizi Şımartın</h2>
-                    <p className="text-white/80 mb-8 max-w-xl mx-auto">
-                        Spa randevunuzu önceden alarak bekleme süresi olmadan hizmet alabilirsiniz.
-                    </p>
+                    <h2 className="text-4xl font-serif mb-4">{t.ctaH2}</h2>
+                    <p className="text-white/80 mb-8 max-w-xl mx-auto">{t.ctaSub}</p>
                     <div className="flex flex-wrap justify-center gap-4">
-                        <a
-                            href="https://wa.me/905495167823"
-                            className="inline-block bg-white text-brand-dark px-8 py-4 font-bold uppercase tracking-widest text-sm hover:bg-brand-light hover:text-white transition-colors"
-                        >
-                            WhatsApp ile Randevu
+                        <a href="https://wa.me/905495167823" target="_blank" rel="noreferrer" className="inline-block bg-white text-brand-dark px-8 py-4 font-bold uppercase tracking-widest text-sm hover:bg-brand-light hover:text-white transition-colors">
+                            {t.ctaBtn1}
                         </a>
-                        <a
-                            href="tel:+902523371111"
-                            className="inline-block border border-white/30 text-white px-8 py-4 font-bold uppercase tracking-widest text-sm hover:bg-white/10 transition-colors"
-                        >
+                        <a href="tel:+902523371111" className="inline-block border border-white/30 text-white px-8 py-4 font-bold uppercase tracking-widest text-sm hover:bg-white/10 transition-colors">
                             +90 252 337 11 11
                         </a>
                     </div>

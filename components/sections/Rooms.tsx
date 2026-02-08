@@ -1,12 +1,18 @@
+'use client'
+
+import { usePathname } from 'next/navigation'
 import { CATEGORIES } from '@/lib/constants'
 
 export default function Rooms() {
+    const pathname = usePathname()
+    const locale = pathname?.split('/')[1] || 'tr'
+
     return (
         <section id="rooms" className="py-12 bg-white">
             <div className="container mx-auto px-4 md:px-8">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {CATEGORIES.map((category) => (
-                        <div key={category.id} className="relative h-[500px] md:h-[450px] lg:h-[600px] group overflow-hidden cursor-pointer">
+                        <a key={category.id} href={`/${locale}${category.href}`} className="relative h-[500px] md:h-[450px] lg:h-[600px] group overflow-hidden cursor-pointer block">
 
                             {/* Image */}
                             <img
@@ -27,7 +33,7 @@ export default function Rooms() {
                                     {category.subtitle}
                                 </p>
                             </div>
-                        </div>
+                        </a>
                     ))}
                 </div>
             </div>

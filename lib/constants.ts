@@ -21,6 +21,71 @@ export interface Review {
     rating: number
 }
 
+export function getNavItems(locale: string): NavItem[] {
+    const l = locale || 'tr'
+    const labels: Record<string, Record<string, string>> = {
+        tr: {
+            about: 'Hakkımızda',
+            rooms: 'Odalar',
+            dining: 'Restoran & Barlar',
+            spa: 'Spa & Wellness',
+            meeting: 'Toplantı & Etkinlik',
+            wedding: 'Düğün & Davet',
+            gallery: 'Galeri',
+            contact: 'İletişim',
+            bodrum: 'Bodrum Rehberi',
+        },
+        en: {
+            about: 'About Us',
+            rooms: 'Rooms',
+            dining: 'Restaurant & Bars',
+            spa: 'Spa & Wellness',
+            meeting: 'Meetings & Events',
+            wedding: 'Weddings',
+            gallery: 'Gallery',
+            contact: 'Contact',
+            bodrum: 'Bodrum Guide',
+        },
+        de: {
+            about: 'Über Uns',
+            rooms: 'Zimmer',
+            dining: 'Restaurant & Bars',
+            spa: 'Spa & Wellness',
+            meeting: 'Tagungen & Events',
+            wedding: 'Hochzeiten',
+            gallery: 'Galerie',
+            contact: 'Kontakt',
+            bodrum: 'Bodrum Reiseführer',
+        },
+        ru: {
+            about: 'О нас',
+            rooms: 'Номера',
+            dining: 'Рестораны и бары',
+            spa: 'Спа и Велнес',
+            meeting: 'Конференции',
+            wedding: 'Свадьбы',
+            gallery: 'Галерея',
+            contact: 'Контакт',
+            bodrum: 'Гид по Бодруму',
+        },
+    }
+
+    const t = labels[l] || labels.tr
+
+    return [
+        { label: t.about, href: `/${l}/hakkimizda` },
+        { label: t.rooms, href: `/${l}/odalar` },
+        { label: t.dining, href: `/${l}/restoran` },
+        { label: t.spa, href: `/${l}/spa` },
+        { label: t.meeting, href: `/${l}/toplanti-salonu` },
+        { label: t.wedding, href: `/${l}/dugun-davet` },
+        { label: t.gallery, href: `/${l}/galeri` },
+        { label: t.contact, href: `/${l}/iletisim` },
+        { label: t.bodrum, href: `/${l}/bodrum` },
+    ]
+}
+
+// Keep NAV_ITEMS for backward compatibility
 export const NAV_ITEMS: NavItem[] = [
     { label: 'Hakkımızda', href: '/tr/hakkimizda' },
     { label: 'Odalar', href: '/tr/odalar' },
@@ -65,18 +130,21 @@ export const CATEGORIES = [
         title: "ODALAR",
         subtitle: "Bodrum'un kalbinde tasarım odalar",
         image: "https://bluedreamsresort.com/wp-content/uploads/2023/03/Deluxe-Room-1.jpg",
+        href: "/odalar",
     },
     {
         id: 2,
         title: "RESTORAN & BAR",
         subtitle: "Gerçek bir gastronomi deneyimi",
         image: "https://bluedreamsresort.com/wp-content/uploads/2023/03/ITALIAN-ALACART-2.jpg",
+        href: "/restoran",
     },
     {
         id: 3,
-        title: "AKTIVITELER",
+        title: "AKTİVİTELER",
         subtitle: "Size özel anlar ve eğlence",
         image: "https://bluedreamsresort.com/wp-content/uploads/2023/03/WATER-SPORTS-.jpg",
+        href: "/spa",
     }
 ]
 
