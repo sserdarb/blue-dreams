@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { GoogleGenAI, Type, FunctionDeclaration } from "@google/genai"
 import { prisma } from '@/lib/prisma'
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY
+
 
 // Tool Definitions
 const priceCheckTool: FunctionDeclaration = {
@@ -58,12 +58,13 @@ export async function POST(request: Request) {
     try {
         const { messages, locale = 'tr' } = await request.json()
 
-        if (!GEMINI_API_KEY) {
-            return NextResponse.json({ error: 'API Key missing' }, { status: 500 })
-        }
-
         // 1. Fetch Dynamic Content from DB
         const context = await getContextData(locale)
+        const GEMINI_API_KEY = context.settings?.apiKey || process.env.GEMINI_API_KEY
+
+        if (!GEMINI_API_KEY) {
+            return NextResponse.json({ error: 'AI Service Not Configured (Missing API Key)' }, { status: 503 })
+        }
 
         // 2. Construct System Prompt
         let systemPrompt = context.settings?.systemPrompt || `Sen Blue Dreams Resort'un dijital konsiyerjisin.

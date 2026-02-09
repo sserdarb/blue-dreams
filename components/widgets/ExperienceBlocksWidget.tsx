@@ -13,6 +13,7 @@ interface ExperienceBlock {
     bgColor?: string
     buttonColor?: string
     reverse?: boolean
+    minHeight?: string
 }
 
 interface ExperienceBlocksData {
@@ -44,14 +45,17 @@ export function ExperienceBlocksWidget({ data }: { data: ExperienceBlocksData })
                 return (
                     <div key={index} className="grid grid-cols-1 md:grid-cols-2">
                         {/* Image Side */}
-                        <div className={`relative h-[500px] md:h-auto ${isReverse ? 'order-1 md:order-2' : ''}`}>
+                        <div
+                            className={`relative w-full ${isReverse ? 'order-1 md:order-2' : ''}`}
+                            style={{ minHeight: block.minHeight || '400px' }}
+                        >
                             <img
                                 src={block.image}
                                 alt={block.imageAlt || block.h1 || ''}
-                                className="w-full h-full object-cover"
+                                className="absolute inset-0 w-full h-full object-cover"
                             />
                             {block.detailImage && (
-                                <div className="absolute bottom-10 left-10 w-40 h-40 border-4 border-white shadow-xl hidden lg:block overflow-hidden">
+                                <div className="absolute bottom-10 left-10 w-40 h-40 border-4 border-white shadow-xl hidden lg:block overflow-hidden z-10">
                                     <img
                                         src={block.detailImage}
                                         alt="Detail"
