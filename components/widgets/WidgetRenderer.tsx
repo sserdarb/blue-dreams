@@ -3,9 +3,23 @@
 import React from 'react'
 import { HeroWidget } from './HeroWidget'
 import { TextWidget } from './TextWidget'
+import { TextBlockWidget } from './TextBlockWidget'
+import { TextImageWidget } from './TextImageWidget'
 import { RoomListWidget } from './RoomListWidget'
 import { GalleryWidget } from './GalleryWidget'
 import { FeaturesWidget } from './FeaturesWidget'
+import { PageHeaderWidget } from './PageHeaderWidget'
+import { StatsWidget } from './StatsWidget'
+import { IconGridWidget } from './IconGridWidget'
+import { ImageGridWidget } from './ImageGridWidget'
+import { CtaWidget } from './CtaWidget'
+import { ContactWidget } from './ContactWidget'
+import { MapWidget } from './MapWidget'
+import { YouTubeWidget } from './YouTubeWidget'
+import { TableWidget } from './TableWidget'
+import { ReviewsWidget } from './ReviewsWidget'
+import { WeatherWidget } from './WeatherWidget'
+import { ExperienceWidget } from './ExperienceWidget'
 
 type WidgetProps = {
   type: string
@@ -16,10 +30,28 @@ type WidgetProps = {
 const componentMap: { [key: string]: React.ComponentType<{ data: any }> } = {
   'hero': HeroWidget,
   'text': TextWidget,
+  'text-block': TextBlockWidget,
+  'text-image': TextImageWidget,
   'room-list': RoomListWidget,
   'gallery': GalleryWidget,
   'image-gallery': GalleryWidget,
   'features': FeaturesWidget,
+  'page-header': PageHeaderWidget,
+  'stats': StatsWidget,
+  'icon-grid': IconGridWidget,
+  'image-grid': ImageGridWidget,
+  'cta': CtaWidget,
+  'cta-banner': CtaWidget,
+  'contact': ContactWidget,
+  'contact-form': ContactWidget,
+  'map': MapWidget,
+  'youtube': YouTubeWidget,
+  'table': TableWidget,
+  'data-table': TableWidget,
+  'reviews': ReviewsWidget,
+  'testimonials': ReviewsWidget,
+  'weather': WeatherWidget,
+  'experience': ExperienceWidget,
 }
 
 export function WidgetRenderer({ widgets }: { widgets: WidgetProps[] }) {
@@ -31,7 +63,6 @@ export function WidgetRenderer({ widgets }: { widgets: WidgetProps[] }) {
         const Component = componentMap[widget.type]
 
         if (!Component) {
-          // For unknown widget types, show a placeholder in development
           if (process.env.NODE_ENV === 'development') {
             return (
               <div
