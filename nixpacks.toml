@@ -1,0 +1,11 @@
+# Nixpacks configuration for Blue Dreams Resort
+# Ensures DATABASE_URL is set at build time for Prisma
+
+[variables]
+DATABASE_URL = "postgresql://coolify:coolifypassword@coolify-db:5432/blue_dreams_v2"
+
+[phases.build]
+cmds = [
+  "npx prisma generate",
+  "npm run build"
+]
