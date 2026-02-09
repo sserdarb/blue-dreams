@@ -61,6 +61,7 @@ model AiSettings {
   language     String   @default("tr") // tr, en, de, ru
   tone         String   @default("friendly") // formal, friendly, casual
   isActive     Boolean  @default(true)
+  apiKey       String?  // Gemini API Key
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }

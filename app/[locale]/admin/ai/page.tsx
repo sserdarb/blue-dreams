@@ -13,7 +13,8 @@ export default function AiSettingsPage() {
 
     const [settings, setSettings] = useState({
         systemPrompt: '',
-        tone: 'friendly'
+        tone: 'friendly',
+        apiKey: ''
     })
 
     // Default Prompt Template (Reference)
@@ -39,7 +40,8 @@ KURALLAR:
                 const data = await res.json()
                 setSettings({
                     systemPrompt: data.systemPrompt || defaultPrompt,
-                    tone: data.tone || 'friendly'
+                    tone: data.tone || 'friendly',
+                    apiKey: data.apiKey || ''
                 })
             }
         } catch (error) {
@@ -99,6 +101,18 @@ KURALLAR:
                             onChange={e => setSettings({ ...settings, systemPrompt: e.target.value })}
                             className="w-full bg-[#0f172a] border border-white/10 rounded-xl p-4 text-slate-300 font-mono text-sm focus:border-indigo-500 outline-none leading-relaxed"
                         ></textarea>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-bold text-slate-300 mb-2">Gemini API Key</label>
+                        <p className="text-xs text-slate-500 mb-2">Google AI Studio'dan aldığınız API anahtarını buraya girin. Bu anahtar veritabanında saklanır.</p>
+                        <input
+                            type="password"
+                            value={settings.apiKey || ''}
+                            onChange={e => setSettings(prev => ({ ...prev, apiKey: e.target.value }))}
+                            placeholder="AIzaSy..."
+                            className="w-full bg-[#0f172a] border border-white/10 rounded-xl p-4 text-slate-300 font-mono text-sm focus:border-indigo-500 outline-none"
+                        />
                     </div>
 
                     <div className="flex items-center justify-between pt-4 border-t border-white/5">

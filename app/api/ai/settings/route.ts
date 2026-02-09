@@ -12,7 +12,7 @@ export async function GET(request: Request) {
 
         // Create default if not exists
         if (!settings) {
-            return NextResponse.json({ systemPrompt: '', tone: 'friendly' })
+            return NextResponse.json({ systemPrompt: '', tone: 'friendly', apiKey: '' })
         }
 
         return NextResponse.json(settings)
@@ -24,7 +24,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
     try {
         const body = await request.json()
-        const { systemPrompt, language = 'tr', tone = 'friendly' } = body
+        const { systemPrompt, language = 'tr', tone = 'friendly', apiKey } = body
 
         // Upsert settings
         const existing = await prisma.aiSettings.findFirst({ where: { language } })
@@ -33,14 +33,15 @@ export async function POST(request: Request) {
         if (existing) {
             settings = await prisma.aiSettings.update({
                 where: { id: existing.id },
-                data: { systemPrompt, tone }
+                data: { systemPrompt, tone, apiKey }
             })
         } else {
             settings = await prisma.aiSettings.create({
                 data: {
                     systemPrompt,
                     language,
-                    tone
+                    tone,
+                    apiKey
                 }
             })
         }

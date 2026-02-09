@@ -159,26 +159,26 @@ const translations = {
 
 // Category images
 const categoryImages: Record<string, string> = {
-    rooms: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/Deluxe-Room-5.jpg',
-    dining: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/ITALIAN-ALACART-1.jpg',
-    spa: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/SPA-04.jpg',
-    location: 'https://bluedreamsresort.com/wp-content/uploads/2025/07/DJI_0302.jpg',
-    meeting: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/meeting-room.jpg',
-    reviews: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/Family-Room-Sea-View-6.jpg'
+    rooms: 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=800&q=80',
+    dining: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=800&q=80',
+    spa: 'https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?auto=format&fit=crop&w=800&q=80',
+    location: 'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=800&q=80',
+    meeting: 'https://images.unsplash.com/photo-1431540015161-0bf868a2d407?auto=format&fit=crop&w=800&q=80',
+    reviews: 'https://images.unsplash.com/photo-1516738901171-8eb4fc13bd20?auto=format&fit=crop&w=800&q=80'
 }
 
 // Room data
 const ROOMS = [
-    { id: 'club', title: 'Club Odalar', size: '20-22 m²', description: 'Modern tasarım ve deniz manzarası ile konforlu konaklama.', image: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/Club-Room-Sea-View-3.jpg' },
-    { id: 'deluxe', title: 'Deluxe Odalar', size: '25-28 m²', description: 'Geniş yaşam alanı ve premium konfor.', image: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/Deluxe-Room-5.jpg' },
-    { id: 'family', title: 'Aile Suitleri', size: '35 m²', description: 'Aileler için ideal, iki ayrı yatak odası.', image: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/Family-Room-Sea-View-6.jpg' }
+    { id: 'club', title: 'Club Odalar', size: '20-22 m²', description: 'Modern tasarım ve deniz manzarası ile konforlu konaklama.', image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=800&q=80' },
+    { id: 'deluxe', title: 'Deluxe Odalar', size: '25-28 m²', description: 'Geniş yaşam alanı ve premium konfor.', image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=800&q=80' },
+    { id: 'family', title: 'Aile Suitleri', size: '35 m²', description: 'Aileler için ideal, iki ayrı yatak odası.', image: 'https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?auto=format&fit=crop&w=800&q=80' }
 ]
 
 // Room details
 const ROOM_DETAILS: Record<string, any> = {
     'Club Odalar': {
         title: 'Club Odalar',
-        image: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/Club-Room-Sea-View-3.jpg',
+        image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=800&q=80',
         size: '20-22 m²',
         view: 'Deniz veya Bahçe',
         capacity: '2+1',
@@ -187,7 +187,7 @@ const ROOM_DETAILS: Record<string, any> = {
     },
     'Deluxe Odalar': {
         title: 'Deluxe Odalar',
-        image: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/Deluxe-Room-5.jpg',
+        image: 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=800&q=80',
         size: '25-28 m²',
         view: 'Deniz Manzarası',
         capacity: '2+2',
@@ -196,7 +196,7 @@ const ROOM_DETAILS: Record<string, any> = {
     },
     'Aile Suitleri': {
         title: 'Club Aile Odaları',
-        image: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/Family-Room-Sea-View-6.jpg',
+        image: 'https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?auto=format&fit=crop&w=800&q=80',
         size: '35 m²',
         view: 'Bahçe ve Kısmi Deniz',
         capacity: '4 Yetişkin',
@@ -563,7 +563,7 @@ export function BlueConciergeFull({ isOpen, onClose, locale = 'tr' }: BlueConcie
             {/* Background */}
             <div className="absolute inset-0 z-0">
                 <img
-                    src="https://bluedreamsresort.com/wp-content/uploads/2023/03/INFINITY-POOL-1.jpg"
+                    src="https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=1920&q=80"
                     alt="Background"
                     className="w-full h-full object-cover opacity-40 scale-105"
                 />

@@ -1,19 +1,23 @@
 import { Calendar, Users, TrendingUp, Eye, FileText, MessageSquare, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import StatCard from '@/components/admin/StatCard'
+import { ElektraService } from '@/lib/services/elektra'
+import { SalesChart } from '@/components/admin/charts/SalesChart'
+import { ChannelPieChart } from '@/components/admin/charts/ChannelPieChart'
 
 export default async function AdminDashboard({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params
 
-  // Mock data - in production, this would come from the database
-  const stats = {
-    todayReservations: 12,
-    totalRevenue: '₺245,890',
-    activeVisitors: 34,
-    totalPages: 9,
-    pendingMessages: 3,
-    monthlyGrowth: '+15%',
-  }
+  // Fetch mock data from Elektra Service
+  const today = new Date()
+  const lastWeek = new Date(today)
+  lastWeek.setDate(today.getDate() - 7)
+
+  const [salesData, channelData, stats] = await Promise.all([
+    ElektraService.getSalesData(lastWeek, today),
+    ElektraService.getChannelDistribution(),
+    ElektraService.getDailyStats()
+  ])
 
   const recentReservations = [
     { id: 'RES-001', guest: 'Ahmet Yılmaz', room: 'Deluxe', checkIn: '15 Şub', status: 'confirmed' },
@@ -37,6 +41,18 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
         </div>
       </div>
 
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 bg-white/5 border border-white/10 rounded-xl p-6">
+          <h2 className="text-xl font-bold text-white mb-6">Satış Performansı (Web vs Call Center)</h2>
+          <SalesChart data={salesData} />
+        </div>
+        <div className="bg-white/5 border border-white/10 rounded-xl p-6">
+          <h2 className="text-xl font-bold text-white mb-6">Kanal Dağılımı</h2>
+          <ChannelPieChart data={channelData} />
+        </div>
+      </div>
+
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
@@ -54,23 +70,25 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
           subtitle="Bu ay"
           icon={<TrendingUp size={24} />}
           trend="up"
-          trendValue={stats.monthlyGrowth}
+          trendValue="+15%"
           color="green"
+        />
+        <StatCard
+          title="Doluluk Oranı"
+          value={stats.occupancyRate}
+          subtitle={`Ortalama ADR: ${stats.adr}`}
+          icon={<Users size={24} />}
+          trend="neutral"
+          trendValue="stabil"
+          color="purple"
         />
         <StatCard
           title="Aktif Ziyaretçi"
           value={stats.activeVisitors}
           subtitle="Şu an sitede"
           icon={<Eye size={24} />}
-          trend="neutral"
-          trendValue="canlı"
-          color="purple"
-        />
-        <StatCard
-          title="Bekleyen Mesaj"
-          value={stats.pendingMessages}
-          subtitle="Blue Concierge"
-          icon={<MessageSquare size={24} />}
+          trend="up"
+          trendValue="+12"
           color="orange"
         />
       </div>
@@ -80,7 +98,7 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
         {/* Recent Reservations */}
         <div className="lg:col-span-2 bg-white/5 border border-white/10 rounded-xl p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-white">Son Rezervasyonlar</h2>
+            <h2 className="text-xl font-bold text-white">Son Rezervasyonlar (Elektra PMS)</h2>
             <Link
               href={`/${locale}/admin/reservations`}
               className="text-cyan-400 hover:text-cyan-300 text-sm flex items-center gap-1 transition-colors"
@@ -107,8 +125,8 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
                 <div className="text-right">
                   <p className="text-slate-400 text-sm">{res.checkIn}</p>
                   <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${res.status === 'confirmed'
-                      ? 'bg-green-500/20 text-green-400'
-                      : 'bg-orange-500/20 text-orange-400'
+                    ? 'bg-green-500/20 text-green-400'
+                    : 'bg-orange-500/20 text-orange-400'
                     }`}>
                     {res.status === 'confirmed' ? 'Onaylı' : 'Beklemede'}
                   </span>
