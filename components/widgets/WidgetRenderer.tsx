@@ -20,6 +20,13 @@ import { TableWidget } from './TableWidget'
 import { ReviewsWidget } from './ReviewsWidget'
 import { WeatherWidget } from './WeatherWidget'
 import { ExperienceWidget } from './ExperienceWidget'
+import { AboutStatementWidget } from './AboutStatementWidget'
+import { CategoryCardsWidget } from './CategoryCardsWidget'
+import { ExperienceBlocksWidget } from './ExperienceBlocksWidget'
+import { LocalGuideWidget } from './LocalGuideWidget'
+import { ReviewsSectionWidget } from './ReviewsSectionWidget'
+import { SustainabilityWidget } from './SustainabilityWidget'
+import { LocationMapWidget } from './LocationMapWidget'
 
 type WidgetProps = {
   type: string
@@ -52,6 +59,14 @@ const componentMap: { [key: string]: React.ComponentType<{ data: any }> } = {
   'testimonials': ReviewsWidget,
   'weather': WeatherWidget,
   'experience': ExperienceWidget,
+  // Production-matching homepage widgets
+  'about-statement': AboutStatementWidget,
+  'category-cards': CategoryCardsWidget,
+  'experience-blocks': ExperienceBlocksWidget,
+  'local-guide': LocalGuideWidget,
+  'reviews-section': ReviewsSectionWidget,
+  'sustainability': SustainabilityWidget,
+  'location-map': LocationMapWidget,
 }
 
 export function WidgetRenderer({ widgets }: { widgets: WidgetProps[] }) {
