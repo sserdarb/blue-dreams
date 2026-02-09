@@ -27,7 +27,7 @@ export async function login(formData: FormData) {
       name: 'Admin',
     }), {
       httpOnly: true,
-      secure: false, // HTTP only - no valid SSL cert
+      secure: process.env.NODE_ENV === 'production',
       maxAge: 60 * 60 * 24 * 7, // 7 days
       path: '/',
     });
@@ -56,7 +56,7 @@ export async function login(formData: FormData) {
 
       (await cookies()).set(COOKIE_NAME, sessionValue, {
         httpOnly: true,
-        secure: false, // HTTP only - no valid SSL cert
+        secure: process.env.NODE_ENV === 'production',
         maxAge: 60 * 60 * 24 * 7,
         path: '/',
       });
