@@ -255,3 +255,15 @@ model AnalyticsConfig {
   updatedAt       DateTime @updatedAt
 }
 
+model AdminUser {
+  id        String    @id @default(uuid())
+  email     String    @unique
+  password  String
+  name      String
+  role      String    @default("admin") // superadmin, admin, editor
+  isActive  Boolean   @default(true)
+  lastLogin DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+

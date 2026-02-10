@@ -38,13 +38,13 @@ export default function LoginPage() {
 
         <form action={formAction} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Kullanıcı Adı</label>
+            <label className="block text-sm font-medium text-gray-700">E-posta</label>
             <input
-              type="text"
-              name="username"
+              type="email"
+              name="email"
               required
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Kullanıcı adınızı girin"
+              placeholder="E-posta adresinizi girin"
             />
           </div>
 
@@ -67,7 +67,7 @@ export default function LoginPage() {
             type="submit"
             className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition"
           >
-            Login
+            Giriş Yap
           </button>
         </form>
       </div>
