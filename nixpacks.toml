@@ -9,3 +9,7 @@ cmds = [
   "npx prisma generate",
   "npm run build"
 ]
+
+[start]
+cmd = "npx prisma db push && node prisma/seed.js && npm start"
+
