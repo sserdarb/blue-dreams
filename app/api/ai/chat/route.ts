@@ -106,7 +106,7 @@ export async function POST(request: Request) {
 
         // 3. Generate Content
         const response = await ai.models.generateContent({
-            model: 'gemini-2.0-flash-exp', // Or verified available model
+            model: 'gemini-2.0-flash', // Stable release
             contents: chatHistory,
             config: {
                 systemInstruction: systemPrompt,
