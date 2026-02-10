@@ -7,7 +7,8 @@ import { prisma } from '@/lib/prisma';
 const COOKIE_NAME = 'admin_session';
 
 export async function login(formData: FormData) {
-  const email = formData.get('email') as string;
+  // Support both 'email' and 'username' field names for backward compat
+  const email = (formData.get('email') || formData.get('username')) as string;
   const password = formData.get('password') as string;
 
   if (!email || !password) {
@@ -36,13 +37,12 @@ export async function login(formData: FormData) {
 
   // Then check database for other users
   try {
-    const db = prisma as any;
-    const user = await db.adminUser.findUnique({
+    const user = await prisma.adminUser.findUnique({
       where: { email: trimmedEmail }
     });
 
     if (user && user.password === password && user.isActive) {
-      await db.adminUser.update({
+      await prisma.adminUser.update({
         where: { id: user.id },
         data: { lastLogin: new Date() }
       });
@@ -68,6 +68,7 @@ export async function login(formData: FormData) {
 
   return { success: false, error: 'E-posta veya şifre yanlış.' };
 }
+
 
 export async function logout() {
   (await cookies()).delete(COOKIE_NAME);

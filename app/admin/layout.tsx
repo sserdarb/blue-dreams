@@ -16,7 +16,8 @@ import {
   ExternalLink,
   ChevronDown,
   Sparkles,
-  Megaphone
+  Megaphone,
+  Users
 } from 'lucide-react'
 
 const navItems = [
@@ -31,6 +32,7 @@ const navItems = [
   { href: '/chat', label: 'Blue Concierge', icon: MessageSquare },
   { href: '/ai-training', label: 'AI Eğitim', icon: Sparkles },
   { href: '/cta-bar', label: 'CTA Bar', icon: Megaphone },
+  { href: '/users', label: 'Kullanıcılar', icon: Users },
 ]
 
 const languages = [
