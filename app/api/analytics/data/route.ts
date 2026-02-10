@@ -62,10 +62,10 @@ async function getInternalAnalytics(days: number = 30) {
         }),
         // Daily views (last N days)
         db.$queryRawUnsafe(`
-            SELECT DATE(createdAt) as date, COUNT(*) as views
-            FROM PageView
-            WHERE createdAt >= ?
-            GROUP BY DATE(createdAt)
+            SELECT "createdAt"::date as date, COUNT(*) as views
+            FROM "PageView"
+            WHERE "createdAt" >= $1
+            GROUP BY "createdAt"::date
             ORDER BY date ASC
         `, since.toISOString()),
         // Average duration
