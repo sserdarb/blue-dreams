@@ -62,7 +62,7 @@ function GenericJsonEditor({ id, initialData }: { id: string; initialData: strin
                 onClick={handleSave}
                 disabled={saving}
                 className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${saved ? 'bg-green-500 text-white' :
-                        'bg-blue-600 text-white hover:bg-blue-700'
+                    'bg-blue-600 text-white hover:bg-blue-700'
                     }`}
             >
                 {saved ? <><Check size={14} /> Saved!</> : <><Save size={14} /> {saving ? 'Saving...' : 'Save'}</>}
@@ -93,26 +93,5 @@ export function WidgetEditor({ id, type, initialData }: WidgetEditorProps) {
     )
 }
 
-// Widget type metadata for the UI
-export const WIDGET_TYPES = [
-    { type: 'hero', label: 'Hero Section', description: 'Full-width banner with image or video background', icon: '🎬' },
-    { type: 'page-header', label: 'Page Header', description: 'Sub-page header with background image and breadcrumbs', icon: '📄' },
-    { type: 'text', label: 'Text Block', description: 'Rich text content with styling options', icon: '📝' },
-    { type: 'text-block', label: 'Statement Block', description: 'Centered statement/quote section', icon: '💬' },
-    { type: 'text-image', label: 'Text + Image', description: 'Split layout with text and image', icon: '🖼️' },
-    { type: 'stats', label: 'Statistics Bar', description: 'Row of stat items with icons', icon: '📊' },
-    { type: 'icon-grid', label: 'Icon Cards', description: 'Grid of cards with icons and text', icon: '✨' },
-    { type: 'image-grid', label: 'Image Cards', description: 'Grid of cards with images', icon: '🎨' },
-    { type: 'gallery', label: 'Image Gallery', description: 'Gallery with lightbox', icon: '📸' },
-    { type: 'features', label: 'Features', description: 'Feature list with icons', icon: '⭐' },
-    { type: 'cta', label: 'Call to Action', description: 'CTA section with buttons', icon: '📢' },
-    { type: 'contact', label: 'Contact Section', description: 'Contact info + form', icon: '✉️' },
-    { type: 'map', label: 'Map Embed', description: 'Google Maps embed', icon: '🗺️' },
-    { type: 'youtube', label: 'YouTube Videos', description: 'Embed YouTube videos', icon: '📺' },
-    { type: 'table', label: 'Data Table', description: 'Table with columns and rows', icon: '📋' },
-    { type: 'reviews', label: 'Reviews', description: 'Guest reviews and ratings', icon: '⭐' },
-    { type: 'weather', label: 'Weather', description: 'Monthly weather data', icon: '🌤️' },
-    { type: 'experience', label: 'Experience', description: 'Interactive experience showcase', icon: '🏊' },
-    { type: 'room-list', label: 'Room List', description: 'Room cards from database', icon: '🏨' },
-    { type: 'divider', label: 'Divider', description: 'Visual separator', icon: '➖' },
-]
+// Re-export WIDGET_TYPES from shared module (not 'use client' boundary)
+export { WIDGET_TYPES } from './widget-types'

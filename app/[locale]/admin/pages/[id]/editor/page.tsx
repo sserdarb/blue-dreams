@@ -1,5 +1,6 @@
 import { getPageById, addWidget, deleteWidget } from '@/app/actions/admin'
-import { WidgetEditor, WIDGET_TYPES } from '@/components/admin/widget-editors'
+import { WidgetEditor } from '@/components/admin/widget-editors'
+import { WIDGET_TYPES } from '@/components/admin/widget-editors/widget-types'
 import { Trash2, GripVertical, ChevronDown, ChevronUp } from 'lucide-react'
 
 export default async function PageEditor({ params }: { params: Promise<{ id: string }> }) {
