@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Sparkles, Save, Upload, Trash2, FileText, Globe, Volume2, Plus, RefreshCw } from 'lucide-react'
+import { Sparkles, Save, Upload, Trash2, FileText, Globe, Volume2, Plus, RefreshCw, Key, Eye, EyeOff } from 'lucide-react'
 
 interface AiSettings {
     id: string
@@ -9,6 +9,8 @@ interface AiSettings {
     language: string
     tone: string
     isActive: boolean
+    apiKey?: string
+    apiKeyMasked?: string
 }
 
 interface TrainingDocument {
@@ -26,6 +28,8 @@ export default function AiTrainingPage() {
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
     const [showAddDoc, setShowAddDoc] = useState(false)
+    const [showApiKey, setShowApiKey] = useState(false)
+    const [newApiKey, setNewApiKey] = useState('')
     const [newDoc, setNewDoc] = useState({ title: '', content: '' })
 
     useEffect(() => {
@@ -60,15 +64,25 @@ export default function AiTrainingPage() {
         if (!settings) return
         setSaving(true)
         try {
+            const payload: any = { ...settings }
+            // Only send apiKey if user entered a new one
+            if (newApiKey.trim()) {
+                payload.apiKey = newApiKey.trim()
+            } else {
+                delete payload.apiKey
+                delete payload.apiKeyMasked
+            }
             const res = await fetch('/api/ai/settings', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(settings)
+                body: JSON.stringify(payload)
             })
 
             if (res.ok) {
                 const data = await res.json()
                 setSettings(data)
+                setNewApiKey('')
+                setShowApiKey(false)
                 alert('Ayarlar kaydedildi!')
             }
         } catch (error) {
@@ -203,29 +217,70 @@ export default function AiTrainingPage() {
                     </div>
                 </div>
 
-                {/* Status Card */}
-                <div className="bg-gradient-to-br from-blue-600 to-purple-700 rounded-xl p-6 text-white">
-                    <h3 className="font-bold mb-4 flex items-center gap-2">
-                        <Volume2 className="w-5 h-5" />
-                        Durum
+                {/* API Key Card */}
+                <div className="bg-white rounded-xl border border-gray-200 p-6">
+                    <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                        <Key className="w-5 h-5 text-amber-600" />
+                        Gemini API Anahtarı
                     </h3>
-                    <div className="space-y-3">
-                        <div className="flex justify-between items-center">
-                            <span className="opacity-80">Eğitim Dökümanları</span>
-                            <span className="font-bold text-xl">{documents.length}</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                            <span className="opacity-80">AI Durumu</span>
-                            <span className={`px-2 py-1 rounded-full text-xs font-bold ${settings?.isActive ? 'bg-green-400/20 text-green-100' : 'bg-red-400/20 text-red-100'}`}>
-                                {settings?.isActive ? 'AKTİF' : 'PASİF'}
-                            </span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                            <span className="opacity-80">Prompt Uzunluğu</span>
-                            <span className="font-medium">{settings?.systemPrompt?.length || 0} karakter</span>
-                        </div>
+                    <p className="text-xs text-gray-500 mb-3">
+                        Google AI Studio'dan alınan API anahtarı. Güvenlik için maskelenmiş gösterilir.
+                    </p>
+
+                    {/* Current key status */}
+                    <div className="mb-3 p-3 bg-gray-50 rounded-lg">
+                        <span className="text-xs font-medium text-gray-500 block mb-1">Mevcut Anahtar:</span>
+                        <span className="font-mono text-sm text-gray-700">
+                            {settings?.apiKeyMasked || '⚠️ Ayarlanmamış'}
+                        </span>
+                    </div>
+
+                    {/* New key input */}
+                    <div className="relative">
+                        <input
+                            type={showApiKey ? 'text' : 'password'}
+                            value={newApiKey}
+                            onChange={(e) => setNewApiKey(e.target.value)}
+                            placeholder="Yeni API anahtarı girin..."
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 pr-10 text-sm font-mono focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowApiKey(!showApiKey)}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600"
+                        >
+                            {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                    </div>
+                    <p className="text-xs text-gray-400 mt-2">
+                        <a href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer" className="text-blue-600 hover:underline">
+                            Google AI Studio
+                        </a>'dan yeni anahtar oluşturabilirsiniz.
+                    </p>
+                </div>
+            </div>
+
+            {/* Status Bar */}
+            <div className="bg-gradient-to-r from-blue-600 to-purple-700 rounded-xl p-4 text-white flex items-center justify-between">
+                <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-2">
+                        <span className="opacity-80 text-sm">Dökümanlar:</span>
+                        <span className="font-bold">{documents.length}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <span className="opacity-80 text-sm">AI:</span>
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${settings?.isActive ? 'bg-green-400/20 text-green-100' : 'bg-red-400/20 text-red-100'}`}>
+                            {settings?.isActive ? 'AKTİF' : 'PASİF'}
+                        </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <span className="opacity-80 text-sm">API Key:</span>
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${settings?.apiKeyMasked ? 'bg-green-400/20 text-green-100' : 'bg-red-400/20 text-red-100'}`}>
+                            {settings?.apiKeyMasked ? '✓ Ayarlı' : '✗ Eksik'}
+                        </span>
                     </div>
                 </div>
+                <span className="text-sm opacity-70">Prompt: {settings?.systemPrompt?.length || 0} karakter</span>
             </div>
 
             {/* System Prompt */}
