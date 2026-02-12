@@ -25,7 +25,8 @@ export async function GET(request: Request) {
         return NextResponse.json({
             ...settings,
             apiKey: undefined,
-            apiKeyMasked: maskApiKey(settings.apiKey)
+            apiKeyMasked: maskApiKey(settings.apiKey),
+            googleSheetId: settings.googleSheetId || ''
         })
     } catch (error) {
         return NextResponse.json({ error: 'Failed to fetch settings' }, { status: 500 })
@@ -35,12 +36,15 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
     try {
         const body = await request.json()
-        const { systemPrompt, language = 'tr', tone = 'friendly', apiKey } = body
+        const { systemPrompt, language = 'tr', tone = 'friendly', apiKey, googleSheetId } = body
 
         // Build update data — only include apiKey if a new one was provided
         const updateData: any = { systemPrompt, tone }
         if (apiKey && apiKey.trim()) {
             updateData.apiKey = apiKey.trim()
+        }
+        if (googleSheetId !== undefined) {
+            updateData.googleSheetId = googleSheetId?.trim() || null
         }
 
         // Upsert settings
@@ -58,7 +62,8 @@ export async function POST(request: Request) {
                     systemPrompt,
                     language,
                     tone,
-                    apiKey: apiKey?.trim() || ''
+                    apiKey: apiKey?.trim() || '',
+                    googleSheetId: googleSheetId?.trim() || null
                 }
             })
         }
@@ -67,7 +72,8 @@ export async function POST(request: Request) {
         return NextResponse.json({
             ...settings,
             apiKey: undefined,
-            apiKeyMasked: maskApiKey(settings.apiKey)
+            apiKeyMasked: maskApiKey(settings.apiKey),
+            googleSheetId: settings.googleSheetId || ''
         })
 
     } catch (error) {

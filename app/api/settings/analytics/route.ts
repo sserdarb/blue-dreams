@@ -14,19 +14,20 @@ export async function GET() {
                 gaApiSecret: config.gaApiSecret || '',
                 gaPropertyId: config.gaPropertyId || '',
                 gaServiceKey: config.gaServiceKey ? '***configured***' : '',
+                googleClientId: config.googleClientId || '',
                 useGaApi: config.useGaApi || false,
             })
         }
         return NextResponse.json({
             gaId: '', gtmId: '', fbPixelId: '',
-            gaApiSecret: '', gaPropertyId: '', gaServiceKey: '',
+            gaApiSecret: '', gaPropertyId: '', gaServiceKey: '', googleClientId: '',
             useGaApi: false,
         })
     } catch (error) {
         console.error('Error reading analytics settings:', error)
         return NextResponse.json({
             gaId: '', gtmId: '', fbPixelId: '',
-            gaApiSecret: '', gaPropertyId: '', gaServiceKey: '',
+            gaApiSecret: '', gaPropertyId: '', gaServiceKey: '', googleClientId: '',
             useGaApi: false,
         })
     }
@@ -43,6 +44,7 @@ export async function POST(request: Request) {
             fbPixelId: settings.fbPixelId || null,
             gaApiSecret: settings.gaApiSecret || null,
             gaPropertyId: settings.gaPropertyId || null,
+            googleClientId: settings.googleClientId || null,
             useGaApi: settings.useGaApi || false,
         }
 

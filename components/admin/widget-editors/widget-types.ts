@@ -1,5 +1,6 @@
 // Widget type metadata - shared between server and client components
-export const WIDGET_TYPES = [
+// Using a plain array with explicit type for SSR compatibility
+const widgetTypes = [
     { type: 'hero', label: 'Hero Section', description: 'Full-width banner with image or video background', icon: '🎬' },
     { type: 'page-header', label: 'Page Header', description: 'Sub-page header with background image and breadcrumbs', icon: '📄' },
     { type: 'text', label: 'Text Block', description: 'Rich text content with styling options', icon: '📝' },
@@ -20,4 +21,18 @@ export const WIDGET_TYPES = [
     { type: 'experience', label: 'Experience', description: 'Interactive experience showcase', icon: '🏊' },
     { type: 'room-list', label: 'Room List', description: 'Room cards from database', icon: '🏨' },
     { type: 'divider', label: 'Divider', description: 'Visual separator', icon: '➖' },
-]
+] as const
+
+export type WidgetTypeInfo = typeof widgetTypes[number]
+
+// Export as a mutable array to avoid SSR/RSC module boundary issues
+export const WIDGET_TYPES: WidgetTypeInfo[] = [...widgetTypes]
+
+// Helper function for safer lookups (avoids .find on potentially non-array module exports)
+export function getWidgetTypeInfo(type: string): WidgetTypeInfo | undefined {
+    return widgetTypes.find(w => w.type === type)
+}
+
+export function getWidgetIcon(type: string): string {
+    return widgetTypes.find(w => w.type === type)?.icon || '📦'
+}

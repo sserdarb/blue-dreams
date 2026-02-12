@@ -17,6 +17,7 @@ interface SiteSettingsFormProps {
         footerText?: string
         footerCopyright?: string
         headerStyle?: string
+        googleMapsApiKey?: string
     }
 }
 
@@ -246,8 +247,8 @@ export function SiteSettingsForm({ locale, initialSettings }: SiteSettingsFormPr
                     onClick={handleSave}
                     disabled={saving}
                     className={`w-full py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition ${saved
-                            ? 'bg-green-600 text-white'
-                            : 'bg-blue-600 hover:bg-blue-700 text-white'
+                        ? 'bg-green-600 text-white'
+                        : 'bg-blue-600 hover:bg-blue-700 text-white'
                         } disabled:opacity-50`}
                 >
                     <Save size={18} />

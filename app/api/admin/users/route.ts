@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { cookies } from 'next/headers'
+import bcrypt from 'bcryptjs'
 
 // Helper to check if requester is superadmin
 async function requireSuperAdmin() {
@@ -55,18 +56,26 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'E-posta, şifre ve isim gereklidir' }, { status: 400 })
         }
 
+        if (password.length < 6) {
+            return NextResponse.json({ error: 'Şifre en az 6 karakter olmalıdır' }, { status: 400 })
+        }
+
         // Check if email already exists
         const existing = await prisma.adminUser.findUnique({ where: { email: email.toLowerCase().trim() } })
         if (existing) {
             return NextResponse.json({ error: 'Bu e-posta zaten kayıtlı' }, { status: 409 })
         }
 
+        // Hash password with bcrypt
+        const hashedPassword = await bcrypt.hash(password, 10)
+
         const user = await prisma.adminUser.create({
             data: {
                 email: email.toLowerCase().trim(),
-                password, // Plain text for now — consider bcrypt in production
+                password: hashedPassword,
                 name,
                 role: ['superadmin', 'admin', 'editor'].includes(role) ? role : 'admin',
+                isActive: true,
             },
             select: {
                 id: true,
@@ -102,7 +111,13 @@ export async function PUT(request: Request) {
         if (name !== undefined) updateData.name = name
         if (role !== undefined && ['superadmin', 'admin', 'editor'].includes(role)) updateData.role = role
         if (isActive !== undefined) updateData.isActive = isActive
-        if (password && password.trim()) updateData.password = password.trim()
+        if (password && password.trim()) {
+            if (password.trim().length < 6) {
+                return NextResponse.json({ error: 'Şifre en az 6 karakter olmalıdır' }, { status: 400 })
+            }
+            // Hash new password with bcrypt
+            updateData.password = await bcrypt.hash(password.trim(), 10)
+        }
 
         const user = await prisma.adminUser.update({
             where: { id },

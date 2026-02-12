@@ -17,6 +17,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
         footerText: settings.footerText ?? undefined,
         footerCopyright: settings.footerCopyright ?? undefined,
         headerStyle: settings.headerStyle ?? undefined,
+        googleMapsApiKey: settings.googleMapsApiKey ?? undefined,
     }
 
     return (

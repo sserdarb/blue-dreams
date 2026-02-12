@@ -5,7 +5,7 @@ import StatCard from '@/components/admin/StatCard'
 export default async function AdminDashboard({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params
 
-  // Mock data - in production, this would come from the database
+  // Demo data - Elektra PMS entegrasyonu aktif olduğunda gerçek veri ile değişecek
   const stats = {
     todayReservations: 12,
     totalRevenue: '₺245,890',
@@ -107,8 +107,8 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
                 <div className="text-right">
                   <p className="text-slate-400 text-sm">{res.checkIn}</p>
                   <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${res.status === 'confirmed'
-                      ? 'bg-green-500/20 text-green-400'
-                      : 'bg-orange-500/20 text-orange-400'
+                    ? 'bg-green-500/20 text-green-400'
+                    : 'bg-orange-500/20 text-orange-400'
                     }`}>
                     {res.status === 'confirmed' ? 'Onaylı' : 'Beklemede'}
                   </span>
