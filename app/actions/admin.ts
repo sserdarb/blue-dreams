@@ -51,14 +51,35 @@ export async function addWidget(pageId: string, type: string) {
 }
 
 export async function updateWidget(id: string, data: any) {
-  await prisma.widget.update({
+  const widget = await prisma.widget.update({
     where: { id },
     data: {
       data: JSON.stringify(data),
     },
+    include: { page: { select: { slug: true, locale: true } } },
   })
+  // Revalidate so changes show immediately
+  revalidatePath(`/${widget.page.locale}/admin/pages`)
+  revalidatePath(`/${widget.page.locale}/${widget.page.slug}`)
 }
 
 export async function deleteWidget(id: string) {
-  await prisma.widget.delete({ where: { id } })
+  const widget = await prisma.widget.delete({
+    where: { id },
+    include: { page: { select: { slug: true, locale: true } } },
+  })
+  revalidatePath(`/${widget.page.locale}/admin/pages`)
+  revalidatePath(`/${widget.page.locale}/${widget.page.slug}`)
+}
+
+export async function reorderWidgets(widgetIds: string[]) {
+  // Update each widget's order based on its position in the array
+  await prisma.$transaction(
+    widgetIds.map((id, index) =>
+      prisma.widget.update({
+        where: { id },
+        data: { order: index },
+      })
+    )
+  )
 }

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import Link from 'next/link'
+import { AdminErrorBoundary } from '@/components/admin/AdminErrorBoundary'
 import {
   LayoutDashboard,
   FileText,
@@ -171,7 +172,9 @@ export default function AdminLayout({
       {/* Main Content */}
       <main className="flex-1 overflow-auto bg-[#0f172a]">
         <div className="p-8">
-          {children}
+          <AdminErrorBoundary>
+            {children}
+          </AdminErrorBoundary>
         </div>
       </main>
     </div>

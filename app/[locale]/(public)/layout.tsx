@@ -3,6 +3,7 @@ import Footer from '@/components/sections/Footer'
 import BookingWidget from '@/components/widgets/BookingWidget'
 import { ChatWidget } from '@/components/chat/ChatWidget'
 import AnalyticsTracker from '@/components/analytics/AnalyticsTracker'
+import { getMenuItems } from '@/app/actions/settings'
 
 export default async function PublicLayout({
     children,
@@ -13,10 +14,20 @@ export default async function PublicLayout({
 }) {
     const { locale } = await params
 
+    // Fetch dynamic menu items
+    const dbMenuItems = await getMenuItems(locale)
+
+    // Map to Navbar expected format
+    const menuItems = dbMenuItems.map(item => ({
+        label: item.title,
+        url: item.url,
+        // target: item.target 
+    }))
+
     return (
         <div className="min-h-screen flex flex-col">
             <AnalyticsTracker />
-            <Navbar locale={locale} />
+            <Navbar locale={locale} menuItems={menuItems} />
             <div className="flex-1">
                 {children}
             </div>

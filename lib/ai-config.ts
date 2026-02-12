@@ -1,0 +1,1 @@
+export const GEMINI_API_KEY = '***REDACTED_GOOGLE_SHEETS_KEY***'

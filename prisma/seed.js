@@ -1,4 +1,5 @@
 const { PrismaClient } = require('@prisma/client')
+const bcrypt = require('bcryptjs')
 const { seedPage, homeWidgets } = require('./seed-helpers')
 const { aboutWidgets, roomsWidgets, restaurantWidgets, spaWidgets, contactWidgets, weddingWidgets, galleryWidgets, meetingWidgets, bodrumWidgets } = require('./seed-pages')
 
@@ -13,10 +14,11 @@ async function main() {
     })
 
     if (!existingAdmin) {
+        const hashedPassword = await bcrypt.hash('***REDACTED_ADMIN_PASSWORD***', 10)
         await prisma.adminUser.create({
             data: {
                 email: '***REDACTED_EMAIL***',
-                password: '***REDACTED_ADMIN_PASSWORD***',
+                password: hashedPassword,
                 name: 'Serdar',
                 role: 'superadmin',
                 isActive: true,

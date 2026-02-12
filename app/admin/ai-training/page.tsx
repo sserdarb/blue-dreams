@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Sparkles, Save, Upload, Trash2, FileText, Globe, Volume2, Plus, RefreshCw, Key, Eye, EyeOff } from 'lucide-react'
+import { Sparkles, Save, Upload, Trash2, FileText, Globe, Plus, RefreshCw, Key, Eye, EyeOff, Sheet, CheckCircle, XCircle, Loader2, ExternalLink } from 'lucide-react'
 
 interface AiSettings {
     id: string
@@ -11,6 +11,7 @@ interface AiSettings {
     isActive: boolean
     apiKey?: string
     apiKeyMasked?: string
+    googleSheetId?: string
 }
 
 interface TrainingDocument {
@@ -22,6 +23,14 @@ interface TrainingDocument {
     createdAt: string
 }
 
+interface SheetPreview {
+    success: boolean
+    sheetNames?: string[]
+    rowCount?: number
+    preview?: string
+    error?: string
+}
+
 export default function AiTrainingPage() {
     const [settings, setSettings] = useState<AiSettings | null>(null)
     const [documents, setDocuments] = useState<TrainingDocument[]>([])
@@ -31,6 +40,10 @@ export default function AiTrainingPage() {
     const [showApiKey, setShowApiKey] = useState(false)
     const [newApiKey, setNewApiKey] = useState('')
     const [newDoc, setNewDoc] = useState({ title: '', content: '' })
+
+    // Google Sheets state
+    const [sheetPreview, setSheetPreview] = useState<SheetPreview | null>(null)
+    const [testingSheet, setTestingSheet] = useState(false)
 
     useEffect(() => {
         loadData()
@@ -65,7 +78,6 @@ export default function AiTrainingPage() {
         setSaving(true)
         try {
             const payload: any = { ...settings }
-            // Only send apiKey if user entered a new one
             if (newApiKey.trim()) {
                 payload.apiKey = newApiKey.trim()
             } else {
@@ -128,6 +140,39 @@ export default function AiTrainingPage() {
         } catch (error) {
             console.error('Delete document error:', error)
         }
+    }
+
+    // Google Sheets test function
+    const testSheetConnection = async () => {
+        const sheetId = settings?.googleSheetId
+        if (!sheetId) {
+            setSheetPreview({ success: false, error: 'Lütfen bir Google Sheet ID veya URL girin' })
+            return
+        }
+
+        setTestingSheet(true)
+        setSheetPreview(null)
+        try {
+            const res = await fetch(`/api/ai/sheets?sheetId=${encodeURIComponent(sheetId)}`)
+            const data = await res.json()
+            setSheetPreview(data)
+        } catch (error: any) {
+            setSheetPreview({ success: false, error: error.message || 'Bağlantı hatası' })
+        } finally {
+            setTestingSheet(false)
+        }
+    }
+
+    const clearSheetCache = async () => {
+        try {
+            await fetch('/api/ai/sheets', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sheetId: settings?.googleSheetId })
+            })
+            setSheetPreview(null)
+            alert('Cache temizlendi!')
+        } catch { }
     }
 
     if (loading) {
@@ -260,6 +305,102 @@ export default function AiTrainingPage() {
                 </div>
             </div>
 
+            {/* Google Sheets Integration */}
+            <div className="bg-white rounded-xl border border-gray-200 p-6">
+                <h3 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
+                    <Sheet className="w-5 h-5 text-green-600" />
+                    Google Sheets Bilgi Kaynağı
+                </h3>
+                <p className="text-sm text-gray-500 mb-4">
+                    Google Sheets tablosundaki veriler AI'ın bilgi bankası olarak kullanılır. Otel bilgileri, fiyatlar, etkinlikler vb. burada tutulabilir.
+                </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Sheet ID input */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Google Sheet URL veya ID
+                        </label>
+                        <input
+                            type="text"
+                            value={settings?.googleSheetId || ''}
+                            onChange={(e) => setSettings(s => s ? { ...s, googleSheetId: e.target.value } : s)}
+                            placeholder="https://docs.google.com/spreadsheets/d/... veya Sheet ID"
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                        />
+                        <p className="text-xs text-gray-400 mt-1">
+                            Sheet'in <strong>"Bağlantıya sahip olan herkes görüntüleyebilir"</strong> olarak paylaşılmış olması gerekir.
+                        </p>
+                    </div>
+
+                    {/* Test & Actions */}
+                    <div className="flex flex-col justify-end gap-2">
+                        <div className="flex gap-2">
+                            <button
+                                onClick={testSheetConnection}
+                                disabled={testingSheet || !settings?.googleSheetId}
+                                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 text-sm font-medium"
+                            >
+                                {testingSheet ? (
+                                    <><Loader2 className="w-4 h-4 animate-spin" /> Test Ediliyor...</>
+                                ) : (
+                                    <><CheckCircle className="w-4 h-4" /> Bağlantıyı Test Et</>
+                                )}
+                            </button>
+                            <button
+                                onClick={clearSheetCache}
+                                disabled={!settings?.googleSheetId}
+                                className="px-3 py-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors text-sm"
+                                title="Cache Temizle"
+                            >
+                                <RefreshCw className="w-4 h-4" />
+                            </button>
+                        </div>
+                        {settings?.googleSheetId && (
+                            <a
+                                href={settings.googleSheetId.startsWith('http') ? settings.googleSheetId : `https://docs.google.com/spreadsheets/d/${settings.googleSheetId}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="flex items-center gap-1 text-xs text-blue-600 hover:underline"
+                            >
+                                <ExternalLink className="w-3 h-3" /> Google Sheets'te Aç
+                            </a>
+                        )}
+                    </div>
+                </div>
+
+                {/* Preview Results */}
+                {sheetPreview && (
+                    <div className={`mt-4 p-4 rounded-lg border ${sheetPreview.success ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+                        {sheetPreview.success ? (
+                            <div>
+                                <div className="flex items-center gap-2 mb-2">
+                                    <CheckCircle className="w-5 h-5 text-green-600" />
+                                    <span className="font-medium text-green-800">Bağlantı Başarılı</span>
+                                </div>
+                                <div className="flex gap-4 text-sm text-green-700 mb-3">
+                                    <span><strong>{sheetPreview.rowCount}</strong> satır</span>
+                                    <span><strong>{sheetPreview.sheetNames?.length}</strong> sayfa: {sheetPreview.sheetNames?.join(', ')}</span>
+                                </div>
+                                <details className="text-sm">
+                                    <summary className="cursor-pointer text-green-700 font-medium hover:text-green-800">
+                                        Önizleme (ilk veriler)
+                                    </summary>
+                                    <pre className="mt-2 p-3 bg-white rounded border border-green-200 text-xs text-gray-700 overflow-x-auto whitespace-pre-wrap max-h-64 overflow-y-auto">
+                                        {sheetPreview.preview}
+                                    </pre>
+                                </details>
+                            </div>
+                        ) : (
+                            <div className="flex items-center gap-2">
+                                <XCircle className="w-5 h-5 text-red-600" />
+                                <span className="text-red-700">{sheetPreview.error}</span>
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
+
             {/* Status Bar */}
             <div className="bg-gradient-to-r from-blue-600 to-purple-700 rounded-xl p-4 text-white flex items-center justify-between">
                 <div className="flex items-center gap-6">
@@ -277,6 +418,12 @@ export default function AiTrainingPage() {
                         <span className="opacity-80 text-sm">API Key:</span>
                         <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${settings?.apiKeyMasked ? 'bg-green-400/20 text-green-100' : 'bg-red-400/20 text-red-100'}`}>
                             {settings?.apiKeyMasked ? '✓ Ayarlı' : '✗ Eksik'}
+                        </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <span className="opacity-80 text-sm">Sheets:</span>
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${settings?.googleSheetId ? 'bg-green-400/20 text-green-100' : 'bg-yellow-400/20 text-yellow-100'}`}>
+                            {settings?.googleSheetId ? '✓ Bağlı' : '○ Opsiyonel'}
                         </span>
                     </div>
                 </div>

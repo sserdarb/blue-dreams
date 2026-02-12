@@ -39,6 +39,7 @@ export async function updateSiteSettings(locale: string, data: {
     footerText?: string
     footerCopyright?: string
     headerStyle?: string
+    googleMapsApiKey?: string
 }) {
     const settings = await prisma.siteSettings.upsert({
         where: { locale },
