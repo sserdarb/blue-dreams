@@ -13,7 +13,7 @@ const WhatsAppIcon = ({ size = 20, className = "" }: { size?: number, className?
     </svg>
 )
 
-export default function Navbar({ locale = 'tr' }: { locale?: string }) {
+export default function Navbar({ locale = 'tr', menuItems }: { locale?: string; menuItems?: { label: string; url: string }[] }) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const [isScrolled, setIsScrolled] = useState(false)
     const pathname = usePathname()
@@ -21,7 +21,10 @@ export default function Navbar({ locale = 'tr' }: { locale?: string }) {
 
     // Detect locale from pathname if not provided
     const currentLocale = locale || pathname.split('/')[1] || 'tr'
-    const navItems = getNavItems(currentLocale)
+    const constantNavItems = getNavItems(currentLocale)
+    const navItems = menuItems && menuItems.length > 0
+        ? menuItems.map(m => ({ label: m.label, href: m.url }))
+        : constantNavItems
 
     const handleLanguageChange = (langCode: string) => {
         const pathLocale = pathname.split('/')[1]
