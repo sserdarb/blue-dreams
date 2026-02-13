@@ -19,7 +19,7 @@ export default async function PublicLayout({
 
     // Map to Navbar expected format
     const menuItems = dbMenuItems.map(item => ({
-        label: item.title,
+        label: item.label,
         url: item.url,
         // target: item.target 
     }))
