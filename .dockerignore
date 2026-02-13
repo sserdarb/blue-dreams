@@ -1,0 +1,13 @@
+node_modules
+.next
+.git
+.gitignore
+*.md
+*.py
+*.sql
+*.txt
+.env.local
+.env*.local
+build_log.txt
+verify_output.txt
+.agent
