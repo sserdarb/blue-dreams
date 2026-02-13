@@ -3,7 +3,8 @@
 import { useState, useRef } from 'react';
 import { uploadFile, deleteFile } from '@/app/actions/media';
 import Image from 'next/image';
-Trash2, Copy, Upload, Folder, Image as ImageIcon,
+import {
+  Trash2, Copy, Upload, Folder, Image as ImageIcon,
   Search, Grid, List, Download, HardDrive, Globe,
   Sparkles, MoreVertical, X, Server,
   FileText, Film, Music, Box, File
