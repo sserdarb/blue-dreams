@@ -1,0 +1,20 @@
+Existing rebuild image: 
+Container status: Exited (1) 2 minutes ago
+DATABASE_URL: postgresql://coolify:coolifypassword@coo...
+Networks JSON: {"coolify":{"IPAMConfig":{"IPv4Address":"","IPv6Address":""},"Links":null,"Aliases":["vgk8cscos8os8wwsogkss004-222918143524","vgk8cscos8os8wwsogkss004-222918143524","vgk8cscos8os8wwsogkss004-222918143
+Using network: coolify
+
+Re-committing container...
+Committed: sha256:3c145d335d7164c55f3b4f4
+
+=== Building in temp container (network: coolify) ===
+Command: docker run --name blue-dreams-builder2 --network coolify -e DATABASE_URL="postgresql://coolify:coolifypassword@coolify-db:5432/blue_dreams_v2" -w /app blue-dreams-rebuild:latest /bin/bash -c "npx pris...
+
+Build output (last 400 chars):
+
+
+BUILD_ID: Error response from daemon: container aef83c59227c110be66efe9c846509aefef6b6e452365ef24f3413e508671290 is not running
+
+ÔØî BUILD FAILED
+Full builder logs:
+

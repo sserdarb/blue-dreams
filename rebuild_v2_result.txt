@@ -1,0 +1,25 @@
+Container: 3815dea559c9
+1. Restoring restart policy...
+2. Image: vgk8cscos8os8wwsogkss004:276bda8908fbac1a4fd202fbe26d1ee0d5cf320e
+3. Env vars count: 31
+4. Copying fixed files into stopped container...
+   Files copied.
+
+5. Running build in a temporary container...
+   Build result:
+
+
+6. Starting the main container...
+   Start: 3815dea559c9
+   Status: Restarting (1) 1 second ago
+   Logs:
+> temp_app@0.1.0 start
+> next start
+
+Ôû▓ Next.js 16.1.6
+- Local:         http://localhost:3000
+- Network:       http://172.18.0.16:3000
+
+Ô£ô Starting...
+Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+    at ignore-listed frames

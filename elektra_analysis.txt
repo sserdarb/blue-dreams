@@ -1,0 +1,196 @@
+=== RESERVATION ANALYSIS ===
+Total reservations: 14325
+Total revenue (TRY): ₺213,365,716
+Total paid (TRY): ₺0
+
+--- AGENCIES (Channel Distribution) ---
+  BOOKING.COM: 1486
+  CALL CENTER BDR: 1098
+  JOLLY: 1065
+  TUI POL: 804
+  ODEON POL: 621
+  ETS: 522
+  SETUR: 508
+  PENINSULA TOURS: 473
+  SUMMER TOUR: 472
+  LUXE VACATION: 432
+  ANEX POL: 345
+  JET2: 321
+  TATILBUDUR: 308
+  ODEON CIS: 303
+  MUNFERIT TL: 276
+  TUI UK: 272
+  BIANCA : 257
+  EASYJET HOLIDAY: 232
+  ATIK TOUR: 226
+  CORDIAL TURIZM: 199
+  CORAL TRAVEL TL: 164
+  BRONTES TRAVEL: 159
+  CALL CENTER TL: 157
+  TUI DEU: 133
+  MUNFERIT EURO: 131
+  IRELS TRAVEL: 129
+  MIKRODMG TRAVEL: 127
+  ROCKET DMC TR: 123
+  FUN&SUN: 120
+  TOURISTICA: 119
+  ANEX CIS: 118
+  KARTACA TURIZM: 115
+  OTS SERVICES SRB: 115
+  ANEX DEU: 103
+  OTS SERVICES EU: 100
+  LIBERO TOUR: 99
+  ALLTOURS: 96
+  WEBBEDS: 94
+  PEGAS: 94
+  DIANA TRAVEL: 93
+  DTS TOUR: 93
+  ODEON OTHER: 91
+  VIVA DANS: 90
+  EXPEDIA: 79
+  JASMIN TURIZM: 69
+  HELEN HOLIDAYS: 65
+  OTS SERVICES UK: 62
+  BENTOUR REISEN: 60
+  MIKRODMG GRUP S25: 60
+  TURK CHOPPER: 59
+  DER TOUR: 58
+  TUI BELCIKA: 57
+  CORENDON: 54
+  DNATA: 52
+  ALASKA TOUR: 50
+  FLAG GLOBAL: 40
+  BRAVO TRAVEL: 37
+  ODEON DEU: 37
+  1A TRAVEL: 37
+  CALL CENTER EUR: 37
+  HYPERGUEST: 33
+  BURAK DANS GRUBU: 32
+  AKAY TRAVEL : 31
+  SCHAUINSLAND: 28
+  TIVRONA TOURS: 28
+  TRAVEL COLLECTION: 27
+  LEMAR TOUR: 26
+  AKAY TRAVEL CIS: 25
+  VALLEY TOURISM: 24
+  GEZINOMI: 21
+  ODEON POL MICE: 20
+  MERCAN DMC: 19
+  BEDSOPIA: 16
+  JOIN UP: 15
+  SUNTALYA: 15
+  KARNAK TRAVEL: 15
+  HEYSEM TRAVEL: 15
+  TUI HOLLAND: 15
+  BOOK2GO LOC: 15
+  TUI SUISSE: 13
+  LETS DEAL: 12
+  ANEX OTHER: 10
+  WALKIN : 10
+  HOTELWEB EUR: 8
+  BOOK2GO: 8
+  DESTINATION SERVICES: 7
+  COREX: 4
+  ADONIS: 4
+  KARTACA LOC: 4
+  FIRMUS: 4
+  BOOKTOWORLD: 3
+  HOTELWEB TL: 3
+  EPAD MICE: 2
+  SOO TRAVEL: 2
+  MERCAN TURIZM: 2
+  FLAG GLOBAL TL: 2
+  PLUS90TRAVEL: 2
+  FEZA TURIZM: 2
+  PREMIUM GLOBAL: 2
+  KAKAPEDIA DANS: 1
+  KEYPOINT DMC: 1
+  DORAK TOUR: 1
+  LUX VACATION: 1
+  OSTROVOK: 1
+
+--- ROOM TYPES ---
+  CSEA: 5521
+  CR: 3754
+  CFM: 1890
+  DLX: 1839
+  PROMO: 754
+  ROH: 406
+  DLX FAM: 150
+  BSR: 6
+  None: 4
+  SYSTEM ROOMTYPE: 1
+
+--- RATE TYPES ---
+  Kontrat: 10869
+  İade edilebilir: 2224
+  İade edilemez: 656
+  None: 576
+
+--- BOARD TYPES ---
+  UAI: 14321
+  None: 3
+  SYSTEM BOARDTYPE: 1
+
+--- CURRENCIES ---
+  EUR: 9873
+  TRY: 4450
+  USD: 1
+  None: 1
+
+--- SAMPLE RESERVATION ---
+{
+  "reservation-id": 88537692,
+  "voucher-no": "HD-26028MEV",
+  "hotel-id": 33264,
+  "room-type-group-id": null,
+  "room-no": null,
+  "agency": "JOLLY",
+  "board-type": "UAI",
+  "room-type": "CSEA",
+  "rate-type": "Kontrat",
+  "check-in-date": "2026-05-01",
+  "check-out-date": "2026-05-03",
+  "reservation-total-price": 13200,
+  "reservation-paid-price": 0,
+  "reservation-currency": "TRY",
+  "reservation-room-count": 1,
+  "contact-name": null,
+  "contact-email": null,
+  "contact-phone": null,
+  "lastupdate-date": "2026-02-10T06:19:58.023Z",
+  "guest-list": [
+    {
+      "reservation-guest-id": 139289208,
+      "name": "GOKHAN",
+      "surname": "KILICARSLAN"
+    },
+    {
+      "reservation-guest-id": 139289210,
+      "name": "GULCAG",
+      "surname": "KILICARSLAN"
+    },
+    {
+      "reservation-guest-id": 139289211,
+      "guest-id": 148826297,
+      "name": "URAZ",
+      "surname": "KILICARSLAN"
+    }
+  ],
+  "_status": "Reservation"
+}
+
+--- MONTHLY DISTRIBUTION ---
+  2025-06: 1931 reservations, ₺23,496,315
+  2025-07: 2163 reservations, ₺48,066,888
+  2025-08: 2438 reservations, ₺70,779,727
+  2025-09: 2174 reservations, ₺30,603,379
+  2025-10: 1731 reservations, ₺9,397,724
+  2025-12: 1 reservations, ₺0
+  2026-04: 4 reservations, ₺54,000
+  2026-05: 1126 reservations, ₺2,794,862
+  2026-06: 1081 reservations, ₺8,565,129
+  2026-07: 758 reservations, ₺11,735,820
+  2026-08: 434 reservations, ₺5,875,901
+  2026-09: 324 reservations, ₺1,995,972
+  2026-10: 160 reservations, ₺0

@@ -1,0 +1,27 @@
+Container: 3815dea559c9 Restarting (1) 40 seconds ago
+
+1. Stopping container...
+2. Starting container with sleep...
+   Status: Up 2 seconds (health: starting)
+
+3. Applying fixes...
+   Model: model: 'gemini-2.0-flash', // Or verified available model
+4. Uploading settings route via scp...
+   Settings masking: 
+
+5. Building Next.js...
+   Build result:
+npm warn config production Use `--omit=dev` instead.
+Ôû▓ Next.js 16.1.6 (Turbopack)
+
+ÔÜá The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+  Creating an optimized production build ...
+
+   BUILD_ID: Error response from daemon: Container 3815dea559c91576dac4ad99f5fcb1d7a701a96368b86c9167b9b70d04a45faf is restarting, wait until the container is running
+
+6. Restarting container...
+   Container: 3815dea559c9 Restarting (1) Less than a second ago
+
+7. Testing...
+   Settings: Error response from daemon: Container 3815dea559c91576dac4ad99f5fcb1d7a701a96368b86c9167b9b70d04a45faf is restarting, wait until the container is running
+   Chat: Error response from daemon: Container 3815dea559c91576dac4ad99f5fcb1d7a701a96368b86c9167b9b70d04a45faf is restarting, wait until the container is running

@@ -1,0 +1,83 @@
+Image: 
+Re-committed: 9d55e8fab6af 2.83GB
+
+=== Test 1: List /app directory ===
+App.tsx
+README.md
+app
+components
+constants.tsx
+data
+dev_server_auth.log
+dev_server_final.log
+dev_server_middleware_fix.log
+dev_server_restart.log
+docker-compose.yaml
+eslint.config.mjs
+index.html
+index.tsx
+lib
+metadata.json
+middleware.ts
+next-env.d.ts
+next.config.ts
+nixpacks.toml
+node_modules
+package-lock.json
+package.json
+postcss.config.mjs
+prisma
+prisma.config.ts.disabled
+public
+scripts
+server.log
+tsconfig.json
+types.ts
+verification
+
+=== Test 2: Check if node_modules exists ===
+next binary: App.tsx
+README.md
+app
+components
+constants.tsx
+data
+dev_server_auth.log
+dev_server_final.log
+dev_server_middleware_fix.log
+dev_server_restart.log
+docker-compose.yaml
+eslint.config.mjs
+index.html
+index.tsx
+lib
+metadata.json
+middleware.ts
+next-env.d.ts
+next.config.ts
+nixpacks.toml
+node_modules
+package-lock.json
+package.json
+postcss.config.mjs
+prisma
+prisma.config.ts.disabled
+public
+scripts
+server.log
+tsconfig.json
+types.ts
+verification
+
+=== Test 3: Check if package.json exists ===
+
+
+=== Test 4: Check prisma schema ===
+
+
+=== Test 5: Try npx prisma generate ===
+Prisma generate: npm warn config production Use `--omit=dev` instead.
+
+=== Test 6: Try npm run build (capture both stdout and stderr) ===
+
+

@@ -1,0 +1,160 @@
+Connecting to 76.13.0.113...
+Connected!
+
+============================================================
+TEST 1: Login to BOOKING API (bookingapi.elektraweb.com)
+============================================================
+[OK] Booking JWT obtained (HTTP 200), length=876
+
+============================================================
+TEST 2: Login to ERP API (api.elektraweb.com)
+============================================================
+  [Standard] HTTP 400: "The Action you requested is invalid, possible values are: Function,Select,Execute,Insert,Update,Delete,Login,SSO,Logout,RemoteLogin,GetConfig,SetConfig,ListConfig,Schema,SchemaList,GetReportConfig,GetLog,GetEndpoint,Echo,Proxy,ReportMail,SendEmail,TmpSet,TmpGet,TmpDel,ResetCaches,GetIp,TranslationU
+  [RAW] "The Action you requested is invalid, possible values are: Function,Select,Execute,Insert,Update,Delete,Login,SSO,Logout,RemoteLogin,GetConfig,SetConfig,ListConfig,Schema,SchemaList,GetReportConfig,GetLog,GetEndpoint,Echo,Proxy,ReportMail,SendEmail,TmpSet,TmpGet,TmpDel,ResetCaches,GetIp,TranslationU
+  [PascalCase] HTTP 400: "The Action you requested is invalid, possible values are: Function,Select,Execute,Insert,Update,Delete,Login,SSO,Logout,RemoteLogin,GetConfig,SetConfig,ListConfig,Schema,SchemaList,GetReportConfig,GetLog,GetEndpoint,Echo,Proxy,ReportMail,SendEmail,TmpSet,TmpGet,TmpDel,ResetCaches,GetIp,TranslationU
+  [RAW] "The Action you requested is invalid, possible values are: Function,Select,Execute,Insert,Update,Delete,Login,SSO,Logout,RemoteLogin,GetConfig,SetConfig,ListConfig,Schema,SchemaList,GetReportConfig,GetLog,GetEndpoint,Echo,Proxy,ReportMail,SendEmail,TmpSet,TmpGet,TmpDel,ResetCaches,GetIp,TranslationU
+  [Mixed] HTTP 400: "The Action you requested is invalid, possible values are: Function,Select,Execute,Insert,Update,Delete,Login,SSO,Logout,RemoteLogin,GetConfig,SetConfig,ListConfig,Schema,SchemaList,GetReportConfig,GetLog,GetEndpoint,Echo,Proxy,ReportMail,SendEmail,TmpSet,TmpGet,TmpDel,ResetCaches,GetIp,TranslationU
+  [RAW] "The Action you requested is invalid, possible values are: Function,Select,Execute,Insert,Update,Delete,Login,SSO,Logout,RemoteLogin,GetConfig,SetConfig,ListConfig,Schema,SchemaList,GetReportConfig,GetLog,GetEndpoint,Echo,Proxy,ReportMail,SendEmail,TmpSet,TmpGet,TmpDel,ResetCaches,GetIp,TranslationU
+  [StringId] HTTP 400: "The Action you requested is invalid, possible values are: Function,Select,Execute,Insert,Update,Delete,Login,SSO,Logout,RemoteLogin,GetConfig,SetConfig,ListConfig,Schema,SchemaList,GetReportConfig,GetLog,GetEndpoint,Echo,Proxy,ReportMail,SendEmail,TmpSet,TmpGet,TmpDel,ResetCaches,GetIp,TranslationU
+  [RAW] "The Action you requested is invalid, possible values are: Function,Select,Execute,Insert,Update,Delete,Login,SSO,Logout,RemoteLogin,GetConfig,SetConfig,ListConfig,Schema,SchemaList,GetReportConfig,GetLog,GetEndpoint,Echo,Proxy,ReportMail,SendEmail,TmpSet,TmpGet,TmpDel,ResetCaches,GetIp,TranslationU
+
+============================================================
+TEST 3: Try BOOKING JWT on ERP /select endpoint
+============================================================
+  StockCard            -> HTTP 400: "The Action you requested is invalid, possible values are: Function,Select,Execute,Insert,Update,Delete,Login,SSO,Logout,RemoteLogin,GetConfig,SetConfig,ListConfig,Schema,SchemaList,GetReportConfig,Ge
+  STOCKCARD            -> HTTP 400: "The Action you requested is invalid, possible values are: Function,Select,Execute,Insert,Update,Delete,Login,SSO,Logout,RemoteLogin,GetConfig,SetConfig,ListConfig,Schema,SchemaList,GetReportConfig,Ge
+  StockItem            -> HTTP 400: "The Action you requested is invalid, possible values are: Function,Select,Execute,Insert,Update,Delete,Login,SSO,Logout,RemoteLogin,GetConfig,SetConfig,ListConfig,Schema,SchemaList,GetReportConfig,Ge
+  Stock                -> HTTP 400: "The Action you requested is invalid, possible values are: Function,Select,Execute,Insert,Update,Delete,Login,SSO,Logout,RemoteLogin,GetConfig,SetConfig,ListConfig,Schema,SchemaList,GetReportConfig,Ge
+  STOCK                -> HTTP 400: "The Action you requested is invalid, possible values are: Function,Select,Execute,Insert,Update,Delete,Login,SSO,Logout,RemoteLogin,GetConfig,SetConfig,ListConfig,Schema,SchemaList,GetReportConfig,Ge
+  STOKKART             -> HTTP 400: "The Action you requested is invalid, possible values are: Function,Select,Execute,Insert,Update,Delete,Login,SSO,Logout,RemoteLogin,GetConfig,SetConfig,ListConfig,Schema,SchemaList,GetReportConfig,Ge
+  Material             -> HTTP 400: "The Action you requested is invalid, possible values are: Function,Select,Execute,Insert,Update,Delete,Login,SSO,Logout,RemoteLogin,GetConfig,SetConfig,ListConfig,Schema,SchemaList,GetReportConfig,Ge
+  MATERIAL             -> HTTP 400: "The Action you requested is invalid, possible values are: Function,Select,Execute,Insert,Update,Delete,Login,SSO,Logout,RemoteLogin,GetConfig,SetConfig,ListConfig,Schema,SchemaList,GetReportConfig,Ge
+  Supplier             -> HTTP 400: "The Action you requested is invalid, possible values are: Function,Select,Execute,Insert,Update,Delete,Login,SSO,Logout,RemoteLogin,GetConfig,SetConfig,ListConfig,Schema,SchemaList,GetReportConfig,Ge
+  SUPPLIER             -> HTTP 400: "The Action you requested is invalid, possible values are: Function,Select,Execute,Insert,Update,Delete,Login,SSO,Logout,RemoteLogin,GetConfig,SetConfig,ListConfig,Schema,SchemaList,GetReportConfig,Ge
+  TEDARIKCI            -> HTTP 400: "The Action you requested is invalid, possible values are: Function,Select,Execute,Insert,Update,Delete,Login,SSO,Logout,RemoteLogin,GetConfig,SetConfig,ListConfig,Schema,SchemaList,GetReportConfig,Ge
+  PurchaseOrder        -> HTTP 400: "The Action you requested is invalid, possible values are: Function,Select,Execute,Insert,Update,Delete,Login,SSO,Logout,RemoteLogin,GetConfig,SetConfig,ListConfig,Schema,SchemaList,GetReportConfig,Ge
+  PURCHASEORDER        -> HTTP 400: "The Action you requested is invalid, possible values are: Function,Select,Execute,Insert,Update,Delete,Login,SSO,Logout,RemoteLogin,GetConfig,SetConfig,ListConfig,Schema,SchemaList,GetReportConfig,Ge
+  SATINALMA            -> HTTP 400: "The Action you requested is invalid, possible values are: Function,Select,Execute,Insert,Update,Delete,Login,SSO,Logout,RemoteLogin,GetConfig,SetConfig,ListConfig,Schema,SchemaList,GetReportConfig,Ge
+  Warehouse            -> HTTP 400: "The Action you requested is invalid, possible values are: Function,Select,Execute,Insert,Update,Delete,Login,SSO,Logout,RemoteLogin,GetConfig,SetConfig,ListConfig,Schema,SchemaList,GetReportConfig,Ge
+  WAREHOUSE            -> HTTP 400: "The Action you requested is invalid, possible values are: Function,Select,Execute,Insert,Update,Delete,Login,SSO,Logout,RemoteLogin,GetConfig,SetConfig,ListConfig,Schema,SchemaList,GetReportConfig,Ge
+  DEPO                 -> HTTP 400: "The Action you requested is invalid, possible values are: Function,Select,Execute,Insert,Update,Delete,Login,SSO,Logout,RemoteLogin,GetConfig,SetConfig,ListConfig,Schema,SchemaList,GetReportConfig,Ge
+  Invoice              -> HTTP 400: "The Action you requested is invalid, possible values are: Function,Select,Execute,Insert,Update,Delete,Login,SSO,Logout,RemoteLogin,GetConfig,SetConfig,ListConfig,Schema,SchemaList,GetReportConfig,Ge
+  FATURA               -> HTTP 400: "The Action you requested is invalid, possible values are: Function,Select,Execute,Insert,Update,Delete,Login,SSO,Logout,RemoteLogin,GetConfig,SetConfig,ListConfig,Schema,SchemaList,GetReportConfig,Ge
+  Product              -> HTTP 400: "The Action you requested is invalid, possible values are: Function,Select,Execute,Insert,Update,Delete,Login,SSO,Logout,RemoteLogin,GetConfig,SetConfig,ListConfig,Schema,SchemaList,GetReportConfig,Ge
+  PRODUCT              -> HTTP 400: "The Action you requested is invalid, possible values are: Function,Select,Execute,Insert,Update,Delete,Login,SSO,Logout,RemoteLogin,GetConfig,SetConfig,ListConfig,Schema,SchemaList,GetReportConfig,Ge
+  URUN                 -> HTTP 400: "The Action you requested is invalid, possible values are: Function,Select,Execute,Insert,Update,Delete,Login,SSO,Logout,RemoteLogin,GetConfig,SetConfig,ListConfig,Schema,SchemaList,GetReportConfig,Ge
+
+============================================================
+TEST 4: Try various ERP URL patterns with BOOKING JWT
+============================================================
+  Select StockCard          -> HTTP 400: "The Action you requested is invalid, possible values are: Function,Select,Execute,Insert,Update,Delete,Login,SSO,Logout,RemoteLogin,GetConfig,SetConfig,ListConfig,Schema,SchemaList,GetReportConfig,Ge
+  Select STOKKART           -> HTTP 400: "The Action you requested is invalid, possible values are: Function,Select,Execute,Insert,Update,Delete,Login,SSO,Logout,RemoteLogin,GetConfig,SetConfig,ListConfig,Schema,SchemaList,GetReportConfig,Ge
+  GetList StockCard         -> HTTP 400: "The Action you requested is invalid, possible values are: Function,Select,Execute,Insert,Update,Delete,Login,SSO,Logout,RemoteLogin,GetConfig,SetConfig,ListConfig,Schema,SchemaList,GetReportConfig,Ge
+  Query Stock               -> HTTP 400: "The Action you requested is invalid, possible values are: Function,Select,Execute,Insert,Update,Delete,Login,SSO,Logout,RemoteLogin,GetConfig,SetConfig,ListConfig,Schema,SchemaList,GetReportConfig,Ge
+  List Materials            -> HTTP 400: "The Action you requested is invalid, possible values are: Function,Select,Execute,Insert,Update,Delete,Login,SSO,Logout,RemoteLogin,GetConfig,SetConfig,ListConfig,Schema,SchemaList,GetReportConfig,Ge
+  Select Supplier           -> HTTP 400: "The Action you requested is invalid, possible values are: Function,Select,Execute,Insert,Update,Delete,Login,SSO,Logout,RemoteLogin,GetConfig,SetConfig,ListConfig,Schema,SchemaList,GetReportConfig,Ge
+
+============================================================
+TEST 5: Stock/purchasing endpoints on BOOKING API
+============================================================
+  POST /stock-list               -> HTTP 404: <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot POST /stock-list</pre>
+</body>
+</html>
+
+  POST /stock-cards              -> HTTP 404: <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot POST /stock-cards</pre>
+</body>
+</html>
+
+  POST /purchase-orders          -> HTTP 404: <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot POST /purchase-orders</pre>
+</body>
+</html>
+
+  POST /suppliers                -> HTTP 404: <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot POST /suppliers</pre>
+</body>
+</html>
+
+  POST /warehouses               -> HTTP 404: <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot POST /warehouses</pre>
+</body>
+</html>
+
+  POST /materials                -> HTTP 404: <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot POST /materials</pre>
+</body>
+</html>
+
+  POST /inventory                -> HTTP 404: <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot POST /inventory</pre>
+</body>
+</html>
+
+  POST /stock                    -> HTTP 404: <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot POST /stock</pre>
+</body>
+</html>
+
+  POST /procurement              -> HTTP 404: <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot POST /procurement</pre>
+</body>
+</html>
+
+
+All tests complete!

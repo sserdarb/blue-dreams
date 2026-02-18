@@ -1,4 +1,3 @@
-```typescript
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 
@@ -19,8 +18,7 @@ export async function POST(request: Request) {
         }
 
         // Mock saving logic
-        // In a real app, this would upload the image to S3/Cloudinary and save the schedule to the DB
-        console.log(`[Social Schedule] Scheduled post for ${ date }: ${ caption?.slice(0, 20) }...`)
+        console.log(`[Social Schedule] Scheduled post for ${date}: ${caption?.slice(0, 20)}...`)
 
         return NextResponse.json({
             success: true,

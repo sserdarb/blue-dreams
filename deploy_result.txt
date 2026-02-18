@@ -1,0 +1,44 @@
+Step 1: Cleanup
+blue-dreams-app
+Step 2: Create temp container to patch image
+1f1d39934ceb1a0fbca59c8f8a4948e173735308798b24be6961821196032be8
+blue-dreams-fix
+Step 3: Add prerender-manifest.json
+Manifest created:
+{
+  "version": 4,
+  "routes": {},
+  "dynamicRoutes": {},
+  "notFoundRoutes": [],
+  "preview": {
+    "previewModeId": "disabled",
+    "previewModeSigningKey": "disabled",
+    "previewModeEncryptionKey": "disabled"
+  }
+}
+Step 4: Commit patched image
+sha256:9ce6b9a2c5ad6caf19b7926997012035f0c74826ce91d652feadfb4aab22e993
+Step 5: Cleanup temp container
+blue-dreams-fix
+blue-dreams-fix
+Step 6: Start final container
+03fff072d66ad96adfd630efb673b4c67000339b18ea995c06acbbffe47f0ab3
+Container started, waiting 30s...
+Step 7: Status
+03fff072d66a Up 30 seconds
+Step 8: Smoke test
+Homepage TR: 200
+Admin: 307
+External: 404
+Step 9: Container logs
+│    npm i @prisma/client@latest                          │
+└─────────────────────────────────────────────────────────┘
+npm warn config production Use `--omit=dev` instead.
+   ▲ Next.js 15.1.0
+   - Local:        http://localhost:3000
+   - Network:      http://172.18.0.16:3000
+
+ ✓ Starting...
+ ⚠ "next start" does not work with "output: standalone" configuration. Use "node .next/standalone/server.js" instead.
+ ✓ Ready in 549ms
+ALL_DONE

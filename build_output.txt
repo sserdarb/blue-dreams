@@ -1,0 +1,23 @@
+
+> temp_app@0.1.0 build
+> next build
+
+   Ôû▓ Next.js 15.1.0
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+ Ô£ô Compiled successfully
+   Linting and checking validity of types ...
+ Ô¿» ESLint: Cannot find module 'C:\Users\sserd\OneDrive\Belgeler\Antigravity\blue-dreams-fix\node_modules\eslint-config-next\core-web-vitals' imported from C:\Users\sserd\OneDrive\Belgeler\Antigravity\blue-dreams-fix\eslint.config.mjs Did you mean to import "eslint-config-next/core-web-vitals.js"?
+Failed to compile.
+
+./app/[locale]/(public)/layout.tsx:22:21
+Type error: Property 'title' does not exist on type '{ children: { id: string; isActive: boolean; createdAt: Date; updatedAt: Date; locale: string; order: number; label: string; url: string; target: string; parentId: string | null; }[]; } & { ...; }'.
+
+  20 |     // Map to Navbar expected format
+  21 |     const menuItems = dbMenuItems.map(item => ({
+> 22 |         label: item.title,
+     |                     ^
+  23 |         url: item.url,
+  24 |         // target: item.target 
+  25 |     }))

@@ -1,0 +1,77 @@
+App Container: 3815dea559c9
+
+=== Prisma Query Test ===
+node:internal/modules/cjs/loader:1252
+  throw err;
+  ^
+
+Error: Cannot find module '@prisma/client'
+Require stack:
+- /tmp/check_query.js
+    at Function._resolveFilename (node:internal/modules/cjs/loader:1249:15)
+    at Function._load (node:internal/modules/cjs/loader:1075:27)
+    at TracingChannel.traceSync (node:diagnostics_channel:315:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:218:24)
+    at Module.require (node:internal/modules/cjs/loader:1340:12)
+    at require (node:internal/modules/helpers:141:16)
+    at Object.<anonymous> (/tmp/check_query.js:2:26)
+    at Module._compile (node:internal/modules/cjs/loader:1546:14)
+    at Object..js (node:internal/modules/cjs/loader:1689:10)
+    at Module.load (node:internal/modules/cjs/loader:1318:32) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [ '/tmp/check_query.js' ]
+}
+
+Node.js v22.11.0
+
+=== Container logs (last 50 lines) ===
+npm error command sh -c next start
+npm error A complete log of this run can be found in: /root/.npm/_logs/2026-02-10T07_07_07_742Z-debug-0.log
+npm warn config production Use `--omit=dev` instead.
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "blue_dreams_v2", schema "public" at "coolify-db:5432"
+
+The database is already in sync with the Prisma schema.
+
+Running generate... (Use --skip-generate to skip the generators)
+[2K[1A[2K[GRunning generate... - Prisma Client
+[2K[1A[2K[G✔ Generated Prisma Client (v5.22.0) to ./node_modules/@prisma/client in 179ms
+
+npm warn config production Use `--omit=dev` instead.
+
+> temp_app@0.1.0 start
+> next start
+
+▲ Next.js 16.1.6
+- Local:         http://localhost:3000
+- Network:       http://172.18.0.11:3000
+
+✓ Starting...
+⚠ "next start" does not work with "output: standalone" configuration. Use "node .next/standalone/server.js" instead.
+✓ Ready in 531ms
+The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+Analytics data error: Error [PrismaClientKnownRequestError]: 
+Invalid `prisma.$queryRawUnsafe()` invocation:
+
+
+Raw query failed. Code: `42601`. Message: `ERROR: syntax error at or near "GROUP"`
+    at async x (.next/server/chunks/[root-of-the-server]__246ac4e6._.js:1:1609)
+    at async A (.next/server/chunks/[root-of-the-server]__246ac4e6._.js:7:3454)
+    at async u (.next/server/chunks/[root-of-the-server]__246ac4e6._.js:7:6758) {
+  code: 'P2010',
+  clientVersion: '5.22.0',
+  meta: [Object]
+}
+⨯ TypeError: f.WIDGET_TYPES.find is not a function
+    at <unknown> (.next/server/chunks/ssr/_f2f6efaa._.js:2:3615)
+    at Array.map (<anonymous>)
+    at j (.next/server/chunks/ssr/_f2f6efaa._.js:2:3034) {
+  digest: '1294641813'
+}

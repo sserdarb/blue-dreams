@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useMemo, useCallback } from 'react'
-import { BedDouble, Calendar, ExternalLink, TrendingUp, ArrowUpDown, Ban, Check, RefreshCw, Search } from 'lucide-react'
+import { useState, useMemo, useCallback, useRef } from 'react'
+import { BedDouble, Calendar, ExternalLink, TrendingUp, ArrowUpDown, Ban, Check, RefreshCw, Search, FileDown } from 'lucide-react'
+import { exportPdf } from '@/lib/export-pdf'
 
 interface RoomDate {
     date: string
@@ -57,10 +58,31 @@ function fmtMoney(n: number): string {
     return `₺${n.toLocaleString('tr-TR')}`
 }
 
+import ModuleOffline from '@/components/admin/ModuleOffline'
+
 export default function RoomsClient({ initialRooms, error }: Props) {
+    if (error) {
+        return <ModuleOffline moduleName="Oda Yönetimi" dataSource="elektra" offlineReason={error} />
+    }
+
     const [sortBy, setSortBy] = useState<'name' | 'price' | 'available'>('name')
     const [rooms, setRooms] = useState(initialRooms)
     const [loading, setLoading] = useState(false)
+    const contentRef = useRef<HTMLDivElement>(null)
+    const [pdfExporting, setPdfExporting] = useState(false)
+
+    const handlePdfExport = async () => {
+        if (!contentRef.current) return
+        await exportPdf({
+            element: contentRef.current,
+            filename: `oda-fiyatlari-${fromDate}-${toDate}`,
+            title: 'Oda Fiyatları & Müsaitlik',
+            subtitle: `${fromDate} → ${toDate} | ${rooms.length} oda tipi`,
+            orientation: 'landscape',
+            onStart: () => setPdfExporting(true),
+            onFinish: () => setPdfExporting(false),
+        })
+    }
 
     // Date range for queries  
     const today = new Date()
@@ -154,27 +176,33 @@ export default function RoomsClient({ initialRooms, error }: Props) {
     const allDates = [...new Set(rooms.flatMap(r => r.dates.map(d => d.date)))].sort()
 
     return (
-        <div className="space-y-6">
+        <div ref={contentRef} className="space-y-6">
             {/* Header */}
             <div className="flex items-center justify-between flex-wrap gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+                    <h1 className="text-3xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
                         Oda Fiyatları & Müsaitlik
-                        <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-400 text-xs rounded-full font-medium">Canlı</span>
+                        <span className="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs rounded-full font-medium">Canlı</span>
                     </h1>
-                    <p className="text-slate-400 mt-1">Elektra PMS — Hotelweb & Call Center kanalları</p>
+                    <p className="text-slate-500 dark:text-slate-400 mt-1">Elektra PMS — Hotelweb & Call Center kanalları</p>
                 </div>
-                <a href={BOOKING_ENGINE_URL} target="_blank" rel="noopener noreferrer"
-                    className="px-4 py-2 bg-gradient-to-r from-cyan-600 to-cyan-500 text-white rounded-lg text-sm font-medium transition-all flex items-center gap-2 shadow-lg shadow-cyan-600/20 hover:shadow-cyan-600/40">
-                    <ExternalLink size={16} /> Booking Engine
-                </a>
+                <div className="flex items-center gap-2">
+                    <button onClick={handlePdfExport} disabled={pdfExporting} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded-lg transition-colors disabled:opacity-50">
+                        <FileDown size={16} className={pdfExporting ? 'animate-pulse' : ''} />
+                        {pdfExporting ? 'PDF...' : 'PDF'}
+                    </button>
+                    <a href={BOOKING_ENGINE_URL} target="_blank" rel="noopener noreferrer"
+                        className="px-4 py-2 bg-gradient-to-r from-cyan-600 to-cyan-500 text-white rounded-lg text-sm font-medium transition-all flex items-center gap-2 shadow-lg shadow-cyan-600/20 hover:shadow-cyan-600/40">
+                        <ExternalLink size={16} /> Booking Engine
+                    </a>
+                </div>
             </div>
 
             {/* Date Range Selector */}
-            <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+            <div className="bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-4">
                 <div className="flex items-center gap-4 flex-wrap">
                     {/* Quick presets */}
-                    <div className="flex bg-white/5 rounded-lg p-1">
+                    <div className="flex bg-slate-100 dark:bg-white/5 rounded-lg p-1">
                         {[
                             { id: 'today', label: 'Bugün' },
                             { id: '7d', label: '7 Gün' },
@@ -184,7 +212,7 @@ export default function RoomsClient({ initialRooms, error }: Props) {
                         ].map(p => (
                             <button key={p.id} onClick={() => applyPreset(p.id)}
                                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors
-                                    ${activePreset === p.id ? 'bg-cyan-600 text-white' : 'text-slate-400 hover:text-white'}`}>
+                                    ${activePreset === p.id ? 'bg-cyan-600 text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}>
                                 {p.label}
                             </button>
                         ))}
@@ -194,10 +222,10 @@ export default function RoomsClient({ initialRooms, error }: Props) {
                     <div className="flex items-center gap-2">
                         <Calendar size={14} className="text-slate-500" />
                         <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)}
-                            className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white focus:border-cyan-500 outline-none" />
+                            className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-3 py-1.5 text-sm text-slate-900 dark:text-white focus:border-cyan-500 outline-none" />
                         <span className="text-slate-500 text-sm">→</span>
                         <input type="date" value={toDate} onChange={e => setToDate(e.target.value)}
-                            className="bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-sm text-white focus:border-cyan-500 outline-none" />
+                            className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-3 py-1.5 text-sm text-slate-900 dark:text-white focus:border-cyan-500 outline-none" />
                         <button onClick={handleCustomSearch}
                             className="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-medium transition-colors flex items-center gap-1">
                             <Search size={14} /> Sorgula
@@ -242,7 +270,7 @@ export default function RoomsClient({ initialRooms, error }: Props) {
                 ].map(s => (
                     <button key={s.val} onClick={() => setSortBy(s.val)}
                         className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors
-                            ${sortBy === s.val ? 'bg-cyan-600 text-white' : 'bg-white/5 text-slate-400 hover:text-white'}`}>
+                            ${sortBy === s.val ? 'bg-cyan-600 text-white' : 'bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}>
                         {s.label}
                     </button>
                 ))}
@@ -250,9 +278,9 @@ export default function RoomsClient({ initialRooms, error }: Props) {
 
             {/* ═══════ PRICE TIMELINE ═══════ */}
             {allDates.length > 1 && (
-                <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-                    <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                        <TrendingUp size={18} className="text-cyan-400" /> Fiyat Timeline — Oda Tipi Bazında
+                <div className="bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+                    <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                        <TrendingUp size={18} className="text-cyan-500 dark:text-cyan-400" /> Fiyat Timeline — Oda Tipi Bazında
                     </h2>
                     <p className="text-slate-500 text-sm mb-4">Hotelweb & Call Center kanalları · {allDates[0]} → {allDates[allDates.length - 1]}</p>
 
@@ -346,15 +374,15 @@ export default function RoomsClient({ initialRooms, error }: Props) {
             )}
 
             {/* ═══════ PRICE TABLE (Detailed) ═══════ */}
-            <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-                <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <div className="bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                     <Calendar size={18} className="text-violet-400" /> Günlük Fiyat Tablosu
                 </h2>
                 <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
                     <table className="w-full">
-                        <thead className="sticky top-0 bg-[#1e293b] z-10">
-                            <tr className="border-b border-white/10">
-                                <th className="text-left py-2 px-3 text-slate-500 text-xs font-medium uppercase sticky left-0 bg-[#1e293b]">Tarih</th>
+                        <thead className="sticky top-0 bg-white dark:bg-[#1e293b] z-10">
+                            <tr className="border-b border-slate-200 dark:border-white/10">
+                                <th className="text-left py-2 px-3 text-slate-500 text-xs font-medium uppercase sticky left-0 bg-white dark:bg-[#1e293b]">Tarih</th>
                                 {sorted.map(room => (
                                     <th key={room.name} className="text-right py-2 px-3 text-xs font-medium uppercase whitespace-nowrap"
                                         style={{ color: ROOM_COLORS[room.name] || '#94a3b8' }}>
@@ -368,8 +396,8 @@ export default function RoomsClient({ initialRooms, error }: Props) {
                                 const d = new Date(date)
                                 const isWeekend = d.getDay() === 0 || d.getDay() === 6
                                 return (
-                                    <tr key={date} className={`border-b border-white/5 hover:bg-white/5 ${isWeekend ? 'bg-white/[0.02]' : ''}`}>
-                                        <td className="py-2 px-3 text-white text-sm whitespace-nowrap sticky left-0 bg-[#1e293b]">
+                                    <tr key={date} className={`border-b border-slate-100 dark:border-white/5 hover:bg-slate-100 dark:hover:bg-white/5 ${isWeekend ? 'bg-slate-50 dark:bg-white/[0.02]' : ''}`}>
+                                        <td className="py-2 px-3 text-slate-900 dark:text-white text-sm whitespace-nowrap sticky left-0 bg-white dark:bg-[#1e293b]">
                                             {d.toLocaleDateString('tr-TR', { weekday: 'short', day: '2-digit', month: 'short' })}
                                         </td>
                                         {sorted.map(room => {
@@ -383,7 +411,7 @@ export default function RoomsClient({ initialRooms, error }: Props) {
                                                             <Ban size={10} /> STOP
                                                         </span>
                                                     ) : (
-                                                        <span className="text-white">
+                                                        <span className="text-slate-900 dark:text-white">
                                                             {price > 0 ? fmtMoney(price) : '—'}
                                                             {dateData.available > 0 && (
                                                                 <span className="text-[10px] text-slate-500 ml-1">({dateData.available})</span>
@@ -402,8 +430,8 @@ export default function RoomsClient({ initialRooms, error }: Props) {
             </div>
 
             {/* ═══════ ROOM CARDS ═══════ */}
-            <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                <BedDouble size={18} className="text-cyan-400" /> Oda Tipleri
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <BedDouble size={18} className="text-cyan-500 dark:text-cyan-400" /> Oda Tipleri
             </h2>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                 {sorted.map(room => {
@@ -416,13 +444,13 @@ export default function RoomsClient({ initialRooms, error }: Props) {
                     const maxPrice = Math.max(...room.dates.map(d => d.discountedPrice || d.basePrice || 0), 1)
 
                     return (
-                        <div key={room.name} className="bg-white/5 border border-white/10 rounded-xl overflow-hidden hover:border-white/20 transition-all">
+                        <div key={room.name} className="bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl overflow-hidden hover:border-slate-300 dark:hover:border-white/20 transition-all">
                             <div className="p-5">
                                 {/* Header */}
                                 <div className="flex items-center justify-between mb-3">
                                     <div className="flex items-center gap-2">
                                         <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
-                                        <h3 className="text-lg font-bold text-white">{room.name}</h3>
+                                        <h3 className="text-lg font-bold text-slate-900 dark:text-white">{room.name}</h3>
                                         {todayData?.stopsell && (
                                             <span className="px-2 py-0.5 bg-red-500/20 text-red-400 text-xs rounded font-medium flex items-center gap-1">
                                                 <Ban size={10} /> Stop

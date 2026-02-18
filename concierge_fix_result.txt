@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "C:\Users\sserd\OneDrive\Belgeler\Antigravity\blue-dreams-fix\fix_concierge_container.py", line 77, in <module>
+    with open('concierge_fix_result.txt', 'w', encoding='utf-8') as f:
+         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [Errno 13] Permission denied: 'concierge_fix_result.txt'
+Error: [Errno 13] Permission denied: 'concierge_fix_result.txt'

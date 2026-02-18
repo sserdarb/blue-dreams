@@ -27,9 +27,9 @@ export default function UserManagementPage() {
 
     const roleLabels = { superadmin: 'Süper Admin', admin: 'Admin', editor: 'Editör' }
     const roleColors = {
-        superadmin: 'bg-red-900/30 text-red-400',
-        admin: 'bg-cyan-900/30 text-cyan-400',
-        editor: 'bg-green-900/30 text-green-400',
+        superadmin: 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400',
+        admin: 'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400',
+        editor: 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400',
     }
 
     // Fetch users from API
@@ -188,14 +188,14 @@ export default function UserManagementPage() {
             {/* Header */}
             <div className="flex items-center justify-between mb-8">
                 <div>
-                    <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-                        <Users size={28} className="text-cyan-400" /> Kullanıcı Yönetimi
+                    <h1 className="text-3xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
+                        <Users size={28} className="text-cyan-600 dark:text-cyan-400" /> Kullanıcı Yönetimi
                     </h1>
-                    <p className="text-slate-400 mt-1">Admin panel erişim yetkisi olan kullanıcıları yönetin</p>
+                    <p className="text-slate-500 dark:text-slate-400 mt-1">Admin panel erişim yetkisi olan kullanıcıları yönetin</p>
                 </div>
                 <div className="flex items-center gap-2">
                     <button onClick={fetchUsers} disabled={loading}
-                        className="p-2 text-slate-400 hover:text-white transition-colors" title="Yenile">
+                        className="p-2 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors" title="Yenile">
                         <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
                     </button>
                     <button
@@ -209,32 +209,32 @@ export default function UserManagementPage() {
 
             {/* Notifications */}
             {error && (
-                <div className="bg-red-900/30 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg mb-4 flex items-center justify-between">
+                <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-500/30 text-red-600 dark:text-red-400 px-4 py-3 rounded-lg mb-4 flex items-center justify-between">
                     <span>{error}</span>
                     <button onClick={() => setError(null)} className="text-red-400 hover:text-red-300"><X size={16} /></button>
                 </div>
             )}
             {success && (
-                <div className="bg-emerald-900/30 border border-emerald-500/30 text-emerald-400 px-4 py-3 rounded-lg mb-4 flex items-center gap-2">
+                <div className="bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400 px-4 py-3 rounded-lg mb-4 flex items-center gap-2">
                     <Check size={16} /> {success}
                 </div>
             )}
 
             {/* Stats */}
             <div className="grid grid-cols-4 gap-4 mb-8">
-                <div className="bg-[#1e293b] rounded-xl p-4 border border-slate-700">
-                    <div className="text-2xl font-bold text-white">{users.length}</div>
+                <div className="bg-white dark:bg-[#1e293b] rounded-xl p-4 border border-slate-200 dark:border-slate-700">
+                    <div className="text-2xl font-bold text-slate-900 dark:text-white">{users.length}</div>
                     <div className="text-slate-400 text-sm">Toplam Kullanıcı</div>
                 </div>
-                <div className="bg-[#1e293b] rounded-xl p-4 border border-slate-700">
+                <div className="bg-white dark:bg-[#1e293b] rounded-xl p-4 border border-slate-200 dark:border-slate-700">
                     <div className="text-2xl font-bold text-emerald-400">{users.filter(u => u.isActive).length}</div>
                     <div className="text-slate-400 text-sm">Aktif</div>
                 </div>
-                <div className="bg-[#1e293b] rounded-xl p-4 border border-slate-700">
+                <div className="bg-white dark:bg-[#1e293b] rounded-xl p-4 border border-slate-200 dark:border-slate-700">
                     <div className="text-2xl font-bold text-cyan-400">{users.filter(u => u.role === 'admin' || u.role === 'superadmin').length}</div>
                     <div className="text-slate-400 text-sm">Admin</div>
                 </div>
-                <div className="bg-[#1e293b] rounded-xl p-4 border border-slate-700">
+                <div className="bg-white dark:bg-[#1e293b] rounded-xl p-4 border border-slate-200 dark:border-slate-700">
                     <div className="text-2xl font-bold text-green-400">{users.filter(u => u.role === 'editor').length}</div>
                     <div className="text-slate-400 text-sm">Editör</div>
                 </div>
@@ -242,41 +242,41 @@ export default function UserManagementPage() {
 
             {/* Add/Edit Form */}
             {showForm && (
-                <div className="bg-[#1e293b] rounded-2xl p-6 mb-8 border border-slate-700">
-                    <h2 className="text-lg font-bold text-white mb-4">{editingId ? 'Kullanıcı Düzenle' : 'Yeni Kullanıcı Ekle'}</h2>
+                <div className="bg-white dark:bg-[#1e293b] rounded-2xl p-6 mb-8 border border-slate-200 dark:border-slate-700">
+                    <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">{editingId ? 'Kullanıcı Düzenle' : 'Yeni Kullanıcı Ekle'}</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label className="text-sm text-slate-400 block mb-1">Ad Soyad *</label>
+                            <label className="text-sm text-slate-500 dark:text-slate-400 block mb-1">Ad Soyad *</label>
                             <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
                                 placeholder="Kullanıcı adı"
-                                className="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white text-sm focus:border-cyan-500 outline-none" />
+                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white text-sm focus:border-cyan-500 outline-none" />
                         </div>
                         <div>
-                            <label className="text-sm text-slate-400 block mb-1">E-posta *</label>
+                            <label className="text-sm text-slate-500 dark:text-slate-400 block mb-1">E-posta *</label>
                             <input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
                                 placeholder="kullanici@email.com"
                                 disabled={!!editingId}
-                                className={`w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white text-sm focus:border-cyan-500 outline-none ${editingId ? 'opacity-50 cursor-not-allowed' : ''}`} />
+                                className={`w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white text-sm focus:border-cyan-500 outline-none ${editingId ? 'opacity-50 cursor-not-allowed' : ''}`} />
                         </div>
                         <div>
-                            <label className="text-sm text-slate-400 block mb-1">Rol</label>
+                            <label className="text-sm text-slate-500 dark:text-slate-400 block mb-1">Rol</label>
                             <select value={form.role} onChange={e => setForm({ ...form, role: e.target.value as any })}
-                                className="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white text-sm focus:border-cyan-500 outline-none">
+                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white text-sm focus:border-cyan-500 outline-none">
                                 <option value="editor">Editör</option>
                                 <option value="admin">Admin</option>
                                 <option value="superadmin">Süper Admin</option>
                             </select>
                         </div>
                         <div>
-                            <label className="text-sm text-slate-400 block mb-1">{editingId ? 'Yeni Şifre (boş bırakılırsa değişmez)' : 'Şifre * (min. 6 karakter)'}</label>
+                            <label className="text-sm text-slate-500 dark:text-slate-400 block mb-1">{editingId ? 'Yeni Şifre (boş bırakılırsa değişmez)' : 'Şifre * (min. 6 karakter)'}</label>
                             <input type="password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })}
                                 placeholder={editingId ? 'Boş bırakılırsa değişmez' : 'En az 6 karakter'}
-                                className="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white text-sm focus:border-cyan-500 outline-none" />
+                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white text-sm focus:border-cyan-500 outline-none" />
                         </div>
                     </div>
                     <div className="flex justify-end gap-3 mt-4">
                         <button onClick={() => { setShowForm(false); setEditingId(null); setError(null) }}
-                            className="px-4 py-2 text-slate-400 hover:text-white transition-colors">İptal</button>
+                            className="px-4 py-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">İptal</button>
                         <button onClick={handleSave} disabled={saving}
                             className="bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-2 rounded-lg transition-colors disabled:opacity-50 flex items-center gap-2">
                             {saving && <RefreshCw size={14} className="animate-spin" />}
@@ -287,7 +287,7 @@ export default function UserManagementPage() {
             )}
 
             {/* Users List */}
-            <div className="bg-[#1e293b] rounded-2xl overflow-hidden border border-slate-700">
+            <div className="bg-white dark:bg-[#1e293b] rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700">
                 {loading ? (
                     <div className="p-12 text-center">
                         <RefreshCw size={24} className="animate-spin text-cyan-400 mx-auto mb-2" />
@@ -303,25 +303,25 @@ export default function UserManagementPage() {
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead>
-                                <tr className="border-b border-slate-700 text-left">
-                                    <th className="px-6 py-4 text-slate-400 font-medium">Kullanıcı</th>
-                                    <th className="px-4 py-4 text-slate-400 font-medium">Rol</th>
-                                    <th className="px-4 py-4 text-slate-400 font-medium">Durum</th>
-                                    <th className="px-4 py-4 text-slate-400 font-medium">Son Giriş</th>
-                                    <th className="px-4 py-4 text-slate-400 font-medium">Kayıt Tarihi</th>
-                                    <th className="px-4 py-4 text-slate-400 font-medium text-right">İşlemler</th>
+                                <tr className="border-b border-slate-200 dark:border-slate-700 text-left">
+                                    <th className="px-6 py-4 text-slate-500 dark:text-slate-400 font-medium">Kullanıcı</th>
+                                    <th className="px-4 py-4 text-slate-500 dark:text-slate-400 font-medium">Rol</th>
+                                    <th className="px-4 py-4 text-slate-500 dark:text-slate-400 font-medium">Durum</th>
+                                    <th className="px-4 py-4 text-slate-500 dark:text-slate-400 font-medium">Son Giriş</th>
+                                    <th className="px-4 py-4 text-slate-500 dark:text-slate-400 font-medium">Kayıt Tarihi</th>
+                                    <th className="px-4 py-4 text-slate-500 dark:text-slate-400 font-medium text-right">İşlemler</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {users.map(user => (
-                                    <tr key={user.id} className={`border-b border-slate-800 hover:bg-slate-800/50 transition-colors ${!user.isActive ? 'opacity-50' : ''}`}>
+                                    <tr key={user.id} className={`border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors ${!user.isActive ? 'opacity-50' : ''}`}>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-9 h-9 rounded-full bg-cyan-600/20 flex items-center justify-center">
                                                     <UserCircle size={20} className="text-cyan-400" />
                                                 </div>
                                                 <div>
-                                                    <div className="font-medium text-white">{user.name}</div>
+                                                    <div className="font-medium text-slate-900 dark:text-white">{user.name}</div>
                                                     <div className="text-xs text-slate-500 flex items-center gap-1"><Mail size={10} /> {user.email}</div>
                                                 </div>
                                             </div>
@@ -343,8 +343,8 @@ export default function UserManagementPage() {
                                                 )}
                                             </button>
                                         </td>
-                                        <td className="px-4 py-4 text-slate-300 text-xs">{formatDate(user.lastLogin)}</td>
-                                        <td className="px-4 py-4 text-slate-300 text-xs">{formatDate(user.createdAt)}</td>
+                                        <td className="px-4 py-4 text-slate-600 dark:text-slate-300 text-xs">{formatDate(user.lastLogin)}</td>
+                                        <td className="px-4 py-4 text-slate-600 dark:text-slate-300 text-xs">{formatDate(user.createdAt)}</td>
                                         <td className="px-4 py-4 text-right">
                                             <div className="flex items-center justify-end gap-2">
                                                 <button onClick={() => handleEdit(user)} className="p-1.5 text-slate-400 hover:text-cyan-400 transition-colors" title="Düzenle">

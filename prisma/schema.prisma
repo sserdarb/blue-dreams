@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -254,4 +254,40 @@ model AdminUser {
   lastLogin DateTime?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+}
+
+// ===== Elektra Cache Models (Item 16 & 17) =====
+
+model ElektraReservation {
+  id          Int      @id // Elektra Reservation ID
+  voucherNo   String?
+  agency      String?
+  channel     String? // OTA, Website, Call Center, etc.
+  boardType   String?
+  roomType    String?
+  checkIn     DateTime
+  checkOut    DateTime
+  totalPrice  Float
+  paidPrice   Float // Often 0 if payment at hotel
+  currency    String // TRY, EUR, USD, GBP, etc.
+  status      String // Reservation, Cancelled, InHouse, CheckOut, Waiting
+  roomCount   Int      @default(1)
+  adults      Int      @default(2)
+  children    Int      @default(0)
+  nationality String? // Derived from guests[0].nationality
+  bookedAt    DateTime // Elektra's 'lastUpdate' used as booking time
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([checkIn])
+  @@index([bookedAt])
+  @@index([status])
+}
+
+model ElektraRate {
+  date      DateTime @id // Primary key is the date (YYYY-MM-DD)
+  eur       Float // EUR to TRY rate on this date
+  usd       Float // USD to TRY rate on this date
+  gbp       Float?
+  fetchedAt DateTime @default(now())
 }

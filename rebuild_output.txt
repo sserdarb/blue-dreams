@@ -1,0 +1,37 @@
+=== STEP 1: Stop container and set restart=no ===
+Status: Exited (1) 20 seconds ago
+
+=== STEP 2: Copy latest source files into stopped container ===
+  Ô£ô route.ts
+  Ô£ô route.ts
+  Ô£ô page.tsx
+  Ô£ô route.ts
+  Ô£ô page.tsx
+  Ô£ô page.tsx
+  Ô£ô layout.tsx
+  Ô£ô auth.ts
+  Ô£ô schema.prisma
+  Ô£ô route.ts
+
+=== STEP 3: Commit container as new image ===
+Committed: sha256:267ace07ef73ae82c9ef124
+
+=== STEP 4: Get env vars and network from original ===
+Network: 
+Env vars: 31 total
+
+=== STEP 5: Run build in temp container ===
+Building... (this takes 3-5 min)
+Build result:
+docker: invalid reference format
+
+Run 'docker run --help' for more information
+
+=== STEP 6: Copy .next from builder to original ===
+Re-running builder (non-rm) to copy .next...
+Build:
+docker: invalid reference format
+
+Run 'docker run --help' for more information
+
+ÔØî BUILD FAILED - no BUILD_ID

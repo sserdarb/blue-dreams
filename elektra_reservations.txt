@@ -1,0 +1,27 @@
+=== reservation-list (status=Waiting, 2026 full year) — HTTP 400 ===
+Body length: 359 bytes
+{"success":false,"message":"Request parameters are not suitable.","errorCode":"1002-R","errorDetails":{"from-check-in":["from-check-in must be before to-check-in","from-check-in must be a date conforming to the specified format \"yyyy-MM-dd HH:mm:ss\""],"to-check-in":["to-check-in must be a date conforming to the specified format \"yyyy-MM-dd HH:mm:ss\""]}}
+
+=== reservation-list (status=Reservation, 2026 full year) — HTTP 400 ===
+Body length: 359 bytes
+{"success":false,"message":"Request parameters are not suitable.","errorCode":"1002-R","errorDetails":{"from-check-in":["from-check-in must be before to-check-in","from-check-in must be a date conforming to the specified format \"yyyy-MM-dd HH:mm:ss\""],"to-check-in":["to-check-in must be a date conforming to the specified format \"yyyy-MM-dd HH:mm:ss\""]}}
+
+=== reservation-list (status=InHouse, 2026 full year) — HTTP 400 ===
+Body length: 359 bytes
+{"success":false,"message":"Request parameters are not suitable.","errorCode":"1002-R","errorDetails":{"from-check-in":["from-check-in must be before to-check-in","from-check-in must be a date conforming to the specified format \"yyyy-MM-dd HH:mm:ss\""],"to-check-in":["to-check-in must be a date conforming to the specified format \"yyyy-MM-dd HH:mm:ss\""]}}
+
+=== reservation-list (status=CheckOut, 2026 full year) — HTTP 400 ===
+Body length: 359 bytes
+{"success":false,"message":"Request parameters are not suitable.","errorCode":"1002-R","errorDetails":{"from-check-in":["from-check-in must be before to-check-in","from-check-in must be a date conforming to the specified format \"yyyy-MM-dd HH:mm:ss\""],"to-check-in":["to-check-in must be a date conforming to the specified format \"yyyy-MM-dd HH:mm:ss\""]}}
+
+=== reservation-list (status=Cancelled, 2026 full year) — HTTP 400 ===
+Body length: 359 bytes
+{"success":false,"message":"Request parameters are not suitable.","errorCode":"1002-R","errorDetails":{"from-check-in":["from-check-in must be before to-check-in","from-check-in must be a date conforming to the specified format \"yyyy-MM-dd HH:mm:ss\""],"to-check-in":["to-check-in must be a date conforming to the specified format \"yyyy-MM-dd HH:mm:ss\""]}}
+
+=== reservation-list (status=Reservation, 2025 summer-dec) — HTTP 400 ===
+Body length: 359 bytes
+{"success":false,"message":"Request parameters are not suitable.","errorCode":"1002-R","errorDetails":{"from-check-in":["from-check-in must be before to-check-in","from-check-in must be a date conforming to the specified format \"yyyy-MM-dd HH:mm:ss\""],"to-check-in":["to-check-in must be a date conforming to the specified format \"yyyy-MM-dd HH:mm:ss\""]}}
+
+=== reservation-list (status=CheckOut, 2025 summer-dec) — HTTP 400 ===
+Body length: 359 bytes
+{"success":false,"message":"Request parameters are not suitable.","errorCode":"1002-R","errorDetails":{"from-check-in":["from-check-in must be before to-check-in","from-check-in must be a date conforming to the specified format \"yyyy-MM-dd HH:mm:ss\""],"to-check-in":["to-check-in must be a date conforming to the specified format \"yyyy-MM-dd HH:mm:ss\""]}}

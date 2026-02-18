@@ -1,0 +1,57 @@
+=== URL-encoded space — HTTP 400 ===
+URL: https://bookingapi.elektraweb.com/hotel/33264/reservation-list?from-check-in=2026-01-01%2000:00:00&to-check-in=2026-12-31%2023:59:59&reservation-status=Reservation
+{"success":false,"message":"Request parameters are not suitable.","errorCode":"1002-R","errorDetails":{"from-check-in":["from-check-in must be before to-check-in","from-check-in must be a date conforming to the specified format \"yyyy-MM-dd HH:mm:ss\""],"to-check-in":["to-check-in must be a date conforming to the specified format \"yyyy-MM-dd HH:mm:ss\""]}}
+
+=== Plus encoded — HTTP 400 ===
+URL: https://bookingapi.elektraweb.com/hotel/33264/reservation-list?from-check-in=2026-01-01+00:00:00&to-check-in=2026-12-31+23:59:59&reservation-status=Reservation
+{"success":false,"message":"Request parameters are not suitable.","errorCode":"1002-R","errorDetails":{"from-check-in":["from-check-in must be before to-check-in","from-check-in must be a date conforming to the specified format \"yyyy-MM-dd HH:mm:ss\""],"to-check-in":["to-check-in must be a date conforming to the specified format \"yyyy-MM-dd HH:mm:ss\""]}}
+
+=== T separator — HTTP 200 ===
+URL: https://bookingapi.elektraweb.com/hotel/33264/reservation-list?from-check-in=2026-01-01T00:00:00&to-check-in=2026-12-31T23:59:59&reservation-status=Reservation
+[{"reservation-id":88537692,"voucher-no":"HD-26028MEV","hotel-id":33264,"room-type-group-id":null,"room-no":null,"agency":"JOLLY","board-type":"UAI","room-type":"CSEA","rate-type":"Kontrat","check-in-date":"2026-05-01","check-out-date":"2026-05-03","reservation-total-price":13200,"reservation-paid-price":0,"reservation-currency":"TRY","reservation-room-count":1,"contact-name":null,"contact-email":null,"contact-phone":null,"lastupdate-date":"2026-02-10T06:19:58.023Z","guest-list":[{"reservation-g
+
+=== Date only — HTTP 200 ===
+URL: https://bookingapi.elektraweb.com/hotel/33264/reservation-list?from-check-in=2026-01-01&to-check-in=2026-12-31&reservation-status=Reservation
+[{"reservation-id":88537692,"voucher-no":"HD-26028MEV","hotel-id":33264,"room-type-group-id":null,"room-no":null,"agency":"JOLLY","board-type":"UAI","room-type":"CSEA","rate-type":"Kontrat","check-in-date":"2026-05-01","check-out-date":"2026-05-03","reservation-total-price":13200,"reservation-paid-price":0,"reservation-currency":"TRY","reservation-room-count":1,"contact-name":null,"contact-email":null,"contact-phone":null,"lastupdate-date":"2026-02-10T06:19:58.023Z","guest-list":[{"reservation-g
+
+=== Short time — HTTP 400 ===
+URL: https://bookingapi.elektraweb.com/hotel/33264/reservation-list?from-check-in=2026-01-01 00:00&to-check-in=2026-12-31 23:59&reservation-status=Reservation
+{"success":false,"message":"Request parameters are not suitable.","errorCode":"1002-R","errorDetails":{"from-check-in":["from-check-in must be before to-check-in","from-check-in must be a date conforming to the specified format \"yyyy-MM-dd HH:mm:ss\""],"to-check-in":["to-check-in must be a date conforming to the specified format \"yyyy-MM-dd HH:mm:ss\""]}}
+
+=== POST variant — HTTP 404 ===
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot POST /hotel/33264/reservation-list</pre>
+</body>
+</html>
+
+=== Root /reservation-list (fmt=2026-01-01 00:00:00) — HTTP 404 ===
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /reservation-list</pre>
+</body>
+</html>
+
+
+=== Root /reservation-list (fmt=2026-01-01T00:00:00) — HTTP 404 ===
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /reservation-list</pre>
+</body>
+</html>
+

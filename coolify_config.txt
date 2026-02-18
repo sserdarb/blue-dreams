@@ -1,0 +1,9 @@
+start_command: [mkdir -p /app/data && npx prisma db push && npm start]
+build_command: [mkdir -p /app/data && npm install && npx prisma generate && npx prisma db push --accept-data-loss && npm run build]
+install_command: []
+build_pack: [nixpacks]
+dockerfile: []
+
+Dockerfile in app: ls: cannot access '/app/Dockerfile': No such file or directory
+
+Entrypoint: cat: /app/entrypoint.sh: No such file or directory

@@ -1,0 +1,89 @@
+Traceback (most recent call last):
+  File "C:\Users\sserd\OneDrive\Belgeler\Antigravity\blue-dreams-fix\diagnose_rendering.py", line 67, in <module>
+    with open('diagnose_output.txt', 'w', encoding='utf-8') as f:
+         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [Errno 13] Permission denied: 'diagnose_output.txt'
+Container: 3815dea559c9
+
+=== 1. Prisma Schema provider ===
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Page {
+
+=== 2. Generated client config ===
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Page {
+
+=== 3. Database content ===
+  Page: 40
+  Widget: 184
+  AdminUser: 1
+  Language: 4
+  SiteSettings: 2
+  MenuItem: 0
+
+=== 4. Home page TR ===
+  Page: c2ff643a-f006-47fa-be46-d52451c6c60c|home|tr|Ana Sayfa
+  Widgets: 597d4dc6-7db5-4d63-8052-6dc5a80dd0de|hero|{"badge":"Bodrum'un ─░ncisi","titleLine1":"Ege'nin Mavi","titleLine2":"R├╝yas─▒","subtitle":"Do─şan─▒n ka
+764ac443-5f10-4eb2-99ee-05e8271e082b|about-statement|{"label":"Blue Dreams Deneyimi","headingParts":[{"text":"Ege'nin k─▒y─▒s─▒nda "},{"text":"sizin yeriniz
+21b879b2-20ed-43ea-bf33-7a399b356117|category-cards|{"cards":[{"title":"ODALAR","subtitle":"Bodrum'un kalbinde tasar─▒m odalar","image":"https://bluedrea
+fa45f97a-2d90-4d7b-9baf-e559c894554c|experience-blocks|{"blocks":[{"label":"Do─şa & Konfor","h1":"Do─şa ile","h2":"b├╝t├╝nle┼şin","text":"Torba'n─▒n ├ğam ormanlar
+053e4f7f-73d7-45e1-8c02-2791aca4cc60|local-guide|{"badge":"AI Concierge Selection","heading":"Ke┼şfet &","headingAccent":"Deneyimle","description":"Ya
+6bec5de4-0215-487f-a27c-883535d673e1|reviews-section|{"label":"Misafir Yorumlar─▒","heading":"Sizden Gelen","headingAccent":"G├╝zel S├Âzler","description":"
+e6340dcb-0690-4924-a521-9cf715f867f7|sustainability|{"heading":"S├╝rd├╝r├╝lebilirlik","headingAccent":"Taahh├╝d├╝m├╝z","text":"Ya┼şad─▒─ş─▒m─▒z do─şay─▒ seviyoruz ve
+0300afb9-fb89-46ce-9f11-66dda83c4059|location-map|{"lat":37.091832,"lng":27.4824998,"zoom":17,"label":"Konum","title":"Blue Dreams Resort","descriptio
+c40c6e22-2827-4f63-8b1f-a0fe4bd31676|cta|{"heading":"%40'a varan ├Âzel tekliflerinize ula┼ş─▒n","subtitle":"Sizin i├ğin sundu─şumuz en iyi teklifi
+
+=== 5. Container logs (last 30 lines) ===
+npm warn config production Use `--omit=dev` instead.
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "blue_dreams_v2", schema "public" at "coolify-db:5432"
+
+The database is already in sync with the Prisma schema.
+
+Running generate... (Use --skip-generate to skip the generators)
+[2K[1A[2K[GRunning generate... - Prisma Client
+[2K[1A[2K[GÔ£ö Generated Prisma Client (v5.22.0) to ./node_modules/@prisma/client in 179ms
+
+npm warn config production Use `--omit=dev` instead.
+
+> temp_app@0.1.0 start
+> next start
+
+Ôû▓ Next.js 16.1.6
+- Local:         http://localhost:3000
+- Network:       http://172.18.0.11:3000
+
+Ô£ô Starting...
+ÔÜá "next start" does not work with "output: standalone" configuration. Use "node .next/standalone/server.js" instead.
+Ô£ô Ready in 531ms
+The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.
+
+=== 6. Internal curl test ===
+<!DOCTYPE html><html lang="tr"><head><meta charSet="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="/_next/static/chunks/9e6bcb610157a2a9.css" data-precedence="next"/><link rel="stylesheet" href="/_next/static/chunks/e5074194f8766b32.css" data-precedence="next"/><link rel="preload" as="script" fetchPriority="low" href="/_next/static/chunks/68eb154173fa8d67.js"/><script src="/_next/static/chunks/966342d9ef7442a0.js" async=""></script><script src="/_next/static/chunks/ec5b4f612295a004.js" async=""></script><script src="/_next/static/chunks/69be39811437728d.js" async=""></script><script src="/_next/static/chunks/82abf2d65f5428ae.js" async=""></script><script src="/_next/static/chunks/turbopack-09eeaaf6c01c2dae.js" async=""></script><script src="/_next/static/chunks/ff1a16fafef87110.js" async=""></script><script src="/_next/static/chunks/dc990f425f2e89a8.js" async=""></script><script src="/_next/static/chunks/744355e03808d4c7.js" as
+
+=== 7. Runtime DATABASE_URL ===
+  DATABASE_URL: postgresql://coolify:coolifypassword@coolify-db:5432/blue_dreams_v2
+Error: [Errno 13] Permission denied: 'diagnose_output.txt'

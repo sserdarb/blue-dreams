@@ -72,10 +72,10 @@ export default function ActivitiesPage() {
     return (
         <div className="p-6 max-w-7xl mx-auto">
             {/* Header */}
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-8">
                 <div>
-                    <h1 className="text-3xl font-bold text-white">Aktiviteler & Etkinlikler</h1>
-                    <p className="text-slate-400 mt-1">Etkinlik yönetimi ve Google Sheets entegrasyonu</p>
+                    <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Aktiviteler & Etkinlikler</h1>
+                    <p className="text-slate-500 dark:text-slate-400 mt-1">Etkinlik yönetimi ve Google Sheets entegrasyonu</p>
                 </div>
                 <div className="flex gap-3">
                     <button
@@ -96,24 +96,24 @@ export default function ActivitiesPage() {
             {/* Google Sheets Modal */}
             {showSheetModal && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-[#1e293b] rounded-2xl p-6 max-w-xl w-full shadow-2xl">
-                        <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                    <div className="bg-white dark:bg-[#1e293b] rounded-2xl p-6 max-w-xl w-full shadow-2xl border border-slate-200 dark:border-slate-700">
+                        <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                             <FileSpreadsheet size={20} className="text-green-400" /> Google Sheets Entegrasyonu
                         </h2>
-                        <p className="text-slate-400 text-sm mb-4">
+                        <p className="text-slate-500 dark:text-slate-400 text-sm mb-4">
                             Etkinlikleri Google Sheets üzerinden toplu olarak yönetebilirsiniz.
                             Aşağıdaki şablon formatını kullanın.
                         </p>
 
                         {/* Template */}
-                        <div className="bg-slate-900 rounded-lg p-4 mb-4">
+                        <div className="bg-slate-100 dark:bg-slate-900 rounded-lg p-4 mb-4 border border-slate-200 dark:border-slate-700">
                             <div className="flex items-center justify-between mb-2">
                                 <span className="text-xs text-slate-500 uppercase tracking-wide">Şablon Format (TSV)</span>
                                 <button onClick={copyTemplate} className="flex items-center gap-1 text-xs text-cyan-400 hover:text-cyan-300">
                                     {copied ? <><Check size={12} /> Kopyalandı!</> : <><Copy size={12} /> Kopyala</>}
                                 </button>
                             </div>
-                            <pre className="text-xs text-slate-300 overflow-x-auto whitespace-pre">
+                            <pre className="text-xs text-slate-700 dark:text-slate-300 overflow-x-auto whitespace-pre">
                                 {`Etkinlik Adı | Tarih | Saat | Mekan | Açıklama | Kategori | Bilet URL | Durum
 Caz Festivali | 2026-07-15 | 21:00 | Bodrum Kalesi | ... | festival | https://... | active`}
                             </pre>
@@ -121,18 +121,18 @@ Caz Festivali | 2026-07-15 | 21:00 | Bodrum Kalesi | ... | festival | https://..
 
                         {/* Sheet URL */}
                         <div className="mb-4">
-                            <label className="text-sm text-slate-400 block mb-1">Google Sheets URL</label>
+                            <label className="text-sm text-slate-700 dark:text-slate-400 block mb-1">Google Sheets URL</label>
                             <input
                                 type="url"
                                 value={sheetUrl}
                                 onChange={e => setSheetUrl(e.target.value)}
                                 placeholder="https://docs.google.com/spreadsheets/d/..."
-                                className="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white text-sm"
+                                className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
                             />
                         </div>
 
                         <div className="flex justify-end gap-3">
-                            <button onClick={() => setShowSheetModal(false)} className="px-4 py-2 text-slate-400 hover:text-white transition-colors">
+                            <button onClick={() => setShowSheetModal(false)} className="px-4 py-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
                                 Kapat
                             </button>
                             <button
@@ -148,84 +148,84 @@ Caz Festivali | 2026-07-15 | 21:00 | Bodrum Kalesi | ... | festival | https://..
 
             {/* Add/Edit Form */}
             {showForm && (
-                <div className="bg-[#1e293b] rounded-2xl p-6 mb-8 border border-slate-700">
-                    <h2 className="text-lg font-bold text-white mb-4">{editingId ? 'Etkinlik Düzenle' : 'Yeni Etkinlik Ekle'}</h2>
+                <div className="bg-white dark:bg-[#1e293b] rounded-2xl p-6 mb-8 border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">{editingId ? 'Etkinlik Düzenle' : 'Yeni Etkinlik Ekle'}</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label className="text-sm text-slate-400 block mb-1">Etkinlik Adı *</label>
-                            <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white text-sm" />
+                            <label className="text-sm text-slate-700 dark:text-slate-400 block mb-1">Etkinlik Adı *</label>
+                            <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-cyan-500 outline-none" />
                         </div>
                         <div>
-                            <label className="text-sm text-slate-400 block mb-1">Tarih *</label>
-                            <input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} className="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white text-sm" />
+                            <label className="text-sm text-slate-700 dark:text-slate-400 block mb-1">Tarih *</label>
+                            <input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white text-sm min-h-[44px] focus:ring-2 focus:ring-cyan-500 outline-none" />
                         </div>
                         <div>
-                            <label className="text-sm text-slate-400 block mb-1">Saat</label>
-                            <input type="time" value={form.time} onChange={e => setForm({ ...form, time: e.target.value })} className="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white text-sm" />
+                            <label className="text-sm text-slate-700 dark:text-slate-400 block mb-1">Saat</label>
+                            <input type="time" value={form.time} onChange={e => setForm({ ...form, time: e.target.value })} className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white text-sm min-h-[44px] focus:ring-2 focus:ring-cyan-500 outline-none" />
                         </div>
                         <div>
-                            <label className="text-sm text-slate-400 block mb-1">Mekan</label>
-                            <input value={form.location} onChange={e => setForm({ ...form, location: e.target.value })} className="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white text-sm" />
+                            <label className="text-sm text-slate-700 dark:text-slate-400 block mb-1">Mekan</label>
+                            <input value={form.location} onChange={e => setForm({ ...form, location: e.target.value })} className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-cyan-500 outline-none" />
                         </div>
                         <div>
-                            <label className="text-sm text-slate-400 block mb-1">Kategori</label>
-                            <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} className="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white text-sm">
+                            <label className="text-sm text-slate-700 dark:text-slate-400 block mb-1">Kategori</label>
+                            <select value={form.category} onChange={e => setForm({ ...form, category: e.target.value })} className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-cyan-500 outline-none">
                                 {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                             </select>
                         </div>
                         <div>
-                            <label className="text-sm text-slate-400 block mb-1">Durum</label>
-                            <select value={form.status} onChange={e => setForm({ ...form, status: e.target.value as any })} className="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white text-sm">
+                            <label className="text-sm text-slate-700 dark:text-slate-400 block mb-1">Durum</label>
+                            <select value={form.status} onChange={e => setForm({ ...form, status: e.target.value as any })} className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-cyan-500 outline-none">
                                 <option value="active">Aktif</option>
                                 <option value="draft">Taslak</option>
                                 <option value="past">Geçmiş</option>
                             </select>
                         </div>
                         <div className="md:col-span-2">
-                            <label className="text-sm text-slate-400 block mb-1">Açıklama</label>
-                            <textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={2} className="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white text-sm" />
+                            <label className="text-sm text-slate-700 dark:text-slate-400 block mb-1">Açıklama</label>
+                            <textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={2} className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-cyan-500 outline-none" />
                         </div>
                         <div className="md:col-span-2">
-                            <label className="text-sm text-slate-400 block mb-1">Bilet / Detay URL</label>
-                            <input value={form.ticketUrl} onChange={e => setForm({ ...form, ticketUrl: e.target.value })} placeholder="https://..." className="w-full bg-slate-800 border border-slate-600 rounded-lg px-4 py-2 text-white text-sm" />
+                            <label className="text-sm text-slate-700 dark:text-slate-400 block mb-1">Bilet / Detay URL</label>
+                            <input value={form.ticketUrl} onChange={e => setForm({ ...form, ticketUrl: e.target.value })} placeholder="https://..." className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-cyan-500 outline-none" />
                         </div>
                     </div>
                     <div className="flex justify-end gap-3 mt-4">
-                        <button onClick={() => { setShowForm(false); setEditingId(null) }} className="px-4 py-2 text-slate-400 hover:text-white">İptal</button>
+                        <button onClick={() => { setShowForm(false); setEditingId(null) }} className="px-4 py-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">İptal</button>
                         <button onClick={handleSave} className="bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-2 rounded-lg transition-colors">Kaydet</button>
                     </div>
                 </div>
             )}
 
             {/* Activities Table */}
-            <div className="bg-[#1e293b] rounded-2xl overflow-hidden border border-slate-700">
+            <div className="bg-white dark:bg-[#1e293b] rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm">
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                         <thead>
-                            <tr className="border-b border-slate-700 text-left">
-                                <th className="px-6 py-4 text-slate-400 font-medium">Etkinlik</th>
-                                <th className="px-4 py-4 text-slate-400 font-medium">Tarih & Saat</th>
-                                <th className="px-4 py-4 text-slate-400 font-medium">Mekan</th>
-                                <th className="px-4 py-4 text-slate-400 font-medium">Kategori</th>
-                                <th className="px-4 py-4 text-slate-400 font-medium">Durum</th>
-                                <th className="px-4 py-4 text-slate-400 font-medium text-right">İşlemler</th>
+                            <tr className="border-b border-slate-200 dark:border-slate-700 text-left">
+                                <th className="px-6 py-4 text-slate-500 dark:text-slate-400 font-medium">Etkinlik</th>
+                                <th className="px-4 py-4 text-slate-500 dark:text-slate-400 font-medium">Tarih & Saat</th>
+                                <th className="px-4 py-4 text-slate-500 dark:text-slate-400 font-medium">Mekan</th>
+                                <th className="px-4 py-4 text-slate-500 dark:text-slate-400 font-medium">Kategori</th>
+                                <th className="px-4 py-4 text-slate-500 dark:text-slate-400 font-medium">Durum</th>
+                                <th className="px-4 py-4 text-slate-500 dark:text-slate-400 font-medium text-right">İşlemler</th>
                             </tr>
                         </thead>
                         <tbody>
                             {activities.map(activity => (
-                                <tr key={activity.id} className="border-b border-slate-800 hover:bg-slate-800/50 transition-colors">
+                                <tr key={activity.id} className="border-b border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                     <td className="px-6 py-4">
-                                        <div className="font-medium text-white">{activity.name}</div>
+                                        <div className="font-medium text-slate-900 dark:text-white">{activity.name}</div>
                                         <div className="text-xs text-slate-500 mt-0.5">{activity.description}</div>
                                     </td>
                                     <td className="px-4 py-4">
-                                        <div className="flex flex-col gap-0.5 text-slate-300">
+                                        <div className="flex flex-col gap-0.5 text-slate-600 dark:text-slate-300">
                                             <span className="flex items-center gap-1"><Calendar size={12} /> {activity.date}</span>
                                             {activity.time && <span className="flex items-center gap-1"><Clock size={12} /> {activity.time}</span>}
                                         </div>
                                     </td>
                                     <td className="px-4 py-4">
-                                        <span className="flex items-center gap-1 text-slate-300"><MapPin size={12} /> {activity.location}</span>
+                                        <span className="flex items-center gap-1 text-slate-600 dark:text-slate-300"><MapPin size={12} /> {activity.location}</span>
                                     </td>
                                     <td className="px-4 py-4">
                                         <span className="inline-block bg-brand/20 text-cyan-400 text-xs px-2 py-0.5 rounded">{activity.category}</span>

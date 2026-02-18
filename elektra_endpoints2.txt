@@ -1,0 +1,120 @@
+POST /search: 404 -> <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot POST /search</pre>
+</body>
+</html>
+
+
+GET /hotel?hotel-id=33264: 500 -> {"success":false,"errorCode":null,"message":null}
+
+POST /hotel: 404 -> <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot POST /hotel</pre>
+</body>
+</html>
+
+
+GET /room-type?hotel-id=33264: 404 -> <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /room-type</pre>
+</body>
+</html>
+
+
+POST /room-type: 404 -> <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot POST /room-type</pre>
+</body>
+</html>
+
+
+GET /price?hotel-id=33264: 404 -> <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /price</pre>
+</body>
+</html>
+
+
+POST /price: 404 -> <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot POST /price</pre>
+</body>
+</html>
+
+
+GET /booklist: 404 -> <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /booklist</pre>
+</body>
+</html>
+
+
+POST /booklist: 404 -> <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot POST /booklist</pre>
+</body>
+</html>
+
+
+GET /booking-list?hotel-id=33264: 404 -> <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /booking-list</pre>
+</body>
+</html>
+
+
+POST /booking-list: 404 -> <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot POST /booking-list</pre>
+</body>
+</html>

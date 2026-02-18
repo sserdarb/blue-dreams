@@ -1,0 +1,75 @@
+=== Cleanup ===
+
+=== Step 1: Inject files ===
+Temp: 35664c329b246a9f
+  + prisma/schema.prisma
+  + app/actions/auth.ts
+  + app/api/admin/users/route.ts
+  + app/admin/users/page.tsx
+  + app/admin/login/page.tsx
+  + app/admin/layout.tsx
+  + app/api/ai/chat/route.ts
+  + app/api/ai/settings/route.ts
+  + app/admin/ai-training/page.tsx
+  + app/api/analytics/data/route.ts
+  + components/admin/widget-editors/widget-types.ts
+  + components/admin/widget-editors/index.tsx
+  + nixpacks.toml
+  + prisma/seed.js
+  + package.json
+  + app/admin/pages/[id]/editor/page.tsx
+  + app/[locale]/admin/pages/[id]/editor/page.tsx
+
+AdminUser count: 1
+
+=== Step 2: Commit ===
+Image: sha256:e30c39c862b2229977b8550
+
+=== Step 3: npm install + Build ===
+Output: 108 lines
+  Ôö£ ãÆ /api/analytics/data
+  Ôö£ ãÆ /api/analytics/track
+  Ôö£ ãÆ /api/content/rooms
+  Ôö£ ãÆ /api/cta-bar
+  Ôö£ ãÆ /api/cta-bar/click
+  Ôö£ ãÆ /api/events
+  Ôö£ ãÆ /api/settings/analytics
+  Ôö£ Ôùï /robots.txt
+  Ôöö Ôùï /sitemap.xml
+  
+  
+  ãÆ Proxy (Middleware)
+  
+  Ôùï  (Static)   prerendered as static content
+  ãÆ  (Dynamic)  server-rendered on demand
+
+BUILD_ID: mhp-2SF96aFWBvgixBS9x
+BUILD OK!
+Final: sha256:d3d87b1f8d1c740ea1bb145
+
+=== Step 5: Deploy ===
+Container: f0f887f269d0782a
+Waiting 45s...
+Status: Up 45 seconds
+
+Logs:
+Ôû▓ Next.js 16.1.6
+- Local:         http://localhost:3000
+- Network:       http://172.18.0.16:3000
+
+Ô£ô Starting...
+ÔÜá "next start" does not work with "output: standalone" configuration. Use "node .next/standalone/server.js" instead.
+Ô£ô Ready in 489ms
+
+Internal: 200
+External: 200
+bcrypt check: bcrypt OK $2a$04$lyKcEL8QW38GaHjoVykjUOremBrFP6wYAhkJVNB4ysYlFXmBa.stG
+
+DB Users:
+email            | isActive |       pwd       
+----------------------------+----------+-----------------
+ admin@bluedreamsresort.com | t        | $2a$10$N9qo8uLO
+ sserdarb@gmail.com         | t        | Tuba@2015Tuana
+(2 rows)
+
+=== DONE ===

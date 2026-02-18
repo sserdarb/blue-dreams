@@ -1,0 +1,31 @@
+=== Creating API token if needed ===
+Token from DB: 0381c787b20d3c48c90d8b73902cef...
+All tokens: 1 | App\Models\User | vps
+
+=== Trying Coolify artisan deploy ===
+Deploy help: WARNING:  database "coolify" has no actual collation version, but a version was recorded
+
+   ERROR  Command "app:deploy" is not defined. Did you mean one of these?  
+
+  Ôçé app:demo-notify  
+  Ôçé app:init  
+  Ôçé check:deployment-queue  
+  Ôçé cleanup:deployment-queue
+
+=== Deploying via artisan ===
+Deploy: WARNING:  database "coolify" has no actual collation version, but a version was recorded
+
+   ERROR  Command "app:deploy" is not defined. Did you mean one of these?  
+
+  Ôçé app:demo-notify  
+  Ôçé app:init  
+  Ôçé check:deployment-queue  
+  Ôçé cleanup:deployment-queue
+
+=== Trying internal API ===
+New token: WARNING:  database "coolify" has no actual collation version, but a version was recorded
+
+  <warning> WARNING </warning> Attempt to read property "id" on null in app/Models/User.php on line 212.
+
+
+   

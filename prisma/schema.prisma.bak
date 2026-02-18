@@ -1,0 +1,257 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Page {
+  id              String   @id @default(uuid())
+  slug            String
+  locale          String
+  title           String
+  metaDescription String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  widgets         Widget[]
+
+  @@unique([slug, locale])
+}
+
+model Widget {
+  id     String @id @default(uuid())
+  type   String
+  data   String // Storing JSON as string
+  order  Int
+  pageId String
+  page   Page   @relation(fields: [pageId], references: [id], onDelete: Cascade)
+}
+
+model ChatSession {
+  id           String        @id @default(uuid())
+  customerName String?
+  status       String        @default("active") // active, closed
+  visitorId    String? // Unique visitor tracking ID
+  visitorInfo  String? // JSON: { country, browser, device, currentPage }
+  isOnline     Boolean       @default(true)
+  lastActivity DateTime      @default(now())
+  adminNote    String? // Admin notes for session
+  createdAt    DateTime      @default(now())
+  messages     ChatMessage[]
+}
+
+model ChatMessage {
+  id          String      @id @default(uuid())
+  sessionId   String
+  session     ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sender      String // 'user', 'agent', 'bot', 'ai'
+  content     String
+  isFromAdmin Boolean     @default(false)
+  metadata    String? // JSON: { widgetType, uiPayload }
+  createdAt   DateTime    @default(now())
+}
+
+// ===== AI Concierge Models =====
+
+model AiSettings {
+  id            String   @id @default(uuid())
+  systemPrompt  String // AI training text / system instruction
+  language      String   @default("tr") // tr, en, de, ru
+  tone          String   @default("friendly") // formal, friendly, casual
+  isActive      Boolean  @default(true)
+  apiKey        String? // Gemini API Key
+  googleSheetId String? // Google Sheet ID for knowledge base
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model AiTrainingDocument {
+  id        String   @id @default(uuid())
+  title     String
+  content   String // Document content (extracted text)
+  type      String // pdf, txt, url
+  filename  String? // Original filename
+  createdAt DateTime @default(now())
+}
+
+model VisitorAction {
+  id         String   @id @default(uuid())
+  sessionId  String
+  actionType String // attract_attention, send_message, takeover
+  payload    String? // JSON payload
+  createdAt  DateTime @default(now())
+}
+
+model Media {
+  id        String   @id @default(uuid())
+  url       String
+  name      String
+  type      String
+  createdAt DateTime @default(now())
+}
+
+// ===== CMS Models =====
+
+model SiteSettings {
+  id               String   @id @default(uuid())
+  locale           String   @unique
+  siteName         String   @default("Blue Dreams Resort")
+  logo             String? // URL to logo image
+  favicon          String? // URL to favicon
+  phone            String?
+  email            String?
+  address          String?
+  socialLinks      String? // JSON: { facebook, instagram, twitter, youtube }
+  footerText       String?
+  footerCopyright  String?
+  headerStyle      String   @default("default") // default, transparent, dark
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  googleMapsApiKey String?
+}
+
+model MenuItem {
+  id        String     @id @default(uuid())
+  locale    String
+  label     String
+  url       String
+  target    String     @default("_self") // _self, _blank
+  order     Int        @default(0)
+  parentId  String?
+  parent    MenuItem?  @relation("MenuHierarchy", fields: [parentId], references: [id])
+  children  MenuItem[] @relation("MenuHierarchy")
+  isActive  Boolean    @default(true)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Language {
+  id         String   @id @default(uuid())
+  code       String   @unique // en, tr, de, ru
+  name       String // English, Türkçe, Deutsch, Русский
+  nativeName String? // English, Türkçe, Deutsch, Русский
+  flag       String? // 🇺🇸, 🇹🇷, 🇩🇪, 🇷🇺 or URL
+  isActive   Boolean  @default(true)
+  isDefault  Boolean  @default(false)
+  order      Int      @default(0)
+  createdAt  DateTime @default(now())
+}
+
+// ===== CTA Bar Model =====
+
+model CtaBar {
+  id              String    @id @default(uuid())
+  title           String // Main headline
+  subtitle        String? // Secondary text
+  buttonText      String? // Button label
+  buttonUrl       String? // Button link
+  backgroundColor String    @default("#2563eb") // Tailwind blue-600
+  textColor       String    @default("#ffffff")
+  startDate       DateTime? // Schedule start
+  endDate         DateTime? // Schedule end
+  isActive        Boolean   @default(false) // Starts disabled
+  clickCount      Int       @default(0) // Analytics tracking
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+// ===== CMS Content Models =====
+
+model Room {
+  id          String   @id @default(uuid())
+  locale      String // tr, en, de, ru
+  title       String
+  description String
+  image       String // Main image URL
+  size        String?
+  view        String?
+  capacity    String?
+  features    String // JSON string array: ["Klima", "Wifi"]
+  priceStart  String?
+  whyChoose   String? // AI için özel alan: "Neden Bu Odayı Seçmelisiniz?"
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Dining {
+  id          String   @id @default(uuid())
+  locale      String
+  title       String
+  type        String // Ana Restoran, A'la Carte, Bar
+  description String
+  image       String
+  images      String? // JSON array for gallery (optional)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Amenity {
+  id          String   @id @default(uuid())
+  locale      String
+  title       String
+  description String?
+  icon        String // Lucide icon name or image URL
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model MeetingRoom {
+  id        String   @id @default(uuid())
+  locale    String
+  title     String
+  area      String
+  capacity  String
+  height    String
+  type      String
+  image     String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ===== Analytics Models =====
+
+model PageView {
+  id        String   @id @default(uuid())
+  path      String // e.g. /tr, /en/rooms, /tr/admin
+  locale    String   @default("tr")
+  referrer  String? // Where user came from
+  userAgent String?
+  country   String?
+  device    String? // mobile, desktop, tablet
+  browser   String?
+  sessionId String? // Cookie-based session tracking
+  duration  Int      @default(0) // Time on page in seconds
+  createdAt DateTime @default(now())
+}
+
+model AnalyticsConfig {
+  id             String   @id @default(uuid())
+  gaId           String? // GA4 Measurement ID: G-XXXXXXXXXX
+  gtmId          String? // Google Tag Manager: GTM-XXXXXXX
+  fbPixelId      String? // Facebook Pixel ID
+  gaApiSecret    String? // GA4 Data API - API Secret (for server-side)
+  gaPropertyId   String? // GA4 Property ID (numeric, for Data API)
+  gaServiceKey   String? // GA4 Service Account JSON key (base64 encoded)
+  useGaApi       Boolean  @default(false) // If true, pull data from GA4 API instead of internal
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  googleClientId String? // GA4 Client ID (OAuth)
+}
+
+model AdminUser {
+  id        String    @id @default(uuid())
+  email     String    @unique
+  password  String
+  name      String
+  role      String    @default("admin") // superadmin, admin, editor
+  isActive  Boolean   @default(true)
+  lastLogin DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}

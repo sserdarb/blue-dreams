@@ -54,6 +54,11 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         boardTypeAnalysis: 'Pansiyon Tipi Analizi',
         budgetAnalysis: 'Bütçe Analizi',
         bookingVelocity: 'Rezervasyon Hızı',
+        occupancyRate: 'Doluluk Oranı',
+        adr: 'ADR (Ort. Günlük Fiyat)',
+        revpar: 'RevPAR',
+        avgNights: 'Ort. Konaklama',
+        guestNationality: 'Misafir Milliyeti',
         overview: 'Genel Bakış',
         recordDate: 'Kayıt Tarihi',
         budget: 'Bütçe',
@@ -101,6 +106,9 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         category: 'Kategori',
         amount: 'Tutar',
         date: 'Tarih',
+        callCenterPerf: 'Call Center Performansı',
+        forecast: 'Gelecek Dönem Tahmini',
+        operatorPerf: 'Operatör Performansı',
 
         // General
         save: 'Kaydet',
@@ -114,6 +122,47 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         error: 'Hata',
         success: 'Başarılı',
         confirm: 'Emin misiniz?',
+
+        // Yield Management
+        yieldTitle: 'Yield Management',
+        yieldSubtitle: 'Gelir yönetimi ve fiyat analizi',
+        tabOverview: 'Genel Bakış',
+        tabChannels: 'Kanal Analizi',
+        tabAgencies: 'Acenta Analizi',
+        tabPricing: 'Fiyat Matrisi',
+        tabAi: 'AI Değerlendirmesi',
+        seasonHigh: 'Yüksek',
+        seasonShoulder: 'Omuz',
+        seasonLow: 'Düşük',
+        seasonOff: 'Kapalı',
+        refresh: 'Yenile',
+        refreshing: 'Yenileniyor...',
+        cacheEmpty: 'Cache boş',
+        lastUpdate: 'Son güncelleme',
+        stale: 'Eski',
+        thisMonth: 'Bu Ay',
+        thisSeason: 'Bu Sezon',
+        thisYear: 'Bu Yıl',
+        custom: 'Özel',
+        channelDist: 'Kanal Dağılımı (Rezervasyon)',
+        channelRevenue: 'Kanal Bazlı Gelir',
+        agencyAnalysis: 'Acenta & Ülke Bazlı Analiz',
+        priceVolumeMatrix: 'Fiyat-Volume Matrisi',
+        periodAdrComparison: 'Dönem Bazlı ADR Karşılaştırması',
+        monthlyAdrRoomNight: 'Aylık ADR & Room Night',
+        aiPriceEval: 'AI Fiyat Değerlendirmesi',
+        aiPriceDesc: 'Gemini AI ile mevcut fiyatlandırma stratejinizi değerlendirin',
+        startAnalysis: 'Analiz Başlat',
+        analyzing: 'Analiz Ediliyor...',
+        totalRevLabel: 'Toplam Gelir',
+        avgAdr: 'Ortalama ADR',
+        roomNightLabel: 'Room Night',
+        channelCount: 'Kanal Sayısı',
+        avgStayNights: 'Ort. Konaklama',
+        revenueShare: 'Gelir Payı',
+        roomNightShare: 'Room Night Payı',
+        vsLastYear: 'Önceki Yıla Göre',
+        monthNames: ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'],
     },
     en: {
         navReports: 'Reports',
@@ -158,6 +207,11 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         boardTypeAnalysis: 'Board Type Analysis',
         budgetAnalysis: 'Budget Analysis',
         bookingVelocity: 'Booking Velocity',
+        occupancyRate: 'Occupancy Rate',
+        adr: 'ADR (Avg. Daily Rate)',
+        revpar: 'RevPAR',
+        avgNights: 'Avg. Length of Stay',
+        guestNationality: 'Guest Nationality',
         overview: 'Overview',
         recordDate: 'Record Date',
         budget: 'Budget',
@@ -203,6 +257,9 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         category: 'Category',
         amount: 'Amount',
         date: 'Date',
+        callCenterPerf: 'Call Center Performance',
+        forecast: 'Forecast',
+        operatorPerf: 'Operator Performance',
 
         save: 'Save',
         cancel: 'Cancel',
@@ -215,6 +272,46 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         error: 'Error',
         success: 'Success',
         confirm: 'Are you sure?',
+
+        yieldTitle: 'Yield Management',
+        yieldSubtitle: 'Revenue management and pricing analysis',
+        tabOverview: 'Overview',
+        tabChannels: 'Channel Analysis',
+        tabAgencies: 'Agency Analysis',
+        tabPricing: 'Price Matrix',
+        tabAi: 'AI Assessment',
+        seasonHigh: 'High',
+        seasonShoulder: 'Shoulder',
+        seasonLow: 'Low',
+        seasonOff: 'Off',
+        refresh: 'Refresh',
+        refreshing: 'Refreshing...',
+        cacheEmpty: 'Cache empty',
+        lastUpdate: 'Last update',
+        stale: 'Stale',
+        thisMonth: 'This Month',
+        thisSeason: 'This Season',
+        thisYear: 'This Year',
+        custom: 'Custom',
+        channelDist: 'Channel Distribution (Reservations)',
+        channelRevenue: 'Revenue by Channel',
+        agencyAnalysis: 'Agency & Country Analysis',
+        priceVolumeMatrix: 'Price-Volume Matrix',
+        periodAdrComparison: 'Period ADR Comparison',
+        monthlyAdrRoomNight: 'Monthly ADR & Room Nights',
+        aiPriceEval: 'AI Price Assessment',
+        aiPriceDesc: 'Evaluate your pricing strategy with Gemini AI',
+        startAnalysis: 'Start Analysis',
+        analyzing: 'Analyzing...',
+        totalRevLabel: 'Total Revenue',
+        avgAdr: 'Average ADR',
+        roomNightLabel: 'Room Nights',
+        channelCount: 'Channel Count',
+        avgStayNights: 'Avg. Stay',
+        revenueShare: 'Revenue Share',
+        roomNightShare: 'Room Night Share',
+        vsLastYear: 'vs Last Year',
+        monthNames: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
     },
     de: {
         navReports: 'Berichte',
@@ -259,6 +356,11 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         boardTypeAnalysis: 'Verpflegungsanalyse',
         budgetAnalysis: 'Budgetanalyse',
         bookingVelocity: 'Buchungsgeschwindigkeit',
+        occupancyRate: 'Auslastungsrate',
+        adr: 'ADR (Ø Tagesrate)',
+        revpar: 'RevPAR',
+        avgNights: 'Ø Aufenthaltsdauer',
+        guestNationality: 'Gästenationalität',
         overview: 'Übersicht',
         recordDate: 'Erfassungsdatum',
         budget: 'Budget',
@@ -304,6 +406,9 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         category: 'Kategorie',
         amount: 'Betrag',
         date: 'Datum',
+        callCenterPerf: 'Call Center Leistung',
+        forecast: 'Prognose',
+        operatorPerf: 'Operator Leistung',
 
         save: 'Speichern',
         cancel: 'Abbrechen',
@@ -316,6 +421,46 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         error: 'Fehler',
         success: 'Erfolg',
         confirm: 'Sind Sie sicher?',
+
+        yieldTitle: 'Yield Management',
+        yieldSubtitle: 'Ertragsmanagement und Preisanalyse',
+        tabOverview: 'Übersicht',
+        tabChannels: 'Kanalanalyse',
+        tabAgencies: 'Agenturanalyse',
+        tabPricing: 'Preismatrix',
+        tabAi: 'AI Bewertung',
+        seasonHigh: 'Hoch',
+        seasonShoulder: 'Übergang',
+        seasonLow: 'Niedrig',
+        seasonOff: 'Geschlossen',
+        refresh: 'Aktualisieren',
+        refreshing: 'Aktualisierung...',
+        cacheEmpty: 'Cache leer',
+        lastUpdate: 'Letzte Aktualisierung',
+        stale: 'Veraltet',
+        thisMonth: 'Dieser Monat',
+        thisSeason: 'Diese Saison',
+        thisYear: 'Dieses Jahr',
+        custom: 'Benutzerdefiniert',
+        channelDist: 'Kanalverteilung (Reservierungen)',
+        channelRevenue: 'Umsatz nach Kanal',
+        agencyAnalysis: 'Agentur- & Länderanalyse',
+        priceVolumeMatrix: 'Preis-Volumen-Matrix',
+        periodAdrComparison: 'ADR-Vergleich nach Zeitraum',
+        monthlyAdrRoomNight: 'Monatliche ADR & Zimmernächte',
+        aiPriceEval: 'AI Preisbewertung',
+        aiPriceDesc: 'Bewerten Sie Ihre Preisstrategie mit Gemini AI',
+        startAnalysis: 'Analyse starten',
+        analyzing: 'Analyse läuft...',
+        totalRevLabel: 'Gesamtumsatz',
+        avgAdr: 'Durchschnittliche ADR',
+        roomNightLabel: 'Zimmernächte',
+        channelCount: 'Kanalanzahl',
+        avgStayNights: 'Ø Aufenthalt',
+        revenueShare: 'Umsatzanteil',
+        roomNightShare: 'Zimmernächteanteil',
+        vsLastYear: 'gg. Vorjahr',
+        monthNames: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],
     },
     ru: {
         navReports: 'Отчёты',
@@ -360,6 +505,11 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         boardTypeAnalysis: 'Анализ Типов Питания',
         budgetAnalysis: 'Анализ Бюджета',
         bookingVelocity: 'Скорость Бронирований',
+        occupancyRate: 'Загрузка',
+        adr: 'ADR (Ср. Дневная Ставка)',
+        revpar: 'RevPAR',
+        avgNights: 'Ср. Пребывание (ночей)',
+        guestNationality: 'Национальность Гостей',
         overview: 'Обзор',
         recordDate: 'Дата Записи',
         budget: 'Бюджет',
@@ -405,6 +555,9 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         category: 'Категория',
         amount: 'Сумма',
         date: 'Дата',
+        callCenterPerf: 'Call Center',
+        forecast: 'Прогноз',
+        operatorPerf: 'Операторы',
 
         save: 'Сохранить',
         cancel: 'Отмена',
@@ -417,6 +570,46 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         error: 'Ошибка',
         success: 'Успешно',
         confirm: 'Вы уверены?',
+
+        yieldTitle: 'Yield Management',
+        yieldSubtitle: 'Управление доходами и анализ цен',
+        tabOverview: 'Обзор',
+        tabChannels: 'Анализ каналов',
+        tabAgencies: 'Анализ агентств',
+        tabPricing: 'Матрица цен',
+        tabAi: 'Оценка AI',
+        seasonHigh: 'Высокий',
+        seasonShoulder: 'Переходный',
+        seasonLow: 'Низкий',
+        seasonOff: 'Закрыто',
+        refresh: 'Обновить',
+        refreshing: 'Обновление...',
+        cacheEmpty: 'Кэш пуст',
+        lastUpdate: 'Последнее обновление',
+        stale: 'Устарело',
+        thisMonth: 'Этот месяц',
+        thisSeason: 'Этот сезон',
+        thisYear: 'Этот год',
+        custom: 'Произвольный',
+        channelDist: 'Распределение по каналам (бронирования)',
+        channelRevenue: 'Доход по каналам',
+        agencyAnalysis: 'Анализ агентств и стран',
+        priceVolumeMatrix: 'Матрица цена-объём',
+        periodAdrComparison: 'Сравнение ADR по периодам',
+        monthlyAdrRoomNight: 'Ежемесячный ADR и номеро-ночи',
+        aiPriceEval: 'AI Оценка цен',
+        aiPriceDesc: 'Оцените стратегию ценообразования с помощью Gemini AI',
+        startAnalysis: 'Начать анализ',
+        analyzing: 'Анализируем...',
+        totalRevLabel: 'Общий доход',
+        avgAdr: 'Средняя ADR',
+        roomNightLabel: 'Номеро-ночи',
+        channelCount: 'Кол-во каналов',
+        avgStayNights: 'Ср. пребывание',
+        revenueShare: 'Доля дохода',
+        roomNightShare: 'Доля номеро-ночей',
+        vsLastYear: 'г/г изменение',
+        monthNames: ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'],
     },
 }
 
@@ -462,6 +655,11 @@ export interface AdminTranslations {
     boardTypeAnalysis: string
     budgetAnalysis: string
     bookingVelocity: string
+    occupancyRate: string
+    adr: string
+    revpar: string
+    avgNights: string
+    guestNationality: string
     overview: string
     recordDate: string
     budget: string
@@ -508,6 +706,10 @@ export interface AdminTranslations {
     amount: string
     date: string
 
+    callCenterPerf: string
+    forecast: string
+    operatorPerf: string
+
     save: string
     cancel: string
     delete: string
@@ -519,4 +721,45 @@ export interface AdminTranslations {
     error: string
     success: string
     confirm: string
+
+    // Yield Management
+    yieldTitle: string
+    yieldSubtitle: string
+    tabOverview: string
+    tabChannels: string
+    tabAgencies: string
+    tabPricing: string
+    tabAi: string
+    seasonHigh: string
+    seasonShoulder: string
+    seasonLow: string
+    seasonOff: string
+    refresh: string
+    refreshing: string
+    cacheEmpty: string
+    lastUpdate: string
+    stale: string
+    thisMonth: string
+    thisSeason: string
+    thisYear: string
+    custom: string
+    channelDist: string
+    channelRevenue: string
+    agencyAnalysis: string
+    priceVolumeMatrix: string
+    periodAdrComparison: string
+    monthlyAdrRoomNight: string
+    aiPriceEval: string
+    aiPriceDesc: string
+    startAnalysis: string
+    analyzing: string
+    totalRevLabel: string
+    avgAdr: string
+    roomNightLabel: string
+    channelCount: string
+    avgStayNights: string
+    revenueShare: string
+    roomNightShare: string
+    vsLastYear: string
+    monthNames: string[]
 }

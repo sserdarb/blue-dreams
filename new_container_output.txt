@@ -1,0 +1,49 @@
+=== Get Coolify app config ===
+Env vars: WARNING:  database "coolify" has no actual collation version, but a version was recorded
+ERROR:  column "environment_variables" does not exist
+LINE 1: SELECT environment_variables FROM applications WH...
+Start cmd: WARNING:  database "coolify" has no actual collation version, but a version was recorded
+ npx prisma generate && npx prisma db push && node prisma/seed.js && npm run build && npm start
+
+=== Step 2: Create temp container for build ===
+Temp container: ad825068a3c62f8b6ebb
+
+Uploading fixed files...
+  Ô£ô prisma/schema.prisma
+  Ô£ô app/api/ai/chat/route.ts
+  Ô£ô app/api/ai/settings/route.ts
+  Ô£ô app/admin/ai-training/page.tsx
+  Ô£ô app/api/admin/users/route.ts
+  Ô£ô app/admin/users/page.tsx
+  Ô£ô app/admin/login/page.tsx
+  Ô£ô app/admin/layout.tsx
+  Ô£ô app/actions/auth.ts
+  Ô£ô app/api/analytics/data/route.ts
+  Ô£ô components/admin/widget-editors/widget-types.ts
+  Ô£ô components/admin/widget-editors/index.tsx
+  Ô£ô nixpacks.toml
+  Ô£ô prisma/seed.js
+
+AdminUser count: 1
+
+=== Step 3: Commit as build image ===
+Image: sha256:73f21572c9bd03defdc404072ec9e6617
+
+=== Step 4: Building Next.js (3-5 min) ===
+Build: 94 lines
+  Ôö£ ãÆ /api/cta-bar
+  Ôö£ ãÆ /api/cta-bar/click
+  Ôö£ ãÆ /api/events
+  Ôö£ ãÆ /api/settings/analytics
+  Ôö£ Ôùï /robots.txt
+  Ôöö Ôùï /sitemap.xml
+  
+  
+  ãÆ Proxy (Middleware)
+  
+  Ôùï  (Static)   prerendered as static content
+  ãÆ  (Dynamic)  server-rendered on demand
+
+BUILD_ID: Error response from daemon: container 802bc0626d70433c29000ccc535f97cdb14da8c5f9452fccc9bdbcde53be9ccd is not running
+
+ÔØî BUILD FAILED

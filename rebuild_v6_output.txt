@@ -1,0 +1,104 @@
+=== Stopping container ===
+
+=== Transferring 31 files via SFTP ===
+  Ô£ô components/admin/widget-editors/HeroEditor.tsx
+  Ô£ô components/admin/widget-editors/GalleryEditor.tsx
+  Ô£ô components/admin/widget-editors/TextEditor.tsx
+  Ô£ô components/admin/widget-editors/FeaturesEditor.tsx
+  Ô£ô components/admin/widget-editors/PageHeaderEditor.tsx
+  Ô£ô components/admin/widget-editors/TextBlockEditor.tsx
+  Ô£ô components/admin/widget-editors/TextImageEditor.tsx
+  Ô£ô components/admin/widget-editors/StatsEditor.tsx
+  Ô£ô components/admin/widget-editors/IconGridEditor.tsx
+  Ô£ô components/admin/widget-editors/ImageGridEditor.tsx
+  Ô£ô components/admin/widget-editors/CTAEditor.tsx
+  Ô£ô components/admin/widget-editors/ContactEditor.tsx
+  Ô£ô components/admin/widget-editors/MapEditor.tsx
+  Ô£ô components/admin/widget-editors/YoutubeEditor.tsx
+  Ô£ô components/admin/widget-editors/TableEditor.tsx
+  Ô£ô components/admin/widget-editors/ReviewsEditor.tsx
+  Ô£ô components/admin/widget-editors/WeatherEditor.tsx
+  Ô£ô components/admin/widget-editors/ExperienceEditor.tsx
+  Ô£ô components/admin/widget-editors/RoomListEditor.tsx
+  Ô£ô components/admin/widget-editors/DividerEditor.tsx
+  Ô£ô components/admin/widget-editors/index.tsx
+  Ô£ô components/admin/widget-editors/widget-types.ts
+  Ô£ô components/admin/DraggableWidgetList.tsx
+  Ô£ô components/admin/AdminErrorBoundary.tsx
+  Ô£ô app/admin/pages/[id]/editor/page.tsx
+  Ô£ô app/[locale]/admin/pages/[id]/editor/page.tsx
+  Ô£ô app/admin/layout.tsx
+  Ô£ô app/actions/admin.ts
+  Ô£ô lib/services/elektra.ts
+  Ô£ô app/admin/page.tsx
+  Ô£ô app/[locale]/admin/page.tsx
+
+  31 files transferred
+
+=== Copying files to container ===
+
+=== Verifying key files ===
+  components/admin/widget-editors/index.tsx: 136 /app/components/admin/widget-editors/index.tsx
+  components/admin/widget-editors/PageHeaderEditor.tsx: 101 /app/components/admin/widget-editors/PageHeaderEditor.tsx
+  components/admin/DraggableWidgetList.tsx: 147 /app/components/admin/DraggableWidgetList.tsx
+  components/admin/widget-editors/HeroEditor.tsx: 116 /app/components/admin/widget-editors/HeroEditor.tsx
+
+=== Committing image ===
+  Committed: sha256:aabbcffb938e03143611cf4f64aa49a16
+
+=== Building... (3-5 min) ===
+Last 20 lines:
+  Ôö£ Ôùï /admin/statistics
+  Ôö£ ãÆ /api/admin/cta-bar
+  Ôö£ ãÆ /api/ai/chat
+  Ôö£ ãÆ /api/ai/settings
+  Ôö£ ãÆ /api/ai/training
+  Ôö£ ãÆ /api/analytics/data
+  Ôö£ ãÆ /api/analytics/track
+  Ôö£ ãÆ /api/content/rooms
+  Ôö£ ãÆ /api/cta-bar
+  Ôö£ ãÆ /api/cta-bar/click
+  Ôö£ ãÆ /api/events
+  Ôö£ ãÆ /api/settings/analytics
+  Ôö£ Ôùï /robots.txt
+  Ôöö Ôùï /sitemap.xml
+  
+  
+  ãÆ Proxy (Middleware)
+  
+  Ôùï  (Static)   prerendered as static content
+  ãÆ  (Dynamic)  server-rendered on demand
+
+BUILD_ID: Error response from daemon: container 8c25e2ec95fa89696e43643fd52cd81ad48c07113c365a18730f2e49df598f6d is not running
+
+ÔØî BUILD FAILED
+Logs:
+Ôö£ Ôùï /admin/cta-bar
+Ôö£ ãÆ /admin/files
+Ôö£ Ôùï /admin/login
+Ôö£ Ôùï /admin/menu
+Ôö£ Ôùï /admin/pages
+Ôö£ ãÆ /admin/pages/[id]/editor
+Ôö£ Ôùï /admin/pages/new
+Ôö£ Ôùï /admin/reservations
+Ôö£ Ôùï /admin/settings
+Ôö£ Ôùï /admin/statistics
+Ôö£ ãÆ /api/admin/cta-bar
+Ôö£ ãÆ /api/ai/chat
+Ôö£ ãÆ /api/ai/settings
+Ôö£ ãÆ /api/ai/training
+Ôö£ ãÆ /api/analytics/data
+Ôö£ ãÆ /api/analytics/track
+Ôö£ ãÆ /api/content/rooms
+Ôö£ ãÆ /api/cta-bar
+Ôö£ ãÆ /api/cta-bar/click
+Ôö£ ãÆ /api/events
+Ôö£ ãÆ /api/settings/analytics
+Ôö£ Ôùï /robots.txt
+Ôöö Ôùï /sitemap.xml
+
+
+ãÆ Proxy (Middleware)
+
+Ôùï  (Static)   prerendered as static content
+ãÆ  (Dynamic)  server-rendered on demand

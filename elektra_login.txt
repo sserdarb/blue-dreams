@@ -1,0 +1,15 @@
+Status: 200
+Headers: {'Date': 'Wed, 11 Feb 2026 13:27:04 GMT', 'Content-Type': 'application/json; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Connection': 'keep-alive', 'x-powered-by': 'Express', 'access-control-allow-origin': 'https://bookingapi.elektraweb.com', 'access-control-allow-methods': 'POST, GET, OPTIONS', 'access-control-allow-headers': 'x-invocation-id,ota-b2b,DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization', 'access-control-max-age': '600', 'access-control-allow-credentials': 'true', 'x-invocation-id': 'bc97a44e-f229-45bf-b5cf-f58949199346', 'etag': 'W/"3ec-19hFtK9FNhfC73TXnQlb2FlULm0"', 'strict-transport-security': 'max-age=31536000; includeSubDomains', 'cf-cache-status': 'DYNAMIC', 'Content-Encoding': 'gzip', 'Server': 'cloudflare', 'CF-RAY': '9cc42e789f64234b-IST'}
+
+Body:
+{
+  "success": true,
+  "jwt": "eyJhbGciOiJSUzI1NiJ9.eyJtb2RlIjoiYjJlIiwidXNlciI6eyJpc0Rldk1vZGUiOmZhbHNlLCJpc0NSTUF1dGhvcml6ZWQiOmZhbHNlLCJzZWxsZXJJRCI6bnVsbCwiYWdlbmN5SUQiOjIzNjM0NTIsImFnZW5jeUlkQnlIb3RlbElkIjp7IjMzMjY0IjpudWxsfSwiZWxla3RyYUhvdGVsc0FnZW5jeUlEIjpudWxsLCJpc0VsZWt0cmFIb3RlbHMiOmZhbHNlLCJleGNsdWRlZEhvdGVsSWRzIjpbXSwiaW5jbHVkZWRIb3RlbElkcyI6WzMzMjY0XSwiaG90ZWxJZCI6MzMyNjQsImhvdGVsR3JvdXBJZCI6bnVsbCwidXNlcklkIjoyNzI4MjF9LCJpc3MiOiJib29raW5nYXBpOmVsZWt0cmF3ZWI6Y29tIiwiaWF0IjoxNzcwODE2NDI0LCJleHAiOjE3NzA5MDI4MjQsInN1YiI6InVzZXI6YXV0aG9yaXphdGlvbiJ9.mQ6tr3lkd1BkQUksSLsLR7cmqqzA6LxFWRmEhyfCYQQPiR_2Yxl6FGdtH1IpXhvuU_4T6zXeh9yF9_ZsYjqz6HYt0koCWyiSWuR8d0bs_6C0A8twGIykq3MnSZJcHVisWLerOw59dw9_cuxEhPorYH-9tEqbDLTNgR6b2S1_QbAn4jE3EtQS1rutohTdbr2QSUN36HN7TwDkhLmH61XAiMqS0xktcMpI-Nn-QVW0kCgPlsgB49s0lCRAxQM8B_KATYWIZd0e1TmceSPUxuioLhLahnd8uOM9kdMEJgYsI0LHzqhNa8rS7Qfnbf3qX9wiU1hIEwuT34UlOFiIoKV70w",
+  "name": "asis asis",
+  "firstname": "asis",
+  "lastname": "asis",
+  "allowed-hotel-ids": [
+    33264
+  ],
+  "login-type": "b2e"
+}

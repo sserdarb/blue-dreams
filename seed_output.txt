@@ -1,0 +1,121 @@
+Connecting to 76.13.0.113...
+Container: 3815dea559c9
+
+=== Checking seed files ===
+total 100
+drwxr-xr-x 2 root root  4096 Feb  9 22:29 .
+drwxr-xr-x 1 root root  4096 Feb  9 22:29 ..
+-rw-r--r-- 1 root root  8061 Feb  9 22:29 schema.prisma
+-rw-r--r-- 1 root root  1116 Feb  9 22:29 seed-apikey.js
+-rw-r--r-- 1 root root 31269 Feb  9 22:29 seed-helpers.js
+-rw-r--r-- 1 root root 36404 Feb  9 22:29 seed-pages.js
+-rw-r--r-- 1 root root  4365 Feb  9 22:29 seed.ts
+
+=== Checking Prisma client ===
+Prisma client: /app/node_modules/@prisma/client/index.js
+.prisma client: /app/node_modules/.prisma/client/index.js
+
+=== App structure ===
+App.tsx
+README.md
+app
+components
+constants.tsx
+data
+dev_server_auth.log
+dev_server_final.log
+dev_server_middleware_fix.log
+dev_server_restart.log
+docker-compose.yaml
+eslint.config.mjs
+index.html
+index.tsx
+lib
+metadata.json
+middleware.ts
+next-env.d.ts
+next.config.ts
+nixpacks.toml
+node_modules
+package-lock.json
+package.json
+postcss.config.mjs
+prisma
+prisma.config.ts.disabled
+public
+scripts
+server.log
+tsconfig.json
+types.ts
+verification
+
+=== .next directory ===
+BUILD_ID
+app-path-routes-manifest.json
+build
+build-manifest.json
+cache
+diagnostics
+export-marker.json
+fallback-build-manifest.json
+images-manifest.json
+next-minimal-server.js.nft.json
+next-server.js.nft.json
+node_modules
+package.json
+prerender-manifest.json
+required-server-files.js
+required-server-files.json
+routes-manifest.json
+server
+standalone
+static
+trace
+trace-build
+turbopack
+types
+
+=== Package.json prisma config ===
+"@prisma/client": "^5.22.0",
+    "clsx": "^2.1.1",
+    "jspdf": "^4.1.0",
+    "lucide-react": "^0.563.0",
+    "next": "16.1.6",
+    "prisma": "^5.22.0",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "recharts": "^3.7.0",
+    "tailwind-merge": "^3.4.0"
+  },
+--
+  "prisma": {
+    "seed": "node prisma/seed.ts"
+  }
+}
+
+=== Running seed ===
+Output: npm warn config production Use `--omit=dev` instead.
+Running seed command `node prisma/seed.ts` ...
+/app/prisma/seed.ts:56
+        { slug: 'home', titleFn: (l: string) => l === 'tr' ? 'Ana Sayfa' : l === 'en' ? 'Home' : l === 'de' ? 'Startseite' : 'ºôº╗º░º▓º¢º░ªÅ', widgetsFn: homeWidgets },
+                                   ^
+
+SyntaxError: Unexpected token ':'
+    at wrapSafe (node:internal/modules/cjs/loader:1469:18)
+    at Module._compile (node:internal/modules/cjs/loader:1491:20)
+    at Object..js (node:internal/modules/cjs/loader:1689:10)
+    at Module.load (node:internal/modules/cjs/loader:1318:32)
+    at Function._load (node:internal/modules/cjs/loader:1128:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:315:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:218:24)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:170:5)
+    at node:internal/main/run_main_module:36:49
+
+Node.js v22.11.0
+
+An error occurred while running the seed command:
+Error: Command failed with exit code 1: node prisma/seed.ts
+
+=== After seed: Page count ===
+Page count: 0
+Pages: 

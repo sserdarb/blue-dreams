@@ -1,0 +1,180 @@
+GET /reservation/list: 404 -> <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /reservation/list</pre>
+</body>
+</html>
+
+
+GET /reservation/today: 404 -> <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /reservation/today</pre>
+</body>
+</html>
+
+
+GET /reservation: 404 -> <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /reservation</pre>
+</body>
+</html>
+
+
+GET /reservations: 404 -> <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /reservations</pre>
+</body>
+</html>
+
+
+GET /dashboard: 404 -> <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /dashboard</pre>
+</body>
+</html>
+
+
+GET /hotel/info: 404 -> <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /hotel/info</pre>
+</body>
+</html>
+
+
+GET /hotel: 500 -> {"success":false,"errorCode":null,"message":null}
+
+GET /rooms: 404 -> <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /rooms</pre>
+</body>
+</html>
+
+
+GET /room/list: 404 -> <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /room/list</pre>
+</body>
+</html>
+
+
+GET /availability: 404 -> <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /availability</pre>
+</body>
+</html>
+
+
+GET /report/daily: 404 -> <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /report/daily</pre>
+</body>
+</html>
+
+
+GET /report/occupancy: 404 -> <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /report/occupancy</pre>
+</body>
+</html>
+
+
+GET /stats: 404 -> <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /stats</pre>
+</body>
+</html>
+
+
+GET /channel: 404 -> <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /channel</pre>
+</body>
+</html>
+
+
+POST /reservation/list: 404 -> <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot POST /reservation/list</pre>
+</body>
+</html>
+
+
+POST /availability: 404 -> <!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot POST /availability</pre>
+</body>
+</html>

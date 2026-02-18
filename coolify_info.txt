@@ -1,0 +1,25 @@
+=== Looking for Coolify API ===
+Coolify DB containers: 7b196ff456e5 coolify-db
+
+Coolify containers:
+afa8de78e752 coolify-sentinel Up 17 hours (healthy)
+bc7bf30fc063 coolify-proxy Up 2 weeks (healthy)
+3fe99f2525ce coolify Up 2 weeks (healthy)
+685bf597b14f coolify-redis Up 2 weeks
+7b196ff456e5 coolify-db Up 2 weeks
+
+=== Application UUID ===
+App: vgk8cscos8os8wwsogkss004 | sserdarb/blue-dreams:main-nggwwo80kss8cs4o4000ko0k | https://new.bluedreamsresort.com
+
+=== Webhook info ===
+Webhooks:
+e0ccooowkocck4gossscwg4w |                              | admin-auth-filemanager-13559206626046145613
+ pg488kocgg8wk8wssg8c0ko8 |                              | main
+ vgk8cscos8os8wwsogkss004 |                              | main
+ focw448cg0gg4wckko04csc4 |                              | main
+ rs8cg4kg0ksk84kws0gkcs88 |                              | main
+
+=== Checking Coolify API ===
+API test: 
+
+Coolify env: 

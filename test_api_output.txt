@@ -1,0 +1,48 @@
+=== Test 1: List Users ===
+Result: <!DOCTYPE html><html lang="tr"><head><meta charSet="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="/_next/static/chunks/9e6bcb610157a2a9.css" data-precedence="next"/><link rel="stylesheet" href="/_next/static/chunks/6bd87ad5adbbda31.css" data-precedence="next"/><link rel="preload" as="script" fetchPriority="low" href="/_next/static/chunks/
+
+=== Test 2: Create User ===
+Result: <!DOCTYPE html><html lang="tr"><head><meta charSet="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="/_next/static/chunks/9e6bcb610157a2a9.css" data-precedence="next"/><link rel="stylesheet" href="/_next/static/chunks/6bd87ad5adbbda31.css" data-precedence="next"/><link rel="preload" as="script" fetchPriority="low" href="/_next/static/chunks/
+Could not parse: <!DOCTYPE html><html lang="tr"><head><meta charSet="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="/_next/static/chunks/9e6bcb610157a2a9.css"
+
+=== Test 3: Check DB ===
+DB:
+email            | isActive |       pwd       
+----------------------------+----------+-----------------
+ admin@bluedreamsresort.com | t        | $2a$10$N9qo8uLO
+ sserdarb@gmail.com         | t        | Tuba@2015Tuana
+(2 rows)
+
+=== Test 4: Login with new user ===
+Login result:
+* Host localhost:3000 was resolved.
+* IPv6: ::1
+* IPv4: 127.0.0.1
+*   Trying [::1]:3000...
+* Connected to localhost (::1) port 3000
+> POST /tr/admin/login HTTP/1.1
+
+> Host: localhost:3000
+
+> User-Agent: curl/8.5.0
+
+> Accept: */*
+
+> Content-Type: application/x-www-form-urlencoded
+
+> Content-Length: 48
+
+> 
+
+} [48 bytes data]
+< HTTP/1.1 200 OK
+
+< permissions-policy: camera=(), microphone=(), geolocat
+
+=== Test 5: Recent logs ===
+Logs:
+height and width.
+The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(undefined) to control the
+       height and width.

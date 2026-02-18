@@ -1,0 +1,55 @@
+=== Step 1: Stopping container ===
+
+=== Step 2: SFTP Transfer (31 files) ===
+  31 files transferred
+
+=== Step 3: Copy to container ===
+  Done
+
+=== Step 4: Commit image ===
+  sha256:051b1e79195db68a61792c0dc309bc5b8cceea67ad8
+
+=== Step 5: Build (3-5 min) ===
+  Ôö£ Ôùï /admin/pages
+  Ôö£ ãÆ /admin/pages/[id]/editor
+  Ôö£ Ôùï /admin/pages/new
+  Ôö£ Ôùï /admin/reservations
+  Ôö£ Ôùï /admin/settings
+  Ôö£ Ôùï /admin/statistics
+  Ôö£ ãÆ /api/admin/cta-bar
+  Ôö£ ãÆ /api/ai/chat
+  Ôö£ ãÆ /api/ai/settings
+  Ôö£ ãÆ /api/ai/training
+  Ôö£ ãÆ /api/analytics/data
+  Ôö£ ãÆ /api/analytics/track
+  Ôö£ ãÆ /api/content/rooms
+  Ôö£ ãÆ /api/cta-bar
+  Ôö£ ãÆ /api/cta-bar/click
+  Ôö£ ãÆ /api/events
+  Ôö£ ãÆ /api/settings/analytics
+  Ôö£ Ôùï /robots.txt
+  Ôöö Ôùï /sitemap.xml
+  
+  
+  ãÆ Proxy (Middleware)
+  
+  Ôùï  (Static)   prerendered as static content
+  ãÆ  (Dynamic)  server-rendered on demand
+
+=== Step 6: Extract BUILD_ID via docker cp ===
+  BUILD_ID: zyDE2lIEld1qG_d35qQPx
+
+=== BUILD SUCCEEDED ===
+  Copying build artifacts...
+  Build copied!
+
+=== Step 7: Start container ===
+  Waiting 25s...
+  Status: Up 25 seconds
+
+=== Step 8: Smoke test ===
+  Homepage: 200
+  Admin: 307
+  External: 200
+
+ ALL DONE!

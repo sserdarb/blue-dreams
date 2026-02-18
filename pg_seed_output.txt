@@ -1,0 +1,129 @@
+App Container: 3815dea559c9
+
+=== Step 1: Verify Prisma schema ===
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+Schema is sqlite, patching to postgresql...
+After patch: generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+=== Step 2: Regenerate Prisma Client for PostgreSQL ===
+Generate: npm warn config production Use `--omit=dev` instead.
+Prisma schema loaded from prisma/schema.prisma
+
+✔ Generated Prisma Client (v5.22.0) to ./node_modules/@prisma/client in 761ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Want to turn off tips and other hints? https://pris.ly/tip-4-nohints
+
+=== Step 3: Push schema to PostgreSQL ===
+Push: npm warn config production Use `--omit=dev` instead.
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "blue_dreams_v2", schema "public" at "coolify-db:5432"
+
+The database is already in sync with the Prisma schema.
+
+Running generate... (Use --skip-generate to skip the generators)
+[2K[1A[2K[GRunning generate... - Prisma Client
+[2K[1A[2K[G✔ Generated Prisma Client (v5.22.0) to ./node_modules/@prisma/client in 166ms
+
+=== Step 4: Running seed against PostgreSQL ===
+Seed output:
+Default admin user created
+Languages seeded
+  ✅ home/tr — 9 widgets
+  ✅ home/en — 9 widgets
+  ✅ home/de — 9 widgets
+  ✅ home/ru — 9 widgets
+  ✅ hakkimizda/tr — 5 widgets
+  ✅ hakkimizda/en — 5 widgets
+  ✅ hakkimizda/de — 5 widgets
+  ✅ hakkimizda/ru — 5 widgets
+  ✅ odalar/tr — 4 widgets
+  ✅ odalar/en — 4 widgets
+  ✅ odalar/de — 4 widgets
+  ✅ odalar/ru — 4 widgets
+  ✅ restoran/tr — 4 widgets
+  ✅ restoran/en — 4 widgets
+  ✅ restoran/de — 4 widgets
+  ✅ restoran/ru — 4 widgets
+  ✅ spa/tr — 6 widgets
+  ✅ spa/en — 6 widgets
+  ✅ spa/de — 6 widgets
+  ✅ spa/ru — 6 widgets
+  ✅ iletisim/tr — 3 widgets
+  ✅ iletisim/en — 3 widgets
+  ✅ iletisim/de — 3 widgets
+  ✅ iletisim/ru — 3 widgets
+  ✅ dugun-davet/tr — 6 widgets
+  ✅ dugun-davet/en — 6 widgets
+  ✅ dugun-davet/de — 6 widgets
+  ✅ dugun-davet/ru — 6 widgets
+  ✅ galeri/tr — 2 widgets
+  ✅ galeri/en — 2 widgets
+  ✅ galeri/de — 2 widgets
+  ✅ galeri/ru — 2 widgets
+  ✅ toplanti-salonu/tr — 4 widgets
+  ✅ toplanti-salonu/en — 4 widgets
+  ✅ toplanti-salonu/de — 4 widgets
+  ✅ toplanti-salonu/ru — 4 widgets
+  ✅ bodrum/tr — 3 widgets
+  ✅ bodrum/en — 3 widgets
+  ✅ bodrum/de — 3 widgets
+  ✅ bodrum/ru — 3 widgets
+Seed completed successfully!
+
+=== Step 5: Verify PostgreSQL data ===
+  "Page": ERROR:  relation "page" does not exist
+LINE 1: SELECT COUNT(*) FROM Page;
+                             ^
+  "Widget": ERROR:  relation "widget" does not exist
+LINE 1: SELECT COUNT(*) FROM Widget;
+                             ^
+  "AdminUser": ERROR:  relation "adminuser" does not exist
+LINE 1: SELECT COUNT(*) FROM AdminUser;
+                             ^
+  "Language": ERROR:  relation "language" does not exist
+LINE 1: SELECT COUNT(*) FROM Language;
+                             ^
+  "SiteSettings": ERROR:  relation "sitesettings" does not exist
+LINE 1: SELECT COUNT(*) FROM SiteSettings;
+                             ^
+  "MenuItem": ERROR:  relation "menuitem" does not exist
+LINE 1: SELECT COUNT(*) FROM MenuItem;
+                             ^
+
+Pages:
+bodrum        | de     | Bodrum Reisefuhrer
+ bodrum        | en     | Bodrum Guide
+ bodrum        | ru     | Bodrum
+ bodrum        | tr     | Bodrum Rehberi
+ contact-us    | en     | Contact
+ dugun-davet   | de     | Hochzeit
+ dugun-davet   | en     | Wedding & Events
+ dugun-davet   | ru     | Events
+ dugun-davet   | tr     | Dugun & Davet
+ essen-trinken | de     | Essen & Trinken
+ food-drink    | en     | Food & Drink
+ galeri        | de     | Galerie
+ galeri        | en     | Gallery
+ galeri        | ru     | Gallery
+ galeri        | tr     | Galeri
+ gallery       | en     | Gallery
+ hakkimizda    | de     | Uber Uns
+ hakkimizda    | en     | About Us
+ hakkimizda    | ru     | About
+ hakkimizda    | tr     | Hakkimizda

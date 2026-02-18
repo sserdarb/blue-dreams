@@ -1,0 +1,118 @@
+Connecting to 76.13.0.113...
+Container: 3815dea559c9
+
+=== Step 1: Patch schema to SQLite ===
+Schema:
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+=== Step 2: Regenerate Prisma Client ===
+Generate: npm warn config production Use `--omit=dev` instead.
+Prisma schema loaded from prisma/schema.prisma
+
+Ô£ö Generated Prisma Client (v5.22.0) to ./node_modules/@prisma/client in 225ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Want to turn off tips and other hints? https://pris.ly/tip-4-nohints
+
+=== Step 3: Run seed ===
+Output:
+Admin user already exists
+Languages seeded
+  Ô£à home/tr ÔÇö 9 widgets
+  Ô£à home/en ÔÇö 9 widgets
+  Ô£à home/de ÔÇö 9 widgets
+  Ô£à home/ru ÔÇö 9 widgets
+  Ô£à hakkimizda/tr ÔÇö 5 widgets
+  Ô£à hakkimizda/en ÔÇö 5 widgets
+  Ô£à hakkimizda/de ÔÇö 5 widgets
+  Ô£à hakkimizda/ru ÔÇö 5 widgets
+  Ô£à odalar/tr ÔÇö 4 widgets
+  Ô£à odalar/en ÔÇö 4 widgets
+  Ô£à odalar/de ÔÇö 4 widgets
+  Ô£à odalar/ru ÔÇö 4 widgets
+  Ô£à restoran/tr ÔÇö 4 widgets
+  Ô£à restoran/en ÔÇö 4 widgets
+  Ô£à restoran/de ÔÇö 4 widgets
+  Ô£à restoran/ru ÔÇö 4 widgets
+  Ô£à spa/tr ÔÇö 6 widgets
+  Ô£à spa/en ÔÇö 6 widgets
+  Ô£à spa/de ÔÇö 6 widgets
+  Ô£à spa/ru ÔÇö 6 widgets
+  Ô£à iletisim/tr ÔÇö 3 widgets
+  Ô£à iletisim/en ÔÇö 3 widgets
+  Ô£à iletisim/de ÔÇö 3 widgets
+  Ô£à iletisim/ru ÔÇö 3 widgets
+  Ô£à dugun-davet/tr ÔÇö 6 widgets
+  Ô£à dugun-davet/en ÔÇö 6 widgets
+  Ô£à dugun-davet/de ÔÇö 6 widgets
+  Ô£à dugun-davet/ru ÔÇö 6 widgets
+  Ô£à galeri/tr ÔÇö 2 widgets
+  Ô£à galeri/en ÔÇö 2 widgets
+  Ô£à galeri/de ÔÇö 2 widgets
+  Ô£à galeri/ru ÔÇö 2 widgets
+  Ô£à toplanti-salonu/tr ÔÇö 4 widgets
+  Ô£à toplanti-salonu/en ÔÇö 4 widgets
+  Ô£à toplanti-salonu/de ÔÇö 4 widgets
+  Ô£à toplanti-salonu/ru ÔÇö 4 widgets
+  Ô£à bodrum/tr ÔÇö 3 widgets
+  Ô£à bodrum/en ÔÇö 3 widgets
+  Ô£à bodrum/de ÔÇö 3 widgets
+  Ô£à bodrum/ru ÔÇö 3 widgets
+Seed completed successfully!
+
+=== Results ===
+Page: 40
+Widget: 184
+AdminUser: 1
+Language: 4
+MenuItem: 0
+
+Pages:
+bodrum|de|Bodrum Reisefuhrer
+bodrum|en|Bodrum Guide
+bodrum|ru|Bodrum
+bodrum|tr|Bodrum Rehberi
+dugun-davet|de|Hochzeit
+dugun-davet|en|Wedding & Events
+dugun-davet|ru|Events
+dugun-davet|tr|Dugun & Davet
+galeri|de|Galerie
+galeri|en|Gallery
+galeri|ru|Gallery
+galeri|tr|Galeri
+hakkimizda|de|Uber Uns
+hakkimizda|en|About Us
+hakkimizda|ru|About
+hakkimizda|tr|Hakkimizda
+home|de|Startseite
+home|en|Home
+home|ru|Home
+home|tr|Ana Sayfa
+iletisim|de|Kontakt
+iletisim|en|Contact
+iletisim|ru|Contact
+iletisim|tr|Iletisim
+odalar|de|Zimmer
+odalar|en|Rooms
+odalar|ru|Rooms
+odalar|tr|Odalar
+restoran|de|Restaurant
+restoran|en|Restaurant
+restoran|ru|Restaurant
+restoran|tr|Restoran
+spa|de|Spa & Wellness
+spa|en|Spa & Wellness
+spa|ru|Spa
+spa|tr|Spa & Wellness
+toplanti-salonu|de|Tagungsraume
+toplanti-salonu|en|Meeting Rooms
+toplanti-salonu|ru|Meetings
+toplanti-salonu|tr|Toplanti Salonu

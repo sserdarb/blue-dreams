@@ -1,0 +1,31 @@
+=== ALL containers ===
+CONTAINER ID   IMAGE                                                               STATUS                          NAMES                                    PORTS
+0720007f4838   ghcr.io/coollabsio/sentinel:0.0.18                                  Up 8 hours (healthy)            coolify-sentinel                         
+f0f887f269d0   blue-dreams-final:latest                                            Restarting (1) 14 seconds ago   vgk8cscos8os8wwsogkss004-222918143524    
+50d4946352c2   hirbodrum-api:with-files                                            Up 2 days                       focw448cg0gg4wckko04csc4-111459988720    3000/tcp, 8000/tcp
+68480321bd54   node:20-alpine                                                      Up 9 days                       app-wcsw0s4o0kckoc8sww804ok4             0.0.0.0:7080->7080/tcp, [::]:7080->7080/tcp
+e1d37b00ce79   mongo:latest                                                        Up 9 days                       mongodb-wcsw0s4o0kckoc8sww804ok4         27017/tcp
+dfa06122b2c7   d6b569590880                                                        Up 2 weeks                      linkhub-mongodb-1                        27017/tcp
+49ff3660db94   linkhub-app                                                         Up 2 weeks                      linkhub-app-1                            3000/tcp
+e099105002e1   linkhub_fullstack-app                                               Up 2 weeks                      linkhub_fullstack-app-1                  0.0.0.0:3000->3000/tcp, [::]:3000->3000/tcp
+12b911693e08   d6b569590880                                                        Up 2 weeks                      linkhub_fullstack-mongodb-1              0.0.0.0:27017->27017/tcp, [::]:27017->27017/tcp
+706d164d2cda   mongo:7                                                             Up 2 weeks (healthy)            ogok8sw4w88wo04000wccksc                 27017/tcp
+c9a09c7f9a16   pg488kocgg8wk8wssg8c0ko8:38e43781b34ba39ffbabae2950a41c096c337c0f   Up 3 days                       pg488kocgg8wk8wssg8c0ko8-101323975206    80/tcp
+823083bdd30b   emergent-backend                                                    Exited (1) 2 days ago           emergent-backend                         
+1854c4798210   pms-innovmar-app                                                    Up 3 weeks                      aura_app                                 7080/tcp
+7b9b019e64c0   d6b569590880                                                        Up 3 weeks                      aura_mongodb                             27017/tcp
+aaa007514ddf   stalwartlabs/stalwart:latest                                        Up 3 weeks                      stalwart-mail-yckowcccgg844g0c0o8scooo   0.0.0.0:25->25/tcp, [::]:25->25/tcp, 110/tcp, 0.0.0.0:143->143/tcp, [::]:143->143/tcp, 0.0.0.0:465->465/tcp, [::]:465->465/tcp, 0.0.0.0:587->587/tcp, [::]:587->587/tcp, 443/tcp, 995/tcp, 0.0.0.0:993->993/tcp, [::]:993->993/tcp, 0.0.0.0:4191->4191/tcp, [::]:4191->4191/tcp, 4190/tcp, 0.0.0.0:8081->8080/tcp, [::]:8081->8080/tcp
+e8bf97294456   rs8cg4kg0ksk84kws0gkcs88:44d09c456000d7476431a7c2d0780480fce4412f   Up 3 weeks                      rs8cg4kg0ksk84kws0gkcs88-055128813859    7080/tcp
+bc7bf30fc063   traefik:v3.6                                                        Up 2 weeks (healthy)            coolify-proxy                            0.0.0.0:80->80/tcp, [::]:80->80/tcp, 0.0.0.0:443->443/tcp, [::]:443->443/tcp, 0.0.0.0:443->443/udp, [::]:443->443/udp
+a71a1dfce9cc   mongo:7                                                             Up 3 weeks (healthy)            z4wcgkwso0cg084gk880w088                 27017/tcp
+3fe99f2525ce   coollabsio/coolify:latest                                           Up 3 weeks (healthy)            coolify                                  8443/tcp, 0.0.0.0:8080->8080/tcp, [::]:8080->8080/tcp, 9000/tcp
+685bf597b14f   redis:7-alpine                                                      Up 3 weeks                      coolify-redis                            6379/tcp
+7b196ff456e5   postgres:15-alpine                                                  Up 3 weeks                      coolify-db                               5432/tcp
+
+
+Container f15c4f581451: NOT FOUND
+
+Blue-related containers: NONE
+
+=== Build log (last 30 lines) ===
+Error response from daemon: No such container: f15c4f581451

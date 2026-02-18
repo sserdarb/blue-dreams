@@ -1,0 +1,16 @@
+Page ID: ee5c8546-0a25-4468-b8fa-bb95d6758f75
+HTTP Status: 307
+Error in response: None
+Widget content found: None
+
+Recent logs:
+> temp_app@0.1.0 start
+> next start
+
+▲ Next.js 16.1.6
+- Local:         http://localhost:3000
+- Network:       http://172.18.0.11:3000
+
+✓ Starting...
+⚠ "next start" does not work with "output: standalone" configuration. Use "node .next/standalone/server.js" instead.
+✓ Ready in 687ms

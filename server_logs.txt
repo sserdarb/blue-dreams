@@ -1,0 +1,50 @@
+├ ƒ /[locale]/spa
+├ ƒ /[locale]/toplanti-salonu
+├ ○ /admin
+├ ○ /admin/ai-training
+├ ○ /admin/analytics
+├ ○ /admin/chat
+├ ○ /admin/cta-bar
+├ ƒ /admin/files
+├ ○ /admin/login
+├ ○ /admin/menu
+├ ○ /admin/pages
+├ ƒ /admin/pages/[id]/editor
+├ ○ /admin/pages/new
+├ ○ /admin/reservations
+├ ○ /admin/settings
+├ ○ /admin/statistics
+├ ○ /admin/users
+├ ƒ /api/admin/cta-bar
+├ ƒ /api/admin/users
+├ ƒ /api/ai/chat
+├ ƒ /api/ai/settings
+├ ƒ /api/ai/training
+├ ƒ /api/analytics/data
+├ ƒ /api/analytics/track
+├ ƒ /api/content/rooms
+├ ƒ /api/cta-bar
+├ ƒ /api/cta-bar/click
+├ ƒ /api/events
+├ ƒ /api/settings/analytics
+├ ○ /robots.txt
+└ ○ /sitemap.xml
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+npm warn config production Use `--omit=dev` instead.
+
+> temp_app@0.1.0 start
+> next start
+
+▲ Next.js 16.1.6
+- Local:         http://localhost:3000
+- Network:       http://172.18.0.17:3000
+
+✓ Starting...
+⚠ "next start" does not work with "output: standalone" configuration. Use "node .next/standalone/server.js" instead.
+✓ Ready in 498ms

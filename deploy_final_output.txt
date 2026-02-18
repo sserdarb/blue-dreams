@@ -1,0 +1,21 @@
+C:\Users\sserd\OneDrive\Belgeler\Antigravity\blue-dreams-fix\deploy_final.py:81: SyntaxWarning: "\`" is an invalid escape sequence. Such sequences will not work in the future. Did you mean "\\`"? A raw string is also an option.
+  
+=== Checking builder container ===
+Builder: 
+BUILD_ID: 
+ÔØî Can't find BUILD_ID. Checking builder status...
+40af92b887a9 coolify-sentinel Up 10 hours (healthy)
+50d4946352c2 focw448cg0gg4wckko04csc4-111459988720 Up 3 hours
+68480321bd54 app-wcsw0s4o0kckoc8sww804ok4 Up 7 days
+e1d37b00ce79 mongodb-wcsw0s4o0kckoc8sww804ok4 Up 7 days
+dfa06122b2c7 linkhub-mongodb-1 Up 2 weeks
+49ff3660db94 linkhub-app-1 Up 2 weeks
+e099105002e1 linkhub_fullstack-app-1 Up 2 weeks
+12b911693e08 linkhub_fullstack-mongodb-1 Up 2 weeks
+706d164d2cda ogok8sw4w88wo04000wccksc Up 2 weeks (healthy)
+c9a09c7f9a16 pg488kocgg8wk8wssg8c0ko8-101323975206 Up 41 hours
+823083bdd30b emergent-backend Exited (1) 19 hours ago
+1854c4798210 aura_app Up 2 weeks
+7b9b019e64c0 aura_mongodb Up 2 weeks
+aaa007514ddf stalwart-mail-yckowcccgg844g0c0o8scooo Up 2 weeks
+e8bf97294456 rs8cg4kg0ksk84kws0gkcs88-055128813859 Up 2 weeks

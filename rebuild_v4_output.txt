@@ -1,0 +1,78 @@
+=== STEP 1: Stop container ===
+Status: Exited (1) 44 seconds ago
+
+=== STEP 2: Upload correct source files ===
+  Ô£ô prisma/schema.prisma
+  Ô£ô app/api/ai/chat/route.ts
+  Ô£ô app/api/ai/settings/route.ts
+  Ô£ô app/admin/ai-training/page.tsx
+  Ô£ô app/api/admin/users/route.ts
+  Ô£ô app/admin/users/page.tsx
+  Ô£ô app/admin/login/page.tsx
+  Ô£ô app/admin/layout.tsx
+  Ô£ô app/actions/auth.ts
+  Ô£ô app/api/analytics/data/route.ts
+  Ô£ô components/admin/widget-editors/widget-types.ts
+  Ô£ô components/admin/widget-editors/index.tsx
+  Ô£ô app/admin/pages/[id]/editor/page.tsx
+  Ô£ô nixpacks.toml
+  Ô£ô prisma/seed.js
+
+AdminUser count in container schema: 2
+
+=== STEP 3: Commit container as image ===
+Committed: sha256:a337a47b683bed05df6233f1c66c94713
+AdminUser count in image: 2
+Prisma validate: ma/schema.prisma:258[0m
+[1;94m   | [0m
+[1;94m257 | [0m
+
+[1;94m258 | [0mmodel [1;91mAdminUser[0m {
+
+[1;94m   | [0m
+
+Validation Error Count: 1
+[Context: validate]
+
+Prisma CLI Version : 5.22.0
+
+=== STEP 4: Build Next.js (3-5 min) ===
+npm warn config production Use `--omit=dev` instead.
+Prisma schema loaded from prisma/schema.prisma
+Error: Prisma schema validation - (get-dmmf wasm)
+Error code: P1012
+[1;91merror[0m: [1mThe model "AdminUser" cannot be defined because a model with that name already exists.[0m
+  [1;94m-->[0m  [4mprisma/schema.prisma:258[0m
+[1;94m   | [0m
+[1;94m257 | [0m
+
+[1;94m258 | [0mmodel [1;91mAdminUser[0m {
+
+[1;94m   | [0m
+
+Validation Error Count: 1
+[Context: getDmmf]
+
+Prisma CLI Version : 5.22.0
+
+BUILD_ID: 
+
+ÔØî BUILD FAILED
+Logs:
+npm warn config production Use `--omit=dev` instead.
+Prisma schema loaded from prisma/schema.prisma
+Error: Prisma schema validation - (get-dmmf wasm)
+Error code: P1012
+[1;91merror[0m: [1mThe model "AdminUser" cannot be defined because a model with that name already exists.[0m
+  [1;94m-->[0m  [4mprisma/schema.prisma:258[0m
+[1;94m   | [0m
+[1;94m257 | [0m
+
+[1;94m258 | [0mmodel [1;91mAdminUser[0m {
+
+[1;94m   | [0m
+
+Validation Error Count: 1
+[Context: getDmmf]
+
+Prisma CLI Version : 5.22.0

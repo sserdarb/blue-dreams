@@ -7,7 +7,7 @@ interface PageHeaderProps {
 
 export default function PageHeader({ title, subtitle, backgroundImage, breadcrumbs }: PageHeaderProps) {
     return (
-        <div className="relative h-[50vh] min-h-[400px] w-full bg-dark overflow-hidden">
+        <div className="relative h-[60vh] min-h-[500px] w-full bg-dark overflow-hidden">
             {/* Background Image */}
             <div className="absolute inset-0">
                 <img

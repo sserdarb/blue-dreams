@@ -1,0 +1,49 @@
+=== Token info ===
+1 | vps  | 0381c787b20d3c48c90d8b73902cef26a66dcb27c277c2dea6e2a651e0bfa449 | ["root"]
+
+=== Users ===
+1 | * * * $3,222 deposit available! Confirm your operation here: https://www.zadragiuseppe.com/?mameh7 * * * hs=a653dce98319fe3246c83824ceeaa922* ªàªàªà* | ydx~nwa9pwyxz@mailbox.in.ua
+  0 | Serdar Bayraktaro─şlu                                                                                                                               | sserdarb@gmail.com
+
+=== Create token via PHP ===
+Token: WARNING:  database "coolify" has no actual collation version, but a version was recorded
+
+  <warning> WARNING </warning> Attempt to read property "id" on null in app/Models/User.php on line 212.
+
+
+   Illuminate\Database\QueryException  SQLSTATE[23502]: Not null violation: 7 ERROR:  null value in col
+
+=== Try API with token ===
+Coolify HTTP status: 000
+Deploy API status: 000
+Webhook deploy: 
+
+=== Queue deploy via DB ===
+Deployment queue columns:
+id
+ application_id
+ deployment_uuid
+ pull_request_id
+ force_rebuild
+ commit
+ status
+ is_webhook
+ created_at
+ updated_at
+ logs
+ current_process_id
+ restart_only
+ git_type
+ server_id
+ application_name
+ server_name
+ deployment_url
+ destination_id
+ only_this_server
+ rollback
+ commit_message
+ is_api
+ build_server_id
+ horizon_job_id
+ horizon_job_worker
+ finished_at

@@ -20,6 +20,7 @@ export default function Footer({ locale: propLocale }: { locale?: string }) {
             emailPlaceholder: 'E-posta adresiniz',
             about: 'Hakkımızda', rooms: 'Odalar & Suitler', gallery: 'Fotoğraf Galerisi',
             spa: 'Spa & Wellness', meeting: 'Toplantı & Etkinlik', hr: 'İnsan Kaynakları',
+            sustainability: 'Sürdürülebilirlik', kvkk: 'KVKK',
             brand: 'Lüksün, konforun ve doğanın buluştuğu nokta. Bodrum\'da unutulmaz anılar biriktirin.',
             rights: 'Tüm hakları saklıdır.',
         },
@@ -35,6 +36,7 @@ export default function Footer({ locale: propLocale }: { locale?: string }) {
             emailPlaceholder: 'Your email address',
             about: 'About Us', rooms: 'Rooms & Suites', gallery: 'Photo Gallery',
             spa: 'Spa & Wellness', meeting: 'Meetings & Events', hr: 'Human Resources',
+            sustainability: 'Sustainability', kvkk: 'Privacy',
             brand: 'Where luxury, comfort and nature meet. Create unforgettable memories in Bodrum.',
             rights: 'All rights reserved.',
         },
@@ -50,6 +52,7 @@ export default function Footer({ locale: propLocale }: { locale?: string }) {
             emailPlaceholder: 'Ihre E-Mail-Adresse',
             about: 'Über Uns', rooms: 'Zimmer & Suiten', gallery: 'Fotogalerie',
             spa: 'Spa & Wellness', meeting: 'Meetings & Events', hr: 'Karriere',
+            sustainability: 'Nachhaltigkeit', kvkk: 'Datenschutz',
             brand: 'Wo Luxus, Komfort und Natur aufeinandertreffen. Schaffen Sie unvergessliche Erinnerungen in Bodrum.',
             rights: 'Alle Rechte vorbehalten.',
         },
@@ -65,6 +68,7 @@ export default function Footer({ locale: propLocale }: { locale?: string }) {
             emailPlaceholder: 'Ваш email',
             about: 'О нас', rooms: 'Номера и Люксы', gallery: 'Фотогалерея',
             spa: 'Спа и Велнес', meeting: 'Конференции', hr: 'Карьера',
+            sustainability: 'Устойчивость', kvkk: 'Конфиденциальность',
             brand: 'Где роскошь, комфорт и природа встречаются. Создайте незабываемые воспоминания в Бодруме.',
             rights: 'Все права защищены.',
         },
@@ -137,6 +141,8 @@ export default function Footer({ locale: propLocale }: { locale?: string }) {
                             <li><a href={`/${locale}/galeri`} className="hover:text-brand transition-colors">{texts.gallery}</a></li>
                             <li><a href={`/${locale}/spa`} className="hover:text-brand transition-colors">{texts.spa}</a></li>
                             <li><a href={`/${locale}/toplanti-salonu`} className="hover:text-brand transition-colors">{texts.meeting}</a></li>
+                            <li><a href={`/${locale}/surdurulebilirlik`} className="hover:text-brand transition-colors">{texts.sustainability}</a></li>
+                            <li><a href={`/${locale}/kvkk`} className="hover:text-brand transition-colors">{texts.kvkk}</a></li>
                             <li><a href={`/${locale}/iletisim`} className="hover:text-brand transition-colors">{texts.hr}</a></li>
                         </ul>
                     </div>

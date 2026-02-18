@@ -32,10 +32,15 @@ COPY . .
 # Set build-time env vars
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
+ENV NODE_OPTIONS="--max-old-space-size=2048"
 
 # Skip static page generation that requires DB
 # The app will generate pages on-demand at runtime
 ENV SKIP_ENV_VALIDATION=1
+
+# Database URL for Prisma client initialization during build
+# Static pages that access DB will be generated on-demand at runtime
+ENV DATABASE_URL="postgresql://coolify:coolifypassword@coolify-db:5432/blue_dreams_v2"
 
 # Build Next.js
 RUN npm run build

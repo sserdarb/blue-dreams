@@ -1,0 +1,22 @@
+CID: 3815dea559c9, Status: 3815dea559c9 Restarting (1) 54 seconds ago
+
+Source model: 
+Built model refs: 
+
+--- Settings API ---
+Error response from daemon: Container 3815dea559c91576dac4ad99f5fcb1d7a701a96368b86c9167b9b70d04a45faf is restarting, wait until the container is running
+
+--- Chat API ---
+Error response from daemon: Container 3815dea559c91576dac4ad99f5fcb1d7a701a96368b86c9167b9b70d04a45faf is restarting, wait until the container is running
+
+--- Recent Errors ---
+> temp_app@0.1.0 start
+> next start
+
+Ôû▓ Next.js 16.1.6
+- Local:         http://localhost:3000
+- Network:       http://172.18.0.11:3000
+
+Ô£ô Starting...
+Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+    at ignore-listed frames
