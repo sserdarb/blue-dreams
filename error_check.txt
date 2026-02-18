@@ -1,0 +1,54 @@
+Chat response: {"error":"Internal Server Error"}
+
+=== Container logs (last 30 lines) ===
+npm warn config production Use `--omit=dev` instead.
+
+> temp_app@0.1.0 start
+> next start
+
+Ôû▓ Next.js 16.1.6
+- Local:         http://localhost:3000
+- Network:       http://172.18.0.11:3000
+
+Ô£ô Starting...
+ÔÜá "next start" does not work with "output: standalone" configuration. Use "node .next/standalone/server.js" instead.
+Ô£ô Ready in 542ms
+AI API Error: Error [ApiError]: {"error":{"code":403,"message":"Your API key was reported as leaked. Please use another API key.","status":"PERMISSION_DENIED"}}
+    at nn (.next/server/chunks/[root-of-the-server]__5ba948be._.js:14:109247)
+    at async (.next/server/chunks/[root-of-the-server]__5ba948be._.js:14:104898)
+    at async n_.generateContent (.next/server/chunks/[root-of-the-server]__5ba948be._.js:14:132297)
+    at async iB (.next/server/chunks/[root-of-the-server]__5ba948be._.js:44:80)
+    at async m (.next/server/chunks/[root-of-the-server]__5ba948be._.js:44:4104)
+    at async s (.next/server/chunks/[root-of-the-server]__5ba948be._.js:44:5153) {
+  status: 403
+}
+AI API Error: Error [ApiError]: {"error":{"code":403,"message":"Your API key was reported as leaked. Please use another API key.","status":"PERMISSION_DENIED"}}
+    at nn (.next/server/chunks/[root-of-the-server]__5ba948be._.js:14:109247)
+    at async (.next/server/chunks/[root-of-the-server]__5ba948be._.js:14:104898)
+    at async n_.generateContent (.next/server/chunks/[root-of-the-server]__5ba948be._.js:14:132297)
+    at async iB (.next/server/chunks/[root-of-the-server]__5ba948be._.js:44:80)
+    at async m (.next/server/chunks/[root-of-the-server]__5ba948be._.js:44:4104)
+    at async s (.next/server/chunks/[root-of-the-server]__5ba948be._.js:44:5153) {
+  status: 403
+}
+
+=== Check DB tables ===
+AdminUser
+ AiSettings
+ AiTrainingDocument
+ Amenity
+ AnalyticsConfig
+ ChatMessage
+ ChatSession
+ CtaBar
+ Dining
+ Language
+ Media
+ MeetingRoom
+ MenuItem
+ Page
+ PageView
+ Room
+ SiteSettings
+ VisitorAction
+ Widget

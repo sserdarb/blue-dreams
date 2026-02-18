@@ -1,0 +1,129 @@
+App Container: 3815dea559c9
+
+=== Step 1: Verify Prisma schema ===
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+Schema is sqlite, patching to postgresql...
+After patch: generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+=== Step 2: Regenerate Prisma Client for PostgreSQL ===
+Generate: npm warn config production Use `--omit=dev` instead.
+Prisma schema loaded from prisma/schema.prisma
+
+Ô£ö Generated Prisma Client (v5.22.0) to ./node_modules/@prisma/client in 761ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Want to turn off tips and other hints? https://pris.ly/tip-4-nohints
+
+=== Step 3: Push schema to PostgreSQL ===
+Push: npm warn config production Use `--omit=dev` instead.
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "blue_dreams_v2", schema "public" at "coolify-db:5432"
+
+The database is already in sync with the Prisma schema.
+
+Running generate... (Use --skip-generate to skip the generators)
+[2K[1A[2K[GRunning generate... - Prisma Client
+[2K[1A[2K[GÔ£ö Generated Prisma Client (v5.22.0) to ./node_modules/@prisma/client in 166ms
+
+=== Step 4: Running seed against PostgreSQL ===
+Seed output:
+Default admin user created
+Languages seeded
+  Ô£à home/tr ÔÇö 9 widgets
+  Ô£à home/en ÔÇö 9 widgets
+  Ô£à home/de ÔÇö 9 widgets
+  Ô£à home/ru ÔÇö 9 widgets
+  Ô£à hakkimizda/tr ÔÇö 5 widgets
+  Ô£à hakkimizda/en ÔÇö 5 widgets
+  Ô£à hakkimizda/de ÔÇö 5 widgets
+  Ô£à hakkimizda/ru ÔÇö 5 widgets
+  Ô£à odalar/tr ÔÇö 4 widgets
+  Ô£à odalar/en ÔÇö 4 widgets
+  Ô£à odalar/de ÔÇö 4 widgets
+  Ô£à odalar/ru ÔÇö 4 widgets
+  Ô£à restoran/tr ÔÇö 4 widgets
+  Ô£à restoran/en ÔÇö 4 widgets
+  Ô£à restoran/de ÔÇö 4 widgets
+  Ô£à restoran/ru ÔÇö 4 widgets
+  Ô£à spa/tr ÔÇö 6 widgets
+  Ô£à spa/en ÔÇö 6 widgets
+  Ô£à spa/de ÔÇö 6 widgets
+  Ô£à spa/ru ÔÇö 6 widgets
+  Ô£à iletisim/tr ÔÇö 3 widgets
+  Ô£à iletisim/en ÔÇö 3 widgets
+  Ô£à iletisim/de ÔÇö 3 widgets
+  Ô£à iletisim/ru ÔÇö 3 widgets
+  Ô£à dugun-davet/tr ÔÇö 6 widgets
+  Ô£à dugun-davet/en ÔÇö 6 widgets
+  Ô£à dugun-davet/de ÔÇö 6 widgets
+  Ô£à dugun-davet/ru ÔÇö 6 widgets
+  Ô£à galeri/tr ÔÇö 2 widgets
+  Ô£à galeri/en ÔÇö 2 widgets
+  Ô£à galeri/de ÔÇö 2 widgets
+  Ô£à galeri/ru ÔÇö 2 widgets
+  Ô£à toplanti-salonu/tr ÔÇö 4 widgets
+  Ô£à toplanti-salonu/en ÔÇö 4 widgets
+  Ô£à toplanti-salonu/de ÔÇö 4 widgets
+  Ô£à toplanti-salonu/ru ÔÇö 4 widgets
+  Ô£à bodrum/tr ÔÇö 3 widgets
+  Ô£à bodrum/en ÔÇö 3 widgets
+  Ô£à bodrum/de ÔÇö 3 widgets
+  Ô£à bodrum/ru ÔÇö 3 widgets
+Seed completed successfully!
+
+=== Step 5: Verify PostgreSQL data ===
+  "Page": ERROR:  relation "page" does not exist
+LINE 1: SELECT COUNT(*) FROM Page;
+                             ^
+  "Widget": ERROR:  relation "widget" does not exist
+LINE 1: SELECT COUNT(*) FROM Widget;
+                             ^
+  "AdminUser": ERROR:  relation "adminuser" does not exist
+LINE 1: SELECT COUNT(*) FROM AdminUser;
+                             ^
+  "Language": ERROR:  relation "language" does not exist
+LINE 1: SELECT COUNT(*) FROM Language;
+                             ^
+  "SiteSettings": ERROR:  relation "sitesettings" does not exist
+LINE 1: SELECT COUNT(*) FROM SiteSettings;
+                             ^
+  "MenuItem": ERROR:  relation "menuitem" does not exist
+LINE 1: SELECT COUNT(*) FROM MenuItem;
+                             ^
+
+Pages:
+bodrum        | de     | Bodrum Reisefuhrer
+ bodrum        | en     | Bodrum Guide
+ bodrum        | ru     | Bodrum
+ bodrum        | tr     | Bodrum Rehberi
+ contact-us    | en     | Contact
+ dugun-davet   | de     | Hochzeit
+ dugun-davet   | en     | Wedding & Events
+ dugun-davet   | ru     | Events
+ dugun-davet   | tr     | Dugun & Davet
+ essen-trinken | de     | Essen & Trinken
+ food-drink    | en     | Food & Drink
+ galeri        | de     | Galerie
+ galeri        | en     | Gallery
+ galeri        | ru     | Gallery
+ galeri        | tr     | Galeri
+ gallery       | en     | Gallery
+ hakkimizda    | de     | Uber Uns
+ hakkimizda    | en     | About Us
+ hakkimizda    | ru     | About
+ hakkimizda    | tr     | Hakkimizda

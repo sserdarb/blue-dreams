@@ -1,0 +1,18 @@
+Test 1 (from-lastupdate-date): 400
+Test 2 (from-reservation-date): 400
+Test 3 (from-booking-date): 400
+
+Test 5 (2026 June Reservation status): 982
+  lastUpdate dist:
+    2025-08: 1
+    2025-09: 42
+    2025-10: 24
+    2025-11: 197
+    2025-12: 226
+    2026-01: 373
+    2026-02: 119
+    CI:2026-06-27 lastUpd:2026-01-03T07:35:29 price:1485 ag:ANEX POL
+    CI:2026-06-27 lastUpd:2026-01-03T07:36:14 price:1485 ag:ANEX POL
+    CI:2026-06-27 lastUpd:2026-01-03T07:37:12 price:1485 ag:ANEX POL
+    CI:2026-06-27 lastUpd:2026-01-03T07:38:19 price:1742.4 ag:ANEX POL
+    CI:2026-06-01 lastUpd:2026-01-27T13:43:29 price:38500 ag:CALL CENTER TL

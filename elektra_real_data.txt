@@ -1,0 +1,32 @@
+=== hotel_info (Status: 404) ===
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /hotel/33264</pre>
+</body>
+</html>
+
+
+=== availability (Status: 200) ===
+[{"date":"2026-02-15","hotel-id":33264,"currency":"TRY","room-type-id":469699,"room-type":"Club Family Room","base-price":null,"discounted-price":null,"available-room-count":58,"stopsell":false,"vat-amount":null,"rate-rules":{"min-los":3,"max-los":null,"closed-to-arrival":null,"closed-to-departure":null,"bookable-after-days":null}},{"date":"2026-02-15","hotel-id":33264,"currency":"TRY","room-type-id":469700,"room-type":"Club Room","base-price":null,"discounted-price":null,"available-room-count":81,"stopsell":false,"vat-amount":null,"rate-rules":{"min-los":3,"max-los":null,"closed-to-arrival":null,"closed-to-departure":null,"bookable-after-days":null}},{"date":"2026-02-15","hotel-id":33264,"currency":"TRY","room-type-id":469701,"room-type":"Club Room Sea View","base-price":null,"discounted-price":null,"available-room-count":136,"stopsell":false,"vat-amount":null,"rate-rules":{"min-los":3,"max-los":null,"closed-to-arrival":null,"closed-to-departure":null,"bookable-after-days":null}},{"date":"2026-02-15","hotel-id":33264,"currency":"TRY","room-type-id":469702,"room-type":"Deluxe Room","base-price":null,"discounted-price":null,"available-room-count":38,"stopsell":false,"vat-amount":null,"rate-rules":{"min-los":3,"max-los":null,"closed-to-arrival":null,"closed-to-departure":null,"bookable-after-days":null}},{"date":"2026-02-15","hotel-id":33264,"currency":"TRY","room-type-id":469703,"room-type":"Deluxe Family Room","base-price":null,"discounted-price":null,"available-room-count":28,"stopsell":false,"vat-amount":null,"rate-rules":{"min-los":3,"max-los":null,"closed-to-arrival":null,"closed-to-departure":null,"bookable-after-days":null}},{"date":"2026-02-15","hotel-id":33264,"currency":"TRY","room-type-id":472014,"room-type":"Beach Side Room","base-price":null,"discounted-price":null,"available-room-count":29,"stopsell":false,"vat-amount":null,"rate-rules":{"min-los":3,"max-los":null,"closed-to-arrival":null,"closed-to-departure":null,"bookable-after-days":null}},{"date":"2026-02-15","hotel-id":33264,"currency":"TRY","room-type-id":473612,"room-type":"Club Promo Oda","base-price":null,"discounted-price":null,"available-room-count":81,"stopsell":false,"vat-amount":null,"rate-rules":{"min-los":3,"max-los":null,"closed-to-arrival":null,"closed-to-departure":null,"bookable-after-days":null}},{"date":"2026-02-15","hotel-id":33264,"currency":"TRY","room-type-id":475180,"room-type":"Run Of House","base-price":null,"discounted-price":null,"available-room-count":81,"stopsell":false,"vat-amount":null,"rate-rules":{"min-los":3,"max-los":null,"closed-to-arrival":null,"closed-to-departure":null,"bookable-after-days":null}},{"date":"2026-02-16","hotel-id":33264,"currency":"TRY","room-type-id":469699,"room-type":"Club Family Room","base-price":null,"discounted-price":null,"available-room-count":58,"stopsell":false,"vat-amount":null,"rate-rules":{"min-los":3,"max-los":null,"closed-to-arrival":null,"closed-to-departure":null,"bookable-after-days":null}},{"date":"2026-02
+
+=== price_list (Status: 404) ===
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /hotel/33264/hotel-price-list</pre>
+</body>
+</html>
+
+
+=== login_data (Status: 401) ===
+{"success":false,"message":"Invalid Login Mode!","errorCode":"1002-A","errorDetails":{}}
+

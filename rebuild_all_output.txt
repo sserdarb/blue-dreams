@@ -1,0 +1,61 @@
+=== Cleanup ===
+
+=== Step 1: Inject files ===
+Temp: 71aa46ac479ed3d0
+  + prisma/schema.prisma
+  + app/api/ai/chat/route.ts
+  + app/api/ai/settings/route.ts
+  + app/admin/ai-training/page.tsx
+  + app/api/admin/users/route.ts
+  + app/admin/users/page.tsx
+  + app/admin/login/page.tsx
+  + app/admin/layout.tsx
+  + app/actions/auth.ts
+  + app/api/analytics/data/route.ts
+  + components/admin/widget-editors/widget-types.ts
+  + components/admin/widget-editors/index.tsx
+  + nixpacks.toml
+  + prisma/seed.js
+
+AdminUser count: 1
+
+=== Step 2: Commit ===
+Image: sha256:34dfda0aa098a2b284009b4
+
+=== Step 3: Build (3-5 min) ===
+Output: 94 lines
+  Ôö£ ãÆ /api/events
+  Ôö£ ãÆ /api/settings/analytics
+  Ôö£ Ôùï /robots.txt
+  Ôöö Ôùï /sitemap.xml
+  
+  
+  ãÆ Proxy (Middleware)
+  
+  Ôùï  (Static)   prerendered as static content
+  ãÆ  (Dynamic)  server-rendered on demand
+
+BUILD_ID: crkmhaZgqWjVyJy0v_ilB
+BUILD OK!
+
+=== Step 4: Commit built image ===
+Final: sha256:67af8211f1eca0b5a967a5f
+
+=== Step 5: Deploy ===
+Container: ad422aa4cfc74975
+Waiting 40s...
+Status: Up 40 seconds
+
+Logs:
+Ôû▓ Next.js 16.1.6
+- Local:         http://localhost:3000
+- Network:       http://172.18.0.16:3000
+
+Ô£ô Starting...
+ÔÜá "next start" does not work with "output: standalone" configuration. Use "node .next/standalone/server.js" instead.
+Ô£ô Ready in 477ms
+
+Internal: 200
+External: 200
+
+=== DONE ===

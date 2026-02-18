@@ -61,8 +61,8 @@ export function HeroWidget({ data }: { data: HeroData }) {
               </div>
             )}
             <h1 className="flex flex-col items-center">
-              {data.titleLine1 && <span className="text-5xl md:text-7xl lg:text-8xl font-serif text-white leading-[1.1] drop-shadow-2xl">{data.titleLine1}</span>}
-              {data.titleLine2 && <span className="text-6xl md:text-8xl lg:text-9xl font-serif italic text-brand-light leading-[1] -mt-2 md:-mt-4 drop-shadow-2xl">{data.titleLine2}</span>}
+              {data.titleLine1 && <span className="text-4xl md:text-5xl lg:text-6xl font-serif text-white leading-[1.1] drop-shadow-2xl">{data.titleLine1}</span>}
+              {data.titleLine2 && <span className="text-5xl md:text-6xl lg:text-7xl font-serif italic text-brand-light leading-[1] -mt-2 md:-mt-4 drop-shadow-2xl">{data.titleLine2}</span>}
             </h1>
             {(data.subtitle || data.subtitle2) && (
               <p className="text-white/90 text-sm md:text-lg font-light tracking-wider max-w-xl mx-auto mt-6 leading-relaxed drop-shadow-md">

@@ -1,0 +1,80 @@
+Container: 3815dea559c9
+
+=== Server logs (last 100 lines) ===
+Datasource "db": PostgreSQL database "blue_dreams_v2", schema "public" at "coolify-db:5432"
+
+The database is already in sync with the Prisma schema.
+
+Running generate... (Use --skip-generate to skip the generators)
+[2K[1A[2K[GRunning generate... - Prisma Client
+[2K[1A[2K[GÔ£ö Generated Prisma Client (v5.22.0) to ./node_modules/@prisma/client in 224ms
+
+npm warn config production Use `--omit=dev` instead.
+
+> temp_app@0.1.0 start
+> next start
+
+Ôû▓ Next.js 16.1.6
+- Local:         http://localhost:3000
+- Network:       http://172.18.0.16:3000
+
+Ô£ô Starting...
+ÔÜá "next start" does not work with "output: standalone" configuration. Use "node .next/standalone/server.js" instead.
+Ô£ô Ready in 553ms
+npm error path /app
+npm error command failed
+npm error signal SIGTERM
+npm error command sh -c next start
+npm error A complete log of this run can be found in: /root/.npm/_logs/2026-02-09T22_32_29_591Z-debug-0.log
+npm warn config production Use `--omit=dev` instead.
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "blue_dreams_v2", schema "public" at "coolify-db:5432"
+
+The database is already in sync with the Prisma schema.
+
+Running generate... (Use --skip-generate to skip the generators)
+[2K[1A[2K[GRunning generate... - Prisma Client
+[2K[1A[2K[GÔ£ö Generated Prisma Client (v5.22.0) to ./node_modules/@prisma/client in 199ms
+
+npm warn config production Use `--omit=dev` instead.
+
+> temp_app@0.1.0 start
+> next start
+
+Ôû▓ Next.js 16.1.6
+- Local:         http://localhost:3000
+- Network:       http://172.18.0.11:3000
+
+Ô£ô Starting...
+ÔÜá "next start" does not work with "output: standalone" configuration. Use "node .next/standalone/server.js" instead.
+Ô£ô Ready in 1249ms
+npm error path /app
+npm error command failed
+npm error signal SIGTERM
+npm error command sh -c next start
+npm error A complete log of this run can be found in: /root/.npm/_logs/2026-02-10T07_07_07_742Z-debug-0.log
+npm warn config production Use `--omit=dev` instead.
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "blue_dreams_v2", schema "public" at "coolify-db:5432"
+
+The database is already in sync with the Prisma schema.
+
+Running generate... (Use --skip-generate to skip the generators)
+[2K[1A[2K[GRunning generate... - Prisma Client
+[2K[1A[2K[GÔ£ö Generated Prisma Client (v5.22.0) to ./node_modules/@prisma/client in 179ms
+
+npm warn config production Use `--omit=dev` instead.
+
+> temp_app@0.1.0 start
+> next start
+
+Ôû▓ Next.js 16.1.6
+- Local:         http://localhost:3000
+- Network:       http://172.18.0.11:3000
+
+Ô£ô Starting...
+ÔÜá "next start" does not work with "output: standalone" configuration. Use "node .next/standalone/server.js" instead.
+Ô£ô Ready in 531ms
+The width(-1) and height(-1) of chart should be greater than 0,
+       please check the style of container, or the props width(100%) and height(100%),
+       or add a minWidth(0) or minHeight(undefined) or use aspect(und

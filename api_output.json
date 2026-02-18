@@ -1,0 +1,137 @@
+[
+  {
+    "reservation-id": 76004268,
+    "voucher-no": "28009",
+    "hotel-id": 33264,
+    "room-type-group-id": null,
+    "room-no": "110",
+    "agency": "CALL CENTER BDR",
+    "board-type": "UAI",
+    "room-type": "CR",
+    "rate-type": "İade edilebilir",
+    "check-in-date": "2025-06-30",
+    "check-out-date": "2025-07-05",
+    "reservation-total-price": 61666.001,
+    "reservation-paid-price": 0,
+    "reservation-currency": "TRY",
+    "reservation-room-count": 1,
+    "contact-name": "FILIZ GUDEN",
+    "contact-email": "filizguden@gmail.com ",
+    "contact-phone": "905397005008",
+    "lastupdate-date": "2025-07-05T08:27:14.283Z",
+    "guest-list": [
+      {
+        "reservation-guest-id": 117806937,
+        "guest-id": 121760521,
+        "name": "FILIZ",
+        "surname": "GUDEN"
+      },
+      {
+        "reservation-guest-id": 117806938,
+        "guest-id": 121763686,
+        "name": "ERDEM",
+        "surname": "GUDEN"
+      },
+      {
+        "reservation-guest-id": 117806939,
+        "guest-id": 121763714,
+        "name": "KUTAY",
+        "surname": "GUDEN"
+      }
+    ]
+  },
+  {
+    "reservation-id": 76012481,
+    "voucher-no": "28012",
+    "hotel-id": 33264,
+    "room-type-group-id": null,
+    "room-no": "403",
+    "agency": "CALL CENTER BDR",
+    "board-type": "UAI",
+    "room-type": "CFM",
+    "rate-type": "İade edilebilir",
+    "check-in-date": "2025-06-30",
+    "check-out-date": "2025-07-01",
+    "reservation-total-price": 15468.3301,
+    "reservation-paid-price": 0,
+    "reservation-currency": "TRY",
+    "reservation-room-count": 1,
+    "contact-name": "MERVE BUYUK",
+    "contact-email": null,
+    "contact-phone": "5332911010",
+    "lastupdate-date": "2025-07-01T12:57:12.667Z",
+    "guest-list": [
+      {
+        "reservation-guest-id": 117823368,
+        "guest-id": 121834260,
+        "name": "MERVE",
+        "surname": "BUYUK"
+      },
+      {
+        "reservation-guest-id": 117823371,
+        "guest-id": 121834319,
+        "name": "AREN ALI",
+        "surname": "BUYUK"
+      },
+      {
+        "reservation-guest-id": 117846476,
+        "guest-id": 121834306,
+        "name": "ADEN",
+        "surname": "BUYUK"
+      },
+      {
+        "reservation-guest-id": 117846477,
+        "guest-id": 121834286,
+        "name": "ADEM",
+        "surname": "BUYUK"
+      }
+    ]
+  },
+  {
+    "reservation-id": 67541394,
+    "voucher-no": "66451521 ",
+    "hotel-id": 33264,
+    "room-type-group-id": null,
+    "room-no": "2001",
+    "agency": "TUI POL",
+    "board-type": "UAI",
+    "room-type": "DLX",
+    "rate-type": null,
+    "check-in-date": "2025-06-29",
+    "check-out-date": "2025-07-06",
+    "reservation-total-price": 1561,
+    "reservation-paid-price": 0,
+    "reservation-currency": "EUR",
+    "reservation-room-count": 1,
+    "contact-name": "MARIA KARCZEWSKA",
+    "contact-email": "marisya19@gmail.com",
+    "contact-phone": "+48662081796",
+    "lastupdate-date": "2025-07-06T05:15:41.670Z",
+    "guest-list": [
+      {
+        "reservation-guest-id": 102919173,
+        "guest-id": 107954533,
+        "name": "MARIA",
+        "surname": "KARCZEWSKA"
+      },
+      {
+        "reservation-guest-id": 102919174,
+        "guest-id": 107954534,
+        "name": "MARCIN JAROSLAW",
+        "surname": "KARCZEWSKI"
+      },
+      {
+        "reservation-guest-id": 102919175,
+        "guest-id": 107954535,
+        "name": "STANISLAW",
+        "surname": "KARCZEWSKI"
+      },
+      {
+        "reservation-guest-id": 102919176,
+        "guest-id": 107954536,
+        "name": "MICHAL",
+        "surname": "KARCZEWSKI"
+      }
+    ]
+  }
+]

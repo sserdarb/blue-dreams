@@ -1,0 +1,23 @@
+Container: 3815dea559c9
+
+1. Updating restart policy to 'no'...
+   3815dea559c9 
+2. Stopping container...
+   3815dea559c9
+3. Starting container...
+   3815dea559c9
+   Status: Exited (1) 5 seconds ago
+
+4. Applying source fixes...
+   Model: 
+5. Uploading files via docker cp...
+   Settings has masking:  occurrences
+
+6. Building Next.js (may take 3-5 min)...
+   Build output (last 400):
+Error response from daemon: container 3815dea559c91576dac4ad99f5fcb1d7a701a96368b86c9167b9b70d04a45faf is not running
+
+   BUILD_ID: Error response from daemon: container 3815dea559c91576dac4ad99f5fcb1d7a701a96368b86c9167b9b70d04a45faf is not running
+
+BUILD FAILED! Restoring restart policy anyway...
+   Check build errors above

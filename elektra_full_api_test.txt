@@ -1,0 +1,436 @@
+### Hotel Info (GET) — Status: 404
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /hotel/33264</pre>
+</body>
+</html>
+
+
+### Availability (Summer) (GET) — Status: 200
+[{"date":"2026-06-15","hotel-id":33264,"currency":"TRY","room-type-id":469699,"room-type":"Club Family Room","base-price":null,"discounted-price":null,"available-room-count":8,"stopsell":false,"vat-amount":null,"rate-rules":{"min-los":3,"max-los":null,"closed-to-arrival":null,"closed-to-departure":null,"bookable-after-days":null}},{"date":"2026-06-15","hotel-id":33264,"currency":"TRY","room-type-id":469700,"room-type":"Club Room","base-price":null,"discounted-price":null,"available-room-count":1
+
+### Price List (GET) — Status: 404
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /hotel/33264/hotel-price-list</pre>
+</body>
+</html>
+
+
+### Search (POST) — Status: 404
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot POST /hotel/33264/search</pre>
+</body>
+</html>
+
+
+### Price for Room (POST) — Status: 404
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot POST /hotel/33264/price</pre>
+</body>
+</html>
+
+
+### Search Price (POST) — Status: 404
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot POST /hotel/33264/search-price</pre>
+</body>
+</html>
+
+
+### Reservations List (GET) — Status: 404
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /hotel/33264/reservations</pre>
+</body>
+</html>
+
+
+### Reservations POST (POST) — Status: 404
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot POST /hotel/33264/reservations</pre>
+</body>
+</html>
+
+
+### Reservation List (GET) — Status: 400
+{"success":false,"message":"Request parameters are not suitable.","errorCode":"1002-R","errorDetails":{"from-check-in":["from-check-in must be before to-check-in","from-check-in must be a date conforming to the specified format \"yyyy-MM-dd HH:mm:ss\""],"to-check-in":["to-check-in must be a date conforming to the specified format \"yyyy-MM-dd HH:mm:ss\""],"reservation-status":["reservation-status must be one of the following values: Waiting, Reservation, InHouse, CheckOut, No Show, Cancelled","r
+
+### Reservation List POST (POST) — Status: 404
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot POST /hotel/33264/reservation-list</pre>
+</body>
+</html>
+
+
+### Report (GET) — Status: 404
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /hotel/33264/report</pre>
+</body>
+</html>
+
+
+### Reports (GET) — Status: 404
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /hotel/33264/reports</pre>
+</body>
+</html>
+
+
+### Statistics (GET) — Status: 404
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /hotel/33264/statistics</pre>
+</body>
+</html>
+
+
+### Stats (GET) — Status: 404
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /hotel/33264/stats</pre>
+</body>
+</html>
+
+
+### Dashboard (GET) — Status: 404
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /hotel/33264/dashboard</pre>
+</body>
+</html>
+
+
+### Occupancy (GET) — Status: 404
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /hotel/33264/occupancy</pre>
+</body>
+</html>
+
+
+### Revenue (GET) — Status: 404
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /hotel/33264/revenue</pre>
+</body>
+</html>
+
+
+### Sales (GET) — Status: 404
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /hotel/33264/sales</pre>
+</body>
+</html>
+
+
+### Channels (GET) — Status: 404
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /hotel/33264/channels</pre>
+</body>
+</html>
+
+
+### Channel Distribution (GET) — Status: 404
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /hotel/33264/channel-distribution</pre>
+</body>
+</html>
+
+
+### Channel Manager (GET) — Status: 404
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /hotel/33264/channel-manager</pre>
+</body>
+</html>
+
+
+### Room Types (GET) — Status: 404
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /hotel/33264/room-types</pre>
+</body>
+</html>
+
+
+### Rooms (GET) — Status: 404
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /hotel/33264/rooms</pre>
+</body>
+</html>
+
+
+### Room Type List (GET) — Status: 404
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /hotel/33264/room-type-list</pre>
+</body>
+</html>
+
+
+### Payment (GET) — Status: 404
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /hotel/33264/payment</pre>
+</body>
+</html>
+
+
+### Payment Methods (GET) — Status: 404
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /hotel/33264/payment-methods</pre>
+</body>
+</html>
+
+
+### POS (GET) — Status: 404
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /hotel/33264/pos</pre>
+</body>
+</html>
+
+
+### Virtual POS (GET) — Status: 404
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /hotel/33264/virtual-pos</pre>
+</body>
+</html>
+
+
+### Content (GET) — Status: 404
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /hotel/33264/content</pre>
+</body>
+</html>
+
+
+### Images (GET) — Status: 404
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /hotel/33264/images</pre>
+</body>
+</html>
+
+
+### Hotel Info v2 (GET) — Status: 404
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /hotel/33264/info</pre>
+</body>
+</html>
+
+
+### Details (GET) — Status: 404
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /hotel/33264/details</pre>
+</body>
+</html>
+
+
+### Facilities (GET) — Status: 404
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /hotel/33264/facilities</pre>
+</body>
+</html>
+
+
+### Create Reservation (empty) (POST) — Status: 400
+{"success":false,"message":"Request parameters are not suitable.","errorCode":"1002-R","errorDetails":{"hotel-id":["hotel-id must be a number conforming to the specified constraints"],"rate-type-id":["rate-type-id must be a number conforming to the specified constraints"],"board-type-id":["board-type-id must be a number conforming to the specified constraints"],"room-type-id":["room-type-id must be a number conforming to the specified constraints"],"price-agency-id":["price-agency-id must be a n
+
+### Countries (GET) — Status: 200
+[{"country-id":1,"country-name":"Turkey","country-code3":"TUR","country-code2":"TR","country-language-code2":"TR","country-currency-code3":"TRY"},{"country-id":2,"country-name":"United States","country-code3":"USA","country-code2":"US","country-language-code2":"EN","country-currency-code3":"USD"},{"country-id":3,"country-name":"Czech Republic","country-code3":"CZE","country-code2":"CZ","country-language-code2":"CS","country-currency-code3":"CZK"},{"country-id":4,"country-name":"Hungary","country
+
+### Login Data (GET) — Status: 401
+{"success":false,"message":"Invalid Login Mode!","errorCode":"1002-A","errorDetails":{}}
+
+### Create Hotel Call (GET) — Status: 404
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Error</title>
+</head>
+<body>
+<pre>Cannot GET /hotel/33264/create-hotel-call</pre>
+</body>
+</html>
+
+
+### Create Hotel Call POST (POST) — Status: 400
+{"success":false,"message":"Request parameters are not suitable.","errorCode":"1002-R","errorDetails":{"phone":["Please enter valid phone number with country code, ex. +905555555555"],"type":["type must be a number conforming to the specified constraints"]}}
+
+### HotelAdvisor Base — Status: 403
+<!DOCTYPE html><html lang="en-US"><head><title>Just a moment...</title><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=Edge"><meta name="robots" content="noindex,nofollow"><meta name="viewport" content="width=device-width,initial-scal

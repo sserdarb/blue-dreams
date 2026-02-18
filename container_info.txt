@@ -1,0 +1,40 @@
+=== All containers ===
+  40af92b887a9 | coolify-sentinel | Up 10 hours (healthy) | ghcr.io/coollabsio/sentinel:0.0.18
+  50d4946352c2 | focw448cg0gg4wckko04csc4-111459988720 | Up 3 hours | hirbodrum-api:with-files
+  68480321bd54 | app-wcsw0s4o0kckoc8sww804ok4 | Up 7 days | node:20-alpine
+  e1d37b00ce79 | mongodb-wcsw0s4o0kckoc8sww804ok4 | Up 7 days | mongo:latest
+  dfa06122b2c7 | linkhub-mongodb-1 | Up 2 weeks | d6b569590880
+  49ff3660db94 | linkhub-app-1 | Up 2 weeks | linkhub-app
+  e099105002e1 | linkhub_fullstack-app-1 | Up 2 weeks | linkhub_fullstack-app
+  12b911693e08 | linkhub_fullstack-mongodb-1 | Up 2 weeks | d6b569590880
+  706d164d2cda | ogok8sw4w88wo04000wccksc | Up 2 weeks (healthy) | mongo:7
+  c9a09c7f9a16 | pg488kocgg8wk8wssg8c0ko8-101323975206 | Up 41 hours | pg488kocgg8wk8wssg8c0ko8:38e43781b34ba39ffbabae2950a41c096c337c0f
+  823083bdd30b | emergent-backend | Exited (1) 19 hours ago | emergent-backend
+  1854c4798210 | aura_app | Up 2 weeks | pms-innovmar-app
+  7b9b019e64c0 | aura_mongodb | Up 2 weeks | d6b569590880
+  aaa007514ddf | stalwart-mail-yckowcccgg844g0c0o8scooo | Up 2 weeks | stalwartlabs/stalwart:latest
+  e8bf97294456 | rs8cg4kg0ksk84kws0gkcs88-055128813859 | Up 2 weeks | rs8cg4kg0ksk84kws0gkcs88:44d09c456000d7476431a7c2d0780480fce4412f
+  bc7bf30fc063 | coolify-proxy | Up 2 weeks (healthy) | traefik:v3.6
+  a71a1dfce9cc | z4wcgkwso0cg084gk880w088 | Up 2 weeks (healthy) | mongo:7
+  3fe99f2525ce | coolify | Up 2 weeks (healthy) | coollabsio/coolify:latest
+  685bf597b14f | coolify-redis | Up 2 weeks | redis:7-alpine
+  7b196ff456e5 | coolify-db | Up 2 weeks | postgres:15-alpine
+
+=== Blue Dreams / vgk8 containers ===
+No vgk8 containers found
+
+Image search: None
+
+3815dea559c9: error: no such object: 3815dea559c9
+
+=== Images ===
+hirbodrum-api:with-files | 641MB | 14 hours ago
+vgk8cscos8os8wwsogkss004:276bda8908fbac1a4fd202fbe26d1ee0d5cf320e | 2.8GB | 35 hours ago
+vgk8cscos8os8wwsogkss004:775501d17341aa9627ebee9557788710bf412884 | 2.65GB | 43 hours ago
+mongo:latest | 1.27GB | 13 days ago
+node:20-alpine | 192MB | 2 weeks ago
+linkhub-app:latest | 442MB | 2 weeks ago
+linkhub_fullstack-app:latest | 441MB | 2 weeks ago
+pg488kocgg8wk8wssg8c0ko8:38e43781b34ba39ffbabae2950a41c096c337c0f | 96.7MB | 2 weeks ago
+focw448cg0gg4wckko04csc4:0df9defa5d73766cc0502b558dee819a252107fc | 640MB | 2 weeks ago
+emergent-backend:latest | 640MB | 2 weeks ago

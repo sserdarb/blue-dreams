@@ -1,0 +1,59 @@
+=== Quick test with --entrypoint override ===
+package.json: {
+  "name": "temp_app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+schema.prisma: generator client {
+
+  provider = "prisma-client-js"
+
+}
+
+
+
+datasource db {
+AdminUser in schema: model AdminUser {
+
+model AdminUser {
+
+=== Running full build with --entrypoint override ===
+Building... (3-5 min)
+npm warn config production Use `--omit=dev` instead.
+Prisma schema loaded from prisma/schema.prisma
+Error: Prisma schema validation - (get-dmmf wasm)
+Error code: P1012
+[1;91merror[0m: [1mThe model "AdminUser" cannot be defined because a model with that name already exists.[0m
+  [1;94m-->[0m  [4mprisma/schema.prisma:258[0m
+[1;94m   | [0m
+[1;94m257 | [0m
+
+[1;94m258 | [0mmodel [1;91mAdminUser[0m {
+
+[1;94m   | [0m
+
+Validation Error Count: 1
+[Context: getDmmf]
+
+Prisma CLI Version : 5.22.0
+
+
+ÔØî BUILD FAILED, BUILD_ID: Error response from daemon: container fb2dc1fb0c75c744e73b9cf580273a0eb70c7f918bb24bab81fb0c690d8f29e7 is not running
+Builder logs:
+npm warn config production Use `--omit=dev` instead.
+Prisma schema loaded from prisma/schema.prisma
+Error: Prisma schema validation - (get-dmmf wasm)
+Error code: P1012
+[1;91merror[0m: [1mThe model "AdminUser" cannot be defined because a model with that name already exists.[0m
+  [1;94m-->[0m  [4mprisma/schema.prisma:258[0m
+[1;94m   | [0m
+[1;94m257 | [0m
+
+[1;94m258 | [0mmodel [1;91mAdminUser[0m {
+
+[1;94m   | [0m
+
+Validation Error Count: 1
+[Context: getDmmf]
+
+Prisma CLI Version : 5.22.0

@@ -1,0 +1,44 @@
+Container: 3815dea559c9
+
+=== Finding the problematic chunk ===
+Files: /app/.next/server/chunks/ssr/_025834ef._.js.map
+/app/.next/server/chunks/ssr/_70e96aca._.js
+/app/.next/server/chunks/ssr/components_admin_widget-editors_index_tsx_64f070f0._.js.map
+/app/.next/server/chunks/ssr/_025834ef._.js
+/app/.next/server/chunks/ssr/components_admin_widget-editors_index_tsx_64f070f0._.js
+
+=== Source page editor ===
+Editor source: import { getPageById, addWidget, deleteWidget } from '@/app/actions/admin'
+import { WidgetEditor, WIDGET_TYPES } from '@/components/admin/widget-editors'
+import { Trash2, GripVertical, ChevronDown, ChevronUp } from 'lucide-react'
+
+=== Step 1: Create widget-types.ts in container ===
+Widget types created: // Widget type metadata - shared between server and client components
+export const WIDGET_TYPES = [
+
+=== Step 2: Patch index.tsx ===
+Current WIDGET_TYPES lines: 97:export const WIDGET_TYPES = [
+
+=== Step 3: Patch editor pages ===
+Editor source after patch: import { getPageById, addWidget, deleteWidget } from '@/app/actions/admin'
+import { WidgetEditor } from '@/components/admin/widget-editors'
+import { WIDGET_TYPES } from '@/components/admin/widget-editors/widget-types'
+import { Trash2, GripVertical, ChevronDown, ChevronUp } from 'lucide-react'
+Index.tsx tail: // Re-export WIDGET_TYPES from shared module
+export { WIDGET_TYPES } from './widget-types'
+
+=== Step 4: Rebuilding Next.js (this will take a while) ===
+Build completed! Last lines: i/cta-bar/click
+Ôö£ ãÆ /api/events
+Ôö£ ãÆ /api/settings/analytics
+Ôö£ Ôùï /robots.txt
+Ôöö Ôùï /sitemap.xml
+
+
+ãÆ Proxy (Middleware)
+
+Ôùï  (Static)   prerendered as static content
+ãÆ  (Dynamic)  server-rendered on demand
+
+=== Step 5: Restarting Next.js ===
+Container status: 3815dea559c9 Up 6 seconds (healthy)

@@ -1,0 +1,58 @@
+npm warn config production Use `--omit=dev` instead.
+
+up to date, audited 485 packages in 2s
+
+163 packages are looking for funding
+  run `npm fund` for details
+
+1 critical severity vulnerability
+
+To address all issues, run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+npm warn config production Use `--omit=dev` instead.
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "blue_dreams_v2", schema "public" at "coolify-db:5432"
+
+The database is already in sync with the Prisma schema.
+
+Running generate... (Use --skip-generate to skip the generators)
+[2K[1A[2K[GRunning generate... - Prisma Client
+[2K[1A[2K[G✔ Generated Prisma Client (v5.22.0) to ./node_modules/@prisma/client in 240ms
+
+npm warn config production Use `--omit=dev` instead.
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+
+✔ Generated Prisma Client (v5.22.0) to ./node_modules/@prisma/client in 293ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Help us improve the Prisma ORM for everyone. Share your feedback in a short 2-min survey: https://pris.ly/orm/survey/release-5-22
+
+npm warn config production Use `--omit=dev` instead.
+🚀 Starting Homepage Content Migration...
+✅ Found page: Ana Sayfa (ee5c8546-0a25-4468-b8fa-bb95d6758f75)
+🗑️  Deleting existing widgets for page ee5c8546-0a25-4468-b8fa-bb95d6758f75...
+🌱 Creating 7 new widgets...
+✨ Migration completed successfully!
+npm warn config production Use `--omit=dev` instead.
+
+> temp_app@0.1.0 build
+> next build
+
+   ▲ Next.js 15.1.0
+   - Environments: .env
+
+   Creating an optimized production build ...
+Failed to compile.
+
+./app/[locale]/admin/reports/page.tsx
+Module not found: Can't resolve './ReportGroupNav'
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+> Build failed because of webpack errors

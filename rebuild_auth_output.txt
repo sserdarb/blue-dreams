@@ -1,0 +1,70 @@
+=== Cleanup ===
+
+=== Step 1: Inject files ===
+Temp: 9171ad64bc973ef8
+  + prisma/schema.prisma
+  + app/actions/auth.ts
+  + app/api/admin/users/route.ts
+  + app/admin/users/page.tsx
+  + app/admin/login/page.tsx
+  + app/admin/layout.tsx
+  + app/api/ai/chat/route.ts
+  + app/api/ai/settings/route.ts
+  + app/admin/ai-training/page.tsx
+  + app/api/analytics/data/route.ts
+  + components/admin/widget-editors/widget-types.ts
+  + components/admin/widget-editors/index.tsx
+  + nixpacks.toml
+  + prisma/seed.js
+  + package.json
+
+AdminUser count: 1
+
+=== Step 2: Commit ===
+Image: sha256:87653819bccad2c1cd45f40
+
+=== Step 3: Install bcryptjs + Build (3-5 min) ===
+Output: 42 lines
+    Try `npm i --save-dev @types/bcryptjs` if it exists or add a new declaration (.d.ts) file containing `declare module 'bcryptjs';`
+  
+  [0m [90m 4 |[39m [36mimport[39m { redirect } [36mfrom[39m [32m'next/navigation'[39m[33m;[39m
+   [90m 5 |[39m [36mimport[39m { prisma } [36mfrom[39m [32m'@/lib/prisma'[39m[33m;[39m
+  [31m[1m>[22m[39m[90m 6 |[39m [36mimport[39m bcrypt [36mfrom[39m [32m'bcryptjs'[39m[33m;[39m
+   [90m   |[39m                    [31m[1m^[22m[39m
+   [90m 7 |[39m
+   [90m 8 |[39m [36mconst[39m [33mCOOKIE_NAME[39m [33m=[39m [32m'admin_session'[39m[33m;[39m
+   [90m 9 |[39m[0m
+  Next.js build worker exited with code: 1 and signal: null
+
+BUILD_ID: crkmhaZgqWjVyJy0v_ilB
+BUILD OK!
+
+=== Step 4: Commit built image ===
+Final: sha256:4c2b4f43dbc5baa011eaae8
+
+=== Step 5: Deploy ===
+Container: fc6a0d992ed4d5c2
+Waiting 40s...
+Status: Restarting (1) 4 seconds ago
+
+Failed:
+Ô£à toplanti-salonu/de ÔÇö 4 widgets
+  Ô£à toplanti-salonu/ru ÔÇö 4 widgets
+  Ô£à bodrum/tr ÔÇö 3 widgets
+  Ô£à bodrum/en ÔÇö 3 widgets
+  Ô£à bodrum/de ÔÇö 3 widgets
+  Ô£à bodrum/ru ÔÇö 3 widgets
+
+­şÄë Seed completed successfully!
+npm warn config production Use `--omit=dev` instead.
+
+> temp_app@0.1.0 start
+> next start
+
+Ôû▓ Next.js 16.1.6
+- Local:         http://localhost:3000
+- Network:       http://172.18.0.16:3000
+
+Ô£ô Starting...
+Error: Could not find a production build in the '.next' directory. Try building your app with 'next build' before starting the production server. https://nextjs.org/docs/messages/production-start-no-build-id
+    at ignore-listed frames

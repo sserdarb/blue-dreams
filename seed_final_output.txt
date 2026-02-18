@@ -1,0 +1,47 @@
+STDOUT:
+Admin user already exists
+Languages seeded
+  ✅ home/tr — 9 widgets
+  ✅ home/en — 9 widgets
+  ✅ home/de — 9 widgets
+  ✅ home/ru — 9 widgets
+  ✅ hakkimizda/tr — 5 widgets
+  ✅ hakkimizda/en — 5 widgets
+  ✅ hakkimizda/de — 5 widgets
+  ✅ hakkimizda/ru — 5 widgets
+  ✅ odalar/tr — 4 widgets
+  ✅ odalar/en — 4 widgets
+  ✅ odalar/de — 4 widgets
+  ✅ odalar/ru — 4 widgets
+  ✅ restoran/tr — 4 widgets
+  ✅ restoran/en — 4 widgets
+  ✅ restoran/de — 4 widgets
+  ✅ restoran/ru — 4 widgets
+  ✅ spa/tr — 6 widgets
+  ✅ spa/en — 6 widgets
+  ✅ spa/de — 6 widgets
+  ✅ spa/ru — 6 widgets
+  ✅ iletisim/tr — 3 widgets
+  ✅ iletisim/en — 3 widgets
+  ✅ iletisim/de — 3 widgets
+  ✅ iletisim/ru — 3 widgets
+  ✅ dugun-davet/tr — 6 widgets
+  ✅ dugun-davet/en — 6 widgets
+  ✅ dugun-davet/de — 6 widgets
+  ✅ dugun-davet/ru — 6 widgets
+  ✅ galeri/tr — 2 widgets
+  ✅ galeri/en — 2 widgets
+  ✅ galeri/de — 2 widgets
+  ✅ galeri/ru — 2 widgets
+  ✅ toplanti-salonu/tr — 4 widgets
+  ✅ toplanti-salonu/en — 4 widgets
+  ✅ toplanti-salonu/de — 4 widgets
+  ✅ toplanti-salonu/ru — 4 widgets
+  ✅ bodrum/tr — 3 widgets
+  ✅ bodrum/en — 3 widgets
+  ✅ bodrum/de — 3 widgets
+  ✅ bodrum/ru — 3 widgets
+Seed completed successfully!
+
+STDERR:
+

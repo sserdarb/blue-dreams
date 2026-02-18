@@ -117,11 +117,11 @@ export default function AnalyticsPage() {
         const colors = colorClasses[color] || colorClasses['cyan']
 
         return (
-            <div className="bg-white/5 border border-white/10 rounded-xl p-6">
+            <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6">
                 <div className="flex justify-between items-start mb-4">
                     <div>
-                        <p className="text-slate-400 text-sm font-medium mb-1">{title}</p>
-                        <h3 className="text-2xl font-bold text-white">{value}</h3>
+                        <p className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1">{title}</p>
+                        <h3 className="text-2xl font-bold text-slate-900 dark:text-white">{value}</h3>
                     </div>
                     <div className={`p-2 rounded-lg ${colors.bg}`}>
                         <Icon className={colors.text} size={24} />
@@ -145,17 +145,17 @@ export default function AnalyticsPage() {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-                        <BarChart3 className="text-cyan-400" />
+                    <h1 className="text-3xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
+                        <BarChart3 className="text-cyan-500 dark:text-cyan-400" />
                         Analytics Dashboard
                     </h1>
-                    <p className="text-slate-400 mt-1">
+                    <p className="text-slate-500 dark:text-slate-400 mt-1">
                         Ziyaretçi istatistikleri ve yapılandırma
                     </p>
                 </div>
 
                 {/* Tab Navigation */}
-                <div className="flex bg-white/5 p-1 rounded-lg self-start">
+                <div className="flex bg-slate-100 dark:bg-white/5 p-1 rounded-lg self-start">
                     {[
                         { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
                         { id: 'realtime', label: 'Real-time', icon: Activity },
@@ -167,7 +167,7 @@ export default function AnalyticsPage() {
                             onClick={() => setActiveTab(tab.id as any)}
                             className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${activeTab === tab.id
                                 ? 'bg-cyan-600 text-white shadow-lg'
-                                : 'text-slate-400 hover:text-white hover:bg-white/10'
+                                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-white/10'
                                 }`}
                         >
                             <tab.icon size={16} />
@@ -202,8 +202,8 @@ export default function AnalyticsPage() {
                     {/* Charts Row */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         {/* Main Traffic Chart */}
-                        <div className="lg:col-span-2 bg-white/5 border border-white/10 rounded-xl p-6">
-                            <h3 className="text-lg font-bold text-white mb-6">Traffic Overview (30 Days)</h3>
+                        <div className="lg:col-span-2 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+                            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">Traffic Overview (30 Days)</h3>
                             <div className="h-[300px] w-full">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <AreaChart data={MOCK_TRAFFIC}>
@@ -216,10 +216,17 @@ export default function AnalyticsPage() {
                                         <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" />
                                         <XAxis dataKey="date" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
                                         <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                                        <Tooltip
-                                            contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#fff' }}
-                                            itemStyle={{ color: '#fff' }}
-                                        />
+                                        <Tooltip content={({ active, payload, label }) => {
+                                            if (active && payload && payload.length) {
+                                                return (
+                                                    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 rounded-xl shadow-lg">
+                                                        <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">{label}</p>
+                                                        <p className="font-bold text-slate-900 dark:text-white">{payload[0].value} users</p>
+                                                    </div>
+                                                )
+                                            }
+                                            return null
+                                        }} />
                                         <Area type="monotone" dataKey="users" stroke="#06b6d4" strokeWidth={2} fillOpacity={1} fill="url(#colorUsers)" />
                                     </AreaChart>
                                 </ResponsiveContainer>
@@ -227,8 +234,8 @@ export default function AnalyticsPage() {
                         </div>
 
                         {/* Channels Chart */}
-                        <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-                            <h3 className="text-lg font-bold text-white mb-6">Acquisition Channels</h3>
+                        <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+                            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">Acquisition Channels</h3>
                             <div className="h-[300px] w-full">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <PieChart>
@@ -245,9 +252,16 @@ export default function AnalyticsPage() {
                                                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                             ))}
                                         </Pie>
-                                        <Tooltip
-                                            contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#fff' }}
-                                        />
+                                        <Tooltip content={({ active, payload }) => {
+                                            if (active && payload && payload.length) {
+                                                return (
+                                                    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 rounded-xl shadow-lg">
+                                                        <p className="font-bold text-slate-900 dark:text-white">{payload[0].name}: {payload[0].value}</p>
+                                                    </div>
+                                                )
+                                            }
+                                            return null
+                                        }} />
                                         <Legend verticalAlign="bottom" height={36} />
                                     </PieChart>
                                 </ResponsiveContainer>
@@ -260,7 +274,7 @@ export default function AnalyticsPage() {
                             <AlertCircle className="text-amber-400 shrink-0 mt-0.5" size={20} />
                             <div>
                                 <h4 className="font-bold text-amber-400">Viewing Mock Data</h4>
-                                <p className="text-sm text-slate-300 mt-1">
+                                <p className="text-sm text-slate-500 dark:text-slate-300 mt-1">
                                     This dashboard is currently showing demonstration data.
                                     To view real data from Google Analytics 4, please configure the
                                     <strong> Settings</strong> tab with your Property ID and Service Account credentials.
@@ -286,7 +300,7 @@ export default function AnalyticsPage() {
                             </div>
                         </div>
 
-                        <div className="bg-white/5 border border-white/10 rounded-xl p-6">
+                        <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6">
                             <RecentVisitors />
                         </div>
                     </div>
@@ -295,12 +309,12 @@ export default function AnalyticsPage() {
 
             {activeTab === 'demographics' && (
                 <div className="space-y-6 animate-fade-in">
-                    <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-                        <h3 className="text-lg font-bold text-white mb-6">Top Countries</h3>
+                    <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">Top Countries</h3>
                         <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse">
                                 <thead>
-                                    <tr className="border-b border-white/10 text-slate-400 text-sm">
+                                    <tr className="border-b border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 text-sm">
                                         <th className="py-3 font-medium">Country</th>
                                         <th className="py-3 font-medium">Users</th>
                                         <th className="py-3 font-medium text-right">% of Total</th>
@@ -308,16 +322,16 @@ export default function AnalyticsPage() {
                                 </thead>
                                 <tbody>
                                     {MOCK_COUNTRIES.map((country, i) => (
-                                        <tr key={i} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                                            <td className="py-3 text-white flex items-center gap-3">
+                                        <tr key={i} className="border-b border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+                                            <td className="py-3 text-slate-900 dark:text-white flex items-center gap-3">
                                                 <Globe size={16} className="text-slate-500" />
                                                 {country.name}
                                             </td>
-                                            <td className="py-3 text-slate-300">{country.users}</td>
+                                            <td className="py-3 text-slate-600 dark:text-slate-300">{country.users}</td>
                                             <td className="py-3 text-right">
                                                 <div className="flex items-center justify-end gap-2">
-                                                    <span className="text-white font-medium">{country.percentage}%</span>
-                                                    <div className="w-16 h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                                                    <span className="text-slate-900 dark:text-white font-medium">{country.percentage}%</span>
+                                                    <div className="w-16 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                                                         <div className="h-full bg-cyan-500" style={{ width: `${country.percentage}%` }}></div>
                                                     </div>
                                                 </div>
@@ -333,20 +347,20 @@ export default function AnalyticsPage() {
 
             {activeTab === 'settings' && (
                 <div className="animate-fade-in max-w-4xl">
-                    <div className="bg-white/5 border border-white/10 rounded-xl p-6 mb-6">
-                        <h3 className="text-lg font-bold text-white mb-4">Configuration</h3>
+                    <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 mb-6">
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Configuration</h3>
 
                         <div className="space-y-6">
                             {/* GA4 ID */}
                             <div>
-                                <label className="block text-slate-400 text-sm mb-2">Google Analytics 4 Measurement ID</label>
+                                <label className="block text-slate-500 dark:text-slate-400 text-sm mb-2">Google Analytics 4 Measurement ID</label>
                                 <div className="relative">
                                     <input
                                         type="text"
                                         placeholder="G-XXXXXXXXXX"
                                         value={settings.gaId}
                                         onChange={(e) => setSettings({ ...settings, gaId: e.target.value })}
-                                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors pl-10"
+                                        className="w-full px-4 py-3 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors pl-10"
                                     />
                                     <BarChart3 className="absolute left-3 top-3.5 text-slate-500" size={18} />
                                 </div>
@@ -356,44 +370,44 @@ export default function AnalyticsPage() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* GTM ID */}
                                 <div>
-                                    <label className="block text-slate-400 text-sm mb-2">Google Tag Manager ID</label>
+                                    <label className="block text-slate-500 dark:text-slate-400 text-sm mb-2">Google Tag Manager ID</label>
                                     <input
                                         type="text"
                                         placeholder="GTM-XXXXXXX"
                                         value={settings.gtmId}
                                         onChange={(e) => setSettings({ ...settings, gtmId: e.target.value })}
-                                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
+                                        className="w-full px-4 py-3 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
                                     />
                                 </div>
                                 {/* FB Pixel */}
                                 <div>
-                                    <label className="block text-slate-400 text-sm mb-2">Facebook Pixel ID</label>
+                                    <label className="block text-slate-500 dark:text-slate-400 text-sm mb-2">Facebook Pixel ID</label>
                                     <input
                                         type="text"
                                         placeholder="Pixel ID"
                                         value={settings.fbPixelId}
                                         onChange={(e) => setSettings({ ...settings, fbPixelId: e.target.value })}
-                                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
+                                        className="w-full px-4 py-3 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
                                     />
                                 </div>
                             </div>
 
                             {/* Google Client ID */}
                             <div>
-                                <label className="block text-slate-400 text-sm mb-2">Google Client ID (OAuth)</label>
+                                <label className="block text-slate-500 dark:text-slate-400 text-sm mb-2">Google Client ID (OAuth)</label>
                                 <input
                                     type="text"
                                     placeholder="817024..."
                                     value={settings.googleClientId || ''}
                                     onChange={(e) => setSettings({ ...settings, googleClientId: e.target.value })}
-                                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
+                                    className="w-full px-4 py-3 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
                                 />
                             </div>
 
-                            <div className="pt-6 border-t border-white/10">
+                            <div className="pt-6 border-t border-slate-200 dark:border-white/10">
                                 <div className="flex items-center justify-between mb-4">
                                     <div>
-                                        <h4 className="text-white font-medium">Advanced Reporting (API)</h4>
+                                        <h4 className="text-slate-900 dark:text-white font-medium">Advanced Reporting (API)</h4>
                                         <p className="text-slate-500 text-sm">Required to show real charts in this dashboard.</p>
                                     </div>
                                     <button
@@ -409,7 +423,7 @@ export default function AnalyticsPage() {
                                 {settings.useGaApi && (
                                     <div className="space-y-4 p-4 bg-black/20 rounded-lg">
                                         <div>
-                                            <label className="block text-slate-400 text-sm mb-2">GA4 Property ID</label>
+                                            <label className="block text-slate-500 dark:text-slate-400 text-sm mb-2">GA4 Property ID</label>
                                             <input
                                                 type="text"
                                                 placeholder="123456789"
@@ -420,7 +434,7 @@ export default function AnalyticsPage() {
                                             <p className="text-slate-500 text-xs mt-1">Numeric Property ID (Not G-ID)</p>
                                         </div>
                                         <div>
-                                            <label className="block text-slate-400 text-sm mb-2">Service Account JSON (Base64)</label>
+                                            <label className="block text-slate-500 dark:text-slate-400 text-sm mb-2">Service Account JSON (Base64)</label>
                                             <textarea
                                                 rows={3}
                                                 placeholder="ewogICJ0eXBlIjogInNlcnZpY2VfYWNjb3VudCIsCiAg..."

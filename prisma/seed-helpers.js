@@ -36,50 +36,70 @@ function homeWidgets(locale) {
     const t = {
         tr: {
             // Hero
-            badge: "Bodrum'un İncisi", h1a: "Ege'nin Mavi", h1b: "Rüyası",
-            sub: "Doğanın kalbinde, lüksün ve huzurun buluştuğu nokta.",
-            sub2: "Evinize, Blue Dreams'e hoş geldiniz.",
+            badge: "Bodrum'un İncisi",
+            h1a: "Her Güzel Rüya",
+            h1b: "Blue Dreams'te Başlar",
+            sub: "Eşsiz doğası, özel sahili, sonsuzluk havuzu ile birlikte 5 havuzu, Ege'nin en güzel gün batımına açılan restoran ve barları ile sizi bekliyor.",
+            sub2: "Bodrum’un en güzel koylarından biri olan Torba Zeytinlikahve’de 55.000 m² alan üzerinde doğa ile iç içe.",
             btn1: "Odaları Keşfet", btn2: "Tanıtım Filmi", scroll: "Keşfet",
             // About statement
-            aboutLabel: "Blue Dreams Deneyimi",
+            aboutLabel: "Otelimizi İnceleyin",
             aboutParts: [
-                { text: "Ege'nin kıyısında " }, { text: "sizin yeriniz", accent: true },
-                { text: ", mevsimlerin ritmiyle hazırlanan " }, { text: "eşsiz lezzetler", accent: true },
-                { text: " ve bizim hikayemizin " }, { text: "sizin hikayenizle", accent: true },
-                { text: " buluştuğu nokta." }
+                { text: "Doğayla " },
+                { text: "iç içe yapısı", accent: true },
+                { text: ", benzersiz manzarası ve gün batımı ile " },
+                { text: "harika deneyimler", accent: true },
+                { text: " yaşamaya davetlisiniz." }
             ],
             // Category cards
             cards: [
-                { title: "ODALAR", subtitle: "Bodrum'un kalbinde tasarım odalar", image: "https://bluedreamsresort.com/wp-content/uploads/2023/03/Deluxe-Room-1.jpg", href: "/odalar" },
-                { title: "RESTORAN & BAR", subtitle: "Gerçek bir gastronomi deneyimi", image: "https://bluedreamsresort.com/wp-content/uploads/2023/03/ITALIAN-ALACART-2.jpg", href: "/restoran" },
-                { title: "AKTİVİTELER", subtitle: "Size özel anlar ve eğlence", image: "https://bluedreamsresort.com/wp-content/uploads/2023/03/WATER-SPORTS-.jpg", href: "/spa" }
+                { title: "CLUB ODALAR", subtitle: "Deniz manzaralı ve doğa ile iç içe", image: "https://bluedreamsresort.com/wp-content/uploads/2023/03/Club-Room-Sea-View-3.jpg", href: "/odalar/club" },
+                { title: "DELUXE ODALAR", subtitle: "Lüks ve konforun buluşma noktası", image: "https://bluedreamsresort.com/wp-content/uploads/2023/03/Deluxe-Room-5.jpg", href: "/odalar/deluxe" },
+                { title: "AİLE SUİTLERİ", subtitle: "Geniş aileler için ideal konaklama", image: "https://bluedreamsresort.com/wp-content/uploads/2023/03/Family-Room-Sea-View-6.jpg", href: "/odalar/aile" }
             ],
-            // Experience blocks
             blocks: [
                 {
-                    label: "Doğa & Konfor", h1: "Doğa ile", h2: "bütünleşin",
-                    text: "Torba'nın çam ormanlarıyla kaplı tepelerinde, Ege'nin turkuaz sularına nazır bir konum. Müstakil girişli odalarımız ve doğal mimarimiz ile kalabalıktan uzak, kendinizle baş başa kalabileceğiniz özel bir yaşam alanı sunuyoruz.",
-                    buttonText: "Odaları Keşfet", buttonUrl: "/odalar",
-                    image: "https://bluedreamsresort.com/wp-content/uploads/2023/03/Club-Room-Sea-View-3.jpg",
-                    bgColor: "sand", buttonColor: "gold", reverse: false
+                    label: "Eşsiz Konum",
+                    h1: "Bodrum'un",
+                    h2: "En Güzel Koyu",
+                    text: "Zeytinlikahve mevkiinde, denize sıfır konumda, 700 metre uzunluğunda özel sahil şeridi. İskeleleri ve özel Cabana alanları ile deniz keyfini ayrıcalıklı yaşayın.",
+                    buttonText: "Konumu İncele",
+                    buttonUrl: "/iletisim",
+                    image: "https://bluedreamsresort.com/wp-content/uploads/2023/03/SANDY-BEACH-1.jpg",
+                    bgColor: "sand",
+                    buttonColor: "gold",
+                    reverse: false
                 },
                 {
-                    label: "Gastronomi", h1: "Taze. Yerel.", h2: "Sürdürülebilir.",
-                    text: "Blue Dreams mutfağında her tabak bir hikaye anlatır. Yerel üreticilerden temin edilen taze Ege otları, günlük deniz ürünleri ve ödüllü şeflerimizin modern yorumlarıyla hazırlanan A la Carte restoranlarımızda gerçek bir lezzet yolculuğuna çıkın.",
-                    buttonText: "Lezzetleri Tat", buttonUrl: "/restoran",
+                    label: "Gastronomi",
+                    h1: "Lezzet",
+                    h2: "Şöleni",
+                    text: "Ana restoranımız ve A'la Carte seçeneklerimiz ile dünya mutfaklarından seçkin lezzetler. Ege'nin taze ürünleri usta şeflerimizin elinde sanata dönüşüyor.",
+                    buttonText: "Restoranlar",
+                    buttonUrl: "/restoran",
                     image: "https://bluedreamsresort.com/wp-content/uploads/2023/03/ITALIAN-ALACART-1.jpg",
                     detailImage: "https://bluedreamsresort.com/wp-content/uploads/2023/03/OPEN-BUFFET-1.jpg",
-                    bgColor: "white", buttonColor: "orange", reverse: true
+                    bgColor: "white",
+                    buttonColor: "orange",
+                    reverse: true
                 },
                 {
-                    label: "İyi Hisset", h1: "Rahatla. Yenilen.", h2: "Keyfini Çıkar.",
-                    text: "Sonsuzluk havuzumuzda gün batımını izlerken veya Spa merkezimizin dingin atmosferinde ruhunuzu dinlendirirken zamanın yavaşladığını hissedeceksiniz. Türk hamamı ritüelleri ve masaj terapileri ile kendinizi şımartın.",
-                    buttonText: "Spa & Wellness", buttonUrl: "/spa",
+                    label: "Aktivite & Eğlence",
+                    h1: "Sınırsız",
+                    h2: "Eğlence",
+                    text: "Sonsuzluk havuzu dahil 5 farklı havuz, su parkı ve gün boyu süren aktiviteler. Geceleri ise canlı müzik ve şovlarla tatilinizin ritmini yükseltin.",
+                    buttonText: "Aktiviteler",
+                    buttonUrl: "/spa", // Using Spa/Activities page
                     image: "https://bluedreamsresort.com/wp-content/uploads/2023/03/INFINITY-POOL-1.jpg",
-                    bgColor: "cream", buttonColor: "brand", reverse: false
+                    bgColor: "cream",
+                    buttonColor: "brand",
+                    reverse: false
                 }
             ],
-            // Local guide
+            // Local guide - keeping as is from previous seed or updating if needed. 
+            // The migration script didn't include Local Guide updates specifically, so relying on existing seed for that part 
+            // BUT the migration script logic was 'homepage widgets', and the seed has 'localGuide'.
+            // I will keep the existing localGuide from the seed helper but simpler to ensure valid JS.
             localGuide: {
                 badge: "AI Concierge Selection",
                 heading: "Keşfet &", headingAccent: "Deneyimle",
@@ -99,17 +119,20 @@ function homeWidgets(locale) {
             },
             // Reviews
             reviewsData: {
-                label: "Misafir Yorumları",
-                heading: "Sizden Gelen", headingAccent: "Güzel Sözler",
-                description: "Gerçek deneyimler ve dürüst kelimeler. Misafirlerimizin Blue Dreams Resort'taki konaklamalarını nasıl deneyimlediklerini keşfedin.",
-                bookingScore: "9.4", bookingLabel: "Booking.com Puanı",
-                buttonText: "Tüm Yorumları Oku", buttonUrl: "https://www.google.com/maps",
+                label: "Değerlendirmeler",
+                heading: "Misafirlerimiz",
+                headingAccent: "Neler Dedi?",
+                description: "Size en iyi hizmeti verebilmek için sürekli kendimizi geliştiriyoruz. Misafirlerimizin deneyimleri bizim için en değerli rehber.",
+                bookingScore: "9.5",
+                bookingLabel: "Misafir Puanı",
+                buttonText: "Tüm Yorumları Oku",
+                buttonUrl: "https://www.google.com/maps/place/Blue+Dreams+Resort",
                 reviews: [
-                    { author: "Ayşe Yılmaz", text: "Balayımız için tercih ettik ve her anından keyif aldık. Özellikle sonsuzluk havuzundaki gün batımı manzarası büyüleyiciydi. Personel çok ilgili ve güleryüzlü.", rating: 5 },
-                    { author: "Caner Erkin", text: "Torba'daki en iyi konum. Özel plajı tertemiz ve deniz kristal berraklığında. Ana restorandaki yemek çeşitliliği etkileyiciydi, kesinlikle tavsiye ederim.", rating: 5 },
-                    { author: "Selin Demir", text: "Ailemle harika bir hafta geçirdik. Çocuklar için aktiviteler yeterliydi, biz de spa merkezinde dinlenme fırsatı bulduk. Kesinlikle tekrar geleceğiz.", rating: 5 }
+                    { author: "Mehmet Y.", text: "Doğayla iç içe, harika bir tatil deneyimiydi. Personel çok ilgili, yemekler lezzetli.", rating: 5 },
+                    { author: "Elena S.", text: "Manzara tek kelimeyle büyüleyici. Sonsuzluk havuzunda gün batımını izlemek paha biçilemez.", rating: 5 },
+                    { author: "Ahmet K.", text: "Ailece çok rahat ettik. Çocuklar için aktiviteler çok iyiydi. Kesinlikle tekrar geleceğiz.", rating: 5 }
                 ],
-                sourceLabel: "Google Yorumu"
+                sourceLabel: "Google & Tripadvisor"
             },
             // Sustainability
             sustainability: {
@@ -122,8 +145,8 @@ function homeWidgets(locale) {
             locationMap: {
                 lat: 37.091832, lng: 27.4824998, zoom: 17,
                 label: "Konum", title: "Blue Dreams Resort",
-                description: "Ege'nin en güzel koylarından biri olan Torba Zeytinli Kahve Mevkii'nde, denize sıfır konumda sizleri bekliyoruz.",
-                address: "Torba Mahallesi, Herodot Bulvarı No:11\nBodrum / MUĞLA",
+                description: "Torba Mahallesi, Herodot Bulvarı No:11 Bodrum / MUĞLA",
+                address: "Bodrum merkezine 10km, Havalimanına 25km mesafede.",
                 directionsText: "Yol Tarifi Al"
             },
             // CTA

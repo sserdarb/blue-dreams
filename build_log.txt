@@ -1,0 +1,506 @@
+npm warn config production Use `--omit=dev` instead.
+
+up to date, audited 485 packages in 3s
+
+163 packages are looking for funding
+  run `npm fund` for details
+
+1 critical severity vulnerability
+
+To address all issues, run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+npm warn config production Use `--omit=dev` instead.
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "blue_dreams_v2", schema "public" at "coolify-db:5432"
+
+The database is already in sync with the Prisma schema.
+
+Running generate... (Use --skip-generate to skip the generators)
+[2K[1A[2K[GRunning generate... - Prisma Client
+[2K[1A[2K[G✔ Generated Prisma Client (v5.22.0) to ./node_modules/@prisma/client in 258ms
+
+npm warn config production Use `--omit=dev` instead.
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+
+✔ Generated Prisma Client (v5.22.0) to ./node_modules/@prisma/client in 403ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Interested in query caching in just a few lines of code? Try Accelerate today! https://pris.ly/tip-3-accelerate
+
+npm warn config production Use `--omit=dev` instead.
+🚀 Starting Homepage Content Migration...
+✅ Found page: Ana Sayfa (ee5c8546-0a25-4468-b8fa-bb95d6758f75)
+🗑️  Deleting existing widgets for page ee5c8546-0a25-4468-b8fa-bb95d6758f75...
+🌱 Creating 7 new widgets...
+✨ Migration completed successfully!
+npm warn config production Use `--omit=dev` instead.
+
+> temp_app@0.1.0 build
+> next build
+
+   ▲ Next.js 15.1.0
+   - Environments: .env
+
+   Creating an optimized production build ...
+Found 1 warning while optimizing generated CSS:
+
+[2m│     -webkit-overflow-scrolling: touch;[22m
+[2m│   }[22m
+[2m│[22m   .grid-cols-1.md\\:grid-cols-4 {
+[2m┆[22m                     [33m[2m^--[22m 'grid-cols-4' is not recognized as a valid pseudo-class. Did you mean '::grid-cols-4' (pseudo-element) or is this a typo?[39m
+[2m┆[22m
+[2m│     gap: 0.75rem;[22m
+[2m│   }[22m
+
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+
+./app/[locale]/(public)/menu/[id]/page.tsx
+4:27  Warning: 'Wine' is defined but never used.  @typescript-eslint/no-unused-vars
+4:51  Warning: 'ChevronDown' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/accounting/AccountingClient.tsx
+5:26  Warning: 'TrendingDown' is defined but never used.  @typescript-eslint/no-unused-vars
+7:52  Warning: 'ArrowDownRight' is defined but never used.  @typescript-eslint/no-unused-vars
+8:12  Warning: 'Filter' is defined but never used.  @typescript-eslint/no-unused-vars
+68:25  Warning: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+69:27  Warning: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+77:26  Warning: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+78:30  Warning: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+93:26  Warning: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+106:27  Warning: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+119:29  Warning: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+
+./app/[locale]/admin/ai/page.tsx
+11:12  Warning: 'loading' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+33:8  Warning: React Hook useEffect has a missing dependency: 'fetchSettings'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+71:18  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/ai-training/page.tsx
+37:11  Warning: 'locale' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/analytics/page.tsx
+5:22  Warning: 'Check' is defined but never used.  @typescript-eslint/no-unused-vars
+5:42  Warning: 'ExternalLink' is defined but never used.  @typescript-eslint/no-unused-vars
+6:5  Warning: 'Eye' is defined but never used.  @typescript-eslint/no-unused-vars
+6:10  Warning: 'EyeOff' is defined but never used.  @typescript-eslint/no-unused-vars
+6:43  Warning: 'Key' is defined but never used.  @typescript-eslint/no-unused-vars
+8:5  Warning: 'Map' is defined but never used.  @typescript-eslint/no-unused-vars
+11:5  Warning: 'LineChart' is defined but never used.  @typescript-eslint/no-unused-vars
+11:16  Warning: 'Line' is defined but never used.  @typescript-eslint/no-unused-vars
+11:39  Warning: 'BarChart' is defined but never used.  @typescript-eslint/no-unused-vars
+11:49  Warning: 'Bar' is defined but never used.  @typescript-eslint/no-unused-vars
+64:12  Warning: 'error' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+77:22  Warning: 'err' is defined but never used.  @typescript-eslint/no-unused-vars
+101:18  Warning: 'err' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/bigdata/BigDataClient.tsx
+8:7  Warning: 'fmtK' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+23:54  Warning: 'locale' is defined but never used.  @typescript-eslint/no-unused-vars
+26:11  Warning: The 'reservations' logical expression could make the dependencies of useMemo Hook (at line 99) change on every render. To fix this, wrap the initialization of 'reservations' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+27:11  Warning: The 'prevReservations' logical expression could make the dependencies of useMemo Hook (at line 99) change on every render. Move it inside the useMemo callback. Alternatively, wrap the initialization of 'prevReservations' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+28:11  Warning: The 'occupancy' logical expression could make the dependencies of useMemo Hook (at line 99) change on every render. Move it inside the useMemo callback. Alternatively, wrap the initialization of 'occupancy' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+406:37  Warning: 'a' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/bigdata/page.tsx
+1:10  Warning: 'BigDataService' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/content/dining/page.tsx
+4:23  Warning: 'Trash2' is defined but never used.  @typescript-eslint/no-unused-vars
+4:40  Warning: 'Search' is defined but never used.  @typescript-eslint/no-unused-vars
+4:72  Warning: 'Star' is defined but never used.  @typescript-eslint/no-unused-vars
+4:87  Warning: 'ImageIcon' is defined but never used.  @typescript-eslint/no-unused-vars
+4:98  Warning: 'Layout' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/content/meeting/page.tsx
+4:23  Warning: 'Trash2' is defined but never used.  @typescript-eslint/no-unused-vars
+4:48  Warning: 'AlertCircle' is defined but never used.  @typescript-eslint/no-unused-vars
+4:61  Warning: 'Users' is defined but never used.  @typescript-eslint/no-unused-vars
+4:68  Warning: 'FileText' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/content/rooms/page.tsx
+4:40  Warning: 'Search' is defined but never used.  @typescript-eslint/no-unused-vars
+4:48  Warning: 'AlertCircle' is defined but never used.  @typescript-eslint/no-unused-vars
+47:8  Warning: React Hook useEffect has a missing dependency: 'fetchRooms'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+72:18  Warning: 'e' is defined but never used.  @typescript-eslint/no-unused-vars
+208:62  Warning: 'e' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/crm/ReviewsClient.tsx
+7:10  Warning: 'Input' is defined but never used.  @typescript-eslint/no-unused-vars
+57:90  Warning: 'initialMetrics' is defined but never used.  @typescript-eslint/no-unused-vars
+91:23  Warning: 'min' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/crm/page.tsx
+11:11  Warning: 't' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/extras/ExtrasClient.tsx
+5:52  Warning: 'Calendar' is defined but never used.  @typescript-eslint/no-unused-vars
+6:5  Warning: 'DollarSign' is defined but never used.  @typescript-eslint/no-unused-vars
+6:28  Warning: 'Download' is defined but never used.  @typescript-eslint/no-unused-vars
+23:11  Warning: 'RATES' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+41:9  Warning: React Hook useMemo has a missing dependency: 'calcTotal'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/[locale]/admin/extras/page.tsx
+1:37  Warning: 'AdminLocale' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/files/FileManager.tsx
+9:13  Warning: 'MoreVertical' is defined but never used.  @typescript-eslint/no-unused-vars
+9:27  Warning: 'X' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/integrations/booking/page.tsx
+4:52  Warning: 'Globe' is defined but never used.  @typescript-eslint/no-unused-vars
+4:69  Warning: 'Users' is defined but never used.  @typescript-eslint/no-unused-vars
+4:76  Warning: 'CreditCard' is defined but never used.  @typescript-eslint/no-unused-vars
+47:11  Warning: 'locale' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/integrations/restaurants/page.tsx
+3:27  Warning: 'useRef' is defined but never used.  @typescript-eslint/no-unused-vars
+4:71  Warning: 'Wine' is defined but never used.  @typescript-eslint/no-unused-vars
+4:128  Warning: 'ImageIcon' is defined but never used.  @typescript-eslint/no-unused-vars
+4:147  Warning: 'Printer' is defined but never used.  @typescript-eslint/no-unused-vars
+4:171  Warning: 'ExternalLink' is defined but never used.  @typescript-eslint/no-unused-vars
+106:12  Warning: 'showQrPanel' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+106:25  Warning: 'setShowQrPanel' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/marketing/MarketingClient.tsx
+15:24  Warning: 'ArrowDownRight' is defined but never used.  @typescript-eslint/no-unused-vars
+15:60  Warning: 'MousePointer' is defined but never used.  @typescript-eslint/no-unused-vars
+15:74  Warning: 'Eye' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/marketing/page.tsx
+5:5  Warning: 'params' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/pages/[id]/editor/page.tsx
+2:24  Warning: 'getWidgetIcon' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/purchasing/PurchasingClient.tsx
+5:26  Warning: 'TrendingDown' is defined but never used.  @typescript-eslint/no-unused-vars
+5:55  Warning: 'CheckCircle' is defined but never used.  @typescript-eslint/no-unused-vars
+11:22  Warning: 'BarChart' is defined but never used.  @typescript-eslint/no-unused-vars
+11:32  Warning: 'Bar' is defined but never used.  @typescript-eslint/no-unused-vars
+12:26  Warning: 'RadialBarChart' is defined but never used.  @typescript-eslint/no-unused-vars
+12:42  Warning: 'RadialBar' is defined but never used.  @typescript-eslint/no-unused-vars
+12:53  Warning: 'Legend' is defined but never used.  @typescript-eslint/no-unused-vars
+81:28  Warning: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+100:31  Warning: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+106:30  Warning: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+392:62  Warning: 'i' is defined but never used.  @typescript-eslint/no-unused-vars
+474:68  Warning: 'i' is defined but never used.  @typescript-eslint/no-unused-vars
+629:133  Warning: 'i' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/reports/ManagementReportsClient.tsx
+5:30  Warning: 'Calendar' is defined but never used.  @typescript-eslint/no-unused-vars
+5:77  Warning: 'Printer' is defined but never used.  @typescript-eslint/no-unused-vars
+323:27  Warning: 'daysInM' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/reports/page.tsx
+11:11  Warning: 't' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/reservations/ReservationsClient.tsx
+5:34  Warning: 'useSearchParams' is defined but never used.  @typescript-eslint/no-unused-vars
+166:11  Warning: 'convert' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+184:9  Warning: React Hook useMemo has a missing dependency: 'getAmount'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+195:8  Warning: React Hook useMemo has a missing dependency: 'getAmount'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+237:8  Warning: React Hook useMemo has a missing dependency: 'getAmount'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+290:8  Warning: React Hook useMemo has a missing dependency: 'getAmount'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/[locale]/admin/rooms/RoomsClient.tsx
+4:57  Warning: 'ArrowUpDown' is defined but never used.  @typescript-eslint/no-unused-vars
+4:75  Warning: 'Check' is defined but never used.  @typescript-eslint/no-unused-vars
+48:7  Warning: 'AGENCY_CHANNELS' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/social/content/page.tsx
+6:59  Warning: 'Send' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/social/page.tsx
+4:57  Warning: 'TrendingUp' is defined but never used.  @typescript-eslint/no-unused-vars
+4:69  Warning: 'TrendingDown' is defined but never used.  @typescript-eslint/no-unused-vars
+4:112  Warning: 'Eye' is defined but never used.  @typescript-eslint/no-unused-vars
+4:117  Warning: 'ExternalLink' is defined but never used.  @typescript-eslint/no-unused-vars
+4:167  Warning: 'ArrowUp' is defined but never used.  @typescript-eslint/no-unused-vars
+4:176  Warning: 'ArrowDown' is defined but never used.  @typescript-eslint/no-unused-vars
+4:187  Warning: 'Minus' is defined but never used.  @typescript-eslint/no-unused-vars
+5:10  Warning: 'BarChart' is defined but never used.  @typescript-eslint/no-unused-vars
+5:20  Warning: 'Bar' is defined but never used.  @typescript-eslint/no-unused-vars
+5:101  Warning: 'Legend' is defined but never used.  @typescript-eslint/no-unused-vars
+5:126  Warning: 'PieChart' is defined but never used.  @typescript-eslint/no-unused-vars
+5:136  Warning: 'Pie' is defined but never used.  @typescript-eslint/no-unused-vars
+5:141  Warning: 'Cell' is defined but never used.  @typescript-eslint/no-unused-vars
+83:12  Warning: 'chartType' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+83:23  Warning: 'setChartType' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/statistics/ReportsClient.tsx
+8:29  Warning: 'Building2' is defined but never used.  @typescript-eslint/no-unused-vars
+8:40  Warning: 'Users' is defined but never used.  @typescript-eslint/no-unused-vars
+8:47  Warning: 'Download' is defined but never used.  @typescript-eslint/no-unused-vars
+8:57  Warning: 'BarChart3' is defined but never used.  @typescript-eslint/no-unused-vars
+8:68  Warning: 'PieChart' is defined but never used.  @typescript-eslint/no-unused-vars
+9:15  Warning: 'Target' is defined but never used.  @typescript-eslint/no-unused-vars
+9:70  Warning: 'ChevronUp' is defined but never used.  @typescript-eslint/no-unused-vars
+10:5  Warning: 'Settings2' is defined but never used.  @typescript-eslint/no-unused-vars
+10:64  Warning: 'Minimize2' is defined but never used.  @typescript-eslint/no-unused-vars
+11:16  Warning: 'Hotel' is defined but never used.  @typescript-eslint/no-unused-vars
+11:29  Warning: 'Clock' is defined but never used.  @typescript-eslint/no-unused-vars
+11:47  Warning: 'Phone' is defined but never used.  @typescript-eslint/no-unused-vars
+11:54  Warning: 'UserCheck' is defined but never used.  @typescript-eslint/no-unused-vars
+11:65  Warning: 'LineChart' is defined but never used.  @typescript-eslint/no-unused-vars
+552:15  Warning: 'allDates' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+565:15  Warning: 'chartData' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+577:15  Warning: 'maxVal' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+604:31  Warning: 'compTotal' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+830:29  Warning: 'data' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/statistics/page.tsx
+5:16  Warning: 'getCachedReservations' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/yield/YieldManagementClient.tsx
+5:20  Warning: 'LineChart' is defined but never used.  @typescript-eslint/no-unused-vars
+11:20  Warning: 'Clock' is defined but never used.  @typescript-eslint/no-unused-vars
+92:73  Warning: 'allReservations' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/layout.tsx
+3:3  Warning: 'params' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/admin/analytics/page.tsx
+31:22  Warning: 'err' is defined but never used.  @typescript-eslint/no-unused-vars
+54:18  Warning: 'err' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/admin/files/FileManager.tsx
+50:11  Warning: 'fullUrl' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./app/admin/pages/[id]/editor/page.tsx
+2:24  Warning: 'getWidgetIcon' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/admin/pages/page.tsx
+8:9  Warning: 'locale' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./app/admin/reservations/page.tsx
+4:85  Warning: 'MoreVertical' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/admin/statistics/page.tsx
+1:51  Warning: 'ArrowUpRight' is defined but never used.  @typescript-eslint/no-unused-vars
+1:65  Warning: 'ArrowDownRight' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/admin/users/page.tsx
+48:18  Warning: 'err' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/api/ai/chat/route.ts
+215:13  Warning: 'finalResponse' is never reassigned. Use 'const' instead.  prefer-const
+
+./app/api/ai/settings/route.ts
+15:13  Warning: 'settings' is never reassigned. Use 'const' instead.  prefer-const
+31:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/api/ai/sheets/route.ts
+36:18  Warning: 'e' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/api/content/rooms/route.ts
+14:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+61:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/AiAssistant.tsx
+2:219  Warning: 'Ruler' is defined but never used.  @typescript-eslint/no-unused-vars
+131:53  Warning: 'adults' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/Experience.tsx
+2:10  Warning: 'ArrowRight' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/Gallery.tsx
+71:6  Warning: React Hook useEffect has a missing dependency: 'allImages'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/Navbar.tsx
+17:42  Warning: 'locale' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./components/admin/DraggableWidgetList.tsx
+3:20  Warning: 'useRef' is defined but never used.  @typescript-eslint/no-unused-vars
+3:28  Warning: 'useCallback' is defined but never used.  @typescript-eslint/no-unused-vars
+19:5  Warning: 'pageId' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/admin/MenuManager.tsx
+5:24  Warning: 'GripVertical' is defined but never used.  @typescript-eslint/no-unused-vars
+5:52  Warning: 'Save' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/admin/SiteSettingsForm.tsx
+54:18  Warning: 'e' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/admin/WidgetJsonEditor.tsx
+27:14  Warning: 'e' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/admin/widget-editors/FeaturesEditor.tsx
+75:18  Warning: 'e' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/admin/widget-editors/TextEditor.tsx
+35:18  Warning: 'e' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/chat/AiAssistant.tsx
+4:74  Warning: 'MapPin' is defined but never used.  @typescript-eslint/no-unused-vars
+4:82  Warning: 'Download' is defined but never used.  @typescript-eslint/no-unused-vars
+4:144  Warning: 'Plane' is defined but never used.  @typescript-eslint/no-unused-vars
+4:151  Warning: 'Car' is defined but never used.  @typescript-eslint/no-unused-vars
+4:156  Warning: 'Map' is defined but never used.  @typescript-eslint/no-unused-vars
+4:161  Warning: 'Check' is defined but never used.  @typescript-eslint/no-unused-vars
+4:168  Warning: 'Maximize' is defined but never used.  @typescript-eslint/no-unused-vars
+5:10  Warning: 'jsPDF' is defined but never used.  @typescript-eslint/no-unused-vars
+125:58  Warning: 'e' is defined but never used.  @typescript-eslint/no-unused-vars
+322:18  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+345:17  Warning: img elements must have an alt prop, either with meaningful text, or an empty string for decorative images.  jsx-a11y/alt-text
+392:41  Warning: img elements must have an alt prop, either with meaningful text, or an empty string for decorative images.  jsx-a11y/alt-text
+
+./components/chat/BlueConciergeFull.tsx
+4:105  Warning: 'Download' is defined but never used.  @typescript-eslint/no-unused-vars
+4:252  Warning: 'UtensilsCrossed' is defined but never used.  @typescript-eslint/no-unused-vars
+372:37  Warning: 'locale' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+438:38  Warning: 'locale' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+853:8  Warning: React Hook useCallback has a missing dependency: 'handleSend'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/sections/Footer.tsx
+3:31  Warning: 'Twitter' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/sections/Navbar.tsx
+4:66  Warning: 'Search' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/widgets/GalleryWidget.tsx
+24:11  Warning: The 'images' logical expression could make the dependencies of useMemo Hook (at line 33) change on every render. To fix this, wrap the initialization of 'images' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+
+./lib/constants.ts
+1:10  Warning: 'Wifi' is defined but never used.  @typescript-eslint/no-unused-vars
+1:16  Warning: 'Utensils' is defined but never used.  @typescript-eslint/no-unused-vars
+1:26  Warning: 'Droplets' is defined but never used.  @typescript-eslint/no-unused-vars
+1:36  Warning: 'Sun' is defined but never used.  @typescript-eslint/no-unused-vars
+1:41  Warning: 'Activity' is defined but never used.  @typescript-eslint/no-unused-vars
+1:51  Warning: 'Waves' is defined but never used.  @typescript-eslint/no-unused-vars
+1:58  Warning: 'Wine' is defined but never used.  @typescript-eslint/no-unused-vars
+1:64  Warning: 'Bike' is defined but never used.  @typescript-eslint/no-unused-vars
+1:70  Warning: 'Dog' is defined but never used.  @typescript-eslint/no-unused-vars
+1:75  Warning: 'ShoppingBag' is defined but never used.  @typescript-eslint/no-unused-vars
+1:88  Warning: 'Speaker' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./lib/services/elektra-cache.ts
+187:18  Warning: 'e' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./lib/services/elektra.ts
+853:28  Warning: 'startDate' is defined but never used.  @typescript-eslint/no-unused-vars
+853:45  Warning: 'endDate' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./lib/services/marketing.ts
+25:24  Warning: 'startDate' is defined but never used.  @typescript-eslint/no-unused-vars
+25:41  Warning: 'endDate' is defined but never used.  @typescript-eslint/no-unused-vars
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+   Collecting page data ...
+   Generating static pages (0/42) ...
+   Generating static pages (10/42) 
+   Generating static pages (20/42) 
+   Generating static pages (31/42) 
+ ✓ Generating static pages (42/42)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                   Size     First Load JS
+┌ ○ /                                         224 B           106 kB
+├ ○ /_not-found                               990 B           107 kB
+├ ƒ /[locale]                                 1.13 kB         131 kB
+├ ƒ /[locale]/[...slug]                       212 B           130 kB
+├ ƒ /[locale]/admin                           3.97 kB         230 kB
+├ ƒ /[locale]/admin/accounting                9.3 kB          242 kB
+├ ƒ /[locale]/admin/activities                4.64 kB         111 kB
+├ ƒ /[locale]/admin/ai                        3.04 kB         109 kB
+├ ƒ /[locale]/admin/ai-training               6.58 kB         113 kB
+├ ƒ /[locale]/admin/analytics                 16.8 kB         239 kB
+├ ƒ /[locale]/admin/bigdata                   17 kB           256 kB
+├ ƒ /[locale]/admin/chat                      971 B           107 kB
+├ ƒ /[locale]/admin/content/dining            4.5 kB          110 kB
+├ ƒ /[locale]/admin/content/meeting           4.83 kB         111 kB
+├ ƒ /[locale]/admin/content/rooms             3.82 kB         110 kB
+├ ƒ /[locale]/admin/crm                       8.64 kB         299 kB
+├ ƒ /[locale]/admin/extras                    3.49 kB         217 kB
+├ ƒ /[locale]/admin/files                     5.87 kB         118 kB
+├ ƒ /[locale]/admin/integrations/booking      5.29 kB         111 kB
+├ ƒ /[locale]/admin/integrations/restaurants  6.47 kB         112 kB
+├ ƒ /[locale]/admin/login                     1.38 kB         107 kB
+├ ƒ /[locale]/admin/marketing                 3.47 kB         294 kB
+├ ƒ /[locale]/admin/menu                      136 B           109 kB
+├ ƒ /[locale]/admin/pages                     184 B           110 kB
+├ ƒ /[locale]/admin/pages/[id]/editor         137 B           118 kB
+├ ƒ /[locale]/admin/pages/new                 224 B           106 kB
+├ ƒ /[locale]/admin/purchasing                8.36 kB         231 kB
+├ ƒ /[locale]/admin/reports                   15.4 kB         248 kB
+├ ƒ /[locale]/admin/reservations              9.7 kB          407 kB
+├ ƒ /[locale]/admin/rooms                     6.61 kB         287 kB
+├ ƒ /[locale]/admin/settings                  137 B           109 kB
+├ ƒ /[locale]/admin/social                    6.12 kB         227 kB
+├ ƒ /[locale]/admin/social/content            7.17 kB         113 kB
+├ ƒ /[locale]/admin/statistics                10.9 kB         303 kB
+├ ƒ /[locale]/admin/users                     4.87 kB         111 kB
+├ ƒ /[locale]/admin/yield                     7.59 kB         424 kB
+├ ƒ /[locale]/bodrum                          212 B           130 kB
+├ ƒ /[locale]/dugun-davet                     212 B           130 kB
+├ ƒ /[locale]/galeri                          212 B           130 kB
+├ ƒ /[locale]/hakkimizda                      212 B           130 kB
+├ ƒ /[locale]/iletisim                        212 B           130 kB
+├ ƒ /[locale]/kvkk                            224 B           106 kB
+├ ƒ /[locale]/menu/[id]                       3.94 kB         110 kB
+├ ƒ /[locale]/odalar                          197 B           130 kB
+├ ƒ /[locale]/odalar/aile                     137 B           109 kB
+├ ƒ /[locale]/odalar/club                     138 B           109 kB
+├ ƒ /[locale]/odalar/deluxe                   137 B           109 kB
+├ ƒ /[locale]/restoran                        212 B           130 kB
+├ ƒ /[locale]/spa                             212 B           130 kB
+├ ƒ /[locale]/surdurulebilirlik               224 B           106 kB
+├ ƒ /[locale]/toplanti-salonu                 212 B           130 kB
+├ ○ /admin                                    184 B           110 kB
+├ ○ /admin/ai-training                        6.36 kB         112 kB
+├ ○ /admin/analytics                          3.21 kB         109 kB
+├ ○ /admin/chat                               971 B           107 kB
+├ ○ /admin/cta-bar                            4.03 kB         110 kB
+├ ƒ /admin/files                              2.12 kB         114 kB
+├ ○ /admin/login                              1.18 kB         107 kB
+├ ○ /admin/menu                               137 B           109 kB
+├ ○ /admin/pages                              184 B           110 kB
+├ ƒ /admin/pages/[id]/editor                  137 B           118 kB
+├ ○ /admin/pages/new                          224 B           106 kB
+├ ○ /admin/reservations                       3.68 kB         110 kB
+├ ○ /admin/settings                           137 B           109 kB
+├ ○ /admin/statistics                         224 B           106 kB
+├ ○ /admin/users                              5 kB            111 kB
+├ ƒ /api/admin/ai-interpret                   224 B           106 kB
+├ ƒ /api/admin/availability                   224 B           106 kB
+├ ƒ /api/admin/booking-test                   224 B           106 kB
+├ ƒ /api/admin/cache-reports                  224 B           106 kB
+├ ƒ /api/admin/cta-bar                        224 B           106 kB
+├ ƒ /api/admin/elektra-cache                  224 B           106 kB
+├ ƒ /api/admin/reservations                   224 B           106 kB
+├ ƒ /api/admin/social-content                 224 B           106 kB
+├ ƒ /api/admin/users                          224 B           106 kB
+├ ƒ /api/admin/yield-analysis                 224 B           106 kB
+├ ƒ /api/ai/chat                              224 B           106 kB
+├ ƒ /api/ai/settings                          224 B           106 kB
+├ ƒ /api/ai/sheets                            224 B           106 kB
+├ ƒ /api/ai/training                          224 B           106 kB
+├ ƒ /api/analytics/data                       224 B           106 kB
+├ ƒ /api/analytics/track                      224 B           106 kB
+├ ƒ /api/content/rooms                        224 B           106 kB
+├ ƒ /api/cta-bar                              224 B           106 kB
+├ ƒ /api/cta-bar/click                        224 B           106 kB
+├ ƒ /api/events                               224 B           106 kB
+├ ƒ /api/rooms/pricing                        224 B           106 kB
+├ ƒ /api/settings/analytics                   224 B           106 kB
+├ ○ /robots.txt                               0 B                0 B
+└ ○ /sitemap.xml                              0 B                0 B
++ First Load JS shared by all                 106 kB
+  ├ chunks/1517-2de974b68ff9876c.js           50.7 kB
+  ├ chunks/4bd1b696-b3bdf1ba968661bf.js       53 kB
+  └ other shared chunks (total)               2.29 kB
+
+
+ƒ Middleware                                  32.6 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+BUILD_COMPLETE_MARKER

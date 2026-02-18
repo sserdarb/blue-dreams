@@ -12,7 +12,7 @@ interface PageHeaderData {
 
 export function PageHeaderWidget({ data }: { data: PageHeaderData }) {
     return (
-        <div className="relative h-[40vh] min-h-[300px] flex items-center justify-center overflow-hidden">
+        <div className="relative h-[60vh] min-h-[500px] flex items-center justify-center overflow-hidden">
             <div className="absolute inset-0">
                 <img src={data.backgroundImage} alt={data.title} className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-black/50" />

@@ -1,0 +1,37 @@
+Connecting to 76.13.0.113...
+Container: 3815dea559c9
+Write seed.js - out: , err: 
+Seed.js head: const { PrismaClient } = require('@prisma/client');
+const { seedPage, homeWidgets } = require('./seed-helpers');
+const { aboutWidgets, roomsWidgets, restaurantWidgets, spaWidgets, contactWidgets, weddingWidgets, galleryWidgets, meetingWidgets, bodrumWidgets } = require('./seed-pages');
+
+=== Running seed with node ===
+Output:
+PrismaClientInitializationError: 
+Invalid `prisma.adminUser.findUnique()` invocation:
+
+
+error: Error validating datasource `db`: the URL must start with the protocol `postgresql://` or `postgres://`.
+  -->  schema.prisma:7
+   | 
+ 6 |   provider = "postgresql"
+ 7 |   url      = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+    at $n.handleRequestError (/app/node_modules/@prisma/client/runtime/library.js:121:7615)
+    at $n.handleAndLogRequestError (/app/node_modules/@prisma/client/runtime/library.js:121:6623)
+    at $n.request (/app/node_modules/@prisma/client/runtime/library.js:121:6307)
+    at async l (/app/node_modules/@prisma/client/runtime/library.js:130:9633)
+    at async main (/app/prisma/seed.js:10:27) {
+  clientVersion: '5.22.0',
+  errorCode: undefined
+}
+
+=== Results ===
+Page count: 0
+Widget count: 0
+Admin count: 0
+Language count: 4
+Pages:
+

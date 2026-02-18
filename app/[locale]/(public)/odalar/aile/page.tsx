@@ -2,6 +2,7 @@ import PageHeader from '@/components/shared/PageHeader'
 import AmenityGrid from '@/components/shared/AmenityGrid'
 import { ROOM_TYPES } from '@/lib/content'
 import { Maximize, Users, Mountain } from 'lucide-react'
+import LivePricing from '@/components/shared/LivePricing'
 
 export default function FamilyRoomsPage() {
     const room = ROOM_TYPES.find(r => r.id === 'aile')!
@@ -52,6 +53,9 @@ export default function FamilyRoomsPage() {
                                     <span className="block font-bold text-gray-900 text-xs">{room.view}</span>
                                 </div>
                             </div>
+
+                            {/* Live Pricing */}
+                            <LivePricing roomFilter="aile" />
 
                             {/* CTA */}
                             <a

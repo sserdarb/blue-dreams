@@ -1,0 +1,7 @@
+=== Getting app info ===
+App info: 
+Traceback (most recent call last):
+  File "C:\Users\sserd\OneDrive\Belgeler\Antigravity\blue-dreams-fix\coolify_deploy3.py", line 21, in <module>
+    server_id = parts[1]
+                ~~~~~^^^
+IndexError: list index out of range

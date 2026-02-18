@@ -1,0 +1,64 @@
+Connecting...
+Connected!
+
+============================================================
+TEST 1: ERP Login with Action field
+============================================================
+
+  [Action+hotel-id+usercode+password]
+  HTTP 200: {"Success":false,"LoginToken":null,"Code":"0"}
+
+  [Action+HotelCode+UserCode+Password]
+  HTTP 200: {"Success":false,"LoginToken":null,"Code":"0"}
+
+  [Action+HotelId+UserCode+Password]
+  HTTP 200: {"Success":false,"LoginToken":null,"Code":"0"}
+
+  [Action+all variants]
+  HTTP 200: {"Success":false,"LoginToken":null,"Message":"Your IP has been banned for 2 seconds, please try again later","Code":"100"}
+
+============================================================
+TEST 2: Echo (verify API responds)
+============================================================
+  HTTP 200: {}
+
+============================================================
+TEST 3: GetIp
+============================================================
+  HTTP 400: {"MESSAGE":"Invalid Ip Address"}
+
+============================================================
+TEST 4: SchemaList (no auth)
+============================================================
+  HTTP 403: "You do not have permission to SchemaList on {{undefined}}."
+
+NO ERP JWT obtained - cannot test Select/Schema actions
+
+============================================================
+TEST 5b: Try Login action using booking JWT as auth
+============================================================
+  Got booking JWT, trying Select with it...
+  Select(StockCard      ) -> HTTP 403: "You do not have permission to Select on {{StockCard}}."
+  Select(Material       ) -> HTTP 403: "You do not have permission to Select on {{Material}}."
+  Select(Supplier       ) -> HTTP 403: "You do not have permission to Select on {{Supplier}}."
+  Select(Stock          ) -> HTTP 403: "You do not have permission to Select on {{Stock}}."
+  Select(Product        ) -> HTTP 403: "You do not have permission to Select on {{Product}}."
+
+============================================================
+TEST 6: SchemaList with booking JWT
+============================================================
+  HTTP 403: "You do not have permission to SchemaList on {{undefined}}."
+
+============================================================
+TEST 7: GetEndpoint with booking JWT
+============================================================
+  HTTP 404: {"Endpoint":null}
+
+============================================================
+TEST 8: Schema action with booking JWT
+============================================================
+  Schema(StockCard      ) -> HTTP 403: "You do not have permission to Schema on {{StockCard}}."
+  Schema(Material       ) -> HTTP 403: "You do not have permission to Schema on {{Material}}."
+  Schema(Stock          ) -> HTTP 403: "You do not have permission to Schema on {{Stock}}."
+
+All tests complete!

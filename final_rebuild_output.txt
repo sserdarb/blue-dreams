@@ -1,0 +1,25 @@
+=== STOP ===
+Container: 
+
+=== UPLOAD FILES ===
+  Ô£ô prisma/schema.prisma
+  Ô£ô app/api/ai/chat/route.ts
+  Ô£ô app/api/ai/settings/route.ts
+  Ô£ô app/admin/ai-training/page.tsx
+  Ô£ô app/api/admin/users/route.ts
+  Ô£ô app/admin/users/page.tsx
+  Ô£ô app/admin/login/page.tsx
+  Ô£ô app/admin/layout.tsx
+  Ô£ô app/actions/auth.ts
+  Ô£ô app/api/analytics/data/route.ts
+  Ô£ô components/admin/widget-editors/widget-types.ts
+  Ô£ô components/admin/widget-editors/index.tsx
+  Ô£ô nixpacks.toml
+  Ô£ô prisma/seed.js
+
+AdminUser count: 
+Traceback (most recent call last):
+  File "C:\Users\sserd\OneDrive\Belgeler\Antigravity\blue-dreams-fix\final_rebuild.py", line 54, in <module>
+    assert cnt.strip() == '1', f"STILL DUPLICATE: {cnt}"
+           ^^^^^^^^^^^^^^^^^^
+AssertionError: STILL DUPLICATE: 

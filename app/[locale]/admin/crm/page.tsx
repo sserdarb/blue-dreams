@@ -15,8 +15,27 @@ export default async function CrmPage({
     const thirtyDaysAgo = new Date(today)
     thirtyDaysAgo.setDate(today.getDate() - 30)
 
-    const reviews = await ElektraService.getGuestReviews(thirtyDaysAgo, today)
-    const metrics = await ElektraService.getReviewResponseMetrics(thirtyDaysAgo, today)
+    // Comparison Date Range (Last Year)
+    const prevStart = new Date(thirtyDaysAgo)
+    prevStart.setFullYear(prevStart.getFullYear() - 1)
+    const prevEnd = new Date(today)
+    prevEnd.setFullYear(prevEnd.getFullYear() - 1)
+
+    let reviews: any[] = []
+    let prevReviews: any[] = []
+    let metrics = { total: 0, replied: 0, pending: 0, responseRate: 0, avgResponseTimeHours: 0 }
+    let error: string | undefined
+
+    try {
+        [reviews, prevReviews, metrics] = await Promise.all([
+            ElektraService.getGuestReviews(thirtyDaysAgo, today),
+            ElektraService.getGuestReviews(prevStart, prevEnd),
+            ElektraService.getReviewResponseMetrics(thirtyDaysAgo, today)
+        ])
+    } catch (err) {
+        console.error('[CRM] Error fetching data:', err)
+        error = 'Elektra PMS bağlantı hatası veya veri alınamadı.'
+    }
 
     return (
         <div className="space-y-6">
@@ -30,7 +49,12 @@ export default async function CrmPage({
                 </div>
             </div>
 
-            <ReviewsClient initialReviews={reviews} metrics={metrics} />
+            <ReviewsClient
+                initialReviews={reviews}
+                comparisonReviews={prevReviews}
+                metrics={metrics}
+                error={error}
+            />
         </div>
     )
 }

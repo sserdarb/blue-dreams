@@ -27,8 +27,21 @@ export function ChannelPieChart({ data }: { data: DataItem[] }) {
                         ))}
                     </Pie>
                     <Tooltip
-                        contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f8fafc' }}
-                        itemStyle={{ color: '#f8fafc' }}
+                        content={({ active, payload }) => {
+                            if (active && payload && payload.length) {
+                                const data = payload[0].payload
+                                return (
+                                    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-2 rounded-lg shadow-lg">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: data.color }} />
+                                            <span className="text-sm font-medium text-slate-900 dark:text-white">{data.name}</span>
+                                            <span className="text-sm font-bold text-slate-900 dark:text-white ml-2">{data.value}</span>
+                                        </div>
+                                    </div>
+                                )
+                            }
+                            return null
+                        }}
                     />
                     <Legend verticalAlign="bottom" height={36} iconType="circle" />
                 </PieChart>

@@ -1,0 +1,17 @@
+Container: 3815dea559c9
+
+=== Testing /api/ai/chat ===
+Response: {"error":"Internal Server Error"}
+
+=== Checking GEMINI_API_KEY ===
+Env GEMINI_API_KEY: SET: AIzaSyC6ApKPTkvPZJ35...
+
+AiSettings table:
+
+
+=== Recent AI-related logs ===
+Analytics data error: Error [PrismaClientKnownRequestError]: 
+Raw query failed. Code: `42601`. Message: `ERROR: syntax error at or near "GROUP"`
+       please check the style of container, or the props width(100%) and height(100%),
+       please check the style of container, or the props width(100%) and height(100%),
+AI API Error: Error [ApiError]: {"error":{"code":404,"message":"models/gemini-2.0-flash-exp is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.","status":"NOT_FOUND"}}

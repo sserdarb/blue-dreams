@@ -1,0 +1,5 @@
+Module not found: Can't resolve '@/lib/services/finance'
+Module not found: Can't resolve '@/lib/services/hr'
+Module not found: Can't resolve './FinanceReportsClient'
+Module not found: Can't resolve './HRReportsClient'
+Module not found: Can't resolve './PurchasingReportsClient'

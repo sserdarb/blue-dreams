@@ -2,16 +2,18 @@ import { NextResponse } from 'next/server'
 import { GoogleGenAI, Type, FunctionDeclaration } from "@google/genai"
 import { prisma } from '@/lib/prisma'
 import { fetchSheetData, extractSheetId } from '@/lib/services/google-sheets'
-// import { GEMINI_API_KEY } from '@/lib/ai-config'
+import { GEMINI_API_KEY } from '@/lib/ai-config'
+import { ElektraService } from '@/lib/services/elektra'
 
 // Tool Definitions
 const priceCheckTool: FunctionDeclaration = {
     name: "check_room_availability",
-    description: "Checks room prices and availability for specific dates.",
+    description: "Checks real-time room prices and availability from the hotel's PMS for specific dates. Always use this when a user asks about prices, rates, or availability.",
     parameters: {
         type: Type.OBJECT,
         properties: {
             checkInDate: { type: Type.STRING, description: "Check-in date in YYYY-MM-DD format" },
+            checkOutDate: { type: Type.STRING, description: "Check-out date in YYYY-MM-DD format. If not specified, default to 3 days after check-in." },
             adults: { type: Type.NUMBER, description: "Number of adults" }
         },
         required: ["checkInDate", "adults"]
@@ -26,8 +28,8 @@ const renderUiTool: FunctionDeclaration = {
         properties: {
             componentType: {
                 type: Type.STRING,
-                enum: ["rooms", "location", "contact", "reviews", "amenities", "dining", "room_detail", "transfer_form", "meeting"],
-                description: "The type of UI widget to render."
+                enum: ["rooms", "location", "contact", "reviews", "amenities", "dining", "spa", "room_detail", "transfer_form", "meeting", "booking_form"],
+                description: "The type of UI widget to render. ALWAYS use this tool to show visual content."
             },
             detailId: {
                 type: Type.STRING,
@@ -104,51 +106,66 @@ export async function POST(request: Request) {
         // 1. Fetch Dynamic Content from DB
         const context = await getContextData(locale)
 
-        // Use standardized key, fallback to settings if needed
-        const apiKey = process.env.GEMINI_API_KEY || context.settings?.apiKey
+        // 3-tier API key fallback: env var → DB settings → hardcoded
+        const envKey = process.env.GEMINI_API_KEY
+        const dbKey = context.settings?.apiKey
+        const apiKey = GEMINI_API_KEY || envKey || dbKey
+
+        if (envKey) {
+            console.log('[AI Chat] Using API key from env var')
+        } else if (dbKey) {
+            console.log('[AI Chat] Using API key from DB aiSettings')
+        } else if (GEMINI_API_KEY) {
+            console.log('[AI Chat] Using hardcoded fallback API key from ai-config.ts')
+        }
 
         if (!apiKey) {
-            console.error('[AI Chat] No API key configured')
+            console.error('[AI Chat] No API key configured in any source')
             return NextResponse.json({
-                text: "Üzgünüm, AI servisi şu anda yapılandırılmamış. Lütfen daha sonra tekrar deneyin.",
+                text: "Üzgünüm, AI servisi şu anda yapılandırılmamış. Lütfen yöneticinize başvurun.",
                 uiPayload: null,
                 data: null
             })
         }
 
         // 2. Construct System Prompt
-        let systemPrompt = context.settings?.systemPrompt || `Sen Blue Dreams Resort'un dijital konsiyerjisin.
-    
-    KİMLİK VE TON:
-    - Sofistike, çok bilgili, misafirperver ve çözüm odaklısın.
-    - "Satış yap" modundan önce "Bilgi Ver ve Etkile" modundasın.
-    
-    KURALLAR:
-    - Cevapların detaylı ve betimleyici olsun.
-    - Kullanıcı bir oda, restoran veya hizmet hakkında bilgi isterse, ilgili UI Widget'ını render et ('render_ui' fonksiyonunu kullan).
-    
-    GÜNCEL OTEL BİLGİLERİ (VERİTABANI):
+        let systemPrompt = context.settings?.systemPrompt || `Sen Blue Dreams Resort'un dijital misafir asistanı "Blue Concierge"sin.
+
+    KURUMSAL KİMLİK & GÖREV:
+    - SADECE otel misafirlerine hizmet verirsin (Potansiyel veya konaklayan).
+    - Görevin: Otel hakkında bilgi vermek, oda fiyatı sunmak, rezervasyona yönlendirmek ve tesis içi hizmetleri (Spa, Restoran vb.) tanıtmaktır.
+    - Asla otelin finansal verileri, doluluk raporları veya yönetimsel stratejileri hakkında bilgi verme. Bu tür sorular gelirse "Bu bilgiye erişimim yok, ancak size en iyi oda fiyatlarımızla yardımcı olabilirim" de.
+
+    ETKİLEŞİM KURALLARI:
+    1. **Widget Kullanımı Zorunludur**: Görsel bir yanıt verebileceğin her durumda 'render_ui' fonksiyonunu kullan.
+       - Oda sorulursa -> 'rooms'
+       - Fiyat sorulursa -> 'check_room_availability' (Fonksiyon çağır)
+       - Konum/Ulaşım -> 'location'
+       - Restoran -> 'dining'
+    2. **Satış Odaklılık**: Oda fiyatı verirken her zaman "Web sitemize özel en iyi fiyat garantisi" vurgusu yap.
+    3. **Ton**: Lüks, nazik, yardımsever ve çözüm odaklı.
+
+    OTEL BİLGİLERİ (GÜNCEL):
     
     ODALAR:
     ${context.rooms.map((r: any) => `- ${r.title}: ${r.description} (${r.size}, ${r.view})`).join('\n')}
     
-    RESTORANLAR:
+    YEME & İÇME:
     ${context.dining.map((d: any) => `- ${d.title} (${d.type}): ${d.description}`).join('\n')}
     
-    TOPLANTI SALONLARI:
+    TOPLANTI & ETKİNLİK:
     ${context.meeting.map((m: any) => `- ${m.title}: ${m.capacity}, ${m.area}`).join('\n')}
     
-    HİZMETLER:
+    HİZMETLER & SPA:
     ${context.amenities.map((a: any) => `- ${a.title}`).join('\n')}
     
-    Genel Bilgiler:
-    - Konum: Torba, Bodrum (Havalimanı 25km, Merkez 10km).
-    - İletişim: +90 252 337 11 11
+    KONUM:
+    - Torba, Bodrum. Havalimanı 25km, Bodrum Merkez 10km. Özel plaj, iskele.
     `
 
         // Append Google Sheets knowledge if available
         if (context.sheetContext) {
-            systemPrompt += `\n\nEK BİLGİ KAYNAĞI (Google Sheets):\n${context.sheetContext}\n`
+            systemPrompt += `\n\nEKSPERT BİLGİSİ (Factsheet & SSS):\n${context.sheetContext}\n`
         }
 
         const ai = new GoogleGenAI({ apiKey })
@@ -163,7 +180,7 @@ export async function POST(request: Request) {
 
         if (chatHistory.length === 0) {
             return NextResponse.json({
-                text: "Merhaba! Blue Dreams Resort'a hoş geldiniz. Size nasıl yardımcı olabilirim?",
+                text: "Merhaba! Blue Dreams Resort'a hoş geldiniz. Size tatil planınızda nasıl yardımcı olabilirim?",
                 uiPayload: null,
                 data: null
             })
@@ -193,15 +210,57 @@ export async function POST(request: Request) {
             const args = (call.args || {}) as Record<string, any>
 
             if (call.name === 'check_room_availability') {
-                finalResponse.text = args.message || "Müsaitlik durumunu kontrol ettim. İşte fiyatlar:"
-                finalResponse.uiPayload = { type: 'price_result' }
-                finalResponse.data = {
-                    checkIn: args.checkInDate,
-                    rooms: context.rooms.map((r: any) => ({
-                        name: r.title,
-                        price: parseInt(r.priceStart?.replace(/\D/g, '') || "250"),
-                        specialOffer: false
+                // Fetch REAL prices from Elektra PMS
+                const checkIn = args.checkInDate || new Date().toISOString().split('T')[0]
+                let checkOut = args.checkOutDate
+                if (!checkOut) {
+                    const co = new Date(checkIn)
+                    co.setDate(co.getDate() + 3)
+                    checkOut = co.toISOString().split('T')[0]
+                }
+
+                try {
+                    const availability = await ElektraService.getAvailability(new Date(checkIn), new Date(checkOut), 'EUR')
+
+                    // Group by room type
+                    const byRoom = new Map<string, { prices: number[]; basePrices: number[]; available: number; stopsell: boolean }>()
+                    for (const item of availability) {
+                        if (!byRoom.has(item.roomType)) {
+                            byRoom.set(item.roomType, { prices: [], basePrices: [], available: 0, stopsell: false })
+                        }
+                        const r = byRoom.get(item.roomType)!
+                        if (item.discountedPrice || item.basePrice) {
+                            r.prices.push(item.discountedPrice || item.basePrice || 0)
+                            r.basePrices.push(item.basePrice || 0)
+                        }
+                        r.available += item.availableCount
+                        if (item.stopsell) r.stopsell = true
+                    }
+
+                    const rooms = Array.from(byRoom.entries()).map(([name, data]) => ({
+                        name,
+                        minPrice: data.prices.length > 0 ? Math.round(Math.min(...data.prices)) : null,
+                        avgPrice: data.prices.length > 0 ? Math.round(data.prices.reduce((s, p) => s + p, 0) / data.prices.length) : null,
+                        maxBasePrice: data.basePrices.length > 0 ? Math.round(Math.max(...data.basePrices)) : null,
+                        hasDiscount: data.prices.some((p, i) => p < data.basePrices[i]),
+                        available: data.available > 0 && !data.stopsell,
+                        currency: 'EUR'
                     }))
+
+                    finalResponse.text = args.message || "İşte seçtiğiniz tarihler için güncel oda fiyatları:"
+                    finalResponse.uiPayload = { type: 'price_result' }
+                    finalResponse.data = {
+                        checkIn,
+                        checkOut,
+                        rooms,
+                        source: 'elektra',
+                        bookingUrl: 'https://blue-dreams.rezervasyonal.com'
+                    }
+                } catch (err) {
+                    console.error('[AI Chat] Elektra pricing error:', err)
+                    finalResponse.text = "Fiyat bilgisi şu anda alınamıyor. Lütfen rezervasyon sayfamızı ziyaret edin."
+                    finalResponse.uiPayload = { type: 'booking_form' }
+                    finalResponse.data = null
                 }
             }
             else if (call.name === 'render_ui') {
@@ -244,8 +303,8 @@ export async function POST(request: Request) {
         const errorMessage = error?.message || 'Bilinmeyen hata'
         let userMessage = "Üzgünüm, bir hata oluştu. Lütfen tekrar deneyin."
 
-        if (errorMessage.includes('API_KEY') || errorMessage.includes('401') || errorMessage.includes('403')) {
-            userMessage = "AI servisi yapılandırma hatası. Yönetici ile iletişime geçin."
+        if (errorMessage.includes('API_KEY') || errorMessage.includes('401') || errorMessage.includes('403') || errorMessage.includes('400')) {
+            userMessage = "AI Anahtarı Hatası (Süresi Dolmuş veya Geçersiz). Detaylar konsolda."
         } else if (errorMessage.includes('429') || errorMessage.includes('quota') || errorMessage.includes('RESOURCE_EXHAUSTED')) {
             userMessage = "AI servisi şu anda yoğun. Lütfen birkaç dakika sonra tekrar deneyin."
         } else if (errorMessage.includes('SAFETY') || errorMessage.includes('blocked')) {
@@ -256,7 +315,7 @@ export async function POST(request: Request) {
             text: userMessage,
             uiPayload: null,
             data: null,
-            _debug: process.env.NODE_ENV === 'development' ? errorMessage : undefined
+            _debug: errorMessage // Always expose error for debugging as requested
         })
     }
 }

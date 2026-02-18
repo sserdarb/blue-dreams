@@ -1,0 +1,7 @@
+blue-dreams: 400 -> {"success":false,"message":"Request parameters are not suitable.","errorCode":"1002-R","errorDetails":{"hotel-id":["hotel-id must be a number conforming to the specified constraints"]}}
+
+bluedreams: 400 -> {"success":false,"message":"Request parameters are not suitable.","errorCode":"1002-R","errorDetails":{"hotel-id":["hotel-id must be a number conforming to the specified constraints"]}}
+
+bdr: 400 -> {"success":false,"message":"Request parameters are not suitable.","errorCode":"1002-R","errorDetails":{"hotel-id":["hotel-id must be a number conforming to the specified constraints"]}}
+
+blue-dreams-resort: 400 -> {"success":false,"message":"Request parameters are not suitable.","errorCode":"1002-R","errorDetails":{"hotel-id":["hotel-id must be a number conforming to the specified constraints"]}}

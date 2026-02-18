@@ -1,0 +1,244 @@
+Container: 3815dea559c9
+Tables: AdminUser           ChatMessage         Media               Room              
+AiSettings          ChatSession         MeetingRoom         SiteSettings      
+AiTrainingDocument  CtaBar              MenuItem            VisitorAction     
+Amenity             Dining              Page                Widget            
+AnalyticsConfig     Language            PageView            _prisma_migrations
+Schema:
+CREATE TABLE IF NOT EXISTS "_prisma_migrations" (
+    "id"                    TEXT PRIMARY KEY NOT NULL,
+    "checksum"              TEXT NOT NULL,
+    "finished_at"           DATETIME,
+    "migration_name"        TEXT NOT NULL,
+    "logs"                  TEXT,
+    "rolled_back_at"        DATETIME,
+    "started_at"            DATETIME NOT NULL DEFAULT current_timestamp,
+    "applied_steps_count"   INTEGER UNSIGNED NOT NULL DEFAULT 0
+);
+CREATE TABLE IF NOT EXISTS "Page" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "slug" TEXT NOT NULL,
+    "locale" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "metaDescription" TEXT,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL
+);
+CREATE TABLE IF NOT EXISTS "Widget" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "type" TEXT NOT NULL,
+    "data" TEXT NOT NULL,
+    "order" INTEGER NOT NULL,
+    "pageId" TEXT NOT NULL,
+    CONSTRAINT "Widget_pageId_fkey" FOREIGN KEY ("pageId") REFERENCES "Page" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+CREATE TABLE IF NOT EXISTS "Media" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "url" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "type" TEXT NOT NULL,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS "SiteSettings" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "locale" TEXT NOT NULL,
+    "siteName" TEXT NOT NULL DEFAULT 'Blue Dreams Resort',
+    "logo" TEXT,
+    "favicon" TEXT,
+    "phone" TEXT,
+    "email" TEXT,
+    "address" TEXT,
+    "socialLinks" TEXT,
+    "footerText" TEXT,
+    "footerCopyright" TEXT,
+    "headerStyle" TEXT NOT NULL DEFAULT 'default',
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL
+);
+CREATE TABLE IF NOT EXISTS "MenuItem" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "locale" TEXT NOT NULL,
+    "label" TEXT NOT NULL,
+    "url" TEXT NOT NULL,
+    "target" TEXT NOT NULL DEFAULT '_self',
+    "order" INTEGER NOT NULL DEFAULT 0,
+    "parentId" TEXT,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    CONSTRAINT "MenuItem_parentId_fkey" FOREIGN KEY ("parentId") REFERENCES "MenuItem" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+);
+CREATE TABLE IF NOT EXISTS "Language" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "code" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "nativeName" TEXT,
+    "flag" TEXT,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "isDefault" BOOLEAN NOT NULL DEFAULT false,
+    "order" INTEGER NOT NULL DEFAULT 0,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE UNIQUE INDEX "Page_slug_locale_key" ON "Page"("slug", "locale");
+CREATE UNIQUE INDEX "SiteSettings_locale_key" ON "SiteSettings"("locale");
+CREATE UNIQUE INDEX "Language_code_key" ON "Language"("code");
+CREATE TABLE IF NOT EXISTS "AiSettings" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "systemPrompt" TEXT NOT NULL,
+    "language" TEXT NOT NULL DEFAULT 'tr',
+    "tone" TEXT NOT NULL DEFAULT 'friendly',
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL
+, "apiKey" TEXT);
+CREATE TABLE IF NOT EXISTS "AiTrainingDocument" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "title" TEXT NOT NULL,
+    "content" TEXT NOT NULL,
+    "type" TEXT NOT NULL,
+    "filename" TEXT,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS "VisitorAction" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "sessionId" TEXT NOT NULL,
+    "actionType" TEXT NOT NULL,
+    "payload" TEXT,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS "ChatMessage" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "sessionId" TEXT NOT NULL,
+    "sender" TEXT NOT NULL,
+    "content" TEXT NOT NULL,
+    "isFromAdmin" BOOLEAN NOT NULL DEFAULT false,
+    "metadata" TEXT,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "ChatMessage_sessionId_fkey" FOREIGN KEY ("sessionId") REFERENCES "ChatSession" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+CREATE TABLE IF NOT EXISTS "ChatSession" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "customerName" TEXT,
+    "status" TEXT NOT NULL DEFAULT 'active',
+    "visitorId" TEXT,
+    "visitorInfo" TEXT,
+    "isOnline" BOOLEAN NOT NULL DEFAULT true,
+    "lastActivity" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "adminNote" TEXT,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS "CtaBar" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "title" TEXT NOT NULL,
+    "subtitle" TEXT,
+    "buttonText" TEXT,
+    "buttonUrl" TEXT,
+    "backgroundColor" TEXT NOT NULL DEFAULT '#2563eb',
+    "textColor" TEXT NOT NULL DEFAULT '#ffffff',
+    "startDate" DATETIME,
+    "endDate" DATETIME,
+    "isActive" BOOLEAN NOT NULL DEFAULT false,
+    "clickCount" INTEGER NOT NULL DEFAULT 0,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL
+);
+CREATE TABLE IF NOT EXISTS "Room" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "locale" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "image" TEXT NOT NULL,
+    "size" TEXT,
+    "view" TEXT,
+    "capacity" TEXT,
+    "features" TEXT NOT NULL,
+    "priceStart" TEXT,
+    "whyChoose" TEXT,
+    "order" INTEGER NOT NULL DEFAULT 0,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL
+);
+CREATE TABLE IF NOT EXISTS "Dining" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "locale" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "type" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "image" TEXT NOT NULL,
+    "images" TEXT,
+    "order" INTEGER NOT NULL DEFAULT 0,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL
+);
+CREATE TABLE IF NOT EXISTS "Amenity" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "locale" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "description" TEXT,
+    "icon" TEXT NOT NULL,
+    "order" INTEGER NOT NULL DEFAULT 0,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL
+);
+CREATE TABLE IF NOT EXISTS "MeetingRoom" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "locale" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "area" TEXT NOT NULL,
+    "capacity" TEXT NOT NULL,
+    "height" TEXT NOT NULL,
+    "type" TEXT NOT NULL,
+    "image" TEXT NOT NULL,
+    "order" INTEGER NOT NULL DEFAULT 0,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL
+);
+CREATE TABLE IF NOT EXISTS "PageView" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "path" TEXT NOT NULL,
+    "locale" TEXT NOT NULL DEFAULT 'tr',
+    "referrer" TEXT,
+    "userAgent" TEXT,
+    "country" TEXT,
+    "device" TEXT,
+    "browser" TEXT,
+    "sessionId" TEXT,
+    "duration" INTEGER NOT NULL DEFAULT 0,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS "AnalyticsConfig" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "gaId" TEXT,
+    "gtmId" TEXT,
+    "fbPixelId" TEXT,
+    "gaApiSecret" TEXT,
+    "gaPropertyId" TEXT,
+    "gaServiceKey" TEXT,
+    "useGaApi" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL
+);
+CREATE TABLE IF NOT EXISTS "AdminUser" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "email" TEXT NOT NULL,
+    "password" TEXT NOT NULL,
+    "name" TEXT NOT NULL DEFAULT 'Admin',
+    "role" TEXT NOT NULL DEFAULT 'admin',
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "lastLogin" DATETIME,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL
+);
+CREATE UNIQUE INDEX "AdminUser_email_key" ON "AdminUser"("email");
+Page count: 0
+Pages:
+
+Widget count: 0
+Widgets:
+
+Admin count: Error: in prepare, no such table: Admin
+Setting count: Error: in prepare, no such table: Setting
+MenuItem count: 0
+CtaBar count: 0
+Room count: 0
+Activity count: Error: in prepare, no such table: Activity

@@ -5,6 +5,9 @@ import AdminSidebar from '@/components/admin/AdminSidebar'
 
 export const dynamic = 'force-dynamic'
 
+import { ThemeProvider } from '@/components/admin/ThemeProvider'
+import { ModuleProvider } from '@/lib/modules/module-context'
+
 export default async function AdminLayout({
   children,
   params
@@ -25,16 +28,20 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="flex h-screen bg-[#0f172a]">
-      {/* Client-side Sidebar with Mobile Toggle */}
-      <AdminSidebar locale={locale} t={t} />
+    <ThemeProvider>
+      <ModuleProvider>
+        <div className="min-h-screen bg-white dark:bg-[#0f172a] text-slate-900 dark:text-slate-100 transition-colors duration-300">
+          {/* Client-side Sidebar with Mobile Toggle */}
+          <AdminSidebar locale={locale} t={t} />
 
-      {/* Main Content */}
-      <main className="flex-1 overflow-auto bg-[#0f172a] pt-16 md:pt-0">
-        <div className="p-4 md:p-8">
-          {children}
+          {/* Main Content */}
+          <main className="transition-all duration-300 md:ml-64 pt-16 md:pt-0">
+            <div className="p-4 md:p-8">
+              {children}
+            </div>
+          </main>
         </div>
-      </main>
-    </div>
+      </ModuleProvider>
+    </ThemeProvider>
   )
 }

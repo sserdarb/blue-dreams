@@ -1,0 +1,70 @@
+Connecting to 76.13.0.113...
+Container: 3815dea559c9
+
+=== DB file exists? ===
+total 264
+drwxr-xr-x 2 root root   4096 Feb  9 22:31 .
+drwxr-xr-x 1 root root   4096 Feb  9 22:29 ..
+-rw-r--r-- 1 root root 249856 Feb  9 22:31 database.sqlite
+
+=== Prisma Schema ===
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Page {
+  id              String   @id @default(uuid())
+  slug            String
+  locale          String
+  title           String
+  metaDescription String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  widgets         Widget[]
+
+  @@unique([slug, locale])
+}
+
+model Widget {
+  id        String   @id @default(uuid())
+  type    
+
+=== Installing sqlite3 ===
+apt install: SUCCESS
+
+=== Verifying sqlite3 ===
+Tables: AdminUser           ChatMessage         Media               Room              
+AiSettings          ChatSession         MeetingRoom         SiteSettings      
+AiTrainingDocument  CtaBar              MenuItem            VisitorAction     
+Amenity             Dining              Page                Widget            
+AnalyticsConfig     Language            PageView            _prisma_migrations
+
+=== Page Schema ===
+CREATE TABLE IF NOT EXISTS "Page" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "slug" TEXT NOT NULL,
+    "locale" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "metaDescription" TEXT,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL
+);
+CREATE UNIQUE INDEX "Page_slug_locale_key" ON "Page"("slug", "locale");
+
+CREATE TABLE IF NOT EXISTS "Widget" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "type" TEXT NOT NULL,
+    "data" TEXT NOT NULL,
+    "order" INTEGER NOT NULL,
+    "pageId" TEXT NOT NULL,
+    CONSTRAINT "Widget_pageId_fkey" FOREIGN KEY ("pageId") REFERENCES "Page" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+
+=== Existing Pages ===
+

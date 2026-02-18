@@ -1,0 +1,21 @@
+42b1b9d52b03  coolify-sentinel  Up 20 hours (healthy)
+48466875cb9e  blue-dreams-app  Exited (0) About an hour ago
+50d4946352c2  focw448cg0gg4wckko04csc4-111459988720  Up 5 days
+68480321bd54  app-wcsw0s4o0kckoc8sww804ok4  Up 13 days
+e1d37b00ce79  mongodb-wcsw0s4o0kckoc8sww804ok4  Up 13 days
+dfa06122b2c7  linkhub-mongodb-1  Up 2 weeks
+49ff3660db94  linkhub-app-1  Up 2 weeks
+e099105002e1  linkhub_fullstack-app-1  Up 2 weeks
+12b911693e08  linkhub_fullstack-mongodb-1  Up 2 weeks
+706d164d2cda  ogok8sw4w88wo04000wccksc  Up 3 minutes (healthy)
+c9a09c7f9a16  pg488kocgg8wk8wssg8c0ko8-101323975206  Up 7 days
+823083bdd30b  emergent-backend  Exited (1) 6 days ago
+1854c4798210  aura_app  Up 3 weeks
+7b9b019e64c0  aura_mongodb  Up 3 weeks
+aaa007514ddf  stalwart-mail-yckowcccgg844g0c0o8scooo  Up 3 weeks
+e8bf97294456  rs8cg4kg0ksk84kws0gkcs88-055128813859  Up 3 weeks
+bc7bf30fc063  coolify-proxy  Up 3 weeks (healthy)
+a71a1dfce9cc  z4wcgkwso0cg084gk880w088  Up 3 weeks (healthy)
+3fe99f2525ce  coolify  Up 3 weeks (healthy)
+685bf597b14f  coolify-redis  Up 3 weeks
+7b196ff456e5  coolify-db  Up 3 weeks
