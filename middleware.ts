@@ -43,7 +43,7 @@ export function middleware(request: NextRequest) {
   // Skip static files and API routes
   if (
     pathname.startsWith('/_next') ||
-    pathname.startsWith('/api') ||
+    // pathname.startsWith('/api') || // Checked later for specific routes
     pathname.includes('.') ||
     pathname === '/favicon.ico'
   ) {
@@ -61,18 +61,32 @@ export function middleware(request: NextRequest) {
     return response;
   }
 
-  // Admin route protection
-  const adminRegex = /^\/[a-z]{2}\/admin/;
-  if (adminRegex.test(pathname)) {
+  // Admin route protection (Pages & API)
+  const isAdminPage = /^\/[a-z]{2}\/admin/.test(pathname);
+  const isAdminApi = pathname.startsWith('/api/admin');
+
+  if (isAdminPage || isAdminApi) {
+    // Public admin routes (login)
     if (pathname.includes('/login')) {
       return addSecurityHeaders(NextResponse.next());
     }
 
     const authCookie = request.cookies.get('admin_session');
+
     if (!authCookie) {
-      const loginUrl = new URL(`/${pathnameLocale}/admin/login`, request.url);
+      // If API request, return 401 instead of redirect
+      if (isAdminApi) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+
+      const loginUrl = new URL(`/${pathnameLocale || defaultLocale}/admin/login`, request.url);
       return NextResponse.redirect(loginUrl);
     }
+  }
+
+  // Skip other API routes from locale checks
+  if (pathname.startsWith('/api')) {
+    return NextResponse.next();
   }
 
   return addSecurityHeaders(NextResponse.next());
