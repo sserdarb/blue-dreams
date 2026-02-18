@@ -1,4 +1,5 @@
 const { PrismaClient } = require('@prisma/client')
+const bcrypt = require('bcryptjs')
 const { seedPage, homeWidgets } = require('./seed-helpers')
 const { aboutWidgets, roomsWidgets, restaurantWidgets, spaWidgets, contactWidgets, weddingWidgets, galleryWidgets, meetingWidgets, bodrumWidgets } = require('./seed-pages')
 
@@ -13,10 +14,11 @@ async function main() {
     })
 
     if (!existingAdmin) {
+        const hashedPassword = await bcrypt.hash('***REDACTED_ADMIN_PASSWORD***', 10)
         await prisma.adminUser.create({
             data: {
                 email: '***REDACTED_EMAIL***',
-                password: '***REDACTED_ADMIN_PASSWORD***',
+                password: hashedPassword,
                 name: 'Serdar',
                 role: 'superadmin',
                 isActive: true,
@@ -25,6 +27,30 @@ async function main() {
         console.log('✅ Default admin user created: ***REDACTED_EMAIL***')
     } else {
         console.log('ℹ️ Admin user already exists: ***REDACTED_EMAIL***')
+    }
+
+    // ===========================
+    // 1.1. Burak Admin User
+    // ===========================
+    const burakEmail = 'burak@bluedreamsresort.com'
+    const existingBurak = await prisma.adminUser.findUnique({
+        where: { email: burakEmail }
+    })
+
+    if (!existingBurak) {
+        const hashedPassword = await bcrypt.hash('***REDACTED_USER_PASSWORD***', 10)
+        await prisma.adminUser.create({
+            data: {
+                email: burakEmail,
+                password: hashedPassword,
+                name: 'Burak',
+                role: 'admin',
+                isActive: true,
+            }
+        })
+        console.log(`✅ Admin user created: ${burakEmail}`)
+    } else {
+        console.log(`ℹ️ Admin user already exists: ${burakEmail}`)
     }
 
     // ===========================
