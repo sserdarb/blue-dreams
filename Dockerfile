@@ -52,4 +52,9 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
+# Health check: Coolify waits for this before swapping containers (zero-downtime)
+# start-period gives entrypoint (prisma db push + seed) time to finish
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 --start-period=40s \
+    CMD curl -f http://localhost:3000/api/health || exit 1
+
 CMD ["./docker-entrypoint.sh"]
