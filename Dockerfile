@@ -14,8 +14,9 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# DATABASE_URL is needed at build time for Next.js static generation
-ARG DATABASE_URL
+# DATABASE_URL is needed at build time for prisma generate and Next.js
+# Coolify will pass the real value; dummy default ensures build doesn't crash
+ARG DATABASE_URL=postgresql://build:build@localhost:5432/build
 ENV DATABASE_URL=${DATABASE_URL}
 
 RUN npm run build

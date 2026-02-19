@@ -1,11 +1,10 @@
 'use server';
 
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-const prisma = new PrismaClient();
 
 export async function uploadFile(formData: FormData) {
   const file = formData.get('file') as File;
