@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import PageHeader from '@/components/shared/PageHeader'
 import AmenityGrid from '@/components/shared/AmenityGrid'
 import { ROOM_TYPES } from '@/lib/content'

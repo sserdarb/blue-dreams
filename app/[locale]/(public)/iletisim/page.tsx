@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { getPageBySlug } from '@/app/actions/page-actions'
 import { WidgetRenderer } from '@/components/widgets/WidgetRenderer'
 
