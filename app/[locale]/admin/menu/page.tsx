@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { getAllMenuItems } from '@/app/actions/settings'
 import { MenuManager } from '@/components/admin/MenuManager'
 

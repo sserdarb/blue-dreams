@@ -1,4 +1,5 @@
 'use client'
+export const dynamic = 'force-dynamic'
 
 import React, { useState } from 'react'
 import { Share2, Instagram, Twitter, Facebook, Youtube, TrendingUp, TrendingDown, Users, Heart, MessageCircle, Eye, ExternalLink, Link2, Unlink, BarChart3, Calendar, ArrowUp, ArrowDown, Minus } from 'lucide-react'

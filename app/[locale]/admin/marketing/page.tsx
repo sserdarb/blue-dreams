@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { MarketingService } from '@/lib/services/marketing'
 import MarketingClient from './MarketingClient'
 

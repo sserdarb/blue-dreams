@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { ElektraService } from '@/lib/services/elektra'
 import RoomsClient from './RoomsClient'
 

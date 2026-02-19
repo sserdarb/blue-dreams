@@ -1,4 +1,5 @@
-'use client';
+'use client'
+export const dynamic = 'force-dynamic';
 
 import { useFormState } from 'react-dom';
 import { login } from '@/app/actions/auth';

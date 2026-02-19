@@ -1,4 +1,5 @@
 'use client'
+export const dynamic = 'force-dynamic'
 
 import { useState } from 'react'
 import { Calendar, MapPin, Clock, Plus, Trash2, Edit, ExternalLink, FileSpreadsheet, Copy, Check } from 'lucide-react'

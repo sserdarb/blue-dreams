@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { Calendar, Users, TrendingUp, Eye, FileText, ArrowRight, Building2, BedDouble, DollarSign } from 'lucide-react'
 import Link from 'next/link'
 import StatCard from '@/components/admin/StatCard'

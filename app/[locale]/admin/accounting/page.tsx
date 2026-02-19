@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { AccountingService } from '@/lib/services/accounting'
 import AccountingClient from './AccountingClient'
 

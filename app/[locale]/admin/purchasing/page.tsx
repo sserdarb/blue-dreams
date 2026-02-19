@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { PurchasingService } from '@/lib/services/purchasing'
 import PurchasingClient from './PurchasingClient'
 

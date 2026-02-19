@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { getPages } from '@/app/actions/admin'
 import Link from 'next/link'
 import { Edit, FileText, Globe } from 'lucide-react'
