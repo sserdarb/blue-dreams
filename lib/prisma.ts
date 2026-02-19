@@ -2,7 +2,9 @@ import { PrismaClient } from '@prisma/client'
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient }
 
-const isBuildTime = !process.env.DATABASE_URL || process.env.DATABASE_URL.includes('dummy') || process.env.DATABASE_URL.includes('build')
+const dbUrl = process.env.DATABASE_URL || ''
+const isValidDbUrl = dbUrl.startsWith('postgresql://') || dbUrl.startsWith('postgres://')
+const isBuildTime = !dbUrl || dbUrl.includes('dummy') || dbUrl.includes('build') || !isValidDbUrl
 
 function createNoOpProxy(): PrismaClient {
     return new Proxy({} as PrismaClient, {
