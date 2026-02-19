@@ -7,7 +7,7 @@ FROM base AS deps
 WORKDIR /app
 COPY package.json package-lock.json* ./
 COPY prisma ./prisma/
-RUN npm ci --ignore-scripts
+RUN npm ci
 RUN npx prisma generate
 
 # Build the application
