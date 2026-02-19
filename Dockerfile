@@ -21,9 +21,6 @@ COPY . .
 ARG DATABASE_URL=postgresql://build:build@localhost:5432/build
 ENV DATABASE_URL=${DATABASE_URL}
 
-# DEBUG: verify analytics components exist in build context
-RUN ls -la components/admin/analytics/ || echo "MISSING: components/admin/analytics/"
-
 RUN npm run build
 
 # Seed the database (only succeeds with real DATABASE_URL)
