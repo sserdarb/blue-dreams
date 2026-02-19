@@ -23,6 +23,9 @@ ENV DATABASE_URL=${DATABASE_URL}
 
 RUN npm run build
 
+# Seed the database (only succeeds with real DATABASE_URL)
+RUN node prisma/seed.js || echo "⚠️ Seed skipped (no real DATABASE_URL)"
+
 # Production image
 FROM base AS runner
 WORKDIR /app
