@@ -7,17 +7,22 @@ import { prisma } from '@/lib/prisma'
  * Used by all public pages to load content from the database.
  */
 export async function getPageBySlug(slug: string, locale: string) {
-  const page = await prisma.page.findUnique({
-    where: {
-      slug_locale: { slug, locale },
-    },
-    include: {
-      widgets: {
-        orderBy: { order: 'asc' },
+  try {
+    const page = await prisma.page.findUnique({
+      where: {
+        slug_locale: { slug, locale },
       },
-    },
-  })
-  return page
+      include: {
+        widgets: {
+          orderBy: { order: 'asc' },
+        },
+      },
+    })
+    return page
+  } catch (error) {
+    console.error(`Error fetching page "${slug}" for locale "${locale}":`, error)
+    return null
+  }
 }
 
 /**

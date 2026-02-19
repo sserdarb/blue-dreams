@@ -4,47 +4,53 @@ const globalForPrisma = global as unknown as { prisma: PrismaClient }
 
 const isBuildTime = !process.env.DATABASE_URL || process.env.DATABASE_URL.includes('dummy') || process.env.DATABASE_URL.includes('build')
 
+function createNoOpProxy(): PrismaClient {
+    return new Proxy({} as PrismaClient, {
+        get(_target, prop) {
+            if (prop === '$connect' || prop === '$disconnect') {
+                return async () => { }
+            }
+            if (prop === '$transaction') {
+                return async (fn: unknown) => {
+                    if (typeof fn === 'function') return fn(createNoOpProxy())
+                    return []
+                }
+            }
+            if (typeof prop === 'string' && !prop.startsWith('$')) {
+                return new Proxy({}, {
+                    get(_modelTarget, method) {
+                        return async () => {
+                            if (method === 'findMany') return []
+                            if (method === 'findUnique' || method === 'findFirst') return null
+                            if (method === 'count') return 0
+                            if (method === 'create' || method === 'update' || method === 'upsert') return {}
+                            if (method === 'delete') return {}
+                            if (method === 'createMany' || method === 'updateMany' || method === 'deleteMany') return { count: 0 }
+                            if (method === 'aggregate') return {}
+                            if (method === 'groupBy') return []
+                            return null
+                        }
+                    }
+                })
+            }
+            return undefined
+        }
+    })
+}
+
 function createPrismaClient(): PrismaClient {
     if (isBuildTime) {
-        // During build time, DATABASE_URL is not available or is a dummy
-        // Return a proxy that returns empty/default results for all queries
         console.warn('⚠️ Build-time detected: using no-op Prisma proxy')
-        return new Proxy({} as PrismaClient, {
-            get(_target, prop) {
-                if (prop === '$connect' || prop === '$disconnect') {
-                    return async () => { }
-                }
-                if (prop === '$transaction') {
-                    return async (fn: unknown) => {
-                        if (typeof fn === 'function') return fn(createPrismaClient())
-                        return []
-                    }
-                }
-                if (typeof prop === 'string' && !prop.startsWith('$')) {
-                    // Model accessor (e.g., prisma.user, prisma.chatSession)
-                    return new Proxy({}, {
-                        get(_modelTarget, method) {
-                            return async () => {
-                                // Return appropriate defaults based on method name
-                                if (method === 'findMany') return []
-                                if (method === 'findUnique' || method === 'findFirst') return null
-                                if (method === 'count') return 0
-                                if (method === 'create' || method === 'update' || method === 'upsert') return {}
-                                if (method === 'delete') return {}
-                                if (method === 'createMany' || method === 'updateMany' || method === 'deleteMany') return { count: 0 }
-                                if (method === 'aggregate') return {}
-                                if (method === 'groupBy') return []
-                                return null
-                            }
-                        }
-                    })
-                }
-                return undefined
-            }
-        })
+        return createNoOpProxy()
     }
 
-    return new PrismaClient()
+    try {
+        return new PrismaClient()
+    } catch (error) {
+        console.error('❌ Failed to create PrismaClient:', error)
+        console.error('DATABASE_URL format may be invalid — falling back to no-op proxy')
+        return createNoOpProxy()
+    }
 }
 
 export const prisma = globalForPrisma.prisma || createPrismaClient()
