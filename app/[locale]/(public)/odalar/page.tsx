@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { ROOM_TYPES } from '@/lib/content'
 import Link from 'next/link'
 import { Maximize, Users, Mountain } from 'lucide-react'
