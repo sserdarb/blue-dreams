@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { getSiteSettings } from '@/app/actions/settings'
 import { SiteSettingsForm } from '@/components/admin/SiteSettingsForm'
 import SettingsPageClient from './SettingsPageClient'

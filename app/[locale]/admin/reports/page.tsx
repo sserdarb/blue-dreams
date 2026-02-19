@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { ElektraService } from '@/lib/services/elektra'
 import { FinanceService } from '@/lib/services/finance'
 import { HRService } from '@/lib/services/hr'

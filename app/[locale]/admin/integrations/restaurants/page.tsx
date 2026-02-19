@@ -1,4 +1,5 @@
 'use client'
+export const dynamic = 'force-dynamic'
 
 import React, { useState, useRef } from 'react'
 import { Plus, Edit2, Trash2, X, Save, GripVertical, UtensilsCrossed, Wine, Coffee, IceCream, ChevronDown, ChevronUp, Image as ImageIcon, QrCode, Printer, Download, Eye, ExternalLink } from 'lucide-react'

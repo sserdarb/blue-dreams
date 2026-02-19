@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { ElektraCache } from '@/lib/services/elektra-cache'
 import YieldManagementClient from './YieldManagementClient'
 

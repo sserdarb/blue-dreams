@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { getPageById, addWidget } from '@/app/actions/admin'
 import { WIDGET_TYPES, getWidgetIcon } from '@/components/admin/widget-editors/widget-types'
 import { DraggableWidgetList } from '@/components/admin/DraggableWidgetList'

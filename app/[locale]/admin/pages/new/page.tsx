@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { createPage } from '@/app/actions/admin'
 
 export default function NewPage() {

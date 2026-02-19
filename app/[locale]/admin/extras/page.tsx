@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { getAdminTranslations, type AdminLocale } from '@/lib/admin-translations'
 import { ElektraService } from '@/lib/services/elektra'
 import ExtrasClient from './ExtrasClient'

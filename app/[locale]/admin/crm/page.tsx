@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { ElektraService } from '@/lib/services/elektra'
 import ReviewsClient from './ReviewsClient'
 import { getAdminTranslations, type AdminLocale } from '@/lib/admin-translations'
