@@ -2,7 +2,7 @@
 export const dynamic = 'force-dynamic'
 
 import React, { useState } from 'react'
-import dynamic from 'next/dynamic'
+import nextDynamic from 'next/dynamic'
 import {
     Sparkles, Copy, Check, Instagram, Facebook, Linkedin, Twitter,
     Languages, Image as ImageIcon, Calendar, Clock, Save, Send,
@@ -10,8 +10,8 @@ import {
 } from 'lucide-react'
 
 // Lazy-load heavy editor components
-const DesignTool = dynamic(() => import('./DesignTool'), { ssr: false, loading: () => <div className="flex items-center justify-center h-96"><Loader2 size={32} className="animate-spin text-cyan-500" /></div> })
-const VideoEditor = dynamic(() => import('./VideoEditor'), { ssr: false, loading: () => <div className="flex items-center justify-center h-96"><Loader2 size={32} className="animate-spin text-purple-500" /></div> })
+const DesignTool = nextDynamic(() => import('./DesignTool'), { ssr: false, loading: () => <div className="flex items-center justify-center h-96"><Loader2 size={32} className="animate-spin text-cyan-500" /></div> })
+const VideoEditor = nextDynamic(() => import('./VideoEditor'), { ssr: false, loading: () => <div className="flex items-center justify-center h-96"><Loader2 size={32} className="animate-spin text-purple-500" /></div> })
 
 // ─── Types ─────────────────────────────────────────────────────
 interface GeneratedContent {
