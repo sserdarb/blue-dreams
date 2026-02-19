@@ -40,10 +40,11 @@ function getPreferredLocale(request: NextRequest): string {
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
-  // Skip static files and API routes
+  // Skip static files and non-admin API routes (e.g. /api/health)
+  // Admin APIs (/api/admin) fall through to auth check below
   if (
     pathname.startsWith('/_next') ||
-    // pathname.startsWith('/api') || // Checked later for specific routes
+    (pathname.startsWith('/api') && !pathname.startsWith('/api/admin')) ||
     pathname.includes('.') ||
     pathname === '/favicon.ico'
   ) {
