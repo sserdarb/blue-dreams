@@ -130,6 +130,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
     const [draggedWidget, setDraggedWidget] = useState<string | null>(null)
     const [aiResults, setAiResults] = useState<Record<string, string>>({})
     const [aiLoading, setAiLoading] = useState<Record<string, boolean>>({})
+    const [autoAiProgress, setAutoAiProgress] = useState<{ current: number; total: number } | null>(null)
     const [infoWidgetId, setInfoWidgetId] = useState<string | null>(null)
     const [showAddWidget, setShowAddWidget] = useState(false)
     const [activeTab, setActiveTab] = useState<'all' | 'management' | 'operation' | 'finance' | 'marketing'>('all')
@@ -278,6 +279,30 @@ export default function ReportsClient({ reservations, comparisonReservations = [
             if (aiText) setAiResults(prev => ({ ...prev, [widgetId]: aiText }))
         } catch (err) { console.error(err) }
         finally { setAiLoading(prev => ({ ...prev, [widgetId]: false })) }
+    }
+
+    /** Auto-interpret all visible widgets sequentially (Gemini API rate-limit safe) */
+    const autoInterpretAll = async () => {
+        const visibleIds = widgetConfigs.filter(w => w.visible).map(w => w.id)
+        const uninterpreted = visibleIds.filter(id => !aiResults[id])
+        if (uninterpreted.length === 0) return
+        setAutoAiProgress({ current: 0, total: uninterpreted.length })
+        for (let i = 0; i < uninterpreted.length; i++) {
+            setAutoAiProgress({ current: i + 1, total: uninterpreted.length })
+            // Build a small data summary for the widget
+            const widgetData = {
+                totalReservations: filtered.length,
+                totalRevenue: filtered.reduce((s, r) => s + dp(r.totalPrice, r.currency), 0),
+                avgNights: filtered.length > 0 ? (filtered.reduce((s, r) => s + r.nights, 0) / filtered.length).toFixed(1) : 0,
+                dateRange: `${startDate} → ${endDate}`,
+                priceMode,
+                currency,
+            }
+            await interpretWidget(uninterpreted[i], widgetData)
+            // 2s delay between calls to avoid rate limits
+            if (i < uninterpreted.length - 1) await new Promise(r => setTimeout(r, 2000))
+        }
+        setAutoAiProgress(null)
     }
 
     // ─── Widget Renderers ───
@@ -3765,6 +3790,19 @@ export default function ReportsClient({ reservations, comparisonReservations = [
                                 ))}
                             </div>
                         </div>
+
+                        {/* Auto AI Commentary */}
+                        <button
+                            onClick={autoInterpretAll}
+                            disabled={!!autoAiProgress}
+                            className="flex items-center gap-2 bg-violet-600 hover:bg-violet-700 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 border border-violet-500/50"
+                            title="Tüm widgetları sırayla AI ile yorumla"
+                        >
+                            <Sparkles size={16} className={autoAiProgress ? 'animate-pulse' : ''} />
+                            {autoAiProgress
+                                ? `${autoAiProgress.current}/${autoAiProgress.total} yorumlanıyor...`
+                                : '🤖 Tümünü Yorumla'}
+                        </button>
 
                         <button onClick={handlePdfExport} disabled={pdfExporting} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50" title="PDF Export">
                             <FileDown size={16} className={pdfExporting ? 'animate-pulse' : ''} />
