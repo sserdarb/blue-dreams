@@ -3,7 +3,7 @@ import { GEMINI_API_KEY } from '@/lib/ai-config'
 
 export async function POST(request: Request) {
     try {
-        const { widgetTitle, data, locale = 'tr' } = await request.json()
+        const { widgetTitle, widgetDescription, data, locale = 'tr' } = await request.json()
 
         if (!data || !widgetTitle) {
             return NextResponse.json({ error: 'Missing data or widgetTitle' }, { status: 400 })
@@ -17,10 +17,12 @@ export async function POST(request: Request) {
         }
         const langText = langInstruction[locale as string] || 'Yanıtını Türkçe ver.'
 
-        const prompt = `Sen bir otel yönetim danışmanısın. Aşağıdaki rapor widget verilerini analiz et ve kısa, öz, aksiyon odaklı bir yorum yap. ${langText}
+        const descBlock = widgetDescription ? `\nRapor Açıklaması: ${widgetDescription}\n` : ''
+
+        const prompt = `Sen bir otel yönetim danışmanısın. Aşağıdaki rapor widget verilerini analiz et ve kısa, öz, aksiyon odaklı bir yorum yap. Raporun amacını ve yorumlama mantığını göz önünde bulundur. ${langText}
 
 Widget: ${widgetTitle}
-
+${descBlock}
 Veri:
 ${JSON.stringify(data, null, 2)}
 
@@ -29,7 +31,8 @@ Kurallar:
 - Önemli trendleri belirt
 - Aksiyon önerileri sun
 - Rakamları kullan
-- Emoji kullanma`
+- Emoji kullanma
+- Raporun amacına uygun yorum yap`
 
         const apiKey = process.env.GEMINI_API_KEY || GEMINI_API_KEY
         if (!apiKey) {

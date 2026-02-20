@@ -52,6 +52,32 @@ export async function updateSiteSettings(locale: string, data: {
 
 // =============== MENU ITEMS ===============
 
+// =============== TAX SETTINGS ===============
+
+export async function getTaxSettings() {
+    // Tax rates are global (not per-locale), grab from first row
+    const row = await prisma.siteSettings.findFirst({
+        select: { vatAccommodation: true, taxAccommodation: true, vatFnb: true },
+    })
+    return {
+        vatAccommodation: row?.vatAccommodation ?? 10,
+        taxAccommodation: row?.taxAccommodation ?? 2,
+        vatFnb: row?.vatFnb ?? 20,
+    }
+}
+
+export async function updateTaxSettings(data: {
+    vatAccommodation: number
+    taxAccommodation: number
+    vatFnb: number
+}) {
+    // Update ALL locale rows so any row returns the same rates
+    await prisma.siteSettings.updateMany({ data })
+    revalidatePath('/', 'layout')
+}
+
+// =============== MENU ITEMS ===============
+
 export async function getMenuItems(locale: string) {
     return await prisma.menuItem.findMany({
         where: { locale, parentId: null, isActive: true },

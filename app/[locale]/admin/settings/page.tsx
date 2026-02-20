@@ -1,12 +1,14 @@
 export const dynamic = 'force-dynamic'
 
-import { getSiteSettings } from '@/app/actions/settings'
-import { SiteSettingsForm } from '@/components/admin/SiteSettingsForm'
+import { getSiteSettings, getTaxSettings } from '@/app/actions/settings'
 import SettingsPageClient from './SettingsPageClient'
 
 export default async function SettingsPage({ params }: { params: Promise<{ locale: string }> }) {
     const { locale } = await params
-    const settings = await getSiteSettings(locale)
+    const [settings, taxRates] = await Promise.all([
+        getSiteSettings(locale),
+        getTaxSettings(),
+    ])
 
     // Convert null values to undefined to match component prop types
     const safeSettings = {
@@ -24,6 +26,6 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
     }
 
     return (
-        <SettingsPageClient locale={locale} initialSettings={safeSettings} />
+        <SettingsPageClient locale={locale} initialSettings={safeSettings} taxRates={taxRates} />
     )
 }
