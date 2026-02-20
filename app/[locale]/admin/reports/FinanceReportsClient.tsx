@@ -1,8 +1,9 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useCallback } from 'react'
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell, AreaChart, Area } from 'recharts'
 import { DollarSign, TrendingUp, TrendingDown, CreditCard, FileText, Receipt, BarChart3, Wallet, ArrowUpRight, ArrowDownRight } from 'lucide-react'
+import { type PriceMode, displayPrice, PriceModeToggle } from '@/lib/utils/price-mode'
 
 // ─── Types ────────────────────────────────────────────────────
 
@@ -21,6 +22,7 @@ interface Props {
     paymentMethods: PaymentMethodBreakdown[]
     expenseBreakdown: ExpenseBreakdown[]
     dataSource: string
+    taxRates?: { vatAccommodation: number; taxAccommodation: number; vatFnb: number }
 }
 
 // ─── Helpers ──────────────────────────────────────────────────
@@ -31,8 +33,13 @@ const fmtTry = (n: number) => `₺${fmtK(n)}`
 
 // ─── Component ────────────────────────────────────────────────
 
-export default function FinanceReportsClient({ kpis, monthlyData, trialBalance, departmentRevenue, paymentMethods, expenseBreakdown, dataSource }: Props) {
+export default function FinanceReportsClient({ kpis, monthlyData, trialBalance, departmentRevenue, paymentMethods, expenseBreakdown, dataSource, taxRates }: Props) {
     const [activeTab, setActiveTab] = useState<'overview' | 'mizan' | 'tahsilat' | 'gelir'>('overview')
+    const [priceMode, setPriceMode] = useState<PriceMode>('gross')
+
+    const totalTaxRate = (taxRates?.vatAccommodation ?? 10) + (taxRates?.taxAccommodation ?? 2)
+    /** Apply gross/net mode to any monetary amount */
+    const dp = useCallback((n: number) => displayPrice(n, priceMode, totalTaxRate), [priceMode, totalTaxRate])
 
     const tabs = [
         { key: 'overview' as const, label: 'Genel Bakış', icon: BarChart3 },
@@ -44,11 +51,11 @@ export default function FinanceReportsClient({ kpis, monthlyData, trialBalance, 
     // Chart data for monthly revenue vs expense
     const monthlyChartData = useMemo(() => monthlyData.map(m => ({
         name: m.month,
-        Gelir: Math.round(m.revenue / 1_000_000),
-        Gider: Math.round(m.expense / 1_000_000),
-        Kâr: Math.round(m.profit / 1_000_000),
-        'Önceki Yıl Gelir': Math.round(m.prevYearRevenue / 1_000_000),
-    })), [monthlyData])
+        Gelir: Math.round(dp(m.revenue) / 1_000_000),
+        Gider: Math.round(dp(m.expense) / 1_000_000),
+        Kâr: Math.round(dp(m.profit) / 1_000_000),
+        'Önceki Yıl Gelir': Math.round(dp(m.prevYearRevenue) / 1_000_000),
+    })), [monthlyData, dp])
 
     // Trial balance by group
     const trialGroups = useMemo(() => {
@@ -80,6 +87,7 @@ export default function FinanceReportsClient({ kpis, monthlyData, trialBalance, 
                     </button>
                 ))}
                 <div className="flex-1" />
+                <PriceModeToggle mode={priceMode} onChange={setPriceMode} />
                 <span className={`self-center px-2 py-1 rounded text-[10px] font-bold uppercase ${dataSource === 'live' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'}`}>
                     {dataSource === 'live' ? '● Canlı' : '● Demo'}
                 </span>
@@ -91,8 +99,8 @@ export default function FinanceReportsClient({ kpis, monthlyData, trialBalance, 
                     {/* KPI Cards */}
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                         {[
-                            { label: 'Toplam Gelir', value: fmtTry(kpis.totalRevenue), icon: TrendingUp, change: `+${kpis.revenueGrowth}%`, changeType: 'up' as const, color: 'emerald', gradient: 'from-emerald-500 to-teal-500' },
-                            { label: 'Toplam Gider', value: fmtTry(kpis.totalExpense), icon: TrendingDown, change: `+${kpis.expenseGrowth}%`, changeType: 'down' as const, color: 'red', gradient: 'from-red-500 to-rose-500' },
+                            { label: 'Toplam Gelir', value: fmtTry(dp(kpis.totalRevenue)), icon: TrendingUp, change: `+${kpis.revenueGrowth}%`, changeType: 'up' as const, color: 'emerald', gradient: 'from-emerald-500 to-teal-500' },
+                            { label: 'Toplam Gider', value: fmtTry(dp(kpis.totalExpense)), icon: TrendingDown, change: `+${kpis.expenseGrowth}%`, changeType: 'down' as const, color: 'red', gradient: 'from-red-500 to-rose-500' },
                             { label: 'Kâr Marjı', value: `%${kpis.profitMargin}`, icon: BarChart3, change: 'Net Kâr', changeType: 'neutral' as const, color: 'blue', gradient: 'from-blue-500 to-indigo-500' },
                             { label: 'Tahsilat Oranı', value: `%${kpis.collectionRate.toFixed(1)}`, icon: Wallet, change: `${kpis.invoiceCount} fatura`, changeType: 'neutral' as const, color: 'purple', gradient: 'from-purple-500 to-violet-500' },
                         ].map((card, i) => (

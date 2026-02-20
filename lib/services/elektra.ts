@@ -276,36 +276,55 @@ async function getJwt(): Promise<string> {
         return cachedJwt
     }
 
-    try {
-        const res = await fetch(`${API_BASE}/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                'hotel-id': HOTEL_ID,
-                'usercode': USER_CODE,
-                'password': PASSWORD
-            }),
-            cache: 'no-store'
-        })
+    const MAX_RETRIES = 3
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+        try {
+            const res = await fetch(`${API_BASE}/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    'hotel-id': HOTEL_ID,
+                    'usercode': USER_CODE,
+                    'password': PASSWORD
+                }),
+                cache: 'no-store'
+            })
 
-        if (!res.ok) {
-            console.error('[Elektra] Login failed:', res.status)
-            throw new Error(`Elektra login failed: ${res.status}`)
+            if (res.status === 429) {
+                const wait = Math.pow(2, attempt + 1) * 1000 // 2s, 4s, 8s
+                console.warn(`[Elektra] Rate limited (429), retrying in ${wait / 1000}s... (attempt ${attempt + 1}/${MAX_RETRIES})`)
+                await new Promise(r => setTimeout(r, wait))
+                continue
+            }
+
+            if (!res.ok) {
+                console.error('[Elektra] Login failed:', res.status)
+                throw new Error(`Elektra login failed: ${res.status}`)
+            }
+
+            const data = await res.json()
+            if (!data.success || !data.jwt) {
+                throw new Error('Elektra login: no JWT received')
+            }
+
+            cachedJwt = data.jwt
+            jwtExpiresAt = Date.now() + 12 * 60 * 60 * 1000
+            console.log('[Elektra] JWT obtained successfully')
+            return cachedJwt!
+        } catch (err) {
+            if (attempt === MAX_RETRIES - 1) {
+                console.error('[Elektra] Login error after retries:', err)
+                // Return stale JWT if available rather than crashing
+                if (cachedJwt) {
+                    console.warn('[Elektra] Using stale JWT as fallback')
+                    return cachedJwt
+                }
+                throw err
+            }
         }
-
-        const data = await res.json()
-        if (!data.success || !data.jwt) {
-            throw new Error('Elektra login: no JWT received')
-        }
-
-        cachedJwt = data.jwt
-        jwtExpiresAt = Date.now() + 12 * 60 * 60 * 1000
-        console.log('[Elektra] JWT obtained successfully')
-        return cachedJwt!
-    } catch (err) {
-        console.error('[Elektra] Login error:', err)
-        throw err
     }
+    // Should never reach here, but satisfy TS
+    throw new Error('Elektra login: max retries exceeded')
 }
 
 // ─── Real API Calls ────────────────────────────────────────────

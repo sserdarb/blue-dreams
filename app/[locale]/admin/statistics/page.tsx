@@ -1,4 +1,5 @@
 import ReportsClient from './ReportsClient'
+import { getTaxSettings } from '@/app/actions/settings'
 
 export const dynamic = 'force-dynamic'
 
@@ -55,7 +56,10 @@ export default async function StatisticsPage({ params }: { params: Promise<{ loc
     const { locale } = await params
 
     // Fetch Data
-    const { ElektraService } = await import('@/lib/services/elektra')
+    const [{ ElektraService }, taxRates] = await Promise.all([
+        import('@/lib/services/elektra'),
+        getTaxSettings(),
+    ])
 
     let reservations: any[] = []
     let comparisonReservations: any[] = []
@@ -65,14 +69,6 @@ export default async function StatisticsPage({ params }: { params: Promise<{ loc
     try {
         // Current Season (e.g., 2025)
         const raw = await ElektraService.getAllSeasonReservations()
-
-        // Previous Year for Comparison (e.g., 2024)
-        // Assuming "Season" is roughly current calendar year or April-Nov. 
-        // Let's fetch full previous year for broad comparison.
-        const prevYear = new Date().getFullYear() - 1
-        const prevStart = new Date(prevYear - 1, 10, 1) // Start from Nov 1 of year prior (Pace logic)
-        const prevEnd = new Date(`${prevYear}-12-31`)
-        const rawComp = await ElektraService.getReservationsByBookingDate(prevStart, prevEnd)
 
         reservations = raw.map(r => ({
             id: r.id,
@@ -92,8 +88,25 @@ export default async function StatisticsPage({ params }: { params: Promise<{ loc
             roomCount: r.roomCount,
             status: r.status,
             saleDate: r.lastUpdate.slice(0, 10),
-            nationality: r.nationality, // Added
+            nationality: r.nationality,
         }))
+
+        // Use minute-level timestamp to avoid hydration mismatch
+        const now = new Date()
+        now.setSeconds(0, 0)
+        lastUpdated = now.toISOString()
+
+    } catch (err) {
+        console.error('[Reports] Error fetching current:', err)
+        error = 'Veri yüklenirken hata oluştu'
+    }
+
+    // Previous Year for Comparison — fetch separately so failures don't block main data
+    try {
+        const prevYear = new Date().getFullYear() - 1
+        const prevStart = new Date(prevYear - 1, 10, 1)
+        const prevEnd = new Date(`${prevYear}-12-31`)
+        const rawComp = await ElektraService.getReservationsByBookingDate(prevStart, prevEnd)
 
         comparisonReservations = rawComp.map(r => ({
             id: r.id,
@@ -107,13 +120,9 @@ export default async function StatisticsPage({ params }: { params: Promise<{ loc
             roomCount: r.roomCount,
             nationality: r.nationality,
         }))
-
-        lastUpdated = new Date().toISOString()
-
     } catch (err) {
-        console.error('[Reports] Error fetching:', err)
-        error = 'Veri yüklenirken hata oluştu'
+        console.error('[Reports] Error fetching comparison:', err)
     }
 
-    return <ReportsClient reservations={reservations} comparisonReservations={comparisonReservations} error={error} lastUpdated={lastUpdated} locale={locale} />
+    return <ReportsClient reservations={reservations} comparisonReservations={comparisonReservations} error={error} lastUpdated={lastUpdated} locale={locale} taxRates={taxRates} />
 }

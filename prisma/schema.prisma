@@ -110,6 +110,10 @@ model SiteSettings {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
   googleMapsApiKey String?
+  // Tax rates (configurable from admin panel)
+  vatAccommodation Float    @default(10) // Accommodation KDV %
+  taxAccommodation Float    @default(2) // Konaklama vergisi %
+  vatFnb           Float    @default(20) // F&B KDV %
 }
 
 model MenuItem {

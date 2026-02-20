@@ -3,6 +3,7 @@
 import React, { useState, useMemo, useRef } from 'react'
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, AreaChart, Area, PieChart, Pie, Cell } from 'recharts'
 import { Download, FileText, Calendar, TrendingUp, TrendingDown, Building2, Printer, Mail, BellRing, Sparkles, ArrowUpDown, Filter, Sun, Snowflake, CloudSun, LayoutDashboard, Share2, Users, Globe, Store, CalendarCheck } from 'lucide-react'
+import { type PriceMode, displayPrice, PriceModeToggle } from '@/lib/utils/price-mode'
 
 // ─── Types ────────────────────────────────────────────────────
 interface ReservationSlim {
@@ -30,6 +31,7 @@ interface Props {
         prevYearReservations: ReservationSlim[]
         exchangeRates: { EUR_TO_TRY: number; USD_TO_TRY: number }
     }
+    taxRates?: { vatAccommodation: number; taxAccommodation: number; vatFnb: number }
 }
 
 // ─── Helpers ──────────────────────────────────────────────────
@@ -83,11 +85,13 @@ const SEASON_CONFIG: Record<SeasonType, { label: string; labelTR: string; icon: 
     }
 }
 
-function toTRY(amount: number, currency: string, rates: { EUR_TO_TRY: number; USD_TO_TRY: number }) {
-    if (currency === 'TRY' || currency === 'TL') return amount
-    if (currency === 'EUR') return amount * rates.EUR_TO_TRY
-    if (currency === 'USD') return amount * rates.USD_TO_TRY
-    return amount * rates.EUR_TO_TRY // fallback
+function toTRY(amount: number, currency: string, rates: { EUR_TO_TRY: number; USD_TO_TRY: number }, priceMode: PriceMode = 'gross', totalTaxRate: number = 12) {
+    let tryAmount = amount
+    if (currency === 'TRY' || currency === 'TL') tryAmount = amount
+    else if (currency === 'EUR') tryAmount = amount * rates.EUR_TO_TRY
+    else if (currency === 'USD') tryAmount = amount * rates.USD_TO_TRY
+    else tryAmount = amount * rates.EUR_TO_TRY // fallback
+    return displayPrice(tryAmount, priceMode, totalTaxRate)
 }
 
 function tryToEur(tryAmount: number, rates: { EUR_TO_TRY: number }) {
@@ -131,7 +135,7 @@ interface MonthlyAgg {
     daysInMonth: number
 }
 
-function aggregateByMonth(reservations: ReservationSlim[], rates: { EUR_TO_TRY: number; USD_TO_TRY: number }, year: number): MonthlyAgg[] {
+function aggregateByMonth(reservations: ReservationSlim[], rates: { EUR_TO_TRY: number; USD_TO_TRY: number }, year: number, priceMode: PriceMode = 'gross', totalTaxRate: number = 12): MonthlyAgg[] {
     const monthData = Array.from({ length: 12 }, (_, i) => {
         const daysInMonth = new Date(year, i + 1, 0).getDate()
         return {
@@ -156,7 +160,7 @@ function aggregateByMonth(reservations: ReservationSlim[], rates: { EUR_TO_TRY: 
 
         const rn = r.nights * (r.roomCount || 1)
         const bn = rn * 2 // typical resort avg occupancy per room
-        const revTry = toTRY(r.totalPrice, r.currency, rates)
+        const revTry = toTRY(r.totalPrice, r.currency, rates, priceMode, totalTaxRate)
 
         monthData[monthIdx].roomNights += rn
         monthData[monthIdx].bedNights += bn
@@ -177,7 +181,8 @@ function aggregateByMonth(reservations: ReservationSlim[], rates: { EUR_TO_TRY: 
 }
 
 // ─── Component ────────────────────────────────────────────────
-export default function ManagementReportsClient({ data }: Props) {
+export default function ManagementReportsClient({ data, taxRates }: Props) {
+    const totalTaxRate = (taxRates?.vatAccommodation ?? 10) + (taxRates?.taxAccommodation ?? 2)
     const { currentYear, currentYearReservations, prevYearReservations, exchangeRates } = data
     const prevYear = currentYear - 1
 
@@ -189,6 +194,7 @@ export default function ManagementReportsClient({ data }: Props) {
     const [ytdMode, setYtdMode] = useState(false)
     const [pdfPreparing, setPdfPreparing] = useState(false)
     const [pdfReady, setPdfReady] = useState(false)
+    const [priceMode, setPriceMode] = useState<PriceMode>('gross')
     const [aiSummary, setAiSummary] = useState<string | null>(null)
     const [aiLoading, setAiLoading] = useState(false)
     const reportRef = useRef<HTMLDivElement>(null)
@@ -232,8 +238,8 @@ export default function ManagementReportsClient({ data }: Props) {
     }, [prevYearReservations, marketFilter, ytdMode, prevYear, todayDayOfYear])
 
     // Aggregate data (now using filtered)
-    const cyMonth = useMemo(() => aggregateByMonth(filteredCY, exchangeRates, currentYear), [filteredCY, exchangeRates, currentYear])
-    const pyMonth = useMemo(() => aggregateByMonth(filteredPY, exchangeRates, prevYear), [filteredPY, exchangeRates, prevYear])
+    const cyMonth = useMemo(() => aggregateByMonth(filteredCY, exchangeRates, currentYear, priceMode, totalTaxRate), [filteredCY, exchangeRates, currentYear, priceMode, totalTaxRate])
+    const pyMonth = useMemo(() => aggregateByMonth(filteredPY, exchangeRates, prevYear, priceMode, totalTaxRate), [filteredPY, exchangeRates, prevYear, priceMode, totalTaxRate])
 
     // Only show months with some activity (Apr-Oct typical for resort), apply season filter
     const activeMonths = useMemo(() => {
@@ -279,7 +285,7 @@ export default function ManagementReportsClient({ data }: Props) {
             const ch = r.channel || 'Diğer'
             const prev = map.get(ch) || { rn: 0, revenue: 0, revenueEur: 0, count: 0 }
             const rn = r.nights * (r.roomCount || 1)
-            const revTry = toTRY(r.totalPrice, r.currency, exchangeRates)
+            const revTry = toTRY(r.totalPrice, r.currency, exchangeRates, priceMode, totalTaxRate)
             prev.rn += rn
             prev.revenue += revTry
             prev.revenueEur += tryToEur(revTry, exchangeRates)
@@ -302,7 +308,7 @@ export default function ManagementReportsClient({ data }: Props) {
             const ag = r.agency || 'Bilinmeyen'
             const prev = map.get(ag) || { rn: 0, revenue: 0, revenueEur: 0, count: 0 }
             const rn = r.nights * (r.roomCount || 1)
-            const revTry = toTRY(r.totalPrice, r.currency, exchangeRates)
+            const revTry = toTRY(r.totalPrice, r.currency, exchangeRates, priceMode, totalTaxRate)
             prev.rn += rn
             prev.revenue += revTry
             prev.revenueEur += tryToEur(revTry, exchangeRates)
@@ -325,7 +331,7 @@ export default function ManagementReportsClient({ data }: Props) {
             const nat = r.nationality || 'Bilinmeyen'
             const prev = map.get(nat) || { rn: 0, revenue: 0, revenueEur: 0, count: 0 }
             const rn = r.nights * (r.roomCount || 1)
-            const revTry = toTRY(r.totalPrice, r.currency, exchangeRates)
+            const revTry = toTRY(r.totalPrice, r.currency, exchangeRates, priceMode, totalTaxRate)
             prev.rn += rn
             prev.revenue += revTry
             prev.revenueEur += tryToEur(revTry, exchangeRates)
@@ -349,7 +355,7 @@ export default function ManagementReportsClient({ data }: Props) {
                 const ag = r.agency || 'Bilinmeyen'
                 const prev = map.get(ag) || { rn: 0, revenue: 0, revenueEur: 0, count: 0 }
                 const rn = r.nights * (r.roomCount || 1)
-                const revTry = toTRY(r.totalPrice, r.currency, exchangeRates)
+                const revTry = toTRY(r.totalPrice, r.currency, exchangeRates, priceMode, totalTaxRate)
                 prev.rn += rn
                 prev.revenue += revTry
                 prev.revenueEur += tryToEur(revTry, exchangeRates)
@@ -399,7 +405,7 @@ export default function ManagementReportsClient({ data }: Props) {
 
                 if (month < cm || (month === cm && day <= cd)) {
                     const rn = r.nights * (r.roomCount || 1)
-                    const revTry = toTRY(r.totalPrice, r.currency, exchangeRates)
+                    const revTry = toTRY(r.totalPrice, r.currency, exchangeRates, priceMode, totalTaxRate)
                     const revEur = tryToEur(revTry, exchangeRates)
 
                     acc.rn += rn
@@ -694,6 +700,7 @@ export default function ManagementReportsClient({ data }: Props) {
                         </select>
                         <Filter size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                     </div>
+                    <PriceModeToggle mode={priceMode} onChange={setPriceMode} />
                     <button onClick={() => setShowCurrency(showCurrency === 'EUR' ? 'TRY' : 'EUR')} className="px-3 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-lg text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
                         {showCurrency === 'EUR' ? '€ EUR' : '₺ TRY'}
                     </button>

@@ -10,6 +10,7 @@ import HRReportsClient from './HRReportsClient'
 import PurchasingReportsClient from './PurchasingReportsClient'
 import ReportGroupNav from './ReportGroupNav'
 import { getAdminTranslations, type AdminLocale } from '@/lib/admin-translations'
+import { getTaxSettings } from '@/app/actions/settings'
 
 export default async function ManagementReportsPage({
     params,
@@ -24,6 +25,7 @@ export default async function ManagementReportsPage({
 
     const currentYear = new Date().getFullYear()
     const prevYear = currentYear - 1
+    const taxRates = await getTaxSettings()
 
     // Only fetch data for the active group
     let content: React.ReactNode = null
@@ -66,7 +68,7 @@ export default async function ManagementReportsPage({
         }
 
         dataSourceLabel = ElektraService.isFullyLive ? 'Elektra Live' : 'Mock Data'
-        content = <ManagementReportsClient data={serialized} />
+        content = <ManagementReportsClient data={serialized} taxRates={taxRates} />
     }
 
     if (group === 'finance') {
@@ -92,6 +94,7 @@ export default async function ManagementReportsPage({
                 paymentMethods={paymentMethods}
                 expenseBreakdown={expenseBreakdown}
                 dataSource={FinanceService.dataSource}
+                taxRates={taxRates}
             />
         )
     }
