@@ -3,9 +3,10 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import {
     Calendar, Users, Baby, Search, Loader2, Check, ChevronRight, ChevronDown,
-    Star, Maximize, Eye, Phone, Mail, User, MessageSquare, EyeOff
+    Star, Maximize, Eye, Phone, Mail, User, MessageSquare, EyeOff, Shield, TrendingUp, Flame
 } from 'lucide-react'
 import Image from 'next/image'
+import { useGeoCurrency, formatGeoPrice, type GeoCurrency } from '@/lib/utils/geo-currency'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -130,6 +131,7 @@ export function RoomBookingWidget({ data }: { data: any }) {
     const [results, setResults] = useState<AvailabilityResponse | null>(null)
     const [error, setError] = useState('')
     const [showUnavailable, setShowUnavailable] = useState(false)
+    const geo = useGeoCurrency()
 
     // Booking form
     const [selectedRoom, setSelectedRoom] = useState<RoomTypeAvailability | null>(null)
@@ -217,6 +219,23 @@ export function RoomBookingWidget({ data }: { data: any }) {
                     <p className="text-gray-500 max-w-xl mx-auto text-sm">
                         {data?.subtitle || 'Tarih seçerek müsaitlik ve güncel fiyatları görüntüleyin. En iyi fiyat garantisi ile doğrudan rezervasyon yapın.'}
                     </p>
+                    {/* Best Price Guarantee + Contract Badge */}
+                    <div className="flex items-center justify-center gap-4 mt-4">
+                        <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-full text-xs font-bold">
+                            <Shield size={14} /> En İyi Fiyat Garantisi
+                        </div>
+                        <div className="flex items-center gap-1.5 bg-cyan-50 text-cyan-700 px-3 py-1.5 rounded-full text-xs font-bold">
+                            <TrendingUp size={14} /> {geo.contract}
+                        </div>
+                        <div className="flex items-center gap-1 bg-gray-50 rounded-full text-xs">
+                            {(['TRY', 'EUR'] as GeoCurrency[]).map(c => (
+                                <button key={c} onClick={() => geo.setCurrency(c === geo.detected.currency ? null : c)}
+                                    className={`px-3 py-1.5 rounded-full font-bold transition-colors ${geo.currency === c ? 'bg-brand text-white' : 'text-gray-400 hover:text-gray-600'}`}>
+                                    {c === 'TRY' ? '₺ TRY' : '€ EUR'}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
                 </div>
 
                 {/* ─── Search Bar ─── */}
@@ -385,8 +404,14 @@ export function RoomBookingWidget({ data }: { data: any }) {
                                                     {/* Price badge on image */}
                                                     <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm rounded-xl px-3 py-2 shadow-lg">
                                                         <div className="text-[10px] text-gray-500 font-bold uppercase">gecelik</div>
-                                                        <div className="text-lg font-bold text-brand">₺{fmtPrice(room.avgPricePerNight)}</div>
+                                                        <div className="text-lg font-bold text-brand">{formatGeoPrice(room.avgPricePerNight, room.avgPricePerNightEur, geo.currency)}</div>
                                                     </div>
+                                                    {/* Urgency badge */}
+                                                    {availableRooms.indexOf(room) < 2 && (
+                                                        <div className="absolute top-4 left-4 bg-orange-500 text-white px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase flex items-center gap-1 shadow-lg animate-pulse">
+                                                            <Flame size={12} /> Popüler Seçim
+                                                        </div>
+                                                    )}
                                                 </div>
 
                                                 {/* Room Details */}
@@ -422,10 +447,13 @@ export function RoomBookingWidget({ data }: { data: any }) {
                                                                 {results.nights} gece toplam
                                                             </div>
                                                             <div className="flex items-baseline gap-2">
-                                                                <span className="text-3xl font-bold text-gray-900">₺{fmtPrice(room.totalPrice)}</span>
+                                                                <span className="text-3xl font-bold text-gray-900">{formatGeoPrice(room.totalPrice, room.totalPriceEur, geo.currency)}</span>
                                                             </div>
                                                             <div className="text-xs text-gray-400 mt-0.5">
-                                                                ≈ €{fmtPrice(room.totalPriceEur)} • Gecelik ₺{fmtPrice(room.avgPricePerNight)}
+                                                                {geo.currency === 'TRY'
+                                                                    ? `≈ €${fmtPrice(room.totalPriceEur)} • Gecelik ₺${fmtPrice(room.avgPricePerNight)}`
+                                                                    : `≈ ₺${fmtPrice(room.totalPrice)} • Gecelik €${fmtPrice(room.avgPricePerNightEur)}`
+                                                                }
                                                             </div>
                                                         </div>
 
@@ -565,8 +593,13 @@ export function RoomBookingWidget({ data }: { data: any }) {
                             <div className="mt-6 flex flex-col md:flex-row items-center justify-between gap-4 pt-6 border-t border-gray-100">
                                 <div className="text-center md:text-left">
                                     <div className="text-sm text-gray-500">Toplam Tutar</div>
-                                    <div className="text-3xl font-bold text-gray-900">₺{fmtPrice(selectedRoom.totalPrice)}</div>
-                                    <div className="text-xs text-gray-400">≈ €{fmtPrice(selectedRoom.totalPriceEur)}</div>
+                                    <div className="text-3xl font-bold text-gray-900">{formatGeoPrice(selectedRoom.totalPrice, selectedRoom.totalPriceEur, geo.currency)}</div>
+                                    <div className="text-xs text-gray-400">
+                                        {geo.currency === 'TRY'
+                                            ? `≈ €${fmtPrice(selectedRoom.totalPriceEur)}`
+                                            : `≈ ₺${fmtPrice(selectedRoom.totalPrice)}`
+                                        }
+                                    </div>
                                 </div>
                                 <button
                                     onClick={submitBooking}

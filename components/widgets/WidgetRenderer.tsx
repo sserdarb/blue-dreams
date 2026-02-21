@@ -28,6 +28,7 @@ import { ReviewsSectionWidget } from './ReviewsSectionWidget'
 import { SustainabilityWidget } from './SustainabilityWidget'
 import { LocationMapWidget } from './LocationMapWidget'
 import { RoomBookingWidget } from './RoomBookingWidget'
+import { AvailabilityCalendar } from './AvailabilityCalendar'
 
 type WidgetProps = {
   type: string
@@ -69,6 +70,7 @@ const componentMap: { [key: string]: React.ComponentType<{ data: any }> } = {
   'sustainability': SustainabilityWidget,
   'location-map': LocationMapWidget,
   'room-booking': RoomBookingWidget,
+  'availability-calendar': AvailabilityCalendar,
 }
 
 export function WidgetRenderer({ widgets }: { widgets: WidgetProps[] }) {

@@ -1,8 +1,8 @@
 'use client'
 export const dynamic = 'force-dynamic'
 
-import React, { useState, useRef } from 'react'
-import { Plus, Edit2, Trash2, X, Save, GripVertical, UtensilsCrossed, Wine, Coffee, IceCream, ChevronDown, ChevronUp, Image as ImageIcon, QrCode, Printer, Download, Eye, ExternalLink } from 'lucide-react'
+import React, { useState, useRef, useEffect, useCallback } from 'react'
+import { Plus, Edit2, Trash2, X, Save, GripVertical, UtensilsCrossed, Wine, Coffee, IceCream, ChevronDown, ChevronUp, Image as ImageIcon, QrCode, Printer, Download, Eye, ExternalLink, Loader2 } from 'lucide-react'
 import { useParams } from 'next/navigation'
 
 // ─── Types ────────────────────────────────────────────────────
@@ -106,6 +106,8 @@ export default function RestaurantMenuPage() {
     const [editingCategoryId, setEditingCategoryId] = useState<string>('')
     const [showQrPanel, setShowQrPanel] = useState(false)
     const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(['c1', 'c2', 'c3', 'c4']))
+    const [qrData, setQrData] = useState<{ menuUrl: string; qrDataUrl: string } | null>(null)
+    const [qrLoading, setQrLoading] = useState(false)
 
     const currentRestaurant = restaurants.find(r => r.id === selectedRestaurant) || restaurants[0]
 
@@ -168,6 +170,21 @@ export default function RestaurantMenuPage() {
 
     const qrMenuUrl = `https://new.bluedreamsresort.com/${locale}/menu/${currentRestaurant.id}`
 
+    const fetchQr = useCallback(async () => {
+        setQrLoading(true)
+        try {
+            const res = await fetch('/api/admin/menu-qr', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ restaurantId: currentRestaurant.id, baseUrl: 'https://new.bluedreamsresort.com' }),
+            })
+            if (res.ok) setQrData(await res.json())
+        } catch (e) { console.error('QR fetch error:', e) }
+        finally { setQrLoading(false) }
+    }, [currentRestaurant.id])
+
+    useEffect(() => { fetchQr() }, [fetchQr])
+
     return (
         <div className="space-y-6">
             {/* Header */}
@@ -215,30 +232,30 @@ export default function RestaurantMenuPage() {
                         <h3 className="font-bold mb-1">QR Menü</h3>
                         <p className="text-xs text-slate-400 mb-4">Masalarda gösterilecek QR kod</p>
 
-                        {/* Mock QR Code */}
+                        {/* Real QR Code */}
                         <div className="bg-white p-4 rounded-xl inline-block mb-4">
-                            <div className="w-32 h-32 bg-gradient-to-br from-slate-900 via-slate-700 to-slate-900 rounded-lg flex items-center justify-center relative overflow-hidden">
-                                {/* Simple QR pattern mock */}
-                                <div className="grid grid-cols-8 gap-0.5 w-24 h-24">
-                                    {Array.from({ length: 64 }, (_, i) => (
-                                        <div key={i} className={`w-full aspect-square rounded-[1px] ${Math.random() > 0.4 ? 'bg-slate-900' : 'bg-white'}`} />
-                                    ))}
+                            {qrLoading ? (
+                                <div className="w-32 h-32 flex items-center justify-center">
+                                    <Loader2 className="animate-spin text-slate-400" size={32} />
                                 </div>
-                                {/* Center logo */}
-                                <div className="absolute inset-0 flex items-center justify-center">
-                                    <div className="w-8 h-8 bg-cyan-500 rounded-lg flex items-center justify-center shadow-lg">
-                                        <span className="text-white text-[8px] font-black">BD</span>
-                                    </div>
+                            ) : qrData?.qrDataUrl ? (
+                                <img src={qrData.qrDataUrl} alt="QR Menu" className="w-32 h-32" />
+                            ) : (
+                                <div className="w-32 h-32 flex items-center justify-center text-slate-300">
+                                    <QrCode size={48} />
                                 </div>
-                            </div>
+                            )}
                         </div>
 
                         <div className="text-xs text-slate-400 mb-3 break-all">{qrMenuUrl}</div>
 
                         <div className="flex gap-2 justify-center">
-                            <button className="bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-2 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5">
-                                <Download size={14} /> PDF Afiş
-                            </button>
+                            {qrData?.qrDataUrl && (
+                                <a href={qrData.qrDataUrl} download={`menu-qr-${currentRestaurant.id}.png`}
+                                    className="bg-cyan-600 hover:bg-cyan-500 text-white px-3 py-2 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5">
+                                    <Download size={14} /> QR İndir
+                                </a>
+                            )}
                             <a href={qrMenuUrl} target="_blank" rel="noopener noreferrer" className="bg-white/10 hover:bg-white/20 text-white px-3 py-2 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5">
                                 <Eye size={14} /> Önizle
                             </a>
