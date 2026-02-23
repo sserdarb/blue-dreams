@@ -34,12 +34,24 @@ const SENTIMENT_COLORS = {
 }
 
 // ─── Common Tooltip Style ───
-const tooltipStyle = {
-    backgroundColor: '#1e293b',
-    borderColor: '#334155',
-    color: '#f8fafc',
-    borderRadius: 12,
-    fontSize: 13,
+const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+        return (
+            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 rounded-xl shadow-lg text-sm">
+                <p className="font-bold text-slate-900 dark:text-white mb-2">{label}</p>
+                {payload.map((p: any, index: number) => (
+                    <div key={index} className="flex items-center gap-2 mb-1">
+                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: p.color || p.payload?.fill }} />
+                        <span className="text-slate-500 dark:text-slate-400">{p.name || p.dataKey}:</span>
+                        <span className="font-bold text-slate-900 dark:text-white ml-auto">
+                            {p.value}
+                        </span>
+                    </div>
+                ))}
+            </div>
+        )
+    }
+    return null
 }
 
 // ─── Topic Keywords for extraction ───
@@ -100,10 +112,10 @@ export function CommentCountChart({ reviews }: { reviews: GuestReview[] }) {
         <div className="h-[280px] w-full">
             <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={data} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-slate-200 dark:stroke-slate-700" />
                     <XAxis dataKey="month" stroke="#94a3b8" fontSize={12} />
                     <YAxis stroke="#94a3b8" fontSize={12} />
-                    <Tooltip contentStyle={tooltipStyle} />
+                    <Tooltip content={<CustomTooltip />} />
                     <Line
                         type="monotone"
                         dataKey="count"
@@ -152,10 +164,10 @@ export function SentimentTrendChart({ reviews }: { reviews: GuestReview[] }) {
                             <stop offset="95%" stopColor={SENTIMENT_COLORS.positive} stopOpacity={0} />
                         </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-slate-200 dark:stroke-slate-700" />
                     <XAxis dataKey="month" stroke="#94a3b8" fontSize={12} />
                     <YAxis stroke="#94a3b8" fontSize={12} domain={[0, 10]} />
-                    <Tooltip contentStyle={tooltipStyle} />
+                    <Tooltip content={<CustomTooltip />} />
                     <Legend iconType="circle" />
                     <Area type="monotone" dataKey="avgRating" stroke={COLORS.accent} fill="url(#gradPos)" strokeWidth={3} name="Ort. Puan" />
                 </AreaChart>
@@ -198,7 +210,7 @@ export function MecraDistributionChart({ reviews }: { reviews: GuestReview[] }) 
                                 <Cell key={i} fill={SOURCE_COLORS[entry.name] || COLORS.slate} />
                             ))}
                         </Pie>
-                        <Tooltip contentStyle={tooltipStyle} />
+                        <Tooltip content={<CustomTooltip />} />
                     </PieChart>
                 </ResponsiveContainer>
             </div>
@@ -233,10 +245,10 @@ export function TopTopicsChart({ reviews }: { reviews: GuestReview[] }) {
         <div className="h-[280px] w-full">
             <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={topics} layout="vertical" margin={{ top: 5, right: 20, left: 80, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#334155" />
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} className="stroke-slate-200 dark:stroke-slate-700" />
                     <XAxis type="number" stroke="#94a3b8" fontSize={12} />
                     <YAxis type="category" dataKey="topic" stroke="#94a3b8" fontSize={12} width={75} />
-                    <Tooltip contentStyle={tooltipStyle} />
+                    <Tooltip content={<CustomTooltip />} />
                     <Bar dataKey="count" fill={COLORS.accent} radius={[0, 6, 6, 0]} name="Bahsedilme" />
                 </BarChart>
             </ResponsiveContainer>
@@ -257,10 +269,10 @@ export function ComplaintTopicsChart({ reviews }: { reviews: GuestReview[] }) {
         <div className="h-[280px] w-full">
             <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={topics} layout="vertical" margin={{ top: 5, right: 20, left: 80, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#334155" />
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} className="stroke-slate-200 dark:stroke-slate-700" />
                     <XAxis type="number" stroke="#94a3b8" fontSize={12} />
                     <YAxis type="category" dataKey="topic" stroke="#94a3b8" fontSize={12} width={75} />
-                    <Tooltip contentStyle={tooltipStyle} />
+                    <Tooltip content={<CustomTooltip />} />
                     <Bar dataKey="count" fill={COLORS.danger} radius={[0, 6, 6, 0]} name="Şikayet" />
                 </BarChart>
             </ResponsiveContainer>
@@ -287,7 +299,7 @@ export function SentimentDonutChart({ reviews }: { reviews: GuestReview[] }) {
                         <Pie data={data} cx="50%" cy="50%" innerRadius={40} outerRadius={65} paddingAngle={3} dataKey="value">
                             {data.map((entry, i) => (<Cell key={i} fill={entry.color} />))}
                         </Pie>
-                        <Tooltip contentStyle={tooltipStyle} />
+                        <Tooltip content={<CustomTooltip />} />
                     </PieChart>
                 </ResponsiveContainer>
             </div>

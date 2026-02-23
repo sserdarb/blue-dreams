@@ -116,7 +116,15 @@ export const ElektraCache = {
 
         // Fetch Reservations & Upsert
         try {
-            const reservations = await ElektraService.getReservations(fromDate, toDate)
+            const allReservations = await ElektraService.getReservations(fromDate, toDate)
+
+            // ONLY cache data up to 23:59:59 of yesterday. 
+            // Today's dynamically changing data will be fetched in real-time by the dashboard.
+            const todayStr = today.toISOString().split('T')[0]
+            const reservations = allReservations.filter(res => {
+                const updatedDateStr = res.lastUpdate ? res.lastUpdate.slice(0, 10) : ''
+                return updatedDateStr < todayStr
+            })
 
             // Batch upsert (PRISMA doesn't support bulk upsert easily, so loop or createMany on conflict)
             // Using loop is safer for data integrity

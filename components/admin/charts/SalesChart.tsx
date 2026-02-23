@@ -57,7 +57,7 @@ export function SalesChart({ data, currency = 'TRY', exchangeRate = 38.5 }: Sale
                     </defs>
                     <XAxis dataKey="date" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
                     <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${symbol}${(value / 1000).toFixed(0)}k`} />
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" />
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-slate-200 dark:stroke-slate-700" />
                     <Tooltip
                         content={({ active, payload, label }) => {
                             if (active && payload && payload.length) {

@@ -122,7 +122,13 @@ const API_BASE = 'https://bookingapi.elektraweb.com'
 const HOTEL_ID = 33264
 const USER_CODE = 'asis'
 const PASSWORD = '***REDACTED_ERP_PASSWORD***'
+
+// The exact saleable room count defined by the hotel management
 const TOTAL_ROOMS = 341
+
+// Specific saleable room codes that make up the 341 count
+// CFM (58), CR (109), CSEA (108), DLX (38), DLX FAM (28) = 341
+const SALEABLE_ROOM_CODES = ['CFM', 'CR', 'CSEA', 'DLX', 'DLX FAM']
 
 // ─── Channel Grouping ──────────────────────────────────────────
 const CHANNEL_MAP: Record<string, string> = {
@@ -442,7 +448,11 @@ async function fetchReservations(fromDate: string, toDate: string, status: strin
 
 function computeOccupancy(availability: RoomAvailability[]): DailyOccupancy[] {
     const byDate = new Map<string, RoomAvailability[]>()
-    for (const item of availability) {
+
+    // Filter out irrelevant rooms (ROH, PROMO, BSR...) when calculating overall hotel occupancy
+    const saleableAvailability = availability.filter(r => SALEABLE_ROOM_CODES.includes(r.roomType))
+
+    for (const item of saleableAvailability) {
         if (!byDate.has(item.date)) byDate.set(item.date, [])
         byDate.get(item.date)!.push(item)
     }
@@ -450,15 +460,20 @@ function computeOccupancy(availability: RoomAvailability[]): DailyOccupancy[] {
     const result: DailyOccupancy[] = []
     for (const [date, rooms] of byDate) {
         const availableRooms = rooms.reduce((sum, r) => sum + r.availableCount, 0)
-        const effectiveTotal = Math.max(TOTAL_ROOMS, availableRooms)
-        const occupiedRooms = effectiveTotal - availableRooms
-        const occupancyRate = Math.round((occupiedRooms / effectiveTotal) * 100)
+
+        // Use the hardcoded exactly 341 limit rather than dynamically fluctuating API caps 
+        // which might include ghost rooms.
+        const effectiveTotal = TOTAL_ROOMS
+        const occupiedRooms = Math.max(0, effectiveTotal - availableRooms)
+
+        // Safeguard percentage calculation
+        const occupancyRate = effectiveTotal > 0 ? Math.round((occupiedRooms / effectiveTotal) * 100) : 0
 
         result.push({
             date,
             totalRooms: effectiveTotal,
             availableRooms,
-            occupiedRooms: Math.max(0, occupiedRooms),
+            occupiedRooms,
             occupancyRate: Math.max(0, Math.min(100, occupancyRate))
         })
     }
@@ -552,6 +567,14 @@ export const ElektraService = {
         const from = new Date(today.getFullYear(), today.getMonth() - 3, 1)
         const to = new Date(today.getFullYear() + 1, today.getMonth(), 0)
         return this.getReservations(from, to)
+    },
+
+    // Fetch full season cancellations (used to prune DB cache real-time)
+    async getAllSeasonCancellations(): Promise<Reservation[]> {
+        const today = new Date()
+        const from = new Date(today.getFullYear(), today.getMonth() - 3, 1)
+        const to = new Date(today.getFullYear() + 1, today.getMonth(), 0)
+        return this.getReservations(from, to, 'Cancelled')
     },
 
     // Filter reservations by BOOKING/SALE date (reservationDate), not check-in date

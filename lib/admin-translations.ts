@@ -55,8 +55,14 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         budgetAnalysis: 'Bütçe Analizi',
         bookingVelocity: 'Rezervasyon Hızı',
         occupancyRate: 'Doluluk Oranı',
+        roomOccupancy: 'Oda Doluluk',
         adr: 'ADR (Ort. Günlük Fiyat)',
         revpar: 'RevPAR',
+        bedNightLabel: 'Yatak Geceleme',
+        roomRevenue: 'Oda Geliri',
+        monthLabel: 'Ay',
+        seasonLabel: 'Sezon',
+        exchangeRateLabel: 'Kur:',
         avgNights: 'Ort. Konaklama',
         guestNationality: 'Misafir Milliyeti',
         overview: 'Genel Bakış',
@@ -163,6 +169,55 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         roomNightShare: 'Room Night Payı',
         vsLastYear: 'Önceki Yıla Göre',
         monthNames: ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'],
+        managementReports: {
+            netReservations: 'Net Rezervasyonlar',
+            paceReport: 'YTD Pace Raporu',
+            agencyReport: 'Acente Raporu',
+            market: 'Market',
+            allMarkets: 'Tüm Marketler',
+            ytd: 'Bugüne Kadar (YTD)',
+            allSeasons: 'Tüm Sezonlar',
+            clear: 'Temizle',
+            sendEmail: 'E-posta Gönder',
+            aiInterpretGrouped: 'AI Yorumu',
+            total: 'Toplam',
+            kpiSummary: 'Aylık KPI Özeti',
+            revenueShare: 'Gelir Payı',
+            comparison: 'Karşılaştırma',
+            details: 'Detay Tablosu',
+            resCount: 'Rez. Sayısı',
+            sharePct: 'Pay %',
+            actual: 'Gerçekleşen',
+            remaining: 'Kalan',
+            targetAdr: 'Hedef ADR',
+            requiredRes: 'Gereken Rez.',
+            remainingRn: 'Kalan Oda-Gece',
+            groupRes: 'Grup Rez.',
+            channelBudgetSplit: 'Kanal Bütçe Dağılımı',
+            budgetRealization: 'Bütçe Gerçekleşme',
+            ofTarget: 'hedefin'
+        },
+        widgets: {
+            cancelCount: 'İptal Sayısı',
+            rate: 'oran',
+            revenueImpact: 'Gelir Etkisi',
+            loss: 'kayıp',
+            todayRevenue: 'Bugünkü Gelir',
+            yesterdayRevenue: 'Dünkü gelir',
+            change: 'değişim',
+            thisWeek: 'Bu Hafta',
+            avgPerDay: 'ort',
+            perDay: '/gün',
+            outOfOrderRooms: 'Out of Order Odalar',
+            totalRoomsPct: 'Toplam odaların',
+            availableRooms: 'Kullanılabilir',
+            expectedOccupancy: 'Beklenen Doluluk',
+            totalCommission: 'Toplam Komisyon',
+            roomsSuffix: 'oda',
+            resSuffix: 'rezervasyon',
+            collectionRate: 'tahsilat oranı',
+            occupancy: 'Doluluk'
+        }
     },
     en: {
         navReports: 'Reports',
@@ -208,8 +263,14 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         budgetAnalysis: 'Budget Analysis',
         bookingVelocity: 'Booking Velocity',
         occupancyRate: 'Occupancy Rate',
+        roomOccupancy: 'Room Occupancy',
         adr: 'ADR (Avg. Daily Rate)',
         revpar: 'RevPAR',
+        bedNightLabel: 'Bed Nights',
+        roomRevenue: 'Room Revenue',
+        monthLabel: 'Month',
+        seasonLabel: 'Season',
+        exchangeRateLabel: 'Ex. Rate:',
         avgNights: 'Avg. Length of Stay',
         guestNationality: 'Guest Nationality',
         overview: 'Overview',
@@ -312,6 +373,55 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         roomNightShare: 'Room Night Share',
         vsLastYear: 'vs Last Year',
         monthNames: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+        managementReports: {
+            netReservations: 'Net Reservations',
+            paceReport: 'YTD Pace Report',
+            agencyReport: 'Agency Report',
+            market: 'Market',
+            allMarkets: 'All Markets',
+            ytd: 'Year to Date (YTD)',
+            allSeasons: 'All Seasons',
+            clear: 'Clear',
+            sendEmail: 'Send Email',
+            aiInterpretGrouped: 'AI Assessment',
+            total: 'Total',
+            kpiSummary: 'Monthly KPI Summary',
+            revenueShare: 'Revenue Share',
+            comparison: 'Comparison',
+            details: 'Details Table',
+            resCount: 'Res. Count',
+            sharePct: 'Share %',
+            actual: 'Actual',
+            remaining: 'Remaining',
+            targetAdr: 'Target ADR',
+            requiredRes: 'Required Res.',
+            remainingRn: 'Remaining RN',
+            groupRes: 'Group Res.',
+            channelBudgetSplit: 'Channel Budget Split',
+            budgetRealization: 'Budget Realization',
+            ofTarget: 'of target'
+        },
+        widgets: {
+            cancelCount: 'Cancellations',
+            rate: 'rate',
+            revenueImpact: 'Revenue Impact',
+            loss: 'loss',
+            todayRevenue: 'Today\'s Revenue',
+            yesterdayRevenue: 'Yesterday\'s Revenue',
+            change: 'change',
+            thisWeek: 'This Week',
+            avgPerDay: 'avg',
+            perDay: '/day',
+            outOfOrderRooms: 'Out of Order Rooms',
+            totalRoomsPct: 'Of total rooms',
+            availableRooms: 'Available',
+            expectedOccupancy: 'Expected Occupancy',
+            totalCommission: 'Total Commission',
+            roomsSuffix: 'rooms',
+            resSuffix: 'reservations',
+            collectionRate: 'collection rate',
+            occupancy: 'Occupancy'
+        }
     },
     de: {
         navReports: 'Berichte',
@@ -357,8 +467,14 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         budgetAnalysis: 'Budgetanalyse',
         bookingVelocity: 'Buchungsgeschwindigkeit',
         occupancyRate: 'Auslastungsrate',
+        roomOccupancy: 'Zimmerauslastung',
         adr: 'ADR (Ø Tagesrate)',
         revpar: 'RevPAR',
+        bedNightLabel: 'Bettennächte',
+        roomRevenue: 'Zimmerumsatz',
+        monthLabel: 'Monat',
+        seasonLabel: 'Saison',
+        exchangeRateLabel: 'Wechselkurs:',
         avgNights: 'Ø Aufenthaltsdauer',
         guestNationality: 'Gästenationalität',
         overview: 'Übersicht',
@@ -461,6 +577,55 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         roomNightShare: 'Zimmernächteanteil',
         vsLastYear: 'gg. Vorjahr',
         monthNames: ['Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'],
+        managementReports: {
+            netReservations: 'Netto Reservierungen',
+            paceReport: 'YTD Pace Bericht',
+            agencyReport: 'Agenturbericht',
+            market: 'Markt',
+            allMarkets: 'Alle Märkte',
+            ytd: 'Bisher in diesem Jahr (YTD)',
+            allSeasons: 'Alle Saisons',
+            clear: 'Löschen',
+            sendEmail: 'E-Mail Senden',
+            aiInterpretGrouped: 'AI Bewertung',
+            total: 'Gesamt',
+            kpiSummary: 'Monatliche KPI-Zusammenfassung',
+            revenueShare: 'Umsatzanteil',
+            comparison: 'Vergleich',
+            details: 'Detailtabelle',
+            resCount: 'Res. Anzahl',
+            sharePct: 'Anteil %',
+            actual: 'Ist',
+            remaining: 'Verbleibend',
+            targetAdr: 'Ziel-ADR',
+            requiredRes: 'Erforderliche Res.',
+            remainingRn: 'Verbleibende RN',
+            groupRes: 'Gruppenres.',
+            channelBudgetSplit: 'Kanalbudget-Verteilung',
+            budgetRealization: 'Budget-Realisierung',
+            ofTarget: 'vom Ziel'
+        },
+        widgets: {
+            cancelCount: 'Stornierungen',
+            rate: 'Rate',
+            revenueImpact: 'Umsatzauswirkung',
+            loss: 'Verlust',
+            todayRevenue: 'Heutiger Umsatz',
+            yesterdayRevenue: 'Gestriger Umsatz',
+            change: 'Änderung',
+            thisWeek: 'Diese Woche',
+            avgPerDay: 'durchschnittlich',
+            perDay: '/Tag',
+            outOfOrderRooms: 'Defekte Zimmer',
+            totalRoomsPct: 'Von der Gesamtzahl',
+            availableRooms: 'Verfügbar',
+            expectedOccupancy: 'Erwartete Belegung',
+            totalCommission: 'Gesamtprovision',
+            roomsSuffix: 'Zimmer',
+            resSuffix: 'Reservierungen',
+            collectionRate: 'Einziehungsquote',
+            occupancy: 'Belegung'
+        }
     },
     ru: {
         navReports: 'Отчёты',
@@ -506,8 +671,14 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         budgetAnalysis: 'Анализ Бюджета',
         bookingVelocity: 'Скорость Бронирований',
         occupancyRate: 'Загрузка',
+        roomOccupancy: 'Загрузка Номеров',
         adr: 'ADR (Ср. Дневная Ставка)',
         revpar: 'RevPAR',
+        bedNightLabel: 'Место-ночи',
+        roomRevenue: 'Отельный Доход',
+        monthLabel: 'Месяц',
+        seasonLabel: 'Сезон',
+        exchangeRateLabel: 'Курс:',
         avgNights: 'Ср. Пребывание (ночей)',
         guestNationality: 'Национальность Гостей',
         overview: 'Обзор',
@@ -610,6 +781,55 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         roomNightShare: 'Доля номеро-ночей',
         vsLastYear: 'г/г изменение',
         monthNames: ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'],
+        managementReports: {
+            netReservations: 'Чистые Бронирования',
+            paceReport: 'YTD Pace Отчет',
+            agencyReport: 'Отчет по Агентствам',
+            market: 'Рынок',
+            allMarkets: 'Все Рынки',
+            ytd: 'С начала года (YTD)',
+            allSeasons: 'Все Сезоны',
+            clear: 'Очистить',
+            sendEmail: 'Отправить Email',
+            aiInterpretGrouped: 'AI Оценка',
+            total: 'Итого',
+            kpiSummary: 'Месячная KPI Сводка',
+            revenueShare: 'Доля Дохода',
+            comparison: 'Сравнение',
+            details: 'Детальная Таблица',
+            resCount: 'Кол-во Броней',
+            sharePct: 'Доля %',
+            actual: 'Факт',
+            remaining: 'Остаток',
+            targetAdr: 'Целевой ADR',
+            requiredRes: 'Требуемые брони',
+            remainingRn: 'Остаток Ночей',
+            groupRes: 'Груп. Брони',
+            channelBudgetSplit: 'Распределение Бюджета По Каналам',
+            budgetRealization: 'Реализация Бюджета',
+            ofTarget: 'от цели'
+        },
+        widgets: {
+            cancelCount: 'Отмены',
+            rate: 'рейт',
+            revenueImpact: 'Влияние на доход',
+            loss: 'убыток',
+            todayRevenue: 'Доход сегодня',
+            yesterdayRevenue: 'Доход вчера',
+            change: 'изменение',
+            thisWeek: 'Эта неделя',
+            avgPerDay: 'в среднем',
+            perDay: '/день',
+            outOfOrderRooms: 'Номера не в порядке',
+            totalRoomsPct: 'От общего числа номеров',
+            availableRooms: 'Доступно',
+            expectedOccupancy: 'Ожидаемая загрузка',
+            totalCommission: 'Общая комиссия',
+            roomsSuffix: 'номера',
+            resSuffix: 'бронирования',
+            collectionRate: 'коэффициент сбора',
+            occupancy: 'Загрузка'
+        }
     },
 }
 
@@ -656,8 +876,14 @@ export interface AdminTranslations {
     budgetAnalysis: string
     bookingVelocity: string
     occupancyRate: string
+    roomOccupancy: string
     adr: string
     revpar: string
+    bedNightLabel: string
+    roomRevenue: string
+    monthLabel: string
+    seasonLabel: string
+    exchangeRateLabel: string
     avgNights: string
     guestNationality: string
     overview: string
@@ -762,4 +988,53 @@ export interface AdminTranslations {
     roomNightShare: string
     vsLastYear: string
     monthNames: string[]
+    managementReports: {
+        netReservations: string
+        paceReport: string
+        agencyReport: string
+        market: string
+        allMarkets: string
+        ytd: string
+        allSeasons: string
+        clear: string
+        sendEmail: string
+        aiInterpretGrouped: string
+        total: string
+        kpiSummary: string
+        revenueShare: string
+        comparison: string
+        details: string
+        resCount: string
+        sharePct: string
+        actual: string
+        remaining: string
+        targetAdr: string
+        requiredRes: string
+        remainingRn: string
+        groupRes: string
+        channelBudgetSplit: string
+        budgetRealization: string
+        ofTarget: string
+    }
+    widgets: {
+        cancelCount: string
+        rate: string
+        revenueImpact: string
+        loss: string
+        todayRevenue: string
+        yesterdayRevenue: string
+        change: string
+        thisWeek: string
+        avgPerDay: string
+        perDay: string
+        outOfOrderRooms: string
+        totalRoomsPct: string
+        availableRooms: string
+        expectedOccupancy: string
+        totalCommission: string
+        roomsSuffix: string
+        resSuffix: string
+        collectionRate: string
+        occupancy: string
+    }
 }

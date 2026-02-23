@@ -4,6 +4,8 @@ import React, { useState, useMemo, useRef } from 'react'
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, AreaChart, Area, PieChart, Pie, Cell } from 'recharts'
 import { Download, FileText, Calendar, TrendingUp, TrendingDown, Building2, Printer, Mail, BellRing, Sparkles, ArrowUpDown, Filter, Sun, Snowflake, CloudSun, LayoutDashboard, Share2, Users, Globe, Store, CalendarCheck } from 'lucide-react'
 import { type PriceMode, displayPrice, PriceModeToggle } from '@/lib/utils/price-mode'
+import { useParams } from 'next/navigation'
+import { getAdminTranslations, type AdminLocale, type AdminTranslations } from '@/lib/admin-translations'
 
 // ─── Types ────────────────────────────────────────────────────
 interface ReservationSlim {
@@ -35,8 +37,6 @@ interface Props {
 }
 
 // ─── Helpers ──────────────────────────────────────────────────
-const MONTHS_TR = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık']
-const MONTHS_TR_SHORT = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara']
 const TOTAL_ROOMS = 341 // Blue Dreams Resort total room inventory
 
 // ─── Season Classification ────────────────────────────────────
@@ -54,30 +54,26 @@ function getSeasonType(monthIdx: number): SeasonType {
     return 'OFF'
 }
 
-const SEASON_CONFIG: Record<SeasonType, { label: string; labelTR: string; icon: typeof Sun; bgRow: string; bgRowDark: string; badge: string; badgeDark: string; borderL: string }> = {
+const SEASON_CONFIG: Record<SeasonType, { icon: typeof Sun; bgRow: string; bgRowDark: string; badge: string; badgeDark: string; borderL: string }> = {
     HIGH: {
-        label: 'High Season', labelTR: 'Yüksek Sezon',
         icon: Sun,
         bgRow: 'bg-rose-50', bgRowDark: 'dark:bg-rose-950/30',
         badge: 'bg-rose-100 text-rose-700', badgeDark: 'dark:bg-rose-900/40 dark:text-rose-300',
         borderL: 'border-l-4 border-l-rose-500'
     },
     SHOULDER: {
-        label: 'Shoulder Season', labelTR: 'Ara Sezon',
         icon: CloudSun,
         bgRow: 'bg-amber-50', bgRowDark: 'dark:bg-amber-950/20',
         badge: 'bg-amber-100 text-amber-700', badgeDark: 'dark:bg-amber-900/40 dark:text-amber-300',
         borderL: 'border-l-4 border-l-amber-500'
     },
     LOW: {
-        label: 'Low Season', labelTR: 'Düşük Sezon',
         icon: Snowflake,
         bgRow: 'bg-sky-50', bgRowDark: 'dark:bg-sky-950/20',
         badge: 'bg-sky-100 text-sky-700', badgeDark: 'dark:bg-sky-900/40 dark:text-sky-300',
         borderL: 'border-l-4 border-l-sky-400'
     },
     OFF: {
-        label: 'Off Season', labelTR: 'Kapalı Sezon',
         icon: Snowflake,
         bgRow: 'bg-slate-50', bgRowDark: 'dark:bg-slate-900/30',
         badge: 'bg-slate-100 text-slate-500', badgeDark: 'dark:bg-slate-800 dark:text-slate-400',
@@ -135,12 +131,12 @@ interface MonthlyAgg {
     daysInMonth: number
 }
 
-function aggregateByMonth(reservations: ReservationSlim[], rates: { EUR_TO_TRY: number; USD_TO_TRY: number }, year: number, priceMode: PriceMode = 'gross', totalTaxRate: number = 12): MonthlyAgg[] {
+function aggregateByMonth(reservations: ReservationSlim[], rates: { EUR_TO_TRY: number; USD_TO_TRY: number }, year: number, monthNames: string[], priceMode: PriceMode = 'gross', totalTaxRate: number = 12): MonthlyAgg[] {
     const monthData = Array.from({ length: 12 }, (_, i) => {
         const daysInMonth = new Date(year, i + 1, 0).getDate()
         return {
             month: i,
-            monthLabel: MONTHS_TR[i],
+            monthLabel: monthNames[i] || '',
             roomNights: 0,
             bedNights: 0,
             revenue: 0,
@@ -182,6 +178,22 @@ function aggregateByMonth(reservations: ReservationSlim[], rates: { EUR_TO_TRY: 
 
 // ─── Component ────────────────────────────────────────────────
 export default function ManagementReportsClient({ data, taxRates }: Props) {
+    const params = useParams()
+    const locale = (params?.locale as AdminLocale) || 'tr'
+    const t = getAdminTranslations(locale) as AdminTranslations
+
+    // monthNames array will be 12 elements (from locale)
+    const monthNamesLocal = t.monthNames || ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara']
+    // We can also extract short strings by truncating
+    const monthNamesShort = monthNamesLocal.map(x => x.slice(0, 3))
+
+    const getSeasonLabel = (s: SeasonType) => {
+        if (s === 'HIGH') return t.seasonHigh
+        if (s === 'SHOULDER') return t.seasonShoulder
+        if (s === 'LOW') return t.seasonLow
+        return t.seasonOff
+    }
+
     const totalTaxRate = (taxRates?.vatAccommodation ?? 10) + (taxRates?.taxAccommodation ?? 2)
     const { currentYear, currentYearReservations, prevYearReservations, exchangeRates } = data
     const prevYear = currentYear - 1
@@ -238,8 +250,8 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
     }, [prevYearReservations, marketFilter, ytdMode, prevYear, todayDayOfYear])
 
     // Aggregate data (now using filtered)
-    const cyMonth = useMemo(() => aggregateByMonth(filteredCY, exchangeRates, currentYear, priceMode, totalTaxRate), [filteredCY, exchangeRates, currentYear, priceMode, totalTaxRate])
-    const pyMonth = useMemo(() => aggregateByMonth(filteredPY, exchangeRates, prevYear, priceMode, totalTaxRate), [filteredPY, exchangeRates, prevYear, priceMode, totalTaxRate])
+    const cyMonth = useMemo(() => aggregateByMonth(filteredCY, exchangeRates, currentYear, monthNamesLocal, priceMode, totalTaxRate), [filteredCY, exchangeRates, currentYear, monthNamesLocal, priceMode, totalTaxRate])
+    const pyMonth = useMemo(() => aggregateByMonth(filteredPY, exchangeRates, prevYear, monthNamesLocal, priceMode, totalTaxRate), [filteredPY, exchangeRates, prevYear, monthNamesLocal, priceMode, totalTaxRate])
 
     // Only show months with some activity (Apr-Oct typical for resort), apply season filter
     const activeMonths = useMemo(() => {
@@ -462,7 +474,7 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
             doc.setTextColor(0, 0, 0)
             doc.setFontSize(14)
             doc.setFont('helvetica', 'bold')
-            const reportTitle = activeReport === 's26' ? `S${currentYear.toString().slice(-2)} SATIŞLAR NET` : `YTD PACE REPORT ${prevYear} - ${currentYear}`
+            const reportTitle = activeReport === 's26' ? `S${currentYear.toString().slice(-2)} ${t.managementReports.netReservations.toUpperCase()}` : `${t.managementReports.paceReport.toUpperCase()} ${prevYear} - ${currentYear}`
             doc.text(reportTitle, 15, 35)
 
             // Table
@@ -489,7 +501,7 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
                 for (const m of activeMonths) {
                     const c = cyMonth[m.month]
                     let x = 15
-                    doc.text(MONTHS_TR[m.month], x + 2, y); x += colWidths[0]
+                    doc.text(monthNamesLocal[m.month], x + 2, y); x += colWidths[0]
                     doc.text(fmt(c.roomNights), x + 2, y); x += colWidths[1]
                     doc.text(fmt(c.bedNights), x + 2, y); x += colWidths[2]
                     doc.text(fmtEur(c.adb), x + 2, y); x += colWidths[3]
@@ -566,7 +578,7 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
             const c = cyMonth[i]
             const p = pyMonth[i]
             if (c.roomNights === 0 && p.roomNights === 0) continue
-            seasonGroups[season].months.push(MONTHS_TR_SHORT[i])
+            seasonGroups[season].months.push(monthNamesShort[i])
             seasonGroups[season].rn += c.roomNights
             seasonGroups[season].bn += c.bedNights
             seasonGroups[season].rev += c.revenue
@@ -584,9 +596,9 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
         const revGrowth = prevRevEur > 0 ? (((totalRevEur - prevRevEur) / prevRevEur) * 100).toFixed(1) : 'N/A'
 
         const bestMonth = [...cyMonth].filter(m => m.roomNights > 0).sort((a, b) => b.revenueEur - a.revenueEur)[0]
-        const bestMonthName = bestMonth ? MONTHS_TR[bestMonth.month] : '-'
+        const bestMonthName = bestMonth ? monthNamesLocal[bestMonth.month] : '-'
         const worstMonth = [...cyMonth].filter(m => m.roomNights > 0).sort((a, b) => a.occupancy - b.occupancy)[0]
-        const worstMonthName = worstMonth ? MONTHS_TR[worstMonth.month] : '-'
+        const worstMonthName = worstMonth ? monthNamesLocal[worstMonth.month] : '-'
 
         // Generate season breakdown text
         const seasonLines: string[] = []
@@ -598,7 +610,7 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
             const prevOcc = sg.prevCapacity > 0 ? (sg.prevRn / sg.prevCapacity * 100).toFixed(1) : '0'
             const revChange = sg.prevRevEur > 0 ? (((sg.revEur - sg.prevRevEur) / sg.prevRevEur) * 100).toFixed(1) : 'N/A'
             seasonLines.push(
-                `${sConf.labelTR} (${sg.months.join(', ')}): RN=${fmt(sg.rn)}, Doluluk=%${occ} (önceki: %${prevOcc}), ` +
+                `${getSeasonLabel(sType as SeasonType)} (${sg.months.join(', ')}): RN=${fmt(sg.rn)}, Doluluk=%${occ} (önceki: %${prevOcc}), ` +
                 `Gelir=${fmtEur(sg.revEur)}, ADR=${fmtEur(parseFloat(adr))}, YoY Gelir: ${revChange}%`
             )
         }
@@ -633,7 +645,7 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
             const c = cyMonth[m.month]
             const p = pyMonth[m.month]
             return {
-                name: MONTHS_TR_SHORT[m.month],
+                name: monthNamesShort[m.month],
                 [`${currentYear} Gelir`]: Math.round(c.revenueEur),
                 [`${prevYear} Gelir`]: Math.round(p.revenueEur),
                 [`${currentYear} Doluluk`]: Math.round(c.occupancy * 100),
@@ -650,13 +662,13 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
             <div className="flex flex-col md:flex-row gap-3 items-start md:items-center justify-between bg-white dark:bg-[#1e293b] p-4 rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm">
                 <div className="flex gap-2 flex-wrap">
                     {[
-                        { key: 's26' as const, icon: FileText, label: `S${currentYear.toString().slice(-2)} Net Rezervasyonlar` },
-                        { key: 'pace' as const, icon: ArrowUpDown, label: 'YTD Pace Report' },
-                        { key: 'dashboard' as const, icon: LayoutDashboard, label: 'Dashboard' },
-                        { key: 'channels' as const, icon: Share2, label: 'Kanal Dağılımı' },
-                        { key: 'agencies' as const, icon: Users, label: 'Acente Raporu' },
-                        { key: 'nationality' as const, icon: Globe, label: 'Milliyet' },
-                        { key: 'market' as const, icon: Store, label: 'Market' },
+                        { key: 's26' as const, icon: FileText, label: `S${currentYear.toString().slice(-2)} ${t.managementReports.netReservations}` },
+                        { key: 'pace' as const, icon: ArrowUpDown, label: t.managementReports.paceReport },
+                        { key: 'dashboard' as const, icon: LayoutDashboard, label: t.dashboard },
+                        { key: 'channels' as const, icon: Share2, label: t.channelDistribution },
+                        { key: 'agencies' as const, icon: Users, label: t.managementReports.agencyReport },
+                        { key: 'nationality' as const, icon: Globe, label: t.guestNationality },
+                        { key: 'market' as const, icon: Store, label: t.managementReports.market },
                     ].map(tab => (
                         <button key={tab.key} onClick={() => setActiveReport(tab.key)} className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${activeReport === tab.key ? 'bg-cyan-600 text-white shadow-lg shadow-cyan-600/20' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5'}`}>
                             <tab.icon size={16} className="inline mr-1.5 -mt-0.5" />{tab.label}
@@ -671,7 +683,7 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
                             onChange={e => setMarketFilter(e.target.value)}
                             className="pl-8 pr-3 py-2 bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-500/20 rounded-lg text-xs font-bold hover:bg-orange-100 dark:hover:bg-orange-800/30 transition-colors outline-none appearance-none cursor-pointer"
                         >
-                            <option value="ALL">Tüm Marketler</option>
+                            <option value="ALL">{t.managementReports.allMarkets}</option>
                             {availableMarkets.map(m => <option key={m} value={m}>{m}</option>)}
                         </select>
                         <Store size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-orange-400 pointer-events-none" />
@@ -684,7 +696,7 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
                             : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                             }`}
                     >
-                        <CalendarCheck size={14} /> Bugüne Kadar (YTD)
+                        <CalendarCheck size={14} /> {t.managementReports.ytd}
                     </button>
                     {/* Season Filter */}
                     <div className="relative">
@@ -693,7 +705,7 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
                             onChange={e => setSeasonFilter(e.target.value as SeasonType | 'ALL')}
                             className="pl-8 pr-3 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg text-xs font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors outline-none appearance-none cursor-pointer"
                         >
-                            <option value="ALL">Tüm Sezonlar</option>
+                            <option value="ALL">{t.managementReports.allSeasons}</option>
                             <option value="HIGH">🔴 Yüksek Sezon (Tem-Ağu)</option>
                             <option value="SHOULDER">🟡 Ara Sezon (Haz-Eyl)</option>
                             <option value="LOW">🔵 Düşük Sezon (Nis-May-Eki-Kas)</option>
@@ -705,13 +717,13 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
                         {showCurrency === 'EUR' ? '€ EUR' : '₺ TRY'}
                     </button>
                     <button onClick={handleAiSummary} disabled={aiLoading} className="px-3 py-2 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-lg text-xs font-bold hover:bg-purple-200 dark:hover:bg-purple-800/40 transition-colors flex items-center gap-1.5 disabled:opacity-50">
-                        <Sparkles size={14} /> {aiLoading ? 'Gruplandırarak analiz...' : 'AI Yorumu (Grouped)'}
+                        <Sparkles size={14} /> {aiLoading ? '...' : t.managementReports.aiInterpretGrouped}
                     </button>
                     <button onClick={handlePdfExport} disabled={pdfPreparing} className="px-3 py-2 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded-lg text-xs font-bold hover:bg-emerald-200 dark:hover:bg-emerald-800/40 transition-colors flex items-center gap-1.5 disabled:opacity-50">
                         <Download size={14} /> {pdfPreparing ? 'Hazırlanıyor...' : pdfReady ? '✓ İndir' : 'PDF Export'}
                     </button>
                     <button className="px-3 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg text-xs font-bold hover:bg-blue-200 dark:hover:bg-blue-800/40 transition-colors flex items-center gap-1.5">
-                        <Mail size={14} /> E-posta Gönder
+                        <Mail size={14} /> {t.managementReports.sendEmail}
                     </button>
                 </div>
             </div>
@@ -737,10 +749,10 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
                     {/* Summary Cards */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {[
-                            { key: 'rn', label: 'Oda Geceleme', value: fmt(cyTotal.roomNights), icon: Building2, color: 'cyan' },
-                            { key: 'bn', label: 'Yatak Geceleme', value: fmt(cyTotal.bedNights), icon: Building2, color: 'blue' },
-                            { key: 'occ', label: 'Ort. Doluluk', value: pct(cyTotal.capacity > 0 ? cyTotal.roomNights / cyTotal.capacity : 0), icon: TrendingUp, color: 'emerald' },
-                            { key: 'rev', label: 'Toplam Gelir', value: showCurrency === 'EUR' ? fmtEur(cyTotal.revenueEur) : fmtTry(cyTotal.revenue), icon: TrendingUp, color: 'amber' },
+                            { key: 'rn', label: t.roomNightLabel, value: fmt(cyTotal.roomNights), icon: Building2, color: 'cyan' },
+                            { key: 'bn', label: t.bedNightLabel, value: fmt(cyTotal.bedNights), icon: Building2, color: 'blue' },
+                            { key: 'occ', label: t.roomOccupancy, value: pct(cyTotal.capacity > 0 ? cyTotal.roomNights / cyTotal.capacity : 0), icon: TrendingUp, color: 'emerald' },
+                            { key: 'rev', label: t.roomRevenue, value: showCurrency === 'EUR' ? fmtEur(cyTotal.revenueEur) : fmtTry(cyTotal.revenue), icon: TrendingUp, color: 'amber' },
                         ].map((card, i) => {
                             const ytdVariance = (() => {
                                 if (card.key === 'rn') return diffPct(ytdStats.cy.rn, ytdStats.py.rn)
@@ -782,7 +794,7 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
                                     className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${seasonFilter === s ? sc.badge + ' ' + sc.badgeDark + ' ring-2 ring-offset-1 ring-current shadow-sm' : sc.badge + ' ' + sc.badgeDark + ' opacity-70 hover:opacity-100'}`}
                                 >
                                     <Icon size={12} />
-                                    {sc.labelTR}
+                                    {getSeasonLabel(s)}
                                 </button>
                             )
                         })}
@@ -794,21 +806,21 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
                     {/* S26 Net Sales Table */}
                     <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-200 dark:border-white/10 overflow-hidden shadow-sm">
                         <div className="p-4 border-b border-slate-200 dark:border-white/10 flex items-center justify-between">
-                            <h3 className="text-lg font-bold text-slate-900 dark:text-white">S{currentYear.toString().slice(-2)} SATIŞLAR NET</h3>
-                            <div className="text-xs text-slate-500">Kur: 1 EUR = {fmt(exchangeRates.EUR_TO_TRY, 2)} ₺ (Elektra API)</div>
+                            <h3 className="text-lg font-bold text-slate-900 dark:text-white">S{currentYear.toString().slice(-2)} {t.managementReports.netReservations.toUpperCase()}</h3>
+                            <div className="text-xs text-slate-500">{t.exchangeRateLabel} 1 EUR = {fmt(exchangeRates.EUR_TO_TRY, 2)} ₺ (Elektra API)</div>
                         </div>
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm">
                                 <thead className="bg-slate-50 dark:bg-[#0f172a]">
                                     <tr className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-bold">
-                                        <th className="p-3 text-left">Ay</th>
-                                        <th className="p-3 text-left">Sezon</th>
-                                        <th className="p-3 text-right">Oda Geceleme</th>
-                                        <th className="p-3 text-right">Yatak Geceleme</th>
+                                        <th className="p-3 text-left">{t.monthLabel}</th>
+                                        <th className="p-3 text-left">{t.seasonLabel}</th>
+                                        <th className="p-3 text-right">{t.roomNightLabel}</th>
+                                        <th className="p-3 text-right">{t.bedNightLabel}</th>
                                         <th className="p-3 text-right">ADB</th>
                                         <th className="p-3 text-right">ADR</th>
-                                        <th className="p-3 text-right">Oda Doluluk</th>
-                                        <th className="p-3 text-right">Oda Geliri</th>
+                                        <th className="p-3 text-right">{t.roomOccupancy}</th>
+                                        <th className="p-3 text-right">{t.roomRevenue}</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-200 dark:divide-white/5">
@@ -819,10 +831,10 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
                                         const SeasonIcon = sc.icon
                                         return (
                                             <tr key={m.month} className={`${sc.bgRow} ${sc.bgRowDark} ${sc.borderL} hover:brightness-95 dark:hover:brightness-110 transition-all`}>
-                                                <td className="p-3 font-bold text-slate-900 dark:text-white">{MONTHS_TR[m.month]}</td>
+                                                <td className="p-3 font-bold text-slate-900 dark:text-white">{monthNamesLocal[m.month]}</td>
                                                 <td className="p-3">
                                                     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${sc.badge} ${sc.badgeDark}`}>
-                                                        <SeasonIcon size={10} /> {sc.labelTR}
+                                                        <SeasonIcon size={10} /> {getSeasonLabel(season)}
                                                     </span>
                                                 </td>
                                                 <td className="p-3 text-right text-slate-700 dark:text-slate-300 font-mono">{fmt(c.roomNights)}</td>
@@ -841,7 +853,7 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
                                 </tbody>
                                 <tfoot>
                                     <tr className="bg-slate-900 dark:bg-slate-800 text-white font-bold">
-                                        <td className="p-3">Toplam{seasonFilter !== 'ALL' ? ` (${SEASON_CONFIG[seasonFilter].labelTR})` : ''}</td>
+                                        <td className="p-3">{t.managementReports.total}{seasonFilter !== 'ALL' ? ` (${getSeasonLabel(seasonFilter)})` : ''}</td>
                                         <td className="p-3"></td>
                                         <td className="p-3 text-right font-mono">{fmt(cyTotal.roomNights)}</td>
                                         <td className="p-3 text-right font-mono">{fmt(cyTotal.bedNights)}</td>
@@ -862,7 +874,7 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
                 <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-200 dark:border-white/10 overflow-hidden shadow-sm">
                     <div className="p-4 border-b border-slate-200 dark:border-white/10 flex items-center justify-between">
                         <div>
-                            <h3 className="text-lg font-bold text-slate-900 dark:text-white">YTD PACE REPORT {prevYear} – {currentYear}</h3>
+                            <h3 className="text-lg font-bold text-slate-900 dark:text-white">{t.managementReports.paceReport.toUpperCase()} {prevYear} – {currentYear}</h3>
                             <p className="text-xs text-slate-500">Rapor Tarihi: {new Date().toLocaleDateString('tr-TR')}</p>
                         </div>
                     </div>
@@ -898,7 +910,7 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
                                     const sc = SEASON_CONFIG[season]
                                     return (
                                         <tr key={m.month} className={`${sc.bgRow} ${sc.bgRowDark} ${sc.borderL} hover:brightness-95 dark:hover:brightness-110 transition-all`}>
-                                            <td className="p-2 font-bold text-slate-900 dark:text-white">{MONTHS_TR_SHORT[m.month]}</td>
+                                            <td className="p-2 font-bold text-slate-900 dark:text-white">{monthNamesShort[m.month]}</td>
                                             {/* Prev year */}
                                             <td className="p-2 text-right text-slate-600 dark:text-slate-400 font-mono border-l border-slate-200 dark:border-white/5">{fmt(p.roomNights)}</td>
                                             <td className="p-2 text-right text-slate-600 dark:text-slate-400 font-mono">{fmt(p.bedNights)}</td>
@@ -923,7 +935,7 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
                             </tbody>
                             <tfoot>
                                 <tr className="bg-slate-900 dark:bg-slate-800 text-white font-bold text-xs">
-                                    <td className="p-2">Total</td>
+                                    <td className="p-2">{t.managementReports.total}</td>
                                     <td className="p-2 text-right font-mono border-l border-slate-700">{fmt(pyTotal.roomNights)}</td>
                                     <td className="p-2 text-right font-mono">{fmt(pyTotal.bedNights)}</td>
                                     <td className="p-2 text-right font-mono">{pct(pyTotal.capacity > 0 ? pyTotal.roomNights / pyTotal.capacity : 0)}</td>
@@ -978,7 +990,7 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
                                         const colorize = (v: number) => v >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'
                                         return (
                                             <tr key={m.month} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
-                                                <td className="p-2 font-bold text-slate-900 dark:text-white">{MONTHS_TR_SHORT[m.month]}</td>
+                                                <td className="p-2 font-bold text-slate-900 dark:text-white">{monthNamesShort[m.month]}</td>
                                                 <td className={`p-2 text-right font-mono ${colorize(rnDiff)}`}>{rnDiff >= 0 ? '+' : ''}{fmt(rnDiff)}</td>
                                                 <td className={`p-2 text-right font-mono ${colorize(bnDiff)}`}>{bnDiff >= 0 ? '+' : ''}{fmt(bnDiff)}</td>
                                                 <td className={`p-2 text-right font-mono ${colorize(occDiff)}`}>{(occDiff * 100).toFixed(2)}%</td>
@@ -1037,15 +1049,15 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
                     {/* Monthly Comparison Table */}
                     <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-200 dark:border-white/10 overflow-hidden shadow-sm">
                         <div className="p-4 border-b border-slate-200 dark:border-white/10">
-                            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Aylık KPI Özeti — {currentYear}</h3>
+                            <h3 className="text-lg font-bold text-slate-900 dark:text-white">{t.managementReports.kpiSummary} — {currentYear}</h3>
                         </div>
                         <div className="overflow-x-auto">
                             <table className="w-full text-xs">
                                 <thead className="bg-slate-50 dark:bg-[#0f172a]">
                                     <tr className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400 font-bold">
-                                        <th className="p-3 text-left">Ay</th>
+                                        <th className="p-3 text-left">{t.monthLabel}</th>
                                         <th className="p-3 text-right">RN</th>
-                                        <th className="p-3 text-right">Gelir (€)</th>
+                                        <th className="p-3 text-right">{t.roomRevenue} (€)</th>
                                         <th className="p-3 text-right">ADR</th>
                                         <th className="p-3 text-right">RevPAR</th>
                                         <th className="p-3 text-right">Occ %</th>
@@ -1059,7 +1071,7 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
                                         const p = pyMonth[m.month]
                                         return (
                                             <tr key={m.month} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
-                                                <td className="p-3 font-bold text-slate-900 dark:text-white">{MONTHS_TR[m.month]}</td>
+                                                <td className="p-3 font-bold text-slate-900 dark:text-white">{monthNamesLocal[m.month]}</td>
                                                 <td className="p-3 text-right font-mono text-slate-700 dark:text-slate-300">{fmt(c.roomNights)}</td>
                                                 <td className="p-3 text-right font-mono font-bold text-slate-900 dark:text-white">{fmtEur(c.revenueEur)}</td>
                                                 <td className="p-3 text-right font-mono text-slate-700 dark:text-slate-300">{fmtEur(c.adr)}</td>
@@ -1087,7 +1099,7 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Pie Chart */}
                         <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm p-6">
-                            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Kanal Dağılımı — Gelir Payı</h3>
+                            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">{t.channelDistribution} — {t.managementReports.revenueShare}</h3>
                             <div className="h-72">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <PieChart>
@@ -1101,7 +1113,7 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
                         </div>
                         {/* Channel Bar Chart */}
                         <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm p-6">
-                            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Kanal ADR Karşılaştırma</h3>
+                            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">{t.channelDistribution} ADR {t.managementReports.comparison}</h3>
                             <div className="h-72">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart data={channelData} layout="vertical">
@@ -1118,18 +1130,18 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
                     {/* Channel Table */}
                     <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-200 dark:border-white/10 overflow-hidden shadow-sm">
                         <div className="p-4 border-b border-slate-200 dark:border-white/10">
-                            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Kanal Detay Tablosu — {currentYear}</h3>
+                            <h3 className="text-lg font-bold text-slate-900 dark:text-white">{t.channelDistribution} {t.managementReports.details} — {currentYear}</h3>
                         </div>
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm">
                                 <thead className="bg-slate-50 dark:bg-[#0f172a]">
                                     <tr className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-bold">
-                                        <th className="p-3 text-left">Kanal</th>
-                                        <th className="p-3 text-right">Rez. Sayısı</th>
+                                        <th className="p-3 text-left">{t.channelDistribution.split(' ')[0]}</th>
+                                        <th className="p-3 text-right">{t.managementReports.resCount}</th>
                                         <th className="p-3 text-right">RN</th>
-                                        <th className="p-3 text-right">Gelir (€)</th>
+                                        <th className="p-3 text-right">{t.roomRevenue} (€)</th>
                                         <th className="p-3 text-right">ADR</th>
-                                        <th className="p-3 text-right">Pay %</th>
+                                        <th className="p-3 text-right">{t.managementReports.sharePct}</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-200 dark:divide-white/5">
@@ -1164,20 +1176,20 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
             {activeReport === 'agencies' && (
                 <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-200 dark:border-white/10 overflow-hidden shadow-sm">
                     <div className="p-4 border-b border-slate-200 dark:border-white/10">
-                        <h3 className="text-lg font-bold text-slate-900 dark:text-white">Acente Performans Raporu — {currentYear}</h3>
-                        <p className="text-xs text-slate-500 mt-1">Toplam {agencyData.length} acente • Gelire göre sıralı</p>
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-white">{t.managementReports.agencyReport} — {currentYear}</h3>
+                        <p className="text-xs text-slate-500 mt-1">{t.managementReports.total} {agencyData.length}</p>
                     </div>
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                             <thead className="bg-slate-50 dark:bg-[#0f172a]">
                                 <tr className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-bold">
                                     <th className="p-3 text-left">#</th>
-                                    <th className="p-3 text-left">Acente</th>
-                                    <th className="p-3 text-right">Rez. Sayısı</th>
+                                    <th className="p-3 text-left">{t.managementReports.agencyReport.split(' ')[0]}</th>
+                                    <th className="p-3 text-right">{t.managementReports.resCount}</th>
                                     <th className="p-3 text-right">RN</th>
-                                    <th className="p-3 text-right">Gelir (€)</th>
+                                    <th className="p-3 text-right">{t.roomRevenue} (€)</th>
                                     <th className="p-3 text-right">ADR</th>
-                                    <th className="p-3 text-right">Pay %</th>
+                                    <th className="p-3 text-right">{t.managementReports.sharePct}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-200 dark:divide-white/5">
@@ -1223,7 +1235,7 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Pie Chart */}
                         <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm p-6">
-                            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Milliyet Dağılımı — Gelir Payı</h3>
+                            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">{t.guestNationality} — {t.managementReports.revenueShare}</h3>
                             <div className="h-72">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <PieChart>
@@ -1258,20 +1270,20 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
                     {/* Full Nationality Table */}
                     <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-200 dark:border-white/10 overflow-hidden shadow-sm">
                         <div className="p-4 border-b border-slate-200 dark:border-white/10">
-                            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Milliyet Detay Tablosu — {currentYear}</h3>
-                            <p className="text-xs text-slate-500 mt-1">Toplam {nationalityData.length} ülke/milliyet</p>
+                            <h3 className="text-lg font-bold text-slate-900 dark:text-white">{t.guestNationality} {t.managementReports.details} — {currentYear}</h3>
+                            <p className="text-xs text-slate-500 mt-1">{t.managementReports.total} {nationalityData.length}</p>
                         </div>
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm">
                                 <thead className="bg-slate-50 dark:bg-[#0f172a]">
                                     <tr className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-bold">
                                         <th className="p-3 text-left">#</th>
-                                        <th className="p-3 text-left">Milliyet</th>
-                                        <th className="p-3 text-right">Rez. Sayısı</th>
+                                        <th className="p-3 text-left">{t.guestNationality}</th>
+                                        <th className="p-3 text-right">{t.managementReports.resCount}</th>
                                         <th className="p-3 text-right">RN</th>
-                                        <th className="p-3 text-right">Gelir (€)</th>
+                                        <th className="p-3 text-right">{t.roomRevenue} (€)</th>
                                         <th className="p-3 text-right">ADR</th>
-                                        <th className="p-3 text-right">Pay %</th>
+                                        <th className="p-3 text-right">{t.managementReports.sharePct}</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-200 dark:divide-white/5">
@@ -1320,7 +1332,7 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
 
                     {/* Market Chart — Top 10 */}
                     <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm p-6">
-                        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Market Karşılaştırma — Top 10 (Gelir €)</h3>
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">{t.managementReports.market} {t.managementReports.comparison} — Top 10 ({t.roomRevenue} €)</h3>
                         <div className="h-80">
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart data={marketData.slice(0, 10).map(m => ({ name: m.name.length > 15 ? m.name.slice(0, 15) + '…' : m.name, [`${currentYear}`]: Math.round(m.cyRevenueEur), [`${prevYear}`]: Math.round(m.pyRevenueEur) }))} layout="vertical">
@@ -1339,25 +1351,25 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
                     {/* Market YoY Comparison Table */}
                     <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-200 dark:border-white/10 overflow-hidden shadow-sm">
                         <div className="p-4 border-b border-slate-200 dark:border-white/10">
-                            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Market Detay — {currentYear} vs {prevYear}</h3>
-                            <p className="text-xs text-slate-500 mt-1">Toplam {marketData.length} market/acente • Acente bazlı karşılaştırma</p>
+                            <h3 className="text-lg font-bold text-slate-900 dark:text-white">{t.managementReports.market} {t.managementReports.details} — {currentYear} vs {prevYear}</h3>
+                            <p className="text-xs text-slate-500 mt-1">{t.managementReports.total} {marketData.length}</p>
                         </div>
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm">
                                 <thead className="bg-slate-50 dark:bg-[#0f172a]">
                                     <tr className="text-[10px] uppercase tracking-wider text-slate-500 dark:text-slate-400 font-bold">
                                         <th className="p-3 text-left">#</th>
-                                        <th className="p-3 text-left">Market / Acente</th>
-                                        <th className="p-3 text-right">{currentYear} Rez.</th>
-                                        <th className="p-3 text-right">{prevYear} Rez.</th>
+                                        <th className="p-3 text-left">{t.managementReports.market} / {t.managementReports.agencyReport.split(' ')[0]}</th>
+                                        <th className="p-3 text-right">{currentYear} {t.managementReports.resCount}</th>
+                                        <th className="p-3 text-right">{prevYear} {t.managementReports.resCount}</th>
                                         <th className="p-3 text-right">{currentYear} RN</th>
                                         <th className="p-3 text-right">{prevYear} RN</th>
                                         <th className="p-3 text-right">RN Δ%</th>
-                                        <th className="p-3 text-right">{currentYear} Gelir (€)</th>
-                                        <th className="p-3 text-right">{prevYear} Gelir (€)</th>
-                                        <th className="p-3 text-right">Gelir Δ%</th>
+                                        <th className="p-3 text-right">{currentYear} {t.roomRevenue} (€)</th>
+                                        <th className="p-3 text-right">{prevYear} {t.roomRevenue} (€)</th>
+                                        <th className="p-3 text-right">Rev Δ%</th>
                                         <th className="p-3 text-right">{currentYear} ADR</th>
-                                        <th className="p-3 text-right">Pay %</th>
+                                        <th className="p-3 text-right">{t.managementReports.sharePct}</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-200 dark:divide-white/5">

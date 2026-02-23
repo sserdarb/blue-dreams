@@ -267,7 +267,8 @@ export default function ReportsClient({ reservations, comparisonReservations = [
         setAiLoading(prev => ({ ...prev, [widgetId]: true }))
         try {
             const widgetDef = ALL_WIDGETS.find(w => w.id === widgetId)
-            const title = widgetDef ? (t[widgetDef.titleKey as keyof AdminTranslations] || TITLE_FALLBACKS[widgetDef.titleKey] || widgetDef.titleKey) : widgetId
+            const rawTitle = widgetDef ? t[widgetDef.titleKey as keyof AdminTranslations] : null;
+            const title = widgetDef ? (typeof rawTitle === 'string' ? rawTitle : TITLE_FALLBACKS[widgetDef.titleKey] || widgetDef.titleKey) : widgetId
             const desc = WIDGET_DESCRIPTIONS[widgetId]
             const res = await fetch('/api/admin/ai-interpret', {
                 method: 'POST',
@@ -573,11 +574,11 @@ export default function ReportsClient({ reservations, comparisonReservations = [
                     <div key={i} className="flex-1 min-w-[30px] flex flex-col items-center justify-end h-full gap-0 group relative">
                         {/* Tooltip */}
                         <div className="absolute bottom-full mb-2 bg-slate-800 dark:bg-slate-900 text-white text-xs px-2 py-1.5 rounded opacity-0 group-hover:opacity-100 z-20 whitespace-nowrap border border-slate-700 pointer-events-none">
-                            <div className="font-bold border-b border-slate-700 pb-1 mb-1">{d.month} Doluluk</div>
-                            <div className="text-emerald-400">Bu Yıl: %{d.rate}</div>
-                            <div className="text-slate-400">Geçen: %{d.lastRate}</div>
+                            <div className="font-bold border-b border-slate-700 pb-1 mb-1">{d.month} {t.widgets.occupancy}</div>
+                            <div className="text-emerald-400">{t.thisYear}: %{d.rate}</div>
+                            <div className="text-slate-400">YTD: %{d.lastRate}</div>
                             <div className={`mt-1 font-bold ${d.rate >= d.lastRate ? 'text-emerald-400' : 'text-red-400'}`}>
-                                Fark: {d.rate - d.lastRate}%
+                                {t.managementReports.comparison}: {d.rate - d.lastRate}%
                             </div>
                         </div>
 
@@ -714,8 +715,8 @@ export default function ReportsClient({ reservations, comparisonReservations = [
         return (
             <div className="h-52 w-full mt-4">
                 <div className="flex justify-between text-xs text-slate-400 mb-2">
-                    <span className="text-emerald-400 flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-emerald-500"></div> Bu Yıl (Kümülatif)</span>
-                    <span className="text-slate-500 flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-slate-600"></div> Geçen Yıl (Kümülatif)</span>
+                    <span className="text-emerald-400 flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-emerald-500"></div> {t.thisYear}</span>
+                    <span className="text-slate-500 flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-slate-600"></div> {t.managementReports.comparison} YTD</span>
                 </div>
 
                 {/* Simplified Line Chart Representation using CSS/Flex since we don't have Recharts here (wait, we used recharts in Reservations, but here it's custom CSS charts) */}
@@ -758,8 +759,8 @@ export default function ReportsClient({ reservations, comparisonReservations = [
                                 {/* Tooltip */}
                                 <div className="absolute bottom-full mb-1 bg-slate-800 dark:bg-slate-900 border border-slate-700 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 z-20 whitespace-nowrap pointer-events-none">
                                     <div className="font-bold border-b border-slate-600 dark:border-slate-700 pb-1 mb-1">{d.date}</div>
-                                    <div className="text-emerald-400">Bu Yıl: {fmtMoney(thisDaily)}</div>
-                                    <div className="text-slate-300 dark:text-slate-400">Geçen: {fmtMoney(compDaily)}</div>
+                                    <div className="text-emerald-400">{t.thisYear}: {fmtMoney(thisDaily)}</div>
+                                    <div className="text-slate-300 dark:text-slate-400">YTD: {fmtMoney(compDaily)}</div>
                                 </div>
                             </div>
                         )
@@ -815,11 +816,11 @@ export default function ReportsClient({ reservations, comparisonReservations = [
                         <p className="font-bold text-slate-900 dark:text-white">{fmtMoney(adr)}</p>
                     </div>
                     <div className="bg-slate-100 dark:bg-slate-800 rounded-lg p-3">
-                        <p className="text-slate-500 dark:text-slate-400">Doluluk</p>
+                        <p className="text-slate-500 dark:text-slate-400">{t.widgets.occupancy}</p>
                         <p className="font-bold text-slate-900 dark:text-white">{(occupancy * 100).toFixed(1)}%</p>
                     </div>
                 </div>
-                <p className="text-xs text-slate-500">RevPAR = ADR × Doluluk</p>
+                <p className="text-xs text-slate-500">RevPAR = ADR × {t.widgets.occupancy}</p>
             </div>
         )
     }
@@ -897,19 +898,19 @@ export default function ReportsClient({ reservations, comparisonReservations = [
                 {/* Season Summary */}
                 <div className="grid grid-cols-4 gap-2 text-center">
                     <div className="bg-slate-100 dark:bg-slate-700/50 rounded-lg p-2">
-                        <p className="text-[10px] text-slate-500 dark:text-slate-400">Bütçe</p>
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400">{t.budget}</p>
                         <p className="text-sm font-bold text-slate-900 dark:text-white">{fmtEur(seasonTotal)}</p>
                     </div>
                     <div className="bg-slate-100 dark:bg-slate-700/50 rounded-lg p-2">
-                        <p className="text-[10px] text-slate-500 dark:text-slate-400">Gerçekleşen</p>
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400">{t.managementReports.actual}</p>
                         <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{fmtEur(totalActualEUR)}</p>
                     </div>
                     <div className="bg-slate-100 dark:bg-slate-700/50 rounded-lg p-2">
-                        <p className="text-[10px] text-slate-500 dark:text-slate-400">Kalan</p>
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400">{t.managementReports.remaining}</p>
                         <p className={`text-sm font-bold ${seasonComp.remaining > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}`}>{fmtEur(Math.abs(seasonComp.remaining))}</p>
                     </div>
                     <div className="bg-slate-100 dark:bg-slate-700/50 rounded-lg p-2">
-                        <p className="text-[10px] text-slate-500 dark:text-slate-400">Gerçekleşme</p>
+                        <p className="text-[10px] text-slate-500 dark:text-slate-400">{t.managementReports.actual} %</p>
                         <p className={`text-sm font-bold ${seasonComp.realization >= 100 ? 'text-emerald-600 dark:text-emerald-400' : seasonComp.realization >= 70 ? 'text-amber-600 dark:text-amber-400' : 'text-red-500'}`}>{seasonComp.realization}%</p>
                     </div>
                 </div>
@@ -935,8 +936,8 @@ export default function ReportsClient({ reservations, comparisonReservations = [
 
                 {/* Legend */}
                 <div className="flex gap-4 text-xs">
-                    <div className="flex items-center gap-1"><div className="w-3 h-3 rounded bg-cyan-500" /> Gerçek (€)</div>
-                    <div className="flex items-center gap-1"><div className="w-3 h-3 rounded bg-amber-500/40 border border-dashed border-amber-400" /> Bütçe (€)</div>
+                    <div className="flex items-center gap-1"><div className="w-3 h-3 rounded bg-cyan-500" /> {t.managementReports.actual} (€)</div>
+                    <div className="flex items-center gap-1"><div className="w-3 h-3 rounded bg-amber-500/40 border border-dashed border-amber-400" /> {t.budget} (€)</div>
                 </div>
 
                 {/* Monthly Chart */}
@@ -945,12 +946,12 @@ export default function ReportsClient({ reservations, comparisonReservations = [
                         <div key={i} className="flex-1 flex flex-col items-center group relative">
                             <div className="absolute bottom-full mb-2 bg-slate-800 dark:bg-slate-900 text-white text-xs px-2 py-1.5 rounded opacity-0 group-hover:opacity-100 z-10 whitespace-nowrap border border-slate-700">
                                 <div className="font-bold border-b border-slate-700 pb-1 mb-1">{d.monthName}</div>
-                                <div className="text-cyan-400">Gerçek: {fmtEur(d.actual)}</div>
-                                <div className="text-amber-400">Bütçe: {fmtEur(d.budget)}</div>
+                                <div className="text-cyan-400">{t.managementReports.actual}: {fmtEur(d.actual)}</div>
+                                <div className="text-amber-400">{t.budget}: {fmtEur(d.budget)}</div>
                                 <div className={d.realization >= 100 ? 'text-emerald-400' : 'text-slate-400'}>Oran: %{d.realization}</div>
-                                <div className="text-purple-300 border-t border-slate-700 pt-1 mt-1">Kalan: {d.remainingRoomNights.toLocaleString('tr-TR')} oda-gece</div>
+                                <div className="text-purple-300 border-t border-slate-700 pt-1 mt-1">{t.managementReports.remaining}: {d.remainingRoomNights.toLocaleString('tr-TR')} {t.roomNightLabel.toLowerCase()}</div>
                                 <div className="text-blue-300">Gereken: {d.requiredReservations} rez.</div>
-                                <div className="text-purple-400">Hedef ADR: {d.targetADR > 0 ? fmtEur(d.targetADR) : '-'}</div>
+                                <div className="text-purple-400">{t.managementReports.targetAdr}: {d.targetADR > 0 ? fmtEur(d.targetADR) : '-'}</div>
                             </div>
                             <div className="w-full flex items-end gap-1 h-40">
                                 <div className="flex-1 bg-gradient-to-t from-cyan-600 to-cyan-400 rounded-t-sm transition-all" style={{ height: `${(d.actual / maxVal) * 100}%`, minHeight: '2px' }} />
@@ -967,15 +968,15 @@ export default function ReportsClient({ reservations, comparisonReservations = [
                     <table className="w-full text-xs">
                         <thead className="text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/50">
                             <tr>
-                                <th className="px-2 py-1.5 text-left rounded-l-lg">Ay</th>
-                                <th className="px-2 py-1.5 text-right">Bütçe (€)</th>
-                                <th className="px-2 py-1.5 text-right">Gerçek (€)</th>
-                                <th className="px-2 py-1.5 text-right">Kalan (€)</th>
+                                <th className="px-2 py-1.5 text-left rounded-l-lg">{t.monthLabel}</th>
+                                <th className="px-2 py-1.5 text-right">{t.budget} (€)</th>
+                                <th className="px-2 py-1.5 text-right">{t.managementReports.actual} (€)</th>
+                                <th className="px-2 py-1.5 text-right">{t.managementReports.remaining} (€)</th>
                                 <th className="px-2 py-1.5 text-right">%</th>
-                                <th className="px-2 py-1.5 text-right">Doluluk</th>
-                                <th className="px-2 py-1.5 text-right">Kalan Oda-Gece</th>
-                                <th className="px-2 py-1.5 text-right">Gereken Rez.</th>
-                                <th className="px-2 py-1.5 text-right rounded-r-lg">Hedef ADR (€)</th>
+                                <th className="px-2 py-1.5 text-right">{t.roomOccupancy}</th>
+                                <th className="px-2 py-1.5 text-right">{t.managementReports.remainingRn}</th>
+                                <th className="px-2 py-1.5 text-right">{t.managementReports.requiredRes}</th>
+                                <th className="px-2 py-1.5 text-right rounded-r-lg">{t.managementReports.targetAdr} (€)</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
@@ -993,7 +994,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
                                 </tr>
                             ))}
                             <tr className="bg-slate-100 dark:bg-slate-700/50 font-bold">
-                                <td className="px-2 py-2 rounded-l-lg text-slate-900 dark:text-white">TOPLAM</td>
+                                <td className="px-2 py-2 rounded-l-lg text-slate-900 dark:text-white">{t.managementReports.total.toUpperCase()}</td>
                                 <td className="px-2 py-2 text-right text-amber-600 dark:text-amber-400">{fmtEur(seasonTotal)}</td>
                                 <td className="px-2 py-2 text-right text-cyan-600 dark:text-cyan-400">{fmtEur(totalActualEUR)}</td>
                                 <td className={`px-2 py-2 text-right ${seasonComp.remaining > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}`}>{fmtEur(Math.abs(seasonComp.remaining))}</td>
@@ -1009,7 +1010,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
 
                 {/* Channel Budget Breakdown */}
                 <div className="mt-2">
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-2 font-medium">Kanal Bütçe Dağılımı</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-2 font-medium">{t.managementReports.channelBudgetSplit}</p>
                     <div className="space-y-1.5">
                         {channelSummary.map((ch, i) => (
                             <div key={i} className="flex items-center gap-2">
@@ -1120,7 +1121,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
                         <p className="text-xl font-bold text-white">{fmtMoney(chartData.reduce((a, b) => a + b.revenue, 0))}</p>
                     </div>
                     <div className="text-right">
-                        <p className="text-xs text-slate-400">Beklenen Doluluk</p>
+                        <p className="text-xs text-slate-400">{t.widgets.expectedOccupancy}</p>
                         <p className="text-xl font-bold text-emerald-400">~68%</p>
                     </div>
                 </div>
@@ -1247,8 +1248,8 @@ export default function ReportsClient({ reservations, comparisonReservations = [
         return (
             <div className="mt-2">
                 <div className="flex gap-4 text-xs mb-3">
-                    <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-cyan-500" /> Bu Yıl</span>
-                    <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-slate-400" /> Geçen Yıl</span>
+                    <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-cyan-500" /> {t.thisYear}</span>
+                    <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-slate-400" /> {t.managementReports.comparison}</span>
                 </div>
                 <div className="h-48 flex items-end gap-1">
                     {months.map((m, i) => {
@@ -1257,8 +1258,8 @@ export default function ReportsClient({ reservations, comparisonReservations = [
                         return (
                             <div key={i} className="flex-1 flex flex-col items-center justify-end h-full group relative">
                                 <div className="absolute bottom-full mb-1 bg-slate-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 z-10 whitespace-nowrap pointer-events-none">
-                                    <div className="text-cyan-400">Bu Yıl: {fmtMoney(cy)}</div>
-                                    <div className="text-slate-400">Geçen: {fmtMoney(py)}</div>
+                                    <div className="text-cyan-400">{t.thisYear}: {fmtMoney(cy)}</div>
+                                    <div className="text-slate-400">YTD: {fmtMoney(py)}</div>
                                     <div className={change >= 0 ? 'text-emerald-400' : 'text-red-400'}>%{change.toFixed(1)}</div>
                                 </div>
                                 <div className="w-full flex items-end justify-center gap-0.5 h-full">
@@ -1570,14 +1571,14 @@ export default function ReportsClient({ reservations, comparisonReservations = [
             <div className="mt-2 space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                     <div className="bg-red-50 dark:bg-red-900/20 rounded-xl p-3 text-center">
-                        <div className="text-[10px] text-red-500 mb-1">İptal Sayısı</div>
+                        <div className="text-[10px] text-red-500 mb-1">{t.widgets.cancelCount}</div>
                         <div className="text-2xl font-bold text-red-600 dark:text-red-400">{cancelled.length}</div>
-                        <div className="text-[10px] text-red-400">%{cancelRate.toFixed(1)} oran</div>
+                        <div className="text-[10px] text-red-400">%{cancelRate.toFixed(1)} {t.widgets.rate}</div>
                     </div>
                     <div className="bg-orange-50 dark:bg-orange-900/20 rounded-xl p-3 text-center">
-                        <div className="text-[10px] text-orange-500 mb-1">Gelir Etkisi</div>
+                        <div className="text-[10px] text-orange-500 mb-1">{t.widgets.revenueImpact}</div>
                         <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{fmtMoney(cancelledRev)}</div>
-                        <div className="text-[10px] text-orange-400">%{revImpact.toFixed(1)} kayıp</div>
+                        <div className="text-[10px] text-orange-400">%{revImpact.toFixed(1)} {t.widgets.loss}</div>
                     </div>
                 </div>
             </div>
@@ -1597,15 +1598,15 @@ export default function ReportsClient({ reservations, comparisonReservations = [
         return (
             <div className="mt-2 space-y-3">
                 <div className="bg-gradient-to-br from-blue-500 to-cyan-600 rounded-xl p-4 text-white">
-                    <div className="text-xs opacity-80">Bugünkü Gelir</div>
+                    <div className="text-xs opacity-80">{t.widgets.todayRevenue}</div>
                     <div className="text-2xl font-bold mt-1">{fmtMoney(todayRev)}</div>
-                    <div className="text-xs mt-1 opacity-80">{todayData.length} rezervasyon</div>
+                    <div className="text-xs mt-1 opacity-80">{todayData.length} {t.widgets.resSuffix}</div>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                    <span className="text-slate-500">Dünkü gelir</span>
+                    <span className="text-slate-500">{t.widgets.yesterdayRevenue}</span>
                     <span className="font-bold text-slate-700 dark:text-slate-300">{fmtMoney(yestRev)}</span>
                 </div>
-                <div className={`text-xs font-bold ${change >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>{change >= 0 ? '↑' : '↓'} %{Math.abs(change).toFixed(1)} değişim</div>
+                <div className={`text-xs font-bold ${change >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>{change >= 0 ? '↑' : '↓'} %{Math.abs(change).toFixed(1)} {t.widgets.change}</div>
             </div>
         )
     }
@@ -1619,9 +1620,9 @@ export default function ReportsClient({ reservations, comparisonReservations = [
         return (
             <div className="mt-2 space-y-3">
                 <div className="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl p-4 text-white">
-                    <div className="text-xs opacity-80">Bu Hafta</div>
+                    <div className="text-xs opacity-80">{t.widgets.thisWeek}</div>
                     <div className="text-2xl font-bold mt-1">{fmtMoney(weekRev)}</div>
-                    <div className="text-xs mt-1 opacity-80">{weekData.length} rez · ort {fmtMoney(avgPerDay)}/gün</div>
+                    <div className="text-xs mt-1 opacity-80">{weekData.length} {t.widgets.resSuffix} · {t.widgets.avgPerDay} {fmtMoney(avgPerDay)}{t.widgets.perDay}</div>
                 </div>
             </div>
         )
@@ -1719,7 +1720,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
                 <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                     <div className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full" style={{ width: `${paidPct}%` }} />
                 </div>
-                <div className="text-xs text-slate-500 text-center">%{paidPct.toFixed(1)} tahsilat oranı</div>
+                <div className="text-xs text-slate-500 text-center">%{paidPct.toFixed(1)} {t.widgets.collectionRate}</div>
             </div>
         )
     }
@@ -1945,7 +1946,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
         const sorted = Object.entries(days).sort(([a], [b]) => a.localeCompare(b)).slice(-30)
         return (
             <div className="mt-2">
-                <div className="text-xs text-slate-500 mb-2">Son 30 gün doluluk</div>
+                <div className="text-xs text-slate-500 mb-2">Son 30 gün {t.widgets.occupancy.toLowerCase()}</div>
                 <div className="h-40 flex items-end gap-px">
                     {sorted.map(([day, rooms], i) => {
                         const pct = Math.min(100, (rooms / TOTAL_ROOMS_ALL) * 100)
@@ -2109,11 +2110,11 @@ export default function ReportsClient({ reservations, comparisonReservations = [
         return (
             <div className="mt-2 text-center space-y-3">
                 <div className="bg-orange-50 dark:bg-orange-900/20 rounded-xl p-4">
-                    <div className="text-xs text-orange-500 mb-1">Out of Order Odalar</div>
+                    <div className="text-xs text-orange-500 mb-1">{t.widgets.outOfOrderRooms}</div>
                     <div className="text-3xl font-bold text-orange-600 dark:text-orange-400">{oooRooms}</div>
-                    <div className="text-[10px] text-orange-400">Toplam odaların %{pct.toFixed(1)}&apos;i</div>
+                    <div className="text-[10px] text-orange-400">{t.widgets.totalRoomsPct} %{pct.toFixed(1)}</div>
                 </div>
-                <div className="text-xs text-slate-500">Kullanılabilir: {TOTAL_ROOMS_ALL - oooRooms} oda</div>
+                <div className="text-xs text-slate-500">{t.widgets.availableRooms}: {TOTAL_ROOMS_ALL - oooRooms} {t.widgets.roomsSuffix}</div>
             </div>
         )
     }
@@ -2778,7 +2779,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
         return (
             <div className="mt-2 grid grid-cols-3 gap-3">
                 <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-xl p-3 text-center">
-                    <div className="text-[10px] text-indigo-500">Grup Rez.</div>
+                    <div className="text-[10px] text-indigo-500">{t.managementReports.groupRes}</div>
                     <div className="text-xl font-bold text-indigo-700 dark:text-indigo-300">{groups.length}</div>
                 </div>
                 <div className="bg-cyan-50 dark:bg-cyan-900/20 rounded-xl p-3 text-center">
@@ -2796,13 +2797,13 @@ export default function ReportsClient({ reservations, comparisonReservations = [
     const renderResOverbooking = (data: Reservation[]) => {
         const today = new Date().toISOString().slice(0, 10)
         const todayRooms = data.filter(r => r.checkIn <= today && r.checkOut > today).reduce((s, r) => s + r.roomCount, 0)
-        const overbooked = Math.max(0, todayRooms - TOTAL_ROOMS_ALL)
+        const overbooked = Math.max(0, todayRooms - 341)
         return (
             <div className="mt-2 text-center">
                 <div className={`rounded-xl p-4 ${overbooked > 0 ? 'bg-red-50 dark:bg-red-900/20' : 'bg-emerald-50 dark:bg-emerald-900/20'}`}>
                     <div className={`text-xs mb-1 ${overbooked > 0 ? 'text-red-500' : 'text-emerald-500'}`}>Overbooking</div>
                     <div className={`text-3xl font-bold ${overbooked > 0 ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'}`}>{overbooked > 0 ? `+${overbooked}` : '0'}</div>
-                    <div className="text-[10px] text-slate-400">{todayRooms}/{TOTAL_ROOMS_ALL} oda</div>
+                    <div className="text-[10px] text-slate-400">{todayRooms}/341 oda</div>
                 </div>
             </div>
         )
@@ -3206,8 +3207,8 @@ export default function ReportsClient({ reservations, comparisonReservations = [
                                 <span className={`font-bold ${change >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>{change >= 0 ? '↑' : '↓'} %{Math.abs(change).toFixed(1)}</span>
                             </div>
                             <div className="space-y-1">
-                                <div className="flex items-center gap-2"><span className="text-[10px] w-12 text-slate-400">Bu yıl</span><div className="flex-1 h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden"><div className="h-full bg-emerald-500 rounded-full" style={{ width: `${(m.cy / max) * 100}%` }} /></div><span className="text-[10px] w-16 text-right font-bold">{m.fmt ? fmtMoney(m.cy) : m.cy}</span></div>
-                                <div className="flex items-center gap-2"><span className="text-[10px] w-12 text-slate-400">Geçen</span><div className="flex-1 h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden"><div className="h-full bg-slate-400 rounded-full" style={{ width: `${(m.py / max) * 100}%` }} /></div><span className="text-[10px] w-16 text-right font-bold">{m.fmt ? fmtMoney(m.py) : m.py}</span></div>
+                                <div className="flex items-center gap-2"><span className="text-[10px] w-12 text-slate-400">{t.thisYear}</span><div className="flex-1 h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden"><div className="h-full bg-emerald-500 rounded-full" style={{ width: `${(m.cy / max) * 100}%` }} /></div><span className="text-[10px] w-16 text-right font-bold">{m.fmt ? fmtMoney(m.cy) : m.cy}</span></div>
+                                <div className="flex items-center gap-2"><span className="text-[10px] w-12 text-slate-400">YTD</span><div className="flex-1 h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden"><div className="h-full bg-slate-400 rounded-full" style={{ width: `${(m.py / max) * 100}%` }} /></div><span className="text-[10px] w-16 text-right font-bold">{m.fmt ? fmtMoney(m.py) : m.py}</span></div>
                             </div>
                         </div>
                     )
@@ -3478,7 +3479,9 @@ export default function ReportsClient({ reservations, comparisonReservations = [
         if (!def) return null
         if (activeTab !== 'all' && def.group !== activeTab) return null
 
-        const title = w.customTitle || (t[def.titleKey as keyof AdminTranslations] || TITLE_FALLBACKS[def.titleKey] || def.titleKey)
+        const rawT = t[def.titleKey as keyof AdminTranslations];
+        const titleText = typeof rawT === 'string' ? rawT : undefined;
+        const title = w.customTitle || titleText || TITLE_FALLBACKS[def.titleKey] || def.titleKey
         const sizeClass = SIZE_CLASSES[w.size || def.defaultSize]
 
         // Apply per-widget channel filter
@@ -3727,7 +3730,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
                                 : 'text-slate-500 hover:text-slate-300'
                                 }`}
                         >
-                            {tab === 'all' ? 'Tümü' : (t[tab as keyof AdminTranslations] || tab)}
+                            {tab === 'all' ? 'Tümü' : (typeof (t as any)[tab] === 'string' ? (t as any)[tab] : tab)}
                         </button>
                     ))}
                 </div>
