@@ -106,15 +106,15 @@ export async function POST(request: Request) {
         // 1. Fetch Dynamic Content from DB
         const context = await getContextData(locale)
 
-        // 3-tier API key fallback: env var → DB settings → hardcoded
+        // 3-tier API key fallback: DB settings → env var → hardcoded
         const envKey = process.env.GEMINI_API_KEY
         const dbKey = context.settings?.apiKey
-        const apiKey = GEMINI_API_KEY || envKey || dbKey
+        const apiKey = dbKey || envKey || GEMINI_API_KEY
 
-        if (envKey) {
-            console.log('[AI Chat] Using API key from env var')
-        } else if (dbKey) {
+        if (dbKey) {
             console.log('[AI Chat] Using API key from DB aiSettings')
+        } else if (envKey) {
+            console.log('[AI Chat] Using API key from env var')
         } else if (GEMINI_API_KEY) {
             console.log('[AI Chat] Using hardcoded fallback API key from ai-config.ts')
         }
