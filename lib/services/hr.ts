@@ -1,5 +1,5 @@
 // ─── Human Resources Service ───────────────────────────────────
-// İnsan Kaynakları Raporları — Blue Dreams Resort (370 oda, Ultra All-Inclusive)
+// İnsan Kaynakları Raporları — Blue Dreams Resort (341 oda, Ultra All-Inclusive)
 //
 // NOTE: Elektra ERP has NO direct HR API. Personnel data is derived from:
 // - Account codes: 335.x (Personnel Payables), 770.x (Personnel Expenses)
@@ -102,7 +102,7 @@ const rng = seededRandom(daySeed + 777) // Different seed from finance
 const randBetween = (min: number, max: number) => Math.round(min + rng() * (max - min))
 
 // ─── Static Department Data ────────────────────────────────────
-// Blue Dreams Resort: 370 rooms, Ultra AI, ~380 permanent + 120 seasonal
+// Blue Dreams Resort: 341 rooms, Ultra AI, ~380 permanent + 120 seasonal
 
 const DEPARTMENTS: DepartmentData[] = [
     { name: 'Ön Büro', headCount: 28, seasonalAdd: 8, avgSalary: 32000, color: '#3b82f6', icon: '🏨' },
@@ -380,7 +380,7 @@ export const HRService = {
         }
 
         return [
-            { metric: 'Oda Başına Personel', hotel: +(kpis.totalStaff / 370).toFixed(2), industry: 1.2, status: kpis.totalStaff / 370 <= 1.2 ? 'at' : 'above' },
+            { metric: 'Oda Başına Personel', hotel: +(kpis.totalStaff / 341).toFixed(2), industry: 1.2, status: kpis.totalStaff / 341 <= 1.2 ? 'at' : 'above' },
             { metric: 'Personel Devir Oranı (%)', hotel: kpis.staffTurnover, industry: 25, status: kpis.staffTurnover < 25 ? 'above' : 'below' },
             { metric: 'Kişi Başı Aylık Maliyet (₺)', hotel: kpis.avgCostPerPerson, industry: 30000, status: kpis.avgCostPerPerson <= 30000 ? 'above' : 'below' },
             { metric: 'Personel Başı Gelir (₺/ay)', hotel: kpis.revenuePerEmployee, industry: 42000, status: kpis.revenuePerEmployee >= 42000 ? 'above' : 'below' },

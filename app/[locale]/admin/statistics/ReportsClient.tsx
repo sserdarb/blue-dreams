@@ -533,7 +533,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
             compMonthly[m].nights += r.nights * r.roomCount
         })
 
-        const TOTAL_ROOMS = 370
+        const TOTAL_ROOMS = 341
 
         // Align months (MM)
         const allKeys = new Set<string>()
@@ -796,7 +796,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
     }
 
     const renderRevPAR = (data: Reservation[]) => {
-        const TOTAL_ROOMS = 370
+        const TOTAL_ROOMS = 341
         const totalRev = data.reduce((sum, r) => sum + dp(r.totalPrice, r.currency), 0)
         const days = Math.max(1, Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / 86400000))
         const revpar = totalRev / (TOTAL_ROOMS * days)
@@ -858,7 +858,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
         const channelSummary = getChannelBudgetSummary()
 
         // ─── Room-night & ADR target calculations ───
-        const TOTAL_ROOMS = 370
+        const TOTAL_ROOMS = 341
         const monthlyRoomNights: Record<number, number> = {}
         const monthlyResCount: Record<number, number> = {}
         const monthlyNightsSum: Record<number, number> = {}
@@ -1931,7 +1931,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
 
     // ─── Occupancy Widget Renderers ───
 
-    const TOTAL_ROOMS_ALL = 370
+    const TOTAL_ROOMS_ALL = 341
 
     const renderOccDailyChart = (data: Reservation[]) => {
         const days: Record<string, number> = {}

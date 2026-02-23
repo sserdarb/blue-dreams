@@ -527,7 +527,7 @@ export const FinanceService = {
     async getMonthlyData(year?: number): Promise<MonthlyFinance[]> {
         const y = year || new Date().getFullYear()
 
-        // Base annual values — 370 room ultra all-inclusive resort
+        // Base annual values — 341 room ultra all-inclusive resort
         // ~₺250M annual revenue, ~₺180M annual expense
         const baseRevenue = 250_000_000 / 12
         const baseExpense = 180_000_000 / 12

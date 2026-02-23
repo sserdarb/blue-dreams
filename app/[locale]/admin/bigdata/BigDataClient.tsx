@@ -35,7 +35,7 @@ export default function BigDataClient({ data, error, locale }: { data: any; erro
     const analytics = useMemo(() => {
         if (!reservations.length) return null
         const S = BigDataService
-        const totalRooms = occupancy[0]?.totalRooms || 200
+        const totalRooms = occupancy[0]?.totalRooms || 341
         const totalRev = reservations.reduce((s: number, r: any) => s + r.totalPrice, 0)
         const totalNights = reservations.reduce((s: number, r: any) => s + r.nights * r.roomCount, 0)
         const avgADR = totalNights > 0 ? totalRev / totalNights : 0

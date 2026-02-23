@@ -37,7 +37,7 @@ interface Props {
 // ─── Helpers ──────────────────────────────────────────────────
 const MONTHS_TR = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık']
 const MONTHS_TR_SHORT = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara']
-const TOTAL_ROOMS = 294 // Blue Dreams Resort total room inventory
+const TOTAL_ROOMS = 341 // Blue Dreams Resort total room inventory
 
 // ─── Season Classification ────────────────────────────────────
 // Based on check-in month:

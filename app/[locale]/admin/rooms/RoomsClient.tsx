@@ -29,8 +29,8 @@ interface Props {
 }
 
 const ROOM_TOTALS: Record<string, number> = {
-    'Club Room': 81, 'Club Room Sea View': 136, 'Club Family Room': 58,
-    'Deluxe Room': 38, 'Deluxe Family Room': 28, 'Beach Side Room': 29,
+    'Club Room': 109, 'Club Room Sea View': 108, 'Club Family Room': 58,
+    'Deluxe Room': 38, 'Deluxe Family Room': 28, 'Beach Side Room': 0,
 }
 
 const ROOM_COLORS: Record<string, string> = {

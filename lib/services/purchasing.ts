@@ -1,5 +1,5 @@
 // ─── Purchasing / Procurement Service ──────────────────────────
-// Satın Alma Raporları — Blue Dreams Resort (370 oda, Ultra All-Inclusive)
+// Satın Alma Raporları — Blue Dreams Resort (341 oda, Ultra All-Inclusive)
 //
 // HYBRID ARCHITECTURE:
 // • bookingapi.elektraweb.com → Booking-only API (no stock/purchasing endpoints)

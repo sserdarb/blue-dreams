@@ -122,7 +122,7 @@ const API_BASE = 'https://bookingapi.elektraweb.com'
 const HOTEL_ID = 33264
 const USER_CODE = 'asis'
 const PASSWORD = '***REDACTED_ERP_PASSWORD***'
-const TOTAL_ROOMS = 370
+const TOTAL_ROOMS = 341
 
 // ─── Channel Grouping ──────────────────────────────────────────
 const CHANNEL_MAP: Record<string, string> = {
@@ -511,8 +511,8 @@ export const ElektraService = {
         const tomorrow = new Date(today)
         tomorrow.setDate(today.getDate() + 1)
         const roomTotals: Record<string, number> = {
-            'Club Room': 81, 'Club Room Sea View': 136, 'Club Family Room': 58,
-            'Deluxe Room': 38, 'Deluxe Family Room': 28, 'Beach Side Room': 29,
+            'Club Room': 109, 'Club Room Sea View': 108, 'Club Family Room': 58,
+            'Deluxe Room': 38, 'Deluxe Family Room': 28, 'Beach Side Room': 0,
         }
         try {
             const availability = await this.getAvailability(today, tomorrow)

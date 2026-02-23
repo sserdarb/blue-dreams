@@ -163,7 +163,7 @@ function generateDemoForecast(): ForecastDay[] {
         const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
         const baseOcc = isWeekend ? 85 : 65
         const occ = Math.min(100, Math.max(20, baseOcc + Math.floor((rng() - 0.5) * 30)))
-        const totalRooms = 370
+        const totalRooms = 341
         const occupied = Math.round(totalRooms * occ / 100)
         const arrivals = Math.floor(rng() * 80 + 20)
         const departures = Math.floor(rng() * 70 + 15)
