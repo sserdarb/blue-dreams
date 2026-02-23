@@ -4,17 +4,73 @@ export const dynamic = 'force-dynamic';
 import { useFormState } from 'react-dom';
 import { login } from '@/app/actions/auth';
 import { useRouter, usePathname } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import PmaGravityLogo from '@/components/admin/PmaGravityLogo';
+import {
+  BarChart3,
+  BedDouble,
+  CalendarCheck,
+  Database,
+  LineChart,
+  Lock,
+  ShieldCheck,
+  TrendingUp,
+  Users,
+  Zap,
+  ChevronRight,
+  Eye,
+  EyeOff
+} from 'lucide-react';
 
 const initialState = {
   success: false,
   error: '',
 };
 
+const SYSTEM_FEATURES = [
+  {
+    icon: BarChart3,
+    title: 'Canlı Raporlama',
+    desc: 'Elektra PMS entegrasyonu ile anlık doluluk, gelir ve kanal analizi',
+    color: 'from-cyan-500 to-cyan-600',
+  },
+  {
+    icon: BedDouble,
+    title: 'Oda Yönetimi',
+    desc: '341 oda kapasiteli envanter, dinamik fiyatlandırma ve müsaitlik takvimi',
+    color: 'from-purple-500 to-purple-600',
+  },
+  {
+    icon: TrendingUp,
+    title: 'Yield Management',
+    desc: 'Akıllı fiyat optimizasyonu, sezon bazlı strateji ve rakip analizi',
+    color: 'from-emerald-500 to-emerald-600',
+  },
+  {
+    icon: CalendarCheck,
+    title: 'Rezervasyon Merkezi',
+    desc: 'Online-offline tüm kanallardan gelen rezervasyonları tek noktada yönetin',
+    color: 'from-amber-500 to-amber-600',
+  },
+  {
+    icon: LineChart,
+    title: 'Big Data Analytics',
+    desc: 'RevPAR, GOPPAR, ADR ve segment bazlı derinlemesine performans analizi',
+    color: 'from-rose-500 to-rose-600',
+  },
+  {
+    icon: Database,
+    title: 'ERP Entegrasyonu',
+    desc: 'Muhasebe, satın alma, finans ve insan kaynakları modülleri',
+    color: 'from-indigo-500 to-indigo-600',
+  },
+];
+
 export default function LoginPage() {
   const router = useRouter();
   const pathname = usePathname();
   const locale = pathname.split('/')[1] || 'tr';
+  const [showPassword, setShowPassword] = useState(false);
 
   async function handleLogin(prevState: any, formData: FormData) {
     const result = await login(formData);
@@ -34,49 +90,174 @@ export default function LoginPage() {
   }, [state.success, router, locale]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a]">
-      <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-10 rounded-2xl shadow-2xl w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-serif text-white mb-2">Blue Dreams</h1>
-          <p className="text-white/50 text-sm tracking-widest uppercase">Yönetim Paneli</p>
+    <div className="min-h-screen bg-[#030712] flex relative overflow-hidden">
+      {/* Background Effects */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {/* Grid pattern */}
+        <div
+          className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage: `linear-gradient(rgba(6,182,212,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(6,182,212,0.3) 1px, transparent 1px)`,
+            backgroundSize: '60px 60px',
+          }}
+        />
+        {/* Radial glows */}
+        <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] bg-cyan-500/10 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-20%] left-[-10%] w-[500px] h-[500px] bg-purple-500/10 rounded-full blur-[120px]" />
+        <div className="absolute top-[40%] left-[30%] w-[300px] h-[300px] bg-indigo-500/5 rounded-full blur-[100px]" />
+      </div>
+
+      {/* Left Panel — System Description */}
+      <div className="hidden lg:flex flex-1 flex-col justify-between p-12 relative z-10">
+        {/* Logo */}
+        <div>
+          <PmaGravityLogo size={52} textSize="lg" />
+          <p className="text-slate-400 mt-4 text-lg max-w-md leading-relaxed">
+            Otel yönetiminin geleceği. Tüm operasyonlarınızı tek bir
+            platformdan yönetin, analiz edin ve optimize edin.
+          </p>
         </div>
 
-        <form action={formAction} className="space-y-5">
-          <div>
-            <label className="block text-xs font-bold text-white/60 uppercase tracking-wider mb-2">E-posta</label>
-            <input
-              type="email"
-              name="email"
-              required
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 transition-all"
-              placeholder="E-posta adresinizi girin"
-            />
+        {/* Feature Grid */}
+        <div className="grid grid-cols-2 gap-4 my-8">
+          {SYSTEM_FEATURES.map((feature, i) => {
+            const Icon = feature.icon;
+            return (
+              <div
+                key={i}
+                className="group p-5 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] hover:border-white/10 transition-all duration-300"
+              >
+                <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${feature.color} flex items-center justify-center mb-3 shadow-lg group-hover:scale-110 transition-transform`}>
+                  <Icon size={20} className="text-white" />
+                </div>
+                <h3 className="text-white font-semibold text-sm mb-1">{feature.title}</h3>
+                <p className="text-slate-500 text-xs leading-relaxed">{feature.desc}</p>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Bottom stats */}
+        <div className="flex items-center gap-8">
+          <div className="flex items-center gap-2">
+            <Zap size={14} className="text-cyan-400" />
+            <span className="text-slate-500 text-xs">Canlı PMS Bağlantısı</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <ShieldCheck size={14} className="text-emerald-400" />
+            <span className="text-slate-500 text-xs">256-bit SSL Şifreleme</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Users size={14} className="text-purple-400" />
+            <span className="text-slate-500 text-xs">Çoklu Kullanıcı Desteği</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Right Panel — Login Form */}
+      <div className="flex-1 lg:max-w-[520px] flex items-center justify-center p-6 lg:p-12 relative z-10">
+        <div className="w-full max-w-md">
+          {/* Mobile Logo — only shows on small screens */}
+          <div className="lg:hidden flex flex-col items-center mb-10">
+            <PmaGravityLogo size={56} textSize="lg" className="justify-center" />
+            <p className="text-slate-500 text-sm mt-3 text-center max-w-xs">
+              Otel yönetiminin geleceği — tek bir platformdan yönetin
+            </p>
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-white/60 uppercase tracking-wider mb-2">Şifre</label>
-            <input
-              type="password"
-              name="password"
-              required
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/30 transition-all"
-              placeholder="Şifrenizi girin"
-            />
-          </div>
-
-          {state.error && (
-            <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3 text-red-400 text-sm">
-              {state.error}
+          {/* Login Card */}
+          <div className="bg-white/[0.03] backdrop-blur-2xl border border-white/[0.08] rounded-2xl p-8 lg:p-10 shadow-2xl shadow-black/20">
+            {/* Card Header */}
+            <div className="mb-8">
+              <div className="flex items-center gap-2 mb-2">
+                <Lock size={18} className="text-cyan-400" />
+                <h2 className="text-xl font-bold text-white">Sisteme Giriş</h2>
+              </div>
+              <p className="text-slate-500 text-sm">
+                Yönetim paneline erişmek için kimlik bilgilerinizi girin
+              </p>
             </div>
-          )}
 
-          <button
-            type="submit"
-            className="w-full bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 text-white py-3 px-4 rounded-lg font-bold tracking-wider uppercase text-sm transition-all shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40"
-          >
-            Giriş Yap
-          </button>
-        </form>
+            <form action={formAction} className="space-y-5">
+              {/* Email */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                  E-posta Adresi
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  required
+                  autoComplete="email"
+                  className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-white/20 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition-all text-sm"
+                  placeholder="admin@bluedreams.com"
+                />
+              </div>
+
+              {/* Password */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                  Şifre
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    name="password"
+                    required
+                    autoComplete="current-password"
+                    className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-white/20 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition-all text-sm pr-12"
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors p-1"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Error */}
+              {state.error && (
+                <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-red-400 text-sm flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0" />
+                  {state.error}
+                </div>
+              )}
+
+              {/* Submit */}
+              <button
+                type="submit"
+                className="w-full bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-400 hover:to-cyan-500 text-white py-3.5 px-4 rounded-xl font-bold tracking-wider uppercase text-sm transition-all shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 flex items-center justify-center gap-2 group"
+              >
+                Giriş Yap
+                <ChevronRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
+              </button>
+            </form>
+
+            {/* Footer */}
+            <div className="mt-8 pt-6 border-t border-white/5">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-600 text-[10px] uppercase tracking-widest">Pma Gravity v1.0</span>
+                <span className="text-slate-600 text-[10px] uppercase tracking-widest">Blue Dreams Resort</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile features — only on small screens */}
+          <div className="lg:hidden mt-8 grid grid-cols-2 gap-3">
+            {SYSTEM_FEATURES.slice(0, 4).map((feature, i) => {
+              const Icon = feature.icon;
+              return (
+                <div key={i} className="p-3 rounded-lg border border-white/5 bg-white/[0.02]">
+                  <Icon size={16} className="text-cyan-400 mb-1.5" />
+                  <p className="text-white text-xs font-medium">{feature.title}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -146,6 +146,11 @@ export const MODULE_REGISTRY: ModuleDefinition[] = [
         description: 'Otel aktiviteleri yönetimi',
     },
     {
+        id: 'nav-local-guide', label: 'Çevre Rehberi', section: 'section-operasyon',
+        href: '/local-guide', dataSource: 'local', defaultEnabled: true,
+        description: 'SerpAPI ile Bodrum gezilecek yerler ve etkinlikler — onaylananlar sitede gösterilir',
+    },
+    {
         id: 'nav-ai-training', label: 'AI Eğitim', section: 'section-operasyon',
         href: '/ai-training', dataSource: 'local', defaultEnabled: true,
         description: 'Blue Concierge AI eğitim verileri',

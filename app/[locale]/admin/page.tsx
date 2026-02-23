@@ -40,7 +40,7 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Dashboard</h1>
-            <p className="text-slate-500 dark:text-slate-400 mt-1">Blue Dreams Resort yönetim paneline hoş geldiniz</p>
+            <p className="text-slate-500 dark:text-slate-400 mt-1">Pma Gravity yönetim paneline hoş geldiniz</p>
           </div>
           <div className="flex items-center gap-3">
             <span className="text-slate-500 text-sm">Son güncelleme: şimdi</span>
@@ -266,7 +266,7 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Dashboard</h1>
-            <p className="text-slate-500 dark:text-slate-400 mt-1">Blue Dreams Resort yönetim paneline hoş geldiniz</p>
+            <p className="text-slate-500 dark:text-slate-400 mt-1">Pma Gravity yönetim paneline hoş geldiniz</p>
           </div>
         </div>
 

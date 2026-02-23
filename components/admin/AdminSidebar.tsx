@@ -32,11 +32,13 @@ import {
     CreditCard,
     ShoppingCart,
     Database,
-    Calculator
+    Calculator,
+    Compass
 } from 'lucide-react'
 import { AdminTranslations } from '@/lib/admin-translations'
 import { useTheme } from '@/components/admin/ThemeProvider'
 import { useModules } from '@/lib/modules/module-context'
+import PmaGravityLogo from '@/components/admin/PmaGravityLogo'
 
 interface AdminSidebarProps {
     locale: string
@@ -102,6 +104,7 @@ export default function AdminSidebar({ locale, t }: AdminSidebarProps) {
                 { id: 'nav-dining', href: '/content/dining', label: t.dining, icon: UtensilsCrossed },
                 { id: 'nav-meeting', href: '/content/meeting', label: t.meeting, icon: Users },
                 { id: 'nav-activities', href: '/activities', label: t.activities, icon: PartyPopper },
+                { id: 'nav-local-guide', href: '/local-guide', label: 'Çevre Rehberi', icon: Compass },
                 { id: 'nav-ai-training', href: '/ai-training', label: t.aiTraining, icon: Sparkles },
                 { id: 'nav-users', href: '/users', label: t.users, icon: UserCog },
             ]
@@ -121,15 +124,7 @@ export default function AdminSidebar({ locale, t }: AdminSidebarProps) {
         <>
             <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-white dark:bg-[#0f172a] border-b border-slate-200 dark:border-white/10 flex items-center px-4 z-40 justify-between">
                 <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 flex items-center justify-center">
-                            <img src="https://bluedreamsresort.com/wp-content/uploads/2023/03/bdrlogonewwhites.png" alt="Blue Dreams Logo" className="w-full h-auto dark:block hidden" />
-                            <img src="/bdr-logo-dark.png" alt="Blue Dreams Logo" className="w-full h-auto block dark:hidden" />
-                        </div>
-                        <div>
-                            <h1 className="text-sm font-bold tracking-wider text-slate-900 dark:text-white">BLUE DREAMS</h1>
-                        </div>
-                    </div>
+                    <PmaGravityLogo size={28} textSize="sm" />
                     <button
                         onClick={() => setIsOpen(!isOpen)}
                         className="p-2 text-slate-600 dark:text-white hover:bg-slate-100 dark:hover:bg-white/10 rounded-lg transition-colors"
@@ -157,27 +152,12 @@ export default function AdminSidebar({ locale, t }: AdminSidebarProps) {
             `}>
                 {/* Logo Desktop */}
                 <div className="hidden md:block p-6 border-b border-slate-200 dark:border-white/10">
-                    <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 flex items-center justify-center">
-                            <img src="https://bluedreamsresort.com/wp-content/uploads/2023/03/bdrlogonewwhites.png" alt="Blue Dreams Logo" className="w-full h-auto dark:block hidden" />
-                            <img src="/bdr-logo-dark.png" alt="Blue Dreams Logo" className="w-full h-auto block dark:hidden" />
-                        </div>
-                        <div>
-                            <h1 className="text-lg font-bold tracking-wider text-slate-900 dark:text-white">BLUE DREAMS</h1>
-                            <p className="text-[10px] text-cyan-600 dark:text-cyan-400 uppercase tracking-widest">Ultra All Inclusive</p>
-                        </div>
-                    </div>
+                    <PmaGravityLogo size={44} textSize="md" />
                 </div>
 
                 {/* Mobile Logo (Inside Sidebar) */}
                 <div className="md:hidden p-6 border-b border-slate-200 dark:border-white/10 flex justify-between items-center">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 flex items-center justify-center">
-                            <img src="https://bluedreamsresort.com/wp-content/uploads/2023/03/bdrlogonewwhites.png" alt="Blue Dreams Logo" className="w-full h-auto dark:block hidden" />
-                            <img src="https://bluedreamsresort.com/wp-content/uploads/2023/03/bdrlogonew.png" alt="Blue Dreams Logo" className="w-full h-auto block dark:hidden" />
-                        </div>
-                        <span className="font-bold tracking-wider text-slate-900 dark:text-white">MENU</span>
-                    </div>
+                    <PmaGravityLogo size={32} textSize="sm" />
                     <button onClick={() => setIsOpen(false)} className="text-slate-500 dark:text-white/50 hover:text-slate-900 dark:hover:text-white">
                         <X size={20} />
                     </button>
