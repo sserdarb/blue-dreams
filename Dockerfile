@@ -45,6 +45,9 @@ COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
 COPY --from=builder /app/node_modules/bcryptjs ./node_modules/bcryptjs
 COPY --from=builder /app/docker-entrypoint.sh ./docker-entrypoint.sh
 
+# Writable data directory for local-guide approvals (JSON file store)
+RUN mkdir -p /app/data && chown nextjs:nodejs /app/data
+
 RUN chmod +x ./docker-entrypoint.sh
 
 USER nextjs
