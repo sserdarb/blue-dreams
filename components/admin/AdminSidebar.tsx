@@ -33,7 +33,8 @@ import {
     ShoppingCart,
     Database,
     Calculator,
-    Compass
+    Compass,
+    Languages
 } from 'lucide-react'
 import { AdminTranslations } from '@/lib/admin-translations'
 import { useTheme } from '@/components/admin/ThemeProvider'
@@ -93,6 +94,7 @@ export default function AdminSidebar({ locale, t }: AdminSidebarProps) {
                 { id: 'nav-pages', href: '/pages', label: t.pages, icon: FileText },
                 { id: 'nav-menu', href: '/menu', label: t.menu, icon: MenuIcon },
                 { id: 'nav-media', href: '/files', label: t.media, icon: ImageIcon },
+                { id: 'nav-localization', href: '/localization', label: t.localization, icon: Languages },
                 { id: 'nav-settings', href: '/settings', label: t.settings, icon: Settings },
             ]
         },
@@ -104,7 +106,7 @@ export default function AdminSidebar({ locale, t }: AdminSidebarProps) {
                 { id: 'nav-dining', href: '/content/dining', label: t.dining, icon: UtensilsCrossed },
                 { id: 'nav-meeting', href: '/content/meeting', label: t.meeting, icon: Users },
                 { id: 'nav-activities', href: '/activities', label: t.activities, icon: PartyPopper },
-                { id: 'nav-local-guide', href: '/local-guide', label: 'Çevre Rehberi', icon: Compass },
+                { id: 'nav-local-guide', href: '/local-guide', label: t.localGuide, icon: Compass },
                 { id: 'nav-ai-training', href: '/ai-training', label: t.aiTraining, icon: Sparkles },
                 { id: 'nav-users', href: '/users', label: t.users, icon: UserCog },
             ]

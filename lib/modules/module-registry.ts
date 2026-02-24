@@ -119,6 +119,11 @@ export const MODULE_REGISTRY: ModuleDefinition[] = [
         description: 'Görsel ve dosya yönetimi',
     },
     {
+        id: 'nav-localization', label: 'Lokalizasyon', section: 'section-icerik',
+        href: '/localization', dataSource: 'local', defaultEnabled: true,
+        description: 'Admin panel çeviri yönetimi ve AI çeviri',
+    },
+    {
         id: 'nav-settings', label: 'Ayarlar', section: 'section-icerik',
         href: '/settings', dataSource: 'local', defaultEnabled: true,
         description: 'Site ayarları, modül yönetimi, kullanıcı yetkileri',

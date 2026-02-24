@@ -295,3 +295,12 @@ model ElektraRate {
   gbp       Float?
   fetchedAt DateTime @default(now())
 }
+
+model AdminTranslation {
+  id     String @id @default(uuid())
+  key    String
+  locale String
+  value  String
+
+  @@unique([key, locale])
+}
