@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell, LineChart, Line } from 'recharts'
-import { Package, Truck, ShoppingCart, AlertTriangle, BarChart3, TrendingUp, TrendingDown, ArrowUpRight, Users } from 'lucide-react'
+import { Package, Truck, ShoppingCart, AlertTriangle, BarChart3, TrendingUp, TrendingDown, ArrowUpRight, Users, CalendarRange, Filter } from 'lucide-react'
 
 import { InventoryNeed, PriceTrend, StockItem } from '@/lib/services/purchasing'
 
@@ -41,6 +41,10 @@ const CATEGORY_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', 
 
 export default function PurchasingReportsClient({ kpis, stockItems, purchaseOrders, vendors, inventoryNeeds, priceTrends, dataSource }: Props) {
     const [activeTab, setActiveTab] = useState<'overview' | 'orders' | 'inventory' | 'vendors'>('overview')
+    const [datePreset, setDatePreset] = useState<'month' | 'quarter' | 'year' | 'custom'>('year')
+    const [customStart, setCustomStart] = useState('')
+    const [customEnd, setCustomEnd] = useState('')
+    const [statusFilter, setStatusFilter] = useState<string>('ALL')
 
     const tabs = [
         { key: 'overview' as const, label: 'Genel Bakış', icon: BarChart3 },
@@ -48,6 +52,35 @@ export default function PurchasingReportsClient({ kpis, stockItems, purchaseOrde
         { key: 'inventory' as const, label: 'Stok Durumu', icon: Package },
         { key: 'vendors' as const, label: 'Tedarikçiler', icon: Users },
     ]
+
+    // Date-filtered orders
+    const filteredOrders = useMemo(() => {
+        let orders = purchaseOrders
+        if (datePreset !== 'year' || customStart || customEnd) {
+            const now = new Date()
+            let start = '', end = ''
+            if (datePreset === 'month') {
+                start = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
+                const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
+                end = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${lastDay}`
+            } else if (datePreset === 'quarter') {
+                const q = Math.floor(now.getMonth() / 3)
+                start = `${now.getFullYear()}-${String(q * 3 + 1).padStart(2, '0')}-01`
+                const endMonth = q * 3 + 3
+                const lastDay = new Date(now.getFullYear(), endMonth, 0).getDate()
+                end = `${now.getFullYear()}-${String(endMonth).padStart(2, '0')}-${lastDay}`
+            } else if (datePreset === 'custom' && customStart && customEnd) {
+                start = customStart; end = customEnd
+            }
+            if (start && end) {
+                orders = orders.filter(o => o.date >= start && o.date <= end)
+            }
+        }
+        if (statusFilter !== 'ALL') {
+            orders = orders.filter(o => o.status === statusFilter)
+        }
+        return orders
+    }, [purchaseOrders, datePreset, customStart, customEnd, statusFilter])
 
     // Category distribution from stock items
     const categoryData = useMemo(() => {
@@ -65,7 +98,7 @@ export default function PurchasingReportsClient({ kpis, stockItems, purchaseOrde
     // Order status distribution
     const orderStatusData = useMemo(() => {
         const map = new Map<string, number>()
-        purchaseOrders.forEach(o => {
+        filteredOrders.forEach(o => {
             map.set(o.status, (map.get(o.status) || 0) + 1)
         })
         const colors = ['#10b981', '#f59e0b', '#3b82f6', '#ef4444']
@@ -74,13 +107,13 @@ export default function PurchasingReportsClient({ kpis, stockItems, purchaseOrde
             value,
             color: colors[i % colors.length]
         }))
-    }, [purchaseOrders])
+    }, [filteredOrders])
 
     // Monthly spend
     const monthlySpend = useMemo(() => {
         const map = new Map<string, number>()
         const MONTHS_SHORT = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara']
-        purchaseOrders.forEach(o => {
+        filteredOrders.forEach(o => {
             const m = parseInt(o.date.slice(5, 7)) - 1
             if (m >= 0 && m < 12) {
                 const key = MONTHS_SHORT[m]
@@ -91,10 +124,20 @@ export default function PurchasingReportsClient({ kpis, stockItems, purchaseOrde
             name: m,
             Harcama: Math.round((map.get(m) || 0) / 1000)
         }))
-    }, [purchaseOrders])
+    }, [filteredOrders])
+
+    // Filtered total spend
+    const filteredTotalSpend = useMemo(() => filteredOrders.reduce((s, o) => s + o.totalAmount, 0), [filteredOrders])
 
     // Top 10 vendors
     const topVendors = useMemo(() => vendors.slice(0, 10), [vendors])
+
+    // Unique statuses for filter
+    const uniqueStatuses = useMemo(() => {
+        const set = new Set<string>()
+        purchaseOrders.forEach(o => set.add(o.status))
+        return Array.from(set)
+    }, [purchaseOrders])
 
     return (
         <div className="space-y-6">
@@ -114,6 +157,47 @@ export default function PurchasingReportsClient({ kpis, stockItems, purchaseOrde
                     </button>
                 ))}
                 <div className="flex-1" />
+
+                {/* Date Range Filter */}
+                <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
+                    <CalendarRange size={14} className="text-slate-400 ml-1" />
+                    {(['month', 'quarter', 'year'] as const).map(p => (
+                        <button
+                            key={p}
+                            onClick={() => setDatePreset(p)}
+                            className={`px-2.5 py-1 text-[10px] font-bold rounded-md transition-colors ${datePreset === p ? 'bg-orange-500 text-white' : 'text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700'}`}
+                        >
+                            {p === 'month' ? 'Ay' : p === 'quarter' ? 'Çeyrek' : 'Yıl'}
+                        </button>
+                    ))}
+                    <button
+                        onClick={() => setDatePreset('custom')}
+                        className={`px-2.5 py-1 text-[10px] font-bold rounded-md transition-colors ${datePreset === 'custom' ? 'bg-orange-500 text-white' : 'text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700'}`}
+                    >
+                        Özel
+                    </button>
+                </div>
+                {datePreset === 'custom' && (
+                    <div className="flex items-center gap-1">
+                        <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)} className="text-[10px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded px-1.5 py-1 text-slate-700 dark:text-slate-300" />
+                        <span className="text-slate-400 text-[10px]">–</span>
+                        <input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)} className="text-[10px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded px-1.5 py-1 text-slate-700 dark:text-slate-300" />
+                    </div>
+                )}
+
+                {/* Status Filter */}
+                <div className="relative">
+                    <select
+                        value={statusFilter}
+                        onChange={e => setStatusFilter(e.target.value)}
+                        className="pl-7 pr-2 py-1.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-lg text-[10px] font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors outline-none appearance-none cursor-pointer"
+                    >
+                        <option value="ALL">Tüm Durumlar</option>
+                        {uniqueStatuses.map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                    <Filter size={12} className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                </div>
+
                 <span className={`self-center px-2 py-1 rounded text-[10px] font-bold uppercase ${dataSource === 'live' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'}`}>
                     {dataSource === 'live' ? '● Canlı' : '● Demo'}
                 </span>
@@ -125,8 +209,8 @@ export default function PurchasingReportsClient({ kpis, stockItems, purchaseOrde
                     {/* KPI Cards */}
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                         {[
-                            { label: 'Aylık Harcama', value: fmtTry(kpis.totalSpent), icon: ShoppingCart, gradient: 'from-orange-500 to-amber-500' },
-                            { label: 'Aktif Siparişler', value: fmt(kpis.activeOrders), icon: Truck, gradient: 'from-blue-500 to-cyan-500' },
+                            { label: 'Toplam Harcama', value: fmtTry(filteredTotalSpend), icon: ShoppingCart, gradient: 'from-orange-500 to-amber-500' },
+                            { label: 'Sipariş', value: fmt(filteredOrders.length), icon: Truck, gradient: 'from-blue-500 to-cyan-500' },
                             { label: 'Kritik Stok', value: fmt(kpis.criticalItems), icon: AlertTriangle, gradient: 'from-red-500 to-rose-500' },
                             { label: 'Tedarikçi Performansı', value: `%${kpis.avgPerformance}`, icon: TrendingUp, gradient: 'from-emerald-500 to-teal-500' },
                         ].map((card, i) => (
@@ -243,7 +327,7 @@ export default function PurchasingReportsClient({ kpis, stockItems, purchaseOrde
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-200 dark:divide-white/5">
-                                    {purchaseOrders.slice(0, 50).map((order, i) => (
+                                    {filteredOrders.slice(0, 50).map((order, i) => (
                                         <tr key={i} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
                                             <td className="p-3 text-xs font-mono text-slate-600 dark:text-slate-400">{order.date}</td>
                                             <td className="p-3 font-medium text-slate-900 dark:text-white">{order.vendor}</td>

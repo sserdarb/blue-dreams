@@ -109,6 +109,8 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
     const [aiLoading, setAiLoading] = useState(false)
     const [expandedAgency, setExpandedAgency] = useState<string | null>(null)
     const [pdfExporting, setPdfExporting] = useState(false)
+    const [pricingChannelFilter, setPricingChannelFilter] = useState<string>('ALL')
+    const [pricingAgencyFilter, setPricingAgencyFilter] = useState<string>('ALL')
     const contentRef = useRef<HTMLDivElement>(null)
 
     // ─── Date Range State ─────────────────────────────────────
@@ -291,7 +293,10 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
 
     // Price-volume scatter data (per channel)
     const scatterData = useMemo(() => {
-        return filteredReservations.map(r => ({
+        let data = filteredReservations
+        if (pricingChannelFilter !== 'ALL') data = data.filter(r => r.channel === pricingChannelFilter)
+        if (pricingAgencyFilter !== 'ALL') data = data.filter(r => r.agency === pricingAgencyFilter)
+        return data.map(r => ({
             x: convert(r.dailyAverage, r.currency), // price (ADR per reservation)
             y: r.nights * r.roomCount, // room nights
             z: convert(r.totalPrice, r.currency), // total revenue (bubble size)
@@ -299,7 +304,11 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
             agency: r.agency,
             color: CHANNEL_COLORS[r.channel] || '#64748b',
         }))
-    }, [filteredReservations, currency]) // eslint-disable-line react-hooks/exhaustive-deps
+    }, [filteredReservations, pricingChannelFilter, pricingAgencyFilter, currency]) // eslint-disable-line react-hooks/exhaustive-deps
+
+    // Unique channels and agencies for filters
+    const uniqueChannels = useMemo(() => Array.from(new Set(filteredReservations.map(r => r.channel))).sort(), [filteredReservations])
+    const uniqueAgencies = useMemo(() => Array.from(new Set(filteredReservations.map(r => r.agency))).sort(), [filteredReservations])
 
     // ─── Manual Refresh ───────────────────────────────────────
 
@@ -710,8 +719,31 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
                 <div className="space-y-6">
                     {/* Price-Volume Scatter */}
                     <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
-                        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">{t.priceVolumeMatrix}</h3>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">Her nokta bir rezervasyon: X = gecelik ortalama fiyat, Y = room nights</p>
+                        <div className="flex items-center justify-between mb-2">
+                            <div>
+                                <h3 className="text-lg font-bold text-gray-900 dark:text-white">{t.priceVolumeMatrix}</h3>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Her nokta bir rezervasyon: X = gecelik ortalama fiyat, Y = room nights</p>
+                            </div>
+                            <div className="flex gap-2">
+                                <select
+                                    value={pricingChannelFilter}
+                                    onChange={e => setPricingChannelFilter(e.target.value)}
+                                    className="px-2 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-xs font-bold outline-none cursor-pointer"
+                                >
+                                    <option value="ALL">Tüm Kanallar</option>
+                                    {uniqueChannels.map(c => <option key={c} value={c}>{c}</option>)}
+                                </select>
+                                <select
+                                    value={pricingAgencyFilter}
+                                    onChange={e => setPricingAgencyFilter(e.target.value)}
+                                    className="px-2 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-xs font-bold outline-none cursor-pointer max-w-[160px]"
+                                >
+                                    <option value="ALL">Tüm Acenteler</option>
+                                    {uniqueAgencies.map(a => <option key={a} value={a}>{a}</option>)}
+                                </select>
+                            </div>
+                        </div>
+                        <p className="text-[10px] text-gray-400 mb-4">{scatterData.length} rezervasyon gösteriliyor</p>
                         <ResponsiveContainer width="100%" height={400}>
                             <ScatterChart>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
