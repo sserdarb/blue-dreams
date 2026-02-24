@@ -3720,9 +3720,9 @@ export default function ReportsClient({ reservations, comparisonReservations = [
     return (
         <div ref={reportRef} className="space-y-6">
             {/* Header Controls */}
-            <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col gap-4">
+            <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col gap-3 overflow-hidden">
                 {/* Tabs */}
-                <div className="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-xl overflow-x-auto">
+                <div className="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-xl overflow-x-auto no-scrollbar">
                     {['all', 'management', 'operation', 'finance', 'marketing'].map(tab => (
                         <button
                             key={tab}
@@ -3738,7 +3738,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
                 </div>
 
                 {/* Date Presets + Picker + Currency */}
-                <div className="flex flex-col md:flex-row items-center justify-between gap-3">
+                <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3">
                     {/* Date Presets */}
                     <div className="flex gap-1 flex-wrap">
                         {getDatePresets(t).map(p => (
@@ -3768,7 +3768,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                    <div className="flex items-center gap-2 flex-wrap w-full lg:w-auto">
                         {/* Date Picker */}
                         <div className="flex items-center bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-1 min-w-0">
                             <input type="date" value={startDate} onChange={e => { setStartDate(e.target.value); setActivePreset('') }} className="bg-transparent text-xs sm:text-sm font-medium px-1.5 sm:px-2 py-1 outline-none text-slate-900 dark:text-white w-[110px] sm:w-auto" />
