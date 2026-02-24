@@ -111,6 +111,8 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
     const [pdfExporting, setPdfExporting] = useState(false)
     const [pricingChannelFilter, setPricingChannelFilter] = useState<string>('ALL')
     const [pricingAgencyFilter, setPricingAgencyFilter] = useState<string>('ALL')
+    const [excludeStart, setExcludeStart] = useState('')
+    const [excludeEnd, setExcludeEnd] = useState('')
     const contentRef = useRef<HTMLDivElement>(null)
 
     // ─── Date Range State ─────────────────────────────────────
@@ -296,6 +298,10 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
         let data = filteredReservations
         if (pricingChannelFilter !== 'ALL') data = data.filter(r => r.channel === pricingChannelFilter)
         if (pricingAgencyFilter !== 'ALL') data = data.filter(r => r.agency === pricingAgencyFilter)
+        // Date exclusion
+        if (excludeStart && excludeEnd) {
+            data = data.filter(r => !(r.checkIn >= excludeStart && r.checkIn <= excludeEnd))
+        }
         return data.map(r => ({
             x: convert(r.dailyAverage, r.currency), // price (ADR per reservation)
             y: r.nights * r.roomCount, // room nights
@@ -304,7 +310,7 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
             agency: r.agency,
             color: CHANNEL_COLORS[r.channel] || '#64748b',
         }))
-    }, [filteredReservations, pricingChannelFilter, pricingAgencyFilter, currency]) // eslint-disable-line react-hooks/exhaustive-deps
+    }, [filteredReservations, pricingChannelFilter, pricingAgencyFilter, excludeStart, excludeEnd, currency]) // eslint-disable-line react-hooks/exhaustive-deps
 
     // Unique channels and agencies for filters
     const uniqueChannels = useMemo(() => Array.from(new Set(filteredReservations.map(r => r.channel))).sort(), [filteredReservations])
@@ -516,6 +522,41 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
                             </div>
                         ))}
                     </div>
+
+                    {/* High/Low Price Alerts */}
+                    {(() => {
+                        const now = new Date()
+                        const currentMonth = now.getMonth()
+                        const currentMonthData = monthlyData.find(m => m.month === currentMonth)
+                        if (!currentMonthData || currentMonthData.roomNights === 0) return null
+                        // Compare current month ADR against average of all months with data
+                        const activeMonths = monthlyData.filter(m => m.roomNights > 0 && m.adr > 0)
+                        const avgAdr = activeMonths.length > 0 ? activeMonths.reduce((s, m) => s + m.adr, 0) / activeMonths.length : 0
+                        if (avgAdr === 0) return null
+                        const pctDiff = ((currentMonthData.adr - avgAdr) / avgAdr) * 100
+                        const isHigh = pctDiff > 15
+                        const isLow = pctDiff < -15
+                        if (!isHigh && !isLow) return null
+                        return (
+                            <div className={`flex items-center gap-3 p-4 rounded-xl border ${isHigh
+                                    ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-500/30'
+                                    : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-500/30'
+                                }`}>
+                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${isHigh ? 'bg-emerald-500' : 'bg-red-500'
+                                    }`}>
+                                    <TrendingUp size={20} className="text-white" style={isLow ? { transform: 'rotate(180deg)' } : {}} />
+                                </div>
+                                <div>
+                                    <p className={`text-sm font-bold ${isHigh ? 'text-emerald-700 dark:text-emerald-300' : 'text-red-700 dark:text-red-300'}`}>
+                                        {isHigh ? '✅ Yüksek Fiyat Uyarısı' : '⚠️ Düşük Fiyat Uyarısı'}
+                                    </p>
+                                    <p className="text-xs text-gray-600 dark:text-gray-400">
+                                        Bu ay ({monthlyData[currentMonth]?.label}) ADR: {fmtC(currentMonthData.adr)} — Ortalama ADR: {fmtC(avgAdr)} ({pctDiff > 0 ? '+' : ''}{pctDiff.toFixed(1)}%)
+                                    </p>
+                                </div>
+                            </div>
+                        )
+                    })()}
 
                     {/* Monthly ADR + Room Nights Chart */}
                     <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
@@ -743,7 +784,20 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
                                 </select>
                             </div>
                         </div>
-                        <p className="text-[10px] text-gray-400 mb-4">{scatterData.length} rezervasyon gösteriliyor</p>
+                        <div className="flex items-center gap-3 mb-4">
+                            <p className="text-[10px] text-gray-400">{scatterData.length} rezervasyon gösteriliyor</p>
+                            <div className="flex-1" />
+                            <span className="text-[10px] text-gray-500 font-medium">Hariç Tut:</span>
+                            <input type="date" value={excludeStart} onChange={e => setExcludeStart(e.target.value)}
+                                className="text-[10px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded px-1.5 py-1 text-gray-700 dark:text-gray-300" />
+                            <span className="text-gray-400 text-[10px]">–</span>
+                            <input type="date" value={excludeEnd} onChange={e => setExcludeEnd(e.target.value)}
+                                className="text-[10px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded px-1.5 py-1 text-gray-700 dark:text-gray-300" />
+                            {(excludeStart || excludeEnd) && (
+                                <button onClick={() => { setExcludeStart(''); setExcludeEnd('') }}
+                                    className="text-[10px] text-red-500 hover:text-red-400 font-bold">Temizle</button>
+                            )}
+                        </div>
                         <ResponsiveContainer width="100%" height={400}>
                             <ScatterChart>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
