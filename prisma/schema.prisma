@@ -304,3 +304,114 @@ model AdminTranslation {
 
   @@unique([key, locale])
 }
+
+// ===== Task Management Models =====
+
+model Department {
+  id        String   @id @default(uuid())
+  name      String
+  color     String   @default("#3b82f6")
+  icon      String   @default("building")
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  tasks     Task[]
+}
+
+model Task {
+  id           String           @id @default(uuid())
+  title        String
+  description  String?
+  status       String           @default("todo") // todo, in_progress, review, done, cancelled
+  priority     String           @default("medium") // low, medium, high, urgent
+  dueDate      DateTime?
+  departmentId String?
+  department   Department?      @relation(fields: [departmentId], references: [id])
+  assigneeId   String? // AdminUser.id
+  creatorId    String // AdminUser.id
+  parentId     String? // Sub-task parent
+  workflowId   String?
+  tags         String? // JSON array
+  sourceType   String? // manual, email, ai
+  sourceRef    String? // Email message ID or reference
+  order        Int              @default(0)
+  estimatedMin Int? // Estimated minutes
+  completedAt  DateTime?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  comments     TaskComment[]
+  attachments  TaskAttachment[]
+
+  @@index([status])
+  @@index([assigneeId])
+  @@index([departmentId])
+  @@index([dueDate])
+}
+
+model TaskComment {
+  id        String   @id @default(uuid())
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  authorId  String // AdminUser.id
+  content   String
+  type      String   @default("comment") // comment, status_change, assignment, system
+  createdAt DateTime @default(now())
+}
+
+model TaskAttachment {
+  id        String   @id @default(uuid())
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  name      String
+  url       String
+  type      String // file MIME type
+  size      Int
+  createdAt DateTime @default(now())
+}
+
+model Workflow {
+  id          String         @id @default(uuid())
+  name        String
+  description String?
+  isActive    Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  steps       WorkflowStep[]
+}
+
+model WorkflowStep {
+  id           String   @id @default(uuid())
+  workflowId   String
+  workflow     Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  title        String
+  description  String?
+  assigneeId   String? // Default assignee AdminUser.id
+  departmentId String? // Default department
+  order        Int      @default(0)
+  duration     Int? // Expected duration in minutes
+}
+
+model MailIntegration {
+  id           String    @id @default(uuid())
+  userId       String // AdminUser who connected
+  provider     String    @default("google") // google, outlook
+  email        String
+  accessToken  String
+  refreshToken String
+  expiresAt    DateTime
+  isActive     Boolean   @default(true)
+  lastSyncAt   DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String // AdminUser.id
+  type      String // task_assigned, task_due, task_comment, workflow_step, email_converted
+  title     String
+  message   String
+  link      String? // Admin panel path
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId, isRead])
+}

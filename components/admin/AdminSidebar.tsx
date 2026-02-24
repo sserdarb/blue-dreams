@@ -35,7 +35,10 @@ import {
     Database,
     Calculator,
     Compass,
-    Languages
+    Languages,
+    CheckSquare,
+    GitBranch,
+    Mail
 } from 'lucide-react'
 import { AdminTranslations } from '@/lib/admin-translations'
 import { useTheme } from '@/components/admin/ThemeProvider'
@@ -93,6 +96,15 @@ export default function AdminSidebar({ locale, t }: AdminSidebarProps) {
             items: [
                 { id: 'nav-accounting', href: '/accounting', label: 'Muhasebe', icon: Calculator },
                 { id: 'nav-purchasing', href: '/purchasing', label: 'Satın Alma', icon: ShoppingCart },
+            ]
+        },
+        {
+            id: 'section-gorevler',
+            label: (t as any).taskManagement || 'Görev Yönetimi',
+            items: [
+                { id: 'nav-tasks', href: '/tasks', label: (t as any).tasks || 'Görevler', icon: CheckSquare },
+                { id: 'nav-workflows', href: '/tasks/workflows', label: (t as any).workflows || 'İş Akışları', icon: GitBranch },
+                { id: 'nav-mail-tasks', href: '/tasks/mail', label: (t as any).mailIntegration || 'Mail Entegrasyonu', icon: Mail },
             ]
         },
         {

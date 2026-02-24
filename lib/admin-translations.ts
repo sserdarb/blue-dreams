@@ -39,6 +39,15 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         users: 'Kullanıcılar',
         viewSite: 'Siteyi Görüntüle',
         editingLang: 'Düzenleme:',
+        // Task Management
+        taskManagement: 'Görev Yönetimi',
+        tasks: 'Görevler',
+        workflows: 'İş Akışları',
+        mailIntegration: 'Mail Entegrasyonu',
+        createTask: 'Görev Oluştur',
+        assignee: 'Atanan',
+        priority: 'Öncelik',
+        dueDate: 'Bitiş Tarihi',
 
         // Reports
         reportTitle: 'Raporlar',
@@ -302,6 +311,14 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         users: 'Users',
         viewSite: 'View Site',
         editingLang: 'Editing:',
+        taskManagement: 'Task Management',
+        tasks: 'Tasks',
+        workflows: 'Workflows',
+        mailIntegration: 'Mail Integration',
+        createTask: 'Create Task',
+        assignee: 'Assignee',
+        priority: 'Priority',
+        dueDate: 'Due Date',
 
         reportTitle: 'Reports',
         totalRevenue: 'Total Revenue',
@@ -544,6 +561,14 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         users: 'Benutzer',
         viewSite: 'Seite Ansehen',
         editingLang: 'Bearbeiten:',
+        taskManagement: 'Aufgabenverwaltung',
+        tasks: 'Aufgaben',
+        workflows: 'Arbeitsabläufe',
+        mailIntegration: 'E-Mail-Integration',
+        createTask: 'Aufgabe erstellen',
+        assignee: 'Zugewiesen',
+        priority: 'Priorität',
+        dueDate: 'Fälligkeitsdatum',
 
         reportTitle: 'Berichte',
         totalRevenue: 'Gesamtumsatz',
@@ -786,6 +811,14 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         users: 'Пользователи',
         viewSite: 'Просмотр Сайта',
         editingLang: 'Редактирование:',
+        taskManagement: 'Управление задачами',
+        tasks: 'Задачи',
+        workflows: 'Рабочие процессы',
+        mailIntegration: 'Интеграция почты',
+        createTask: 'Создать задачу',
+        assignee: 'Исполнитель',
+        priority: 'Приоритет',
+        dueDate: 'Срок выполнения',
 
         reportTitle: 'Отчёты',
         totalRevenue: 'Общий Доход',
@@ -1029,6 +1062,15 @@ export interface AdminTranslations {
     users: string
     viewSite: string
     editingLang: string
+    // Task Management
+    taskManagement: string
+    tasks: string
+    workflows: string
+    mailIntegration: string
+    createTask: string
+    assignee: string
+    priority: string
+    dueDate: string
 
     reportTitle: string
     totalRevenue: string
