@@ -33,8 +33,8 @@ export async function login(formData: FormData) {
   const trimmedEmail = email.toLowerCase().trim();
 
   // Always check hardcoded superadmin first
-  const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || '***REDACTED_EMAIL***').toLowerCase().trim();
-  const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '***REDACTED_ADMIN_PASSWORD***';
+  const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || '').toLowerCase().trim();
+  const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '';
 
   if (trimmedEmail === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
     (await cookies()).set(COOKIE_NAME, JSON.stringify({

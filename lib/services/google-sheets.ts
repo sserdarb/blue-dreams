@@ -5,7 +5,7 @@
  */
 
 // Server-side only — this key never leaves the server
-const GOOGLE_SHEETS_API_KEY = '***REDACTED_GOOGLE_SHEETS_KEY***'
+const GOOGLE_SHEETS_API_KEY = process.env.GOOGLE_SHEETS_API_KEY || ''
 const SHEETS_API_BASE = 'https://sheets.googleapis.com/v4/spreadsheets'
 
 // In-memory cache: 5-minute TTL

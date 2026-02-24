@@ -10,23 +10,23 @@ async function main() {
     // 1. Default Admin User
     // ===========================
     const existingAdmin = await prisma.adminUser.findUnique({
-        where: { email: '***REDACTED_EMAIL***' }
+        where: { email: process.env.ADMIN_EMAIL || 'admin@bluedreamsresort.com' }
     })
 
     if (!existingAdmin) {
-        const hashedPassword = await bcrypt.hash('***REDACTED_ADMIN_PASSWORD***', 10)
+        const hashedPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD || 'changeme123', 10)
         await prisma.adminUser.create({
             data: {
-                email: '***REDACTED_EMAIL***',
+                email: process.env.ADMIN_EMAIL || 'admin@bluedreamsresort.com',
                 password: hashedPassword,
                 name: 'Serdar',
                 role: 'superadmin',
                 isActive: true,
             }
         })
-        console.log('✅ Default admin user created: ***REDACTED_EMAIL***')
+        console.log('✅ Default admin user created')
     } else {
-        console.log('ℹ️ Admin user already exists: ***REDACTED_EMAIL***')
+        console.log('ℹ️ Admin user already exists')
     }
 
     // ===========================
@@ -38,7 +38,7 @@ async function main() {
     })
 
     if (!existingBurak) {
-        const hashedPassword = await bcrypt.hash('***REDACTED_USER_PASSWORD***', 10)
+        const hashedPassword = await bcrypt.hash(process.env.BURAK_PASSWORD || 'changeme123', 10)
         await prisma.adminUser.create({
             data: {
                 email: burakEmail,

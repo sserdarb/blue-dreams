@@ -120,8 +120,8 @@ export type ExchangeRates = {
 // ─── Config ────────────────────────────────────────────────────
 const API_BASE = 'https://bookingapi.elektraweb.com'
 const HOTEL_ID = 33264
-const USER_CODE = 'asis'
-const PASSWORD = '***REDACTED_ERP_PASSWORD***'
+const USER_CODE = process.env.ELEKTRA_USER_CODE || 'asis'
+const PASSWORD = process.env.ELEKTRA_PASSWORD || ''
 
 // The exact saleable room count defined by the hotel management
 const TOTAL_ROOMS = 341

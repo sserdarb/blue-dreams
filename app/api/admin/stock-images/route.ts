@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 
-const PEXELS_API_KEY = process.env.PEXELS_API_KEY || '***REDACTED_PEXELS_KEY***'
+const PEXELS_API_KEY = process.env.PEXELS_API_KEY || ''
 
 export async function GET(request: Request) {
     // 1. Auth Check
