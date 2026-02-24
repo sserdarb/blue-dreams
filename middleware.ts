@@ -40,14 +40,24 @@ function getPreferredLocale(request: NextRequest): string {
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
-  // Skip static files and non-admin API routes (e.g. /api/health)
-  // Admin APIs (/api/admin) fall through to auth check below
+  // Skip static files and ALL API routes from locale redirect
   if (
     pathname.startsWith('/_next') ||
-    (pathname.startsWith('/api') && !pathname.startsWith('/api/admin')) ||
     pathname.includes('.') ||
     pathname === '/favicon.ico'
   ) {
+    return NextResponse.next();
+  }
+
+  // Handle ALL API routes BEFORE locale logic — API routes never get locale prefix
+  if (pathname.startsWith('/api')) {
+    // Admin API auth check
+    if (pathname.startsWith('/api/admin')) {
+      const authCookie = request.cookies.get('admin_session');
+      if (!authCookie) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+    }
     return NextResponse.next();
   }
 
@@ -62,11 +72,10 @@ export function middleware(request: NextRequest) {
     return response;
   }
 
-  // Admin route protection (Pages & API)
+  // Admin page protection (not API — already handled above)
   const isAdminPage = /^\/[a-z]{2}\/admin/.test(pathname);
-  const isAdminApi = pathname.startsWith('/api/admin');
 
-  if (isAdminPage || isAdminApi) {
+  if (isAdminPage) {
     // Public admin routes (login)
     if (pathname.includes('/login')) {
       return addSecurityHeaders(NextResponse.next());
@@ -75,19 +84,9 @@ export function middleware(request: NextRequest) {
     const authCookie = request.cookies.get('admin_session');
 
     if (!authCookie) {
-      // If API request, return 401 instead of redirect
-      if (isAdminApi) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-      }
-
       const loginUrl = new URL(`/${pathnameLocale || defaultLocale}/admin/login`, request.url);
       return NextResponse.redirect(loginUrl);
     }
-  }
-
-  // Skip other API routes from locale checks
-  if (pathname.startsWith('/api')) {
-    return NextResponse.next();
   }
 
   return addSecurityHeaders(NextResponse.next());
