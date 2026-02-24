@@ -170,33 +170,44 @@ export default function ExtrasClient({ spaData, minibarData, restaurantData, tra
                                 activeTab === 'minibar' ? `${t.minibarRevenue} Analizi` :
                                     `${t.restaurantExtras} Analizi`}
                     </h3>
-                    <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold px-2 py-1 bg-green-100 text-green-700 rounded-lg border border-green-200">
-                            Canlı Veri (Simüle)
-                        </span>
-                    </div>
+                    <span className="text-xs font-bold px-2 py-1 bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-400 rounded-lg border border-cyan-200 dark:border-cyan-800">
+                        Elektra PMS
+                    </span>
                 </div>
 
                 {activeTab === 'overview' && (
                     <div className="space-y-8">
-                        <div>
-                            <h4 className="text-sm font-bold text-slate-400 mb-2">{t.spaRevenue}</h4>
-                            {renderChart(spaData, '#9333ea', t.spaRevenue)}
-                        </div>
-                        <div>
-                            <h4 className="text-sm font-bold text-slate-400 mb-2">{t.minibarRevenue}</h4>
-                            {renderChart(minibarData, '#d97706', t.minibarRevenue)}
-                        </div>
-                        <div>
-                            <h4 className="text-sm font-bold text-slate-400 mb-2">{t.restaurantExtras}</h4>
-                            {renderChart(restaurantData, '#059669', t.restaurantExtras)}
-                        </div>
+                        {spaData.length > 0 && (
+                            <div>
+                                <h4 className="text-sm font-bold text-slate-400 mb-2">{t.spaRevenue}</h4>
+                                {renderChart(spaData, '#9333ea', t.spaRevenue)}
+                            </div>
+                        )}
+                        {minibarData.length > 0 && (
+                            <div>
+                                <h4 className="text-sm font-bold text-slate-400 mb-2">{t.minibarRevenue}</h4>
+                                {renderChart(minibarData, '#d97706', t.minibarRevenue)}
+                            </div>
+                        )}
+                        {restaurantData.length > 0 && (
+                            <div>
+                                <h4 className="text-sm font-bold text-slate-400 mb-2">{t.restaurantExtras}</h4>
+                                {renderChart(restaurantData, '#059669', t.restaurantExtras)}
+                            </div>
+                        )}
+                        {spaData.length === 0 && minibarData.length === 0 && restaurantData.length === 0 && (
+                            <div className="py-16 text-center text-slate-400">
+                                <BarChart3 size={48} className="mx-auto mb-4 opacity-30" />
+                                <p className="font-medium">Seçili tarih aralığında veri bulunamadı</p>
+                                <p className="text-sm mt-1">Elektra PMS&#39;den veri geldiğinde grafikler otomatik görünecektir.</p>
+                            </div>
+                        )}
                     </div>
                 )}
 
-                {activeTab === 'spa' && renderChart(spaData, '#9333ea', t.spaRevenue)}
-                {activeTab === 'minibar' && renderChart(minibarData, '#d97706', t.minibarRevenue)}
-                {activeTab === 'restaurant' && renderChart(restaurantData, '#059669', t.restaurantExtras)}
+                {activeTab === 'spa' && (spaData.length > 0 ? renderChart(spaData, '#9333ea', t.spaRevenue) : <div className="py-16 text-center text-slate-400"><Sparkles size={48} className="mx-auto mb-4 opacity-30" /><p>Spa gelir verisi bulunamadı</p></div>)}
+                {activeTab === 'minibar' && (minibarData.length > 0 ? renderChart(minibarData, '#d97706', t.minibarRevenue) : <div className="py-16 text-center text-slate-400"><Coffee size={48} className="mx-auto mb-4 opacity-30" /><p>Minibar gelir verisi bulunamadı</p></div>)}
+                {activeTab === 'restaurant' && (restaurantData.length > 0 ? renderChart(restaurantData, '#059669', t.restaurantExtras) : <div className="py-16 text-center text-slate-400"><UtensilsCrossed size={48} className="mx-auto mb-4 opacity-30" /><p>Restoran gelir verisi bulunamadı</p></div>)}
             </div>
         </div>
     )
