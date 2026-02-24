@@ -31,6 +31,7 @@ export async function GET() {
                 email: true,
                 name: true,
                 role: true,
+                permissions: true,
                 isActive: true,
                 lastLogin: true,
                 createdAt: true,
@@ -50,7 +51,7 @@ export async function POST(request: Request) {
     }
 
     try {
-        const { email, password, name, role = 'admin' } = await request.json()
+        const { email, password, name, role = 'admin', permissions } = await request.json()
 
         if (!email || !password || !name) {
             return NextResponse.json({ error: 'E-posta, şifre ve isim gereklidir' }, { status: 400 })
@@ -75,6 +76,7 @@ export async function POST(request: Request) {
                 password: hashedPassword,
                 name,
                 role: ['superadmin', 'admin', 'editor'].includes(role) ? role : 'admin',
+                permissions: permissions ? JSON.stringify(permissions) : null,
                 isActive: true,
             },
             select: {
@@ -82,6 +84,7 @@ export async function POST(request: Request) {
                 email: true,
                 name: true,
                 role: true,
+                permissions: true,
                 isActive: true,
                 createdAt: true,
             }
@@ -101,7 +104,7 @@ export async function PUT(request: Request) {
     }
 
     try {
-        const { id, name, role, isActive, password } = await request.json()
+        const { id, name, role, isActive, password, permissions } = await request.json()
 
         if (!id) {
             return NextResponse.json({ error: 'Kullanıcı ID gerekli' }, { status: 400 })
@@ -111,6 +114,7 @@ export async function PUT(request: Request) {
         if (name !== undefined) updateData.name = name
         if (role !== undefined && ['superadmin', 'admin', 'editor'].includes(role)) updateData.role = role
         if (isActive !== undefined) updateData.isActive = isActive
+        if (permissions !== undefined) updateData.permissions = permissions ? JSON.stringify(permissions) : null
         if (password && password.trim()) {
             if (password.trim().length < 6) {
                 return NextResponse.json({ error: 'Şifre en az 6 karakter olmalıdır' }, { status: 400 })
@@ -127,6 +131,7 @@ export async function PUT(request: Request) {
                 email: true,
                 name: true,
                 role: true,
+                permissions: true,
                 isActive: true,
                 lastLogin: true,
                 createdAt: true,

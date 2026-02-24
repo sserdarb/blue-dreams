@@ -2,17 +2,24 @@
 export const dynamic = 'force-dynamic'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Users, Plus, Trash2, Edit, Shield, ShieldCheck, Mail, UserCircle, Check, X, RefreshCw, ToggleLeft, ToggleRight } from 'lucide-react'
+import { Users, Plus, Trash2, Edit, Shield, ShieldCheck, Mail, UserCircle, Check, X, RefreshCw, ToggleLeft, ToggleRight, CheckSquare, GitBranch, KeyRound } from 'lucide-react'
 
 interface AdminUser {
     id: string
     name: string
     email: string
     role: 'superadmin' | 'admin' | 'editor'
+    permissions: string | null
     isActive: boolean
     lastLogin: string | null
     createdAt: string
 }
+
+const PERMISSION_OPTIONS = [
+    { key: 'task_management', label: 'Görev Yönetimi', icon: CheckSquare, color: 'text-cyan-500' },
+    { key: 'workflow_management', label: 'İş Akışları', icon: GitBranch, color: 'text-violet-500' },
+    { key: 'mail_management', label: 'Mail Yönetimi', icon: Mail, color: 'text-amber-500' },
+] as const
 
 export default function UserManagementPage() {
     const [users, setUsers] = useState<AdminUser[]>([])
@@ -23,7 +30,8 @@ export default function UserManagementPage() {
     const [showForm, setShowForm] = useState(false)
     const [editingId, setEditingId] = useState<string | null>(null)
     const [form, setForm] = useState({
-        name: '', email: '', role: 'editor' as 'superadmin' | 'admin' | 'editor', password: ''
+        name: '', email: '', role: 'editor' as 'superadmin' | 'admin' | 'editor', password: '',
+        permissions: [] as string[],
     })
 
     const roleLabels = { superadmin: 'Süper Admin', admin: 'Admin', editor: 'Editör' }
@@ -74,7 +82,7 @@ export default function UserManagementPage() {
         try {
             if (editingId) {
                 // Update existing user
-                const body: any = { id: editingId, name: form.name, role: form.role }
+                const body: any = { id: editingId, name: form.name, role: form.role, permissions: form.permissions }
                 if (form.password.trim()) body.password = form.password.trim()
 
                 const res = await fetch('/api/admin/users', {
@@ -105,6 +113,7 @@ export default function UserManagementPage() {
                         email: form.email,
                         role: form.role,
                         password: form.password,
+                        permissions: form.permissions,
                     }),
                 })
 
@@ -118,7 +127,7 @@ export default function UserManagementPage() {
 
             // Refresh users list and close form
             await fetchUsers()
-            setForm({ name: '', email: '', role: 'editor', password: '' })
+            setForm({ name: '', email: '', role: 'editor', password: '', permissions: [] })
             setShowForm(false)
             setEditingId(null)
         } catch (err: any) {
@@ -129,7 +138,8 @@ export default function UserManagementPage() {
     }
 
     const handleEdit = (user: AdminUser) => {
-        setForm({ name: user.name, email: user.email, role: user.role, password: '' })
+        const perms = user.permissions ? (() => { try { return JSON.parse(user.permissions!) } catch { return [] } })() : []
+        setForm({ name: user.name, email: user.email, role: user.role, password: '', permissions: perms })
         setEditingId(user.id)
         setShowForm(true)
         setError(null)
@@ -200,12 +210,21 @@ export default function UserManagementPage() {
                         <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
                     </button>
                     <button
-                        onClick={() => { setShowForm(true); setEditingId(null); setForm({ name: '', email: '', role: 'editor', password: '' }); setError(null) }}
+                        onClick={() => { setShowForm(true); setEditingId(null); setForm({ name: '', email: '', role: 'editor', password: '', permissions: [] }); setError(null) }}
                         className="flex items-center gap-2 bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg transition-colors"
                     >
                         <Plus size={18} /> Yeni Kullanıcı
                     </button>
                 </div>
+            </div>
+
+            {/* Permission Legend */}
+            <div className="flex flex-wrap gap-3 mb-6">
+                {PERMISSION_OPTIONS.map(p => (
+                    <div key={p.key} className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+                        <p.icon size={12} className={p.color} /> {p.label}
+                    </div>
+                ))}
             </div>
 
             {/* Notifications */}
@@ -275,6 +294,34 @@ export default function UserManagementPage() {
                                 className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white text-sm focus:border-cyan-500 outline-none" />
                         </div>
                     </div>
+
+                    {/* Permissions */}
+                    <div className="mt-4">
+                        <label className="text-sm text-slate-500 dark:text-slate-400 block mb-2 flex items-center gap-1.5"><KeyRound size={14} /> Yetkiler</label>
+                        <div className="flex flex-wrap gap-3">
+                            {PERMISSION_OPTIONS.map(p => {
+                                const checked = form.permissions.includes(p.key)
+                                return (
+                                    <button key={p.key} type="button"
+                                        onClick={() => setForm(prev => ({
+                                            ...prev,
+                                            permissions: checked
+                                                ? prev.permissions.filter(k => k !== p.key)
+                                                : [...prev.permissions, p.key]
+                                        }))}
+                                        className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 text-sm font-medium transition-all ${checked
+                                            ? 'border-cyan-500 bg-cyan-50 dark:bg-cyan-900/20 text-cyan-700 dark:text-cyan-300'
+                                            : 'border-slate-200 dark:border-slate-700 text-slate-500 hover:border-slate-400'
+                                            }`}>
+                                        <p.icon size={16} className={checked ? p.color : 'text-slate-400'} />
+                                        {p.label}
+                                        {checked && <Check size={14} className="text-cyan-500" />}
+                                    </button>
+                                )
+                            })}
+                        </div>
+                        <p className="text-[10px] text-slate-400 mt-1.5">Sadece seçili yetkilere sahip kullanıcılar iş akışlarında atanabilir</p>
+                    </div>
                     <div className="flex justify-end gap-3 mt-4">
                         <button onClick={() => { setShowForm(false); setEditingId(null); setError(null) }}
                             className="px-4 py-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">İptal</button>
@@ -332,6 +379,20 @@ export default function UserManagementPage() {
                                                 {user.role === 'superadmin' ? <ShieldCheck size={12} /> : <Shield size={12} />}
                                                 {roleLabels[user.role]}
                                             </span>
+                                            {/* Permission badges */}
+                                            {user.permissions && (() => {
+                                                try {
+                                                    const perms: string[] = JSON.parse(user.permissions)
+                                                    return perms.length > 0 ? (
+                                                        <div className="flex gap-1 mt-1">
+                                                            {perms.map(p => {
+                                                                const opt = PERMISSION_OPTIONS.find(o => o.key === p)
+                                                                return opt ? <span key={p} title={opt.label}><opt.icon size={11} className={opt.color} /></span> : null
+                                                            })}
+                                                        </div>
+                                                    ) : null
+                                                } catch { return null }
+                                            })()}
                                         </td>
                                         <td className="px-4 py-4">
                                             <button onClick={() => handleToggleActive(user)}

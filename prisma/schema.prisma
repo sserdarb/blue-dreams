@@ -249,15 +249,16 @@ model AnalyticsConfig {
 }
 
 model AdminUser {
-  id        String    @id @default(uuid())
-  email     String    @unique
-  password  String
-  name      String
-  role      String    @default("admin") // superadmin, admin, editor
-  isActive  Boolean   @default(true)
-  lastLogin DateTime?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id          String    @id @default(uuid())
+  email       String    @unique
+  password    String
+  name        String
+  role        String    @default("admin") // superadmin, admin, editor
+  permissions String? // JSON array: ["task_management","workflow_management","mail_management"]
+  isActive    Boolean   @default(true)
+  lastLogin   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
 
 // ===== Elektra Cache Models (Item 16 & 17) =====
