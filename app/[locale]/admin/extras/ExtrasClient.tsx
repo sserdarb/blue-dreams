@@ -5,7 +5,7 @@ import {
     Sparkles, Coffee, UtensilsCrossed, TrendingUp, Calendar,
     DollarSign, BarChart3, Download, ArrowRightLeft
 } from 'lucide-react'
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts'
 import { AdminTranslations } from '@/lib/admin-translations'
 import { DepartmentRevenue } from '@/lib/services/elektra'
 import ModuleOffline from '@/components/admin/ModuleOffline'
@@ -208,6 +208,67 @@ export default function ExtrasClient({ spaData, minibarData, restaurantData, tra
                 {activeTab === 'spa' && (spaData.length > 0 ? renderChart(spaData, '#9333ea', t.spaRevenue) : <div className="py-16 text-center text-slate-400"><Sparkles size={48} className="mx-auto mb-4 opacity-30" /><p>Spa gelir verisi bulunamadı</p></div>)}
                 {activeTab === 'minibar' && (minibarData.length > 0 ? renderChart(minibarData, '#d97706', t.minibarRevenue) : <div className="py-16 text-center text-slate-400"><Coffee size={48} className="mx-auto mb-4 opacity-30" /><p>Minibar gelir verisi bulunamadı</p></div>)}
                 {activeTab === 'restaurant' && (restaurantData.length > 0 ? renderChart(restaurantData, '#059669', t.restaurantExtras) : <div className="py-16 text-center text-slate-400"><UtensilsCrossed size={48} className="mx-auto mb-4 opacity-30" /><p>Restoran gelir verisi bulunamadı</p></div>)}
+            </div>
+
+            {/* Department Comparison */}
+            {(spaData.length > 0 || minibarData.length > 0 || restaurantData.length > 0) && (
+                <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
+                    <h3 className="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2 mb-4">
+                        <BarChart3 size={20} className="text-gray-400" /> Departman Karşılaştırması
+                    </h3>
+                    <ResponsiveContainer width="100%" height={250}>
+                        <BarChart data={[
+                            { name: 'SPA', value: Math.round(totals.spa), fill: '#9333ea' },
+                            { name: 'Minibar', value: Math.round(totals.minibar), fill: '#d97706' },
+                            { name: 'Restoran', value: Math.round(totals.restaurant), fill: '#059669' },
+                        ]}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                            <XAxis dataKey="name" fontSize={12} />
+                            <YAxis fontSize={12} tickFormatter={(v: number) => `${(v / 1000).toFixed(0)}K`} />
+                            <Tooltip formatter={(value: any) => [fmt(value), 'Gelir']} />
+                            <Bar dataKey="value" name="Gelir" radius={[8, 8, 0, 0]}>
+                                {[
+                                    <rect key="spa" fill="#9333ea" />,
+                                ].map(() => null)}
+                            </Bar>
+                        </BarChart>
+                    </ResponsiveContainer>
+                    <div className="grid grid-cols-3 gap-4 mt-4">
+                        {[
+                            { label: 'SPA', value: totals.spa, color: '#9333ea', pct: totals.all > 0 ? (totals.spa / totals.all * 100).toFixed(1) : '0' },
+                            { label: 'Minibar', value: totals.minibar, color: '#d97706', pct: totals.all > 0 ? (totals.minibar / totals.all * 100).toFixed(1) : '0' },
+                            { label: 'Restoran', value: totals.restaurant, color: '#059669', pct: totals.all > 0 ? (totals.restaurant / totals.all * 100).toFixed(1) : '0' },
+                        ].map(d => (
+                            <div key={d.label} className="text-center">
+                                <div className="w-3 h-3 rounded-full mx-auto mb-1" style={{ backgroundColor: d.color }} />
+                                <p className="text-xs font-bold text-slate-700 dark:text-slate-300">{d.label}</p>
+                                <p className="text-sm font-bold text-slate-900 dark:text-white">{fmt(d.value)}</p>
+                                <p className="text-[10px] text-slate-400">%{d.pct}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Cross-Module Navigation */}
+            <div className="bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5">
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mb-3">İlgili Modüller</p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {[
+                        { href: 'yield', label: 'Yield Management', desc: 'ADR analizi, fiyat matrisi', icon: TrendingUp },
+                        { href: 'reports', label: 'Yönetim Raporları', desc: 'S26, Pace, milliyet', icon: BarChart3 },
+                        { href: 'reservations', label: 'Rezervasyonlar', desc: 'Detaylı liste ve filtre', icon: Calendar },
+                        { href: 'purchasing', label: 'Satın Alma', desc: 'Stok, tedarik', icon: DollarSign },
+                    ].map((m, i) => (
+                        <a key={i} href={`../${m.href}`} className="flex items-center gap-3 p-3 bg-white dark:bg-white/5 rounded-lg border border-slate-200 dark:border-white/10 hover:border-cyan-400 dark:hover:border-cyan-500 transition-colors group">
+                            <m.icon size={18} className="text-slate-400 group-hover:text-cyan-500 transition-colors flex-shrink-0" />
+                            <div className="min-w-0">
+                                <p className="text-sm font-medium text-slate-700 dark:text-slate-200 group-hover:text-cyan-700 dark:group-hover:text-white truncate">{m.label}</p>
+                                <p className="text-[10px] text-slate-400 truncate">{m.desc}</p>
+                            </div>
+                        </a>
+                    ))}
+                </div>
             </div>
         </div>
     )
