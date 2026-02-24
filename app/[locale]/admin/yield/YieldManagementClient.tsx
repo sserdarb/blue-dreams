@@ -227,14 +227,29 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
             e.roomNights += r.nights * r.roomCount
             e.prices.push(convert(r.dailyAverage, r.currency))
         }
+
+        // Previous year agency data for comparison
+        const prevMap = new Map<string, { revenue: number; roomNights: number; count: number }>()
+        for (const r of filteredPrevReservations) {
+            if (!prevMap.has(r.agency)) prevMap.set(r.agency, { revenue: 0, roomNights: 0, count: 0 })
+            const e = prevMap.get(r.agency)!
+            e.revenue += convert(r.totalPrice, r.currency)
+            e.roomNights += r.nights * r.roomCount
+            e.count += 1
+        }
+
         return Array.from(map.values())
             .map(d => ({
                 ...d,
                 avgPrice: d.prices.length > 0 ? d.prices.reduce((s, p) => s + p, 0) / d.prices.length : 0,
                 adr: d.roomNights > 0 ? d.revenue / d.roomNights : 0,
+                prevRevenue: prevMap.get(d.agency)?.revenue || 0,
+                prevRoomNights: prevMap.get(d.agency)?.roomNights || 0,
+                prevCount: prevMap.get(d.agency)?.count || 0,
+                prevAdr: (prevMap.get(d.agency)?.roomNights || 0) > 0 ? (prevMap.get(d.agency)!.revenue / prevMap.get(d.agency)!.roomNights) : 0,
             }))
             .sort((a, b) => b.revenue - a.revenue)
-    }, [filteredReservations, currency]) // eslint-disable-line react-hooks/exhaustive-deps
+    }, [filteredReservations, filteredPrevReservations, currency]) // eslint-disable-line react-hooks/exhaustive-deps
 
     // Monthly price trend
     const monthlyData = useMemo(() => {
@@ -242,6 +257,7 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
             month: i,
             label: t.monthNames[i],
             roomNights: 0, revenue: 0, count: 0, season: getSeason(i),
+            prevRoomNights: 0, prevRevenue: 0, prevCount: 0,
         }))
 
         for (const r of filteredReservations) {
@@ -253,14 +269,25 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
             }
         }
 
+        // Previous year data
+        for (const r of prevYearReservations) {
+            const m = parseInt(r.checkIn.slice(5, 7)) - 1
+            if (m >= 0 && m < 12) {
+                months[m].prevRoomNights += r.nights * r.roomCount
+                months[m].prevRevenue += convert(r.totalPrice, r.currency)
+                months[m].prevCount += 1
+            }
+        }
+
         return months.map(m => ({
             ...m,
             adr: m.roomNights > 0 ? Math.round(m.revenue / m.roomNights) : 0,
+            prevAdr: m.prevRoomNights > 0 ? Math.round(m.prevRevenue / m.prevRoomNights) : 0,
             avgBooking: m.count > 0 ? Math.round(m.revenue / m.count) : 0,
             seasonLabel: SEASON_LABELS_I18N[m.season],
             seasonColor: SEASON_COLORS[m.season],
         }))
-    }, [filteredReservations, currency, t]) // eslint-disable-line react-hooks/exhaustive-deps
+    }, [filteredReservations, prevYearReservations, currency, t]) // eslint-disable-line react-hooks/exhaustive-deps
 
     // Price-volume scatter data (per channel)
     const scatterData = useMemo(() => {
@@ -497,7 +524,8 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
                                         return (
                                             <div className="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-3 border text-sm">
                                                 <p className="font-bold">{label} <span className="text-xs ml-1" style={{ color: d?.seasonColor }}>({d?.seasonLabel})</span></p>
-                                                <p>ADR: {fmtC(d?.adr || 0)}</p>
+                                                <p>ADR {currentYear}: {fmtC(d?.adr || 0)}</p>
+                                                {d?.prevAdr > 0 && <p className="text-orange-500">ADR {currentYear - 1}: {fmtC(d?.prevAdr || 0)}</p>}
                                                 <p>Room Night: {fmt(d?.roomNights || 0)}</p>
                                                 <p>Rez: {fmt(d?.count || 0)}</p>
                                             </div>
@@ -506,7 +534,8 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
                                 />
                                 <Legend />
                                 <Bar yAxisId="left" dataKey="roomNights" name="Room Night" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                                <Line yAxisId="right" type="monotone" dataKey="adr" name={`ADR (${currency})`} stroke="#ef4444" strokeWidth={3} dot={{ r: 5, fill: '#ef4444' }} />
+                                <Line yAxisId="right" type="monotone" dataKey="adr" name={`ADR ${currentYear} (${currency})`} stroke="#ef4444" strokeWidth={3} dot={{ r: 5, fill: '#ef4444' }} />
+                                <Line yAxisId="right" type="monotone" dataKey="prevAdr" name={`ADR ${currentYear - 1} (${currency})`} stroke="#f97316" strokeWidth={2} strokeDasharray="8 4" dot={{ r: 3, fill: '#f97316' }} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
@@ -629,7 +658,7 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
                                         {expandedAgency === a.agency && (
                                             <tr>
                                                 <td colSpan={9} className="bg-gray-50 dark:bg-gray-900/50 p-4">
-                                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+                                                    <div className="grid grid-cols-2 md:grid-cols-6 gap-4 text-xs">
                                                         <div>
                                                             <span className="text-gray-500 dark:text-gray-400">{t.totalRevLabel}</span>
                                                             <p className="text-lg font-black text-emerald-600">{fmtC(a.revenue)}</p>
@@ -645,6 +674,24 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
                                                         <div>
                                                             <span className="text-gray-500 dark:text-gray-400">{t.roomNightShare}</span>
                                                             <p className="text-lg font-black text-purple-600">%{stats.totalRoomNights > 0 ? ((a.roomNights / stats.totalRoomNights) * 100).toFixed(1) : 0}</p>
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-gray-500 dark:text-gray-400">Gelir {currentYear - 1}</span>
+                                                            <p className="text-lg font-black text-orange-500">{a.prevRevenue > 0 ? fmtC(a.prevRevenue) : '—'}</p>
+                                                            {a.prevRevenue > 0 && (
+                                                                <span className={`text-[10px] font-bold ${a.revenue >= a.prevRevenue ? 'text-emerald-500' : 'text-red-500'}`}>
+                                                                    {diffPct(a.revenue, a.prevRevenue)}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-gray-500 dark:text-gray-400">ADR {currentYear - 1}</span>
+                                                            <p className="text-lg font-black text-orange-500">{a.prevAdr > 0 ? fmtC(a.prevAdr) : '—'}</p>
+                                                            {a.prevAdr > 0 && (
+                                                                <span className={`text-[10px] font-bold ${a.adr >= a.prevAdr ? 'text-emerald-500' : 'text-red-500'}`}>
+                                                                    {diffPct(a.adr, a.prevAdr)}
+                                                                </span>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 </td>
