@@ -2,7 +2,7 @@
 export const dynamic = 'force-dynamic'
 
 import React, { useState, useEffect } from 'react'
-import { Plus, Edit2, Trash2, X, Save, Search, UtensilsCrossed, Clock, Star, Image as ImageIcon, Layout } from 'lucide-react'
+import { Plus, Edit2, Trash2, X, Save, Search, UtensilsCrossed, Clock, Star, Image as ImageIcon, Layout, QrCode, ExternalLink, Download } from 'lucide-react'
 import { useParams } from 'next/navigation'
 
 // Types
@@ -30,6 +30,8 @@ export default function DiningPage() {
     const [loading, setLoading] = useState(true)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [editingVenue, setEditingVenue] = useState<DiningVenue | null>(null)
+    const [qrData, setQrData] = useState<Record<string, { qrDataUrl: string; menuUrl: string } | null>>({})
+    const [qrLoading, setQrLoading] = useState<string | null>(null)
 
     // Form State
     const [formData, setFormData] = useState({
@@ -176,22 +178,97 @@ export default function DiningPage() {
 
             {/* Menus Tab */}
             {activeTab === 'menus' && (
-                <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-200 dark:border-white/10 p-6 shadow-sm">
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Menü Yönetimi</h3>
-                    <p className="text-slate-500 mb-6">Her restoran için menü kartları ve fiyat listeleri.</p>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {venues.map(v => (
-                            <div key={v.id} className="bg-slate-50 dark:bg-[#0f172a] p-4 rounded-xl border border-slate-200 dark:border-white/10">
-                                <div className="flex items-center gap-3 mb-3">
-                                    <UtensilsCrossed size={20} className="text-cyan-500" />
-                                    <div className="font-bold text-slate-900 dark:text-white">{v.name}</div>
-                                </div>
-                                <p className="text-xs text-slate-500 mb-3">{v.cuisine} mutfağı</p>
-                                <button className="w-full bg-cyan-600/10 text-cyan-600 dark:text-cyan-400 px-3 py-2 rounded-lg text-sm font-medium hover:bg-cyan-600/20 transition-colors">
-                                    Menüyü Düzenle
-                                </button>
+                <div className="space-y-6">
+                    <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-200 dark:border-white/10 p-6 shadow-sm">
+                        <div className="flex items-center justify-between mb-6">
+                            <div>
+                                <h3 className="text-lg font-bold text-slate-900 dark:text-white">Menü Tasarım & QR Kod</h3>
+                                <p className="text-slate-500 text-sm mt-1">Her restoran için QR kodlu dijital menü oluşturun.</p>
                             </div>
-                        ))}
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            {venues.map(v => {
+                                const qr = qrData[v.id]
+                                const restaurantSlug = v.name.toLowerCase()
+                                    .replace(/\s+/g, '-')
+                                    .replace(/[^a-z0-9-]/g, '')
+                                    .replace(/(^-|-$)/g, '') || v.id
+
+                                return (
+                                    <div key={v.id} className="bg-slate-50 dark:bg-[#0f172a] rounded-xl border border-slate-200 dark:border-white/10 overflow-hidden">
+                                        {/* Restaurant Header */}
+                                        <div className="relative h-32 bg-slate-200 dark:bg-slate-800">
+                                            <img src={v.image} alt={v.name} className="w-full h-full object-cover" />
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                                            <div className="absolute bottom-3 left-4 right-4">
+                                                <h4 className="text-white font-bold text-lg">{v.name}</h4>
+                                                <p className="text-white/70 text-xs">{v.cuisine} • {v.hours}</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="p-4 space-y-3">
+                                            {/* Menu link */}
+                                            <a
+                                                href={`/${locale}/menu/${restaurantSlug}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="flex items-center gap-2 w-full bg-cyan-600/10 text-cyan-600 dark:text-cyan-400 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-cyan-600/20 transition-colors"
+                                            >
+                                                <ExternalLink size={16} /> Menüyü Görüntüle
+                                            </a>
+
+                                            {/* QR Code Generator */}
+                                            {qr ? (
+                                                <div className="text-center space-y-3">
+                                                    <div className="bg-white p-4 rounded-xl inline-block mx-auto shadow-sm">
+                                                        <img src={qr.qrDataUrl} alt="QR Code" className="w-40 h-40" />
+                                                    </div>
+                                                    <p className="text-xs text-slate-500 break-all">{qr.menuUrl}</p>
+                                                    <div className="flex gap-2">
+                                                        <a
+                                                            href={qr.qrDataUrl}
+                                                            download={`${v.name}-menu-qr.png`}
+                                                            className="flex-1 flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-2 rounded-lg text-xs font-medium transition-colors"
+                                                        >
+                                                            <Download size={14} /> PNG İndir
+                                                        </a>
+                                                        <button
+                                                            onClick={() => { navigator.clipboard.writeText(qr.menuUrl); alert('URL kopyalandı!') }}
+                                                            className="flex-1 flex items-center justify-center gap-1.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-white px-3 py-2 rounded-lg text-xs font-medium transition-colors"
+                                                        >
+                                                            URL Kopyala
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <button
+                                                    onClick={async () => {
+                                                        setQrLoading(v.id)
+                                                        try {
+                                                            const res = await fetch('/api/admin/menu-qr', {
+                                                                method: 'POST',
+                                                                headers: { 'Content-Type': 'application/json' },
+                                                                body: JSON.stringify({ restaurantId: restaurantSlug })
+                                                            })
+                                                            const data = await res.json()
+                                                            setQrData(prev => ({ ...prev, [v.id]: { qrDataUrl: data.qrDataUrl, menuUrl: data.menuUrl } }))
+                                                        } catch {
+                                                            alert('QR kod oluşturulamadı')
+                                                        }
+                                                        setQrLoading(null)
+                                                    }}
+                                                    disabled={qrLoading === v.id}
+                                                    className="flex items-center gap-2 w-full justify-center bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                                                >
+                                                    <QrCode size={16} className={qrLoading === v.id ? 'animate-pulse' : ''} />
+                                                    {qrLoading === v.id ? 'Oluşturuluyor...' : 'QR Kod Oluştur'}
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                )
+                            })}
+                        </div>
                     </div>
                 </div>
             )}

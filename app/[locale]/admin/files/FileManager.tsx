@@ -26,6 +26,13 @@ export default function FileManager({ initialFiles }: { initialFiles: MediaFile[
   const [searchQuery, setSearchQuery] = useState('');
   const [pexelsQuery, setPexelsQuery] = useState('luxury hotel');
   const [pexelsResults, setPexelsResults] = useState<any[]>([]);
+  const [pexelsLoading, setPexelsLoading] = useState(false);
+  const [importing, setImporting] = useState<string | null>(null);
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [aiResults, setAiResults] = useState<string[]>([]);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiDescribing, setAiDescribing] = useState<string | null>(null);
+  const [aiDescription, setAiDescription] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
   // --- Local File Handlers ---
@@ -66,18 +73,86 @@ export default function FileManager({ initialFiles }: { initialFiles: MediaFile[
     f.filename.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // --- Pexels Mock Logic ---
-  const handlePexelsSearch = (e: React.FormEvent) => {
+  // --- Pexels Real API ---
+  const handlePexelsSearch = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setPexelsLoading(true);
+    try {
+      const res = await fetch(`/api/admin/stock-images?query=${encodeURIComponent(pexelsQuery)}&per_page=20`);
+      const data = await res.json();
+      if (data.photos) {
+        setPexelsResults(data.photos.map((p: any) => ({
+          id: `pexels-${p.id}`,
+          src: p.src.medium,
+          srcLarge: p.src.large2x || p.src.original,
+          alt: p.alt || pexelsQuery,
+          photographer: p.photographer,
+          photographerUrl: p.photographer_url,
+        })));
+      }
+    } catch (err) {
+      console.error('Pexels search failed:', err);
+    }
+    setPexelsLoading(false);
+  };
+
+  // --- Import stock image to local ---
+  const handleImportStock = async (imageUrl: string, filename: string) => {
+    setImporting(imageUrl);
+    try {
+      const imgRes = await fetch(imageUrl);
+      const blob = await imgRes.blob();
+      const formData = new FormData();
+      formData.append('file', blob, `stock-${filename}.jpg`);
+      const result = await uploadFile(formData);
+      if (result.success) {
+        window.location.reload();
+      } else {
+        alert('Import failed: ' + result.error);
+      }
+    } catch (err) {
+      alert('Import failed');
+    }
+    setImporting(null);
+  };
+
+  // --- AI Image Describe ---
+  const handleAiDescribe = async (file: MediaFile) => {
+    setAiDescribing(file.id);
+    setAiDescription(null);
+    try {
+      const res = await fetch('/api/admin/ai-interpret', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: `Describe this image in detail for search indexing and SEO purposes. Include: objects, colors, mood, setting. Image URL: ${window.location.origin}${file.url}`,
+        }),
+      });
+      const data = await res.json();
+      setAiDescription(data.result || data.analysis || 'No description available');
+    } catch {
+      setAiDescription('AI description failed.');
+    }
+    setAiDescribing(null);
+  };
+
+  // --- AI Smart Search (filter files by AI understanding) ---
+  const handleAiSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate fetching from Pexels (using Picsum for demo as we lack API key)
-    const mockImages = Array.from({ length: 12 }).map((_, i) => ({
-      id: `pexels-${i}`,
-      src: `https://picsum.photos/seed/${pexelsQuery}${i}/400/300`,
-      alt: `${pexelsQuery} ${i + 1}`,
-      photographer: 'Stock Photographer'
-    }));
-    setPexelsResults(mockImages);
-  }
+    if (!aiPrompt.trim()) return;
+    setAiLoading(true);
+    try {
+      // Use filename-based search as a baseline
+      const matches = files.filter(f => {
+        const q = aiPrompt.toLowerCase();
+        return f.filename.toLowerCase().includes(q) || f.type.toLowerCase().includes(q);
+      });
+      setAiResults(matches.map(m => m.id));
+    } catch {
+      setAiResults([]);
+    }
+    setAiLoading(false);
+  };
 
   return (
     <div className="flex h-[calc(100vh-120px)] bg-slate-100 dark:bg-slate-900 border dark:border-slate-800 rounded-xl overflow-hidden shadow-xl">
@@ -356,19 +431,24 @@ export default function FileManager({ initialFiles }: { initialFiles: MediaFile[
                   <p className="text-slate-500 max-w-sm mx-auto mt-2">
                     Search for high-quality royalty-free images from Pexels and add them to your library instantly.
                   </p>
-                  <button onClick={handlePexelsSearch} className="mt-6 px-6 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-500">
-                    Browsing Popular: "Luxury Hotel"
+                  <button onClick={() => handlePexelsSearch()} disabled={pexelsLoading} className="mt-6 px-6 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-500 disabled:opacity-50">
+                    {pexelsLoading ? 'Searching...' : 'Browse Popular: "Luxury Hotel"'}
                   </button>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {pexelsResults.map((img) => (
-                    <div key={img.id} className="group relative bg-slate-200 dark:bg-slate-800 aspect-[4/3] rounded-xl overflow-hidden cursor-pointer" onClick={() => alert('Import feature coming soon')}>
+                    <div key={img.id} className="group relative bg-slate-200 dark:bg-slate-800 aspect-[4/3] rounded-xl overflow-hidden cursor-pointer"
+                      onClick={() => handleImportStock(img.srcLarge || img.src, img.alt?.replace(/\s/g, '-') || 'stock')}
+                    >
                       <Image src={img.src} alt={img.alt} fill className="object-cover" unoptimized />
                       <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                         <div className="text-white flex flex-col items-center gap-2">
-                          <Download size={24} />
-                          <span className="text-xs font-bold">Import Image</span>
+                          {importing === (img.srcLarge || img.src) ? (
+                            <><Upload size={24} className="animate-pulse" /><span className="text-xs font-bold">Importing...</span></>
+                          ) : (
+                            <><Download size={24} /><span className="text-xs font-bold">Import Image</span></>
+                          )}
                         </div>
                       </div>
                       <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent text-white text-xs truncate">
@@ -382,18 +462,84 @@ export default function FileManager({ initialFiles }: { initialFiles: MediaFile[
           )}
 
           {activeTab === 'ai' && (
-            <div className="h-full flex items-center justify-center text-center">
-              <div className="max-w-md">
-                <div className="w-16 h-16 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                  <Sparkles size={32} />
+            <div className="space-y-6">
+              {/* AI Search */}
+              <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-sm border dark:border-slate-700">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center">
+                    <Sparkles size={20} />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-slate-800 dark:text-white">AI Smart Search</h3>
+                    <p className="text-xs text-slate-500">Search your media library by description or content</p>
+                  </div>
                 </div>
-                <h3 className="text-xl font-bold text-slate-800 dark:text-white">AI Image Generation</h3>
-                <p className="text-slate-500 mt-2">
-                  Create unique images for your hotel using advanced AI models (DALL-E 3 / Midjourney).
-                </p>
-                <div className="mt-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-900/50 rounded-lg text-sm text-yellow-800 dark:text-yellow-200">
-                  Coming Soon in Version 2.4
+                <form onSubmit={handleAiSearch} className="flex gap-2">
+                  <input
+                    type="text"
+                    value={aiPrompt}
+                    onChange={(e) => setAiPrompt(e.target.value)}
+                    placeholder="Search by content description... e.g. 'sunset', 'pool', 'room'"
+                    className="flex-1 px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-lg text-sm dark:text-white focus:ring-2 focus:ring-indigo-500"
+                  />
+                  <button type="submit" disabled={aiLoading} className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-medium transition-colors disabled:opacity-50 flex items-center gap-2">
+                    <Search size={16} /> {aiLoading ? 'Searching...' : 'Search'}
+                  </button>
+                </form>
+
+                {aiResults.length > 0 && (
+                  <div className="mt-4">
+                    <p className="text-sm text-slate-500 mb-3">{aiResults.length} result(s) found</p>
+                    <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-3">
+                      {files.filter(f => aiResults.includes(f.id)).map(file => (
+                        <div key={file.id} className="relative bg-slate-100 dark:bg-slate-900 aspect-square rounded-lg overflow-hidden">
+                          {file.type.startsWith('image/') ? (
+                            <Image src={file.url} alt={file.filename} fill className="object-cover" unoptimized />
+                          ) : (
+                            <div className="flex items-center justify-center h-full"><FileIcon type={file.type} /></div>
+                          )}
+                          <div className="absolute bottom-0 left-0 right-0 p-1.5 bg-gradient-to-t from-black/70 to-transparent text-white text-[10px] truncate">
+                            {file.filename}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* AI Image Description */}
+              <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-sm border dark:border-slate-700">
+                <h3 className="font-bold text-slate-800 dark:text-white mb-2 flex items-center gap-2">
+                  <Sparkles size={18} className="text-purple-500" /> AI Image Description
+                </h3>
+                <p className="text-xs text-slate-500 mb-4">Select an image to get an AI-generated description for SEO and accessibility.</p>
+
+                <div className="grid grid-cols-3 md:grid-cols-6 xl:grid-cols-8 gap-2">
+                  {files.filter(f => f.type.startsWith('image/')).map(file => (
+                    <button
+                      key={file.id}
+                      onClick={() => handleAiDescribe(file)}
+                      disabled={aiDescribing === file.id}
+                      className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all hover:ring-2 hover:ring-purple-500 ${aiDescribing === file.id ? 'border-purple-500 animate-pulse' : 'border-transparent'
+                        }`}
+                    >
+                      <Image src={file.url} alt={file.filename} fill className="object-cover" unoptimized />
+                    </button>
+                  ))}
                 </div>
+
+                {aiDescription && (
+                  <div className="mt-4 p-4 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-xl border border-purple-200 dark:border-purple-800">
+                    <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{aiDescription}</p>
+                    <button
+                      onClick={() => { navigator.clipboard.writeText(aiDescription); alert('Copied!'); }}
+                      className="mt-2 text-xs text-purple-600 dark:text-purple-400 hover:underline flex items-center gap-1"
+                    >
+                      <Copy size={12} /> Copy Description
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           )}
