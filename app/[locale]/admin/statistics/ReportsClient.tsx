@@ -3542,7 +3542,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
             'res-channel-trend': renderResChannelTrend, 'res-daily-pickup': renderResDailyPickup,
             'res-rate-code': renderResRateCode, 'res-promo-chart': renderResPromoChart,
             'res-group-chart': renderResGroupChart, 'res-overbooking': renderResOverbooking,
-            'res-modification': renderResModification, 'res-board-mix': renderResBoardMix,
+            'res-modification': renderResModification,
             // Reservation Data (12)
             'res-today-arrivals': renderResTodayArrivals, 'res-today-departures': renderResTodayDepartures,
             'res-pending': renderResPending, 'res-confirmed': renderResConfirmed,
@@ -3720,16 +3720,16 @@ export default function ReportsClient({ reservations, comparisonReservations = [
     return (
         <div ref={reportRef} className="space-y-6">
             {/* Header Controls */}
-            <div className="bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-700 flex flex-col gap-4">
+            <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col gap-4">
                 {/* Tabs */}
-                <div className="flex bg-slate-900 p-1 rounded-xl overflow-x-auto">
+                <div className="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-xl overflow-x-auto">
                     {['all', 'management', 'operation', 'finance', 'marketing'].map(tab => (
                         <button
                             key={tab}
                             onClick={() => setActiveTab(tab as any)}
                             className={`px-4 py-2 rounded-lg text-sm font-bold capitalize transition-all whitespace-nowrap ${activeTab === tab
-                                ? 'bg-slate-700 text-cyan-400 shadow-sm'
-                                : 'text-slate-500 hover:text-slate-300'
+                                ? 'bg-white dark:bg-slate-700 text-cyan-600 dark:text-cyan-400 shadow-sm'
+                                : 'text-slate-500 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-300'
                                 }`}
                         >
                             {tab === 'all' ? t.all : (typeof (t as any)[tab] === 'string' ? (t as any)[tab] : tab)}
@@ -3747,21 +3747,21 @@ export default function ReportsClient({ reservations, comparisonReservations = [
                                 onClick={() => applyPreset(p.key)}
                                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${activePreset === p.key
                                     ? 'bg-cyan-600 text-white shadow-sm'
-                                    : 'bg-slate-900 text-slate-400 hover:text-white hover:bg-slate-700'
+                                    : 'bg-slate-100 dark:bg-slate-900 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700'
                                     }`}
                             >{p.label}</button>
                         ))}
                         {/* Date Basis Toggle */}
-                        <div className="flex bg-slate-900 rounded-lg border border-slate-700 overflow-hidden ml-2">
+                        <div className="flex bg-slate-100 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden ml-2">
                             <button
                                 onClick={() => setDateBasis('sale')}
-                                className={`px-3 py-1.5 text-xs font-bold transition-all flex items-center gap-1 ${dateBasis === 'sale' ? 'bg-cyan-600 text-white' : 'text-slate-400 hover:text-white'}`}
+                                className={`px-3 py-1.5 text-xs font-bold transition-all flex items-center gap-1 ${dateBasis === 'sale' ? 'bg-cyan-600 text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
                             >
                                 <CalendarCheck size={12} />Rez. Tarihi
                             </button>
                             <button
                                 onClick={() => setDateBasis('stay')}
-                                className={`px-3 py-1.5 text-xs font-bold transition-all flex items-center gap-1 ${dateBasis === 'stay' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-white'}`}
+                                className={`px-3 py-1.5 text-xs font-bold transition-all flex items-center gap-1 ${dateBasis === 'stay' ? 'bg-emerald-600 text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
                             >
                                 <BedDouble size={12} />Konaklama
                             </button>
@@ -3770,20 +3770,20 @@ export default function ReportsClient({ reservations, comparisonReservations = [
 
                     <div className="flex items-center gap-3">
                         {/* Date Picker */}
-                        <div className="flex items-center bg-slate-900 border border-slate-700 rounded-xl p-1">
-                            <input type="date" value={startDate} onChange={e => { setStartDate(e.target.value); setActivePreset('') }} className="bg-transparent text-sm font-medium px-2 py-1 outline-none text-white" />
-                            <span className="text-slate-600">—</span>
-                            <input type="date" value={endDate} onChange={e => { setEndDate(e.target.value); setActivePreset('') }} className="bg-transparent text-sm font-medium px-2 py-1 outline-none text-white" />
+                        <div className="flex items-center bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-1">
+                            <input type="date" value={startDate} onChange={e => { setStartDate(e.target.value); setActivePreset('') }} className="bg-transparent text-sm font-medium px-2 py-1 outline-none text-slate-900 dark:text-white" />
+                            <span className="text-slate-400 dark:text-slate-600">—</span>
+                            <input type="date" value={endDate} onChange={e => { setEndDate(e.target.value); setActivePreset('') }} className="bg-transparent text-sm font-medium px-2 py-1 outline-none text-slate-900 dark:text-white" />
                         </div>
 
                         {/* Gross/Net Toggle */}
                         <PriceModeToggle mode={priceMode} onChange={setPriceMode} />
 
                         {/* Currency Selector — Button style */}
-                        <div className="flex bg-slate-900 rounded-xl border border-slate-700 overflow-hidden">
+                        <div className="flex bg-slate-100 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
                             {(['TRY', 'EUR'] as CurrencyCode[]).map(c => (
                                 <button key={c} onClick={() => setCurrency(c)}
-                                    className={`flex items-center gap-1.5 px-3 py-2 text-xs font-bold transition-all ${currency === c ? 'bg-cyan-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700'}`}>
+                                    className={`flex items-center gap-1.5 px-3 py-2 text-xs font-bold transition-all ${currency === c ? 'bg-cyan-600 text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700'}`}>
                                     <span className="w-5 h-5 rounded-full bg-slate-700/50 flex items-center justify-center text-xs">{CURRENCY_SYMBOLS[c]}</span>
                                     {c}
                                 </button>

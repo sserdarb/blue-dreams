@@ -371,13 +371,15 @@ export default function ReservationsClient({ initialData, comparisonData, compar
                         <p className="text-slate-500 dark:text-slate-400 mt-1">Elektra PMS Entegrasyonu</p>
                     </div>
                     <div className="flex items-center gap-2">
-                        <button
-                            onClick={() => setCurrency(prev => prev === 'EUR' ? 'TRY' : 'EUR')}
-                            className="flex items-center gap-2 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-700 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors mr-2"
-                        >
-                            <ArrowRightLeft size={16} />
-                            <span className="font-bold">{currency}</span>
-                        </button>
+                        <div className="flex bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 mr-2">
+                            {(['TRY', 'EUR'] as const).map(c => (
+                                <button key={c} onClick={() => setCurrency(c)}
+                                    className={`flex items-center gap-1.5 px-3 py-2 text-xs font-bold transition-all ${currency === c ? 'bg-cyan-600 text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700'}`}>
+                                    <span className="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-700/50 flex items-center justify-center text-[10px]">{c === 'EUR' ? '€' : '₺'}</span>
+                                    {c}
+                                </button>
+                            ))}
+                        </div>
                         <button onClick={exportCSV} className="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2 border border-slate-200 dark:border-white/10">
                             <Download size={16} /> CSV İndir
                         </button>
@@ -481,9 +483,9 @@ export default function ReservationsClient({ initialData, comparisonData, compar
                                         <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#374151" vertical={false} opacity={0.2} />
-                                <XAxis dataKey="date" stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} />
-                                <YAxis stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `${val / 1000}k`} />
+                                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" className="dark:[&>line]:stroke-[#374151]" vertical={false} opacity={0.5} />
+                                <XAxis dataKey="date" stroke="#6b7280" fontSize={12} tickLine={false} axisLine={false} />
+                                <YAxis stroke="#6b7280" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `${val / 1000}k`} />
                                 <Tooltip
                                     contentStyle={{ backgroundColor: 'var(--tooltip-bg, #1f2937)', borderColor: 'var(--tooltip-border, #374151)', color: 'var(--tooltip-text, #f3f4f6)' }}
                                     formatter={(value: any, name: any) => [fmt(value || 0), name === 'revenue' ? `Gelir (2026)` : `Gelir (${compareYear})`]}
@@ -502,9 +504,9 @@ export default function ReservationsClient({ initialData, comparisonData, compar
                     <div className="h-[250px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={chartData}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#374151" vertical={false} opacity={0.2} />
-                                <XAxis dataKey="date" stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} />
-                                <YAxis stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} />
+                                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" className="dark:[&>line]:stroke-[#374151]" vertical={false} opacity={0.5} />
+                                <XAxis dataKey="date" stroke="#6b7280" fontSize={12} tickLine={false} axisLine={false} />
+                                <YAxis stroke="#6b7280" fontSize={12} tickLine={false} axisLine={false} />
                                 <Tooltip
                                     contentStyle={{ backgroundColor: 'var(--tooltip-bg, #1f2937)', borderColor: 'var(--tooltip-border, #374151)', color: 'var(--tooltip-text, #f3f4f6)' }}
                                     formatter={(value: any, name: any) => [typeof value === 'number' ? Math.round(value) : value, name === 'count' ? `Adet (2026)` : `Adet (${compareYear})`]}

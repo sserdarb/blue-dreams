@@ -71,9 +71,9 @@ export default function ExtrasClient({ spaData, minibarData, restaurantData, tra
                                 <stop offset="95%" stopColor={color} stopOpacity={0} />
                             </linearGradient>
                         </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#374151" vertical={false} />
-                        <XAxis dataKey="date" stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} />
-                        <YAxis stroke="#9ca3af" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `${val / 1000}k`} />
+                        <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-slate-200 dark:text-slate-700" vertical={false} />
+                        <XAxis dataKey="date" stroke="currentColor" className="text-slate-500 dark:text-slate-400" fontSize={12} tickLine={false} axisLine={false} />
+                        <YAxis stroke="currentColor" className="text-slate-500 dark:text-slate-400" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `${val / 1000}k`} />
                         <Tooltip
                             content={({ active, payload, label }) => {
                                 if (active && payload && payload.length) {
@@ -99,13 +99,15 @@ export default function ExtrasClient({ spaData, minibarData, restaurantData, tra
         <div className="space-y-6">
             {/* KPIs */}
             <div className="flex justify-end">
-                <button
-                    onClick={() => setCurrency(prev => prev === 'EUR' ? 'TRY' : 'EUR')}
-                    className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
-                >
-                    <ArrowRightLeft size={16} />
-                    <span className="font-bold">{currency}</span>
-                </button>
+                <div className="flex bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700">
+                    {(['EUR', 'TRY'] as const).map(c => (
+                        <button key={c} onClick={() => setCurrency(c)}
+                            className={`flex items-center gap-1.5 px-3 py-2 text-xs font-bold transition-all ${currency === c ? 'bg-cyan-600 text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700'}`}>
+                            <span className="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-700/50 flex items-center justify-center text-[10px]">{c === 'EUR' ? '€' : '₺'}</span>
+                            {c}
+                        </button>
+                    ))}
+                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
