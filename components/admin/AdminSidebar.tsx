@@ -69,42 +69,42 @@ export default function AdminSidebar({ locale, t }: AdminSidebarProps) {
     const navSections = [
         {
             id: 'section-raporlar',
-            label: 'Raporlar & Analiz',
+            label: t.navReports,
             items: [
                 { id: 'nav-dashboard', href: '', label: t.dashboard, icon: LayoutDashboard },
                 { id: 'nav-reports', href: '/statistics', label: t.reports, icon: BarChart3 },
                 { id: 'nav-management', href: '/reports', label: t.management, icon: ClipboardList },
-                { id: 'nav-bigdata', href: '/bigdata', label: 'Big Data', icon: Database },
+                { id: 'nav-bigdata', href: '/bigdata', label: t.bigData, icon: Database },
             ]
         },
         {
             id: 'section-satis',
-            label: 'Satış & Pazarlama',
+            label: t.navSales,
             items: [
                 { id: 'nav-reservations', href: '/reservations', label: t.reservations, icon: Calendar },
-                { id: 'nav-yield', href: '/yield', label: 'Yield Management', icon: TrendingUp },
+                { id: 'nav-yield', href: '/yield', label: t.yieldManagement, icon: TrendingUp },
                 { id: 'nav-extras', href: '/extras', label: t.extras, icon: ShoppingBag },
                 { id: 'nav-crm', href: '/crm', label: t.crm, icon: PieChart },
                 { id: 'nav-marketing', href: '/marketing', label: t.marketing, icon: Megaphone },
-                { id: 'nav-social', href: '/social', label: 'Sosyal Medya', icon: Share2 },
-                { id: 'nav-content-gen', href: '/social/content', label: 'İçerik Üretici', icon: Sparkles },
+                { id: 'nav-social', href: '/social', label: t.socialMedia, icon: Share2 },
+                { id: 'nav-content-gen', href: '/social/content', label: t.contentCreator, icon: Sparkles },
             ]
         },
         {
             id: 'section-finans',
-            label: 'Finans & Tedarik',
+            label: t.navFinance,
             items: [
-                { id: 'nav-accounting', href: '/accounting', label: 'Muhasebe', icon: Calculator },
-                { id: 'nav-purchasing', href: '/purchasing', label: 'Satın Alma', icon: ShoppingCart },
+                { id: 'nav-accounting', href: '/accounting', label: t.accounting, icon: Calculator },
+                { id: 'nav-purchasing', href: '/purchasing', label: t.purchasing, icon: ShoppingCart },
             ]
         },
         {
             id: 'section-gorevler',
-            label: (t as any).taskManagement || 'Görev Yönetimi',
+            label: t.taskManagement,
             items: [
-                { id: 'nav-tasks', href: '/tasks', label: (t as any).tasks || 'Görevler', icon: CheckSquare },
-                { id: 'nav-workflows', href: '/tasks/workflows', label: (t as any).workflows || 'İş Akışları', icon: GitBranch },
-                { id: 'nav-mail-tasks', href: '/tasks/mail', label: (t as any).mailIntegration || 'Mail Entegrasyonu', icon: Mail },
+                { id: 'nav-tasks', href: '/tasks', label: t.tasks, icon: CheckSquare },
+                { id: 'nav-workflows', href: '/tasks/workflows', label: t.workflows, icon: GitBranch },
+                { id: 'nav-mail-tasks', href: '/tasks/mail', label: t.mailIntegration, icon: Mail },
             ]
         },
         {
@@ -121,10 +121,11 @@ export default function AdminSidebar({ locale, t }: AdminSidebarProps) {
         },
         {
             id: 'section-operasyon',
-            label: 'Otel Operasyon',
+            label: t.navOperations,
             items: [
                 { id: 'nav-hotel-rooms', href: '/content/rooms', label: t.rooms, icon: BedDouble },
                 { id: 'nav-dining', href: '/content/dining', label: t.dining, icon: UtensilsCrossed },
+                { id: 'nav-spa', href: '/content/spa', label: t.spaWellness, icon: Sparkles },
                 { id: 'nav-meeting', href: '/content/meeting', label: t.meeting, icon: Users },
                 { id: 'nav-activities', href: '/activities', label: t.activities, icon: PartyPopper },
                 { id: 'nav-local-guide', href: '/local-guide', label: t.localGuide, icon: Compass },
@@ -138,7 +139,7 @@ export default function AdminSidebar({ locale, t }: AdminSidebarProps) {
             items: [
                 { id: 'nav-analytics', href: '/analytics', label: t.analytics, icon: BarChart3 },
                 { id: 'nav-concierge', href: '/chat', label: t.blueConcierge, icon: MessageSquare },
-                { id: 'nav-booking', href: '/integrations/booking', label: 'Booking Engine', icon: CreditCard },
+                { id: 'nav-booking', href: '/integrations/booking', label: t.bookingEngine, icon: CreditCard },
             ]
         }
     ]

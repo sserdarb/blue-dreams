@@ -140,5 +140,31 @@
         "rights": "Alle Rechte vorbehalten.",
         "privacy": "Datenschutz",
         "terms": "Nutzungsbedingungen"
+    },
+    "admin": {
+        "dashboard": {
+            "title": "Dashboard",
+            "subtitle": "Willkommen im Pma Gravity Admin-Panel",
+            "connectionStatus": "Elektra PMS Vollständige Verbindung — Alle Daten live",
+            "lastUpdate": "Letzte Aktualisierung: jetzt",
+            "refresh": "Aktualisieren",
+            "occupancyRate": "Auslastungsrate",
+            "availableRooms": "Zimmer verfügbar",
+            "totalRooms": "gesamt",
+            "liveData": "Live-Daten",
+            "live": "live",
+            "todayReservation": "Heutige Reservierungen",
+            "todayRevenue": "Heute",
+            "monthlyRevenue": "Monatlicher Umsatz",
+            "reservationCount": "Reservierungen",
+            "adr": "ADR (Durchschnitt)",
+            "adrSubtitle": "Zimmer/Nacht-Durchschnitt",
+            "roomStatus": "Zimmerstatus",
+            "occupied": "belegt",
+            "reservationPerformance": "Reservierungsleistung (Letzte 14 Tage)",
+            "channelDistribution": "Kanalverteilung",
+            "recentReservations": "Aktuelle Reservierungen",
+            "viewAll": "Alle anzeigen"
+        }
     }
 }

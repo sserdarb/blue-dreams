@@ -20,7 +20,8 @@ import {
   ChevronRight,
   Eye,
   EyeOff,
-  UserPlus
+  UserPlus,
+  Globe
 } from 'lucide-react';
 
 const initialState = {
@@ -135,6 +136,28 @@ export default function LoginPage() {
         <div className="absolute top-[-20%] right-[-10%] w-[600px] h-[600px] bg-cyan-500/10 rounded-full blur-[120px]" />
         <div className="absolute bottom-[-20%] left-[-10%] w-[500px] h-[500px] bg-purple-500/10 rounded-full blur-[120px]" />
         <div className="absolute top-[40%] left-[30%] w-[300px] h-[300px] bg-indigo-500/5 rounded-full blur-[100px]" />
+      </div>
+
+      {/* Language Selector (Top Right) */}
+      <div className="absolute top-6 right-6 z-50 flex items-center gap-3 bg-white/[0.03] backdrop-blur-xl border border-white/10 rounded-xl p-2 shadow-2xl">
+        <div className="flex items-center gap-2 pl-2">
+          <Globe size={16} className="text-cyan-400" />
+          <span className="text-slate-400 text-[10px] font-bold tracking-widest hidden sm:inline-block">DİL SEÇİMİ</span>
+        </div>
+        <div className="flex bg-white/[0.05] rounded-lg p-1 gap-1">
+          {['tr', 'en', 'de', 'ru'].map((lang) => (
+            <a
+              key={lang}
+              href={`/${lang}/admin/login`}
+              className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${locale === lang
+                  ? 'bg-cyan-500/20 text-cyan-400 shadow-sm'
+                  : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
+                }`}
+            >
+              {lang.toUpperCase()}
+            </a>
+          ))}
+        </div>
       </div>
 
       {/* Left Panel — System Description */}
@@ -335,8 +358,8 @@ export default function LoginPage() {
 
                   {regMessage && (
                     <div className={`rounded-xl px-4 py-3 text-sm flex items-center gap-2 ${regMessage.type === 'success'
-                        ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'
-                        : 'bg-red-500/10 border border-red-500/20 text-red-400'
+                      ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'
+                      : 'bg-red-500/10 border border-red-500/20 text-red-400'
                       }`}>
                       <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${regMessage.type === 'success' ? 'bg-emerald-400' : 'bg-red-400'}`} />
                       {regMessage.text}

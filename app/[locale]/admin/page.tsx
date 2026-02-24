@@ -7,9 +7,11 @@ import { ElektraService } from '@/lib/services/elektra'
 import { SalesChart } from '@/components/admin/charts/SalesChart'
 import { ChannelPieChart } from '@/components/admin/charts/ChannelPieChart'
 import ModuleOffline from '@/components/admin/ModuleOffline'
+import { getAdminTranslations, type AdminLocale } from '@/lib/admin-translations'
 
 export default async function AdminDashboard({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params
+  const t = getAdminTranslations(locale as AdminLocale)
 
   // Fetch ALL data from Elektra PMS — fully live, sales grouped by BOOKING DATE
   const today = new Date()
@@ -33,19 +35,19 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
           </span>
-          <span className="text-emerald-300 text-sm">Elektra PMS Tam Bağlantı — Tüm veriler canlı</span>
+          <span className="text-emerald-300 text-sm">{t('connectionStatus')}</span>
         </div>
 
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Dashboard</h1>
-            <p className="text-slate-500 dark:text-slate-400 mt-1">Pma Gravity yönetim paneline hoş geldiniz</p>
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">{t('title')}</h1>
+            <p className="text-slate-500 dark:text-slate-400 mt-1">{t('subtitle')}</p>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-slate-500 text-sm">Son güncelleme: şimdi</span>
+            <span className="text-slate-500 text-sm">{t('lastUpdate')}</span>
             <button className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-sm font-medium transition-colors">
-              Yenile
+              {t('refresh')}
             </button>
           </div>
         </div>
@@ -53,42 +55,42 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard
-            title="Doluluk Oranı"
+            title={t('occupancyRate')}
             value={stats.occupancyRate}
-            subtitle={`${stats.occupancyAvailable} oda müsait / ${stats.occupancyTotal} toplam`}
+            subtitle={`${stats.occupancyAvailable} ${t('availableRooms')} / ${stats.occupancyTotal} ${t('totalRooms')}`}
             icon={<Building2 size={24} />}
             trend="neutral"
-            trendValue="canlı veri"
+            trendValue={t('liveData')}
             color="green"
           />
           <StatCard
-            title="Bugünkü Rezervasyon"
+            title={t('todayReservation')}
             value={stats.todaySalesCount}
-            subtitle={`Bugün: ${stats.todayRevenue}`}
+            subtitle={`${t('todayRevenue')}: ${stats.todayRevenue}`}
             secondaryValue={stats.todayRevenueEUR}
             icon={<Calendar size={24} />}
             trend="neutral"
-            trendValue="canlı"
+            trendValue={t('live')}
             color="cyan"
           />
           <StatCard
-            title="Aylık Gelir"
+            title={t('monthlyRevenue')}
             value={stats.totalRevenue}
             secondaryValue={stats.totalRevenueEUR}
-            subtitle={`${stats.monthlyReservationCount} rezervasyon`}
+            subtitle={`${stats.monthlyReservationCount} ${t('reservationCount')}`}
             icon={<TrendingUp size={24} />}
             trend="neutral"
-            trendValue="canlı"
+            trendValue={t('live')}
             color="purple"
           />
           <StatCard
-            title="ADR (Ortalama)"
+            title={t('adr')}
             value={stats.adr}
             secondaryValue={stats.adrEUR}
-            subtitle="Oda/gece ortalaması"
+            subtitle={t('adrSubtitle')}
             icon={<DollarSign size={24} />}
             trend="neutral"
-            trendValue="canlı"
+            trendValue={t('live')}
             color="orange"
           />
         </div>
@@ -98,11 +100,11 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
           <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 shadow-sm">
             <div className="flex items-center gap-2 mb-6">
               <BedDouble size={20} className="text-emerald-500 dark:text-emerald-400" />
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">Oda Durumu</h2>
-              <span className="ml-2 px-2 py-0.5 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs rounded-full font-medium">Canlı</span>
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white">{t('roomStatus')}</h2>
+              <span className="ml-2 px-2 py-0.5 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs rounded-full font-medium">{t('live')}</span>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-              {roomBreakdown.map((room) => {
+              {roomBreakdown.map((room: any) => {
                 const occupied = room.total - room.available
                 const pct = Math.round((occupied / room.total) * 100)
                 return (
@@ -115,7 +117,7 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
                         style={{ width: `${pct}%` }}
                       />
                     </div>
-                    <p className="text-slate-500 text-xs mt-1">{occupied}/{room.total} dolu</p>
+                    <p className="text-slate-500 text-xs mt-1">{occupied}/{room.total} {t('occupied')}</p>
                   </div>
                 )
               })}
@@ -127,15 +129,15 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 shadow-sm">
             <div className="flex items-center gap-2 mb-6">
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">Rezervasyon Performansı (Son 14 Gün)</h2>
-              <span className="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs rounded-full font-medium">Canlı</span>
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white">{t('reservationPerformance')}</h2>
+              <span className="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs rounded-full font-medium">{t('live')}</span>
             </div>
             <SalesChart data={salesData} />
           </div>
           <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 shadow-sm">
             <div className="flex items-center gap-2 mb-6">
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">Kanal Dağılımı</h2>
-              <span className="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs rounded-full font-medium">Canlı</span>
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white">{t('channelDistribution')}</h2>
+              <span className="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs rounded-full font-medium">{t('live')}</span>
             </div>
             <ChannelPieChart data={channelData} />
           </div>
@@ -147,19 +149,19 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
           <div className="lg:col-span-2 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 shadow-sm">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2">
-                <h2 className="text-xl font-bold text-slate-900 dark:text-white">Son Rezervasyonlar</h2>
-                <span className="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs rounded-full font-medium">Canlı</span>
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white">{t('recentReservations')}</h2>
+                <span className="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs rounded-full font-medium">{t('live')}</span>
               </div>
               <Link
                 href={`/${locale}/admin/reservations`}
                 className="text-cyan-400 hover:text-cyan-300 text-sm flex items-center gap-1 transition-colors"
               >
-                Tümünü Gör <ArrowRight size={14} />
+                {t('viewAll')} <ArrowRight size={14} />
               </Link>
             </div>
 
             <div className="space-y-3">
-              {recentRes.length > 0 ? recentRes.map((res) => {
+              {recentRes.length > 0 ? recentRes.map((res: any) => {
                 const guestName = res.guests.length > 0
                   ? `${res.guests[0].name} ${res.guests[0].surname}`
                   : (res.contactName || 'Misafir')

@@ -140,5 +140,31 @@
         "rights": "Все права защищены.",
         "privacy": "Политика конфиденциальности",
         "terms": "Условия использования"
+    },
+    "admin": {
+        "dashboard": {
+            "title": "Панель управления",
+            "subtitle": "Добро пожаловать в панель управления Pma Gravity",
+            "connectionStatus": "Elekrtra PMS Полное подключение — Все данные онлайн",
+            "lastUpdate": "Последнее обновление: сейчас",
+            "refresh": "Обновить",
+            "occupancyRate": "Уровень заполняемости",
+            "availableRooms": "номеров доступно",
+            "totalRooms": "всего",
+            "liveData": "живые данные",
+            "live": "онлайн",
+            "todayReservation": "Бронирования на сегодня",
+            "todayRevenue": "Сегодня",
+            "monthlyRevenue": "Месячный доход",
+            "reservationCount": "бронирований",
+            "adr": "ADR (Среднее)",
+            "adrSubtitle": "Среднее за номер/ночь",
+            "roomStatus": "Статус номеров",
+            "occupied": "занято",
+            "reservationPerformance": "Эффективность бронирования (Последние 14 дней)",
+            "channelDistribution": "Распределение по каналам",
+            "recentReservations": "Последние бронирования",
+            "viewAll": "Показать все"
+        }
     }
 }

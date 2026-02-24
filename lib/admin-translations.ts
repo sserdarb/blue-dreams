@@ -10,8 +10,11 @@ export function getAdminTranslations(locale: AdminLocale) {
 const translations: Record<AdminLocale, AdminTranslations> = {
     tr: {
         // Navigation sections
-        navReports: 'Raporlar',
-        navContent: 'İçerik',
+        navReports: 'Raporlar & Analiz',
+        navSales: 'Satış & Pazarlama',
+        navFinance: 'Finans & Tedarik',
+        navContent: 'İçerik Yönetimi',
+        navOperations: 'Otel Operasyon',
         navIntegrations: 'Entegrasyonlar',
 
         // Navigation items
@@ -28,9 +31,11 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         pages: 'Sayfalar',
         menu: 'Menü',
         media: 'Medya',
+        localization: 'Lokalizasyon',
         settings: 'Ayarlar',
         analytics: 'Analytics',
         blueConcierge: 'Blue Concierge',
+        bookingEngine: 'Booking Engine',
         rooms: 'Odalar',
         dining: 'Restoranlar',
         meeting: 'Toplantı',
@@ -39,6 +44,16 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         users: 'Kullanıcılar',
         viewSite: 'Siteyi Görüntüle',
         editingLang: 'Düzenleme:',
+        bigData: 'Big Data',
+        accounting: 'Muhasebe',
+        purchasing: 'Satın Alma',
+        yieldManagement: 'Yield Management',
+        socialMedia: 'Sosyal Medya',
+        contentCreator: 'İçerik Üretici',
+        reservationPerformance: 'Rezervasyon Performansı',
+        live: 'Canlı',
+        recentReservations: 'Son Rezervasyonlar',
+        viewAll: 'Tümünü Gör',
         // Task Management
         taskManagement: 'Görev Yönetimi',
         tasks: 'Görevler',
@@ -251,9 +266,7 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         resOffice: 'Rezervasyon',
         nightAudit: 'Gece Müdürü',
 
-        // CRM / Local Guide
         localGuide: 'Çevre Rehberi',
-        localization: 'Lokalizasyon',
         approve: 'Onayla',
         reject: 'Kaldır',
         approved: 'Onaylı',
@@ -283,8 +296,11 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         }
     },
     en: {
-        navReports: 'Reports',
-        navContent: 'Content',
+        navReports: 'Reports & Analysis',
+        navSales: 'Sales & Marketing',
+        navFinance: 'Finance & Supply',
+        navContent: 'Content Management',
+        navOperations: 'Hotel Operations',
         navIntegrations: 'Integrations',
 
         dashboard: 'Dashboard',
@@ -300,9 +316,11 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         pages: 'Pages',
         menu: 'Menu',
         media: 'Media',
+        localization: 'Localization',
         settings: 'Settings',
         analytics: 'Analytics',
         blueConcierge: 'Blue Concierge',
+        bookingEngine: 'Booking Engine',
         rooms: 'Rooms',
         dining: 'Restaurants',
         meeting: 'Meeting',
@@ -311,6 +329,16 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         users: 'Users',
         viewSite: 'View Site',
         editingLang: 'Editing:',
+        bigData: 'Big Data',
+        accounting: 'Accounting',
+        purchasing: 'Purchasing',
+        yieldManagement: 'Yield Management',
+        socialMedia: 'Social Media',
+        contentCreator: 'Content Creator',
+        reservationPerformance: 'Reservation Performance',
+        live: 'Live',
+        recentReservations: 'Recent Reservations',
+        viewAll: 'View All',
         taskManagement: 'Task Management',
         tasks: 'Tasks',
         workflows: 'Workflows',
@@ -504,7 +532,6 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         resOffice: 'Reservations',
         nightAudit: 'Night Audit',
         localGuide: 'Local Guide',
-        localization: 'Localization',
         approve: 'Approve',
         reject: 'Remove',
         approved: 'Approved',
@@ -533,8 +560,11 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         }
     },
     de: {
-        navReports: 'Berichte',
-        navContent: 'Inhalt',
+        navReports: 'Berichte & Analyse',
+        navSales: 'Vertrieb & Marketing',
+        navFinance: 'Finanzen & Beschaffung',
+        navContent: 'Content Management',
+        navOperations: 'Hotelbetrieb',
         navIntegrations: 'Integrationen',
 
         dashboard: 'Dashboard',
@@ -550,9 +580,11 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         pages: 'Seiten',
         menu: 'Menü',
         media: 'Medien',
+        localization: 'Lokalisierung',
         settings: 'Einstellungen',
         analytics: 'Analytics',
         blueConcierge: 'Blue Concierge',
+        bookingEngine: 'Buchungsmaschine',
         rooms: 'Zimmer',
         dining: 'Restaurants',
         meeting: 'Tagung',
@@ -561,6 +593,16 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         users: 'Benutzer',
         viewSite: 'Seite Ansehen',
         editingLang: 'Bearbeiten:',
+        bigData: 'Big Data',
+        accounting: 'Buchhaltung',
+        purchasing: 'Einkauf',
+        yieldManagement: 'Yield Management',
+        socialMedia: 'Soziale Medien',
+        contentCreator: 'Content Creator',
+        reservationPerformance: 'Reservierungsleistung',
+        live: 'Live',
+        recentReservations: 'Letzte Reservierungen',
+        viewAll: 'Alle ansehen',
         taskManagement: 'Aufgabenverwaltung',
         tasks: 'Aufgaben',
         workflows: 'Arbeitsabläufe',
@@ -783,8 +825,11 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         }
     },
     ru: {
-        navReports: 'Отчёты',
-        navContent: 'Контент',
+        navReports: 'Отчеты & Аналитика',
+        navSales: 'Продажи & Маркетинг',
+        navFinance: 'Финансы & Закупки',
+        navContent: 'Управление Контентом',
+        navOperations: 'Операции Отеля',
         navIntegrations: 'Интеграции',
 
         dashboard: 'Панель',
@@ -800,9 +845,11 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         pages: 'Страницы',
         menu: 'Меню',
         media: 'Медиа',
+        localization: 'Локализация',
         settings: 'Настройки',
         analytics: 'Аналитика',
         blueConcierge: 'Blue Concierge',
+        bookingEngine: 'Модуль бронирования',
         rooms: 'Номера',
         dining: 'Рестораны',
         meeting: 'Конференции',
@@ -811,6 +858,16 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         users: 'Пользователи',
         viewSite: 'Просмотр Сайта',
         editingLang: 'Редактирование:',
+        bigData: 'Big Data',
+        accounting: 'Бухгалтерия',
+        purchasing: 'Закупки',
+        yieldManagement: 'Yield Management',
+        socialMedia: 'Социальные сети',
+        contentCreator: 'Создатель контента',
+        reservationPerformance: 'Эффективность бронирования',
+        live: 'В эфире',
+        recentReservations: 'Последние бронирования',
+        viewAll: 'Смотреть все',
         taskManagement: 'Управление задачами',
         tasks: 'Задачи',
         workflows: 'Рабочие процессы',
@@ -1004,7 +1061,6 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         resOffice: 'Бронирование',
         nightAudit: 'Ночной аудитор',
         localGuide: 'Путеводитель',
-        localization: 'Локализация',
         approve: 'Одобрить',
         reject: 'Удалить',
         approved: 'Одобрено',
@@ -1036,7 +1092,10 @@ const translations: Record<AdminLocale, AdminTranslations> = {
 
 export interface AdminTranslations {
     navReports: string
+    navSales: string
+    navFinance: string
     navContent: string
+    navOperations: string
     navIntegrations: string
     dashboard: string
     reports: string
@@ -1054,6 +1113,7 @@ export interface AdminTranslations {
     settings: string
     analytics: string
     blueConcierge: string
+    bookingEngine: string
     rooms: string
     dining: string
     meeting: string
@@ -1062,6 +1122,16 @@ export interface AdminTranslations {
     users: string
     viewSite: string
     editingLang: string
+    bigData: string
+    accounting: string
+    purchasing: string
+    yieldManagement: string
+    socialMedia: string
+    contentCreator: string
+    reservationPerformance: string
+    live: string
+    recentReservations: string
+    viewAll: string
     // Task Management
     taskManagement: string
     tasks: string

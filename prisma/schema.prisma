@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -181,16 +181,38 @@ model Room {
 }
 
 model Dining {
-  id          String   @id @default(uuid())
+  id          String        @id @default(uuid())
   locale      String
   title       String
   type        String // Ana Restoran, A'la Carte, Bar
   description String
   image       String
   images      String? // JSON array for gallery (optional)
-  order       Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  cuisine     String?
+  hours       String?
+  capacity    String?
+  location    String?
+  features    String?
+  isActive    Boolean       @default(true)
+  order       Int           @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  events      DiningEvent[]
+}
+
+model DiningEvent {
+  id          String    @id @default(uuid())
+  diningId    String
+  dining      Dining    @relation(fields: [diningId], references: [id], onDelete: Cascade)
+  locale      String
+  title       String // e.g. "Türk Gecesi"
+  description String?
+  date        DateTime?
+  time        String? // e.g. "19:00 - 22:00"
+  image       String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
 
 model Amenity {
@@ -216,6 +238,39 @@ model MeetingRoom {
   order     Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// ===== Spa Models =====
+
+model Spa {
+  id             String       @id @default(uuid())
+  locale         String       @unique
+  title          String       @default("Spa & Wellness")
+  customLogo     String? // e.g. Naya Logo URL
+  heroImage      String? // Main header image
+  whatsappNumber String? // e.g. +905495167801
+  whatsappText   String? // e.g. Rezervasyon Yapın
+  description1   String?
+  description2   String?
+  description3   String?
+  gallery        String? // JSON array for gallery images
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  services       SpaService[]
+}
+
+model SpaService {
+  id          String   @id @default(uuid())
+  spaId       String
+  spa         Spa      @relation(fields: [spaId], references: [id], onDelete: Cascade)
+  locale      String
+  title       String // e.g. "Taş Masajı"
+  description String?
+  image       String?
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 // ===== Analytics Models =====

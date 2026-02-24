@@ -140,5 +140,31 @@
         "rights": "Tüm hakları saklıdır.",
         "privacy": "Gizlilik Politikası",
         "terms": "Kullanım Koşulları"
+    },
+    "admin": {
+        "dashboard": {
+            "title": "Dashboard",
+            "subtitle": "Pma Gravity yönetim paneline hoş geldiniz",
+            "connectionStatus": "Elektra PMS Tam Bağlantı — Tüm veriler canlı",
+            "lastUpdate": "Son güncelleme: şimdi",
+            "refresh": "Yenile",
+            "occupancyRate": "Doluluk Oranı",
+            "availableRooms": "oda müsait",
+            "totalRooms": "toplam",
+            "liveData": "canlı veri",
+            "live": "canlı",
+            "todayReservation": "Bugünkü Rezervasyon",
+            "todayRevenue": "Bugün",
+            "monthlyRevenue": "Aylık Gelir",
+            "reservationCount": "rezervasyon",
+            "adr": "ADR (Ortalama)",
+            "adrSubtitle": "Oda/gece ortalaması",
+            "roomStatus": "Oda Durumu",
+            "occupied": "dolu",
+            "reservationPerformance": "Rezervasyon Performansı (Son 14 Gün)",
+            "channelDistribution": "Kanal Dağılımı",
+            "recentReservations": "Son Rezervasyonlar",
+            "viewAll": "Tümünü Gör"
+        }
     }
 }

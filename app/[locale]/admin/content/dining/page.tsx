@@ -47,14 +47,25 @@ export default function DiningPage() {
         isActive: true
     })
 
-    // Mock Data
+    // Fetch Data
+    const fetchVenues = async () => {
+        try {
+            setLoading(true)
+            const res = await fetch(`/api/admin/dining?locale=${locale}`)
+            if (res.ok) {
+                const data = await res.json()
+                // Map the DB 'title' to UI 'name'
+                setVenues(data.map((d: any) => ({ ...d, name: d.title })))
+            }
+        } catch (error) {
+            console.error('Failed to fetch venues:', error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
     useEffect(() => {
-        setVenues([
-            { id: '1', name: 'Ana Restoran', description: 'Açık büfe kahvaltı, öğle ve akşam yemeği.', image: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/restaurant1.jpg', cuisine: 'Uluslararası', hours: '07:00 - 22:00', capacity: '350', location: 'Ana Bina', order: 1, features: 'Açık Büfe, Deniz Manzarası, Canlı Mutfak', isActive: true },
-            { id: '2', name: 'A La Carte Restoran', description: 'Özel menü ile fine dining deneyimi.', image: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/restaurant2.jpg', cuisine: 'Akdeniz', hours: '19:00 - 23:00', capacity: '80', location: 'Havuz Başı', order: 2, features: 'Rezervasyon Gerekli, Özel Menü, Şarap Listesi', isActive: true },
-            { id: '3', name: 'Snack Bar', description: 'Havuz başı atıştırmalık ve içecekler.', image: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/bar1.jpg', cuisine: 'Fast Food', hours: '10:00 - 18:00', capacity: '60', location: 'Havuz', order: 3, features: 'Hamburger, Pizza, İçecekler', isActive: true },
-        ])
-        setLoading(false)
+        fetchVenues()
     }, [locale])
 
     const handleEdit = (venue: DiningVenue) => {
@@ -83,14 +94,39 @@ export default function DiningPage() {
         setIsModalOpen(true)
     }
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        if (editingVenue) {
-            setVenues(venues.map(v => v.id === editingVenue.id ? { ...v, ...formData } : v))
-        } else {
-            setVenues([...venues, { ...formData, id: Date.now().toString() }])
+        try {
+            const body = { ...formData, name: formData.name, title: formData.name, locale }
+            if (editingVenue) {
+                await fetch(`/api/admin/dining/${editingVenue.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                })
+            } else {
+                await fetch('/api/admin/dining', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                })
+            }
+            setIsModalOpen(false)
+            fetchVenues()
+        } catch (error) {
+            console.error('Error saving:', error)
+            alert('Kaydedilirken hata oluştu.')
         }
-        setIsModalOpen(false)
+    }
+
+    const handleDelete = async (id: string) => {
+        if (!confirm('Silmek istediğinize emin misiniz?')) return
+        try {
+            await fetch(`/api/admin/dining/${id}`, { method: 'DELETE' })
+            fetchVenues()
+        } catch (error) {
+            console.error('Error deleting:', error)
+        }
     }
 
     return (
@@ -163,9 +199,14 @@ export default function DiningPage() {
                                                 )}
                                             </td>
                                             <td className="p-4 text-right">
-                                                <button onClick={() => handleEdit(venue)} className="p-2 hover:bg-slate-100 dark:hover:bg-white/10 rounded-lg text-slate-400 hover:text-cyan-600 dark:hover:text-white transition-colors">
-                                                    <Edit2 size={16} />
-                                                </button>
+                                                <div className="flex items-center justify-end gap-2">
+                                                    <button onClick={() => handleEdit(venue)} className="p-2 hover:bg-slate-100 dark:hover:bg-white/10 rounded-lg text-slate-400 hover:text-cyan-600 dark:hover:text-white transition-colors">
+                                                        <Edit2 size={16} />
+                                                    </button>
+                                                    <button onClick={() => handleDelete(venue.id)} className="p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg text-slate-400 hover:text-red-600 transition-colors">
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     ))
@@ -183,24 +224,7 @@ export default function DiningPage() {
 
             {/* Events Tab */}
             {activeTab === 'events' && (
-                <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-200 dark:border-white/10 p-6 shadow-sm">
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Özel Geceler & Tema Akşamları</h3>
-                    <p className="text-slate-500 mb-6">Haftalık tema geceleri ve özel etkinlik programı.</p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        {[
-                            { day: 'Pazartesi', theme: 'Türk Gecesi', desc: 'Geleneksel Türk mutfağı ve eğlence' },
-                            { day: 'Çarşamba', theme: 'Deniz Ürünleri', desc: 'Taze deniz ürünleri büfesi' },
-                            { day: 'Cuma', theme: 'BBQ Gecesi', desc: 'Açık havada mangal partisi' },
-                            { day: 'Cumartesi', theme: 'Gala Yemeği', desc: 'Fine dining gala akşam yemeği' },
-                        ].map((event, i) => (
-                            <div key={i} className="bg-slate-50 dark:bg-[#0f172a] p-4 rounded-xl border border-slate-200 dark:border-white/10">
-                                <div className="text-xs font-bold text-cyan-500 uppercase mb-1">{event.day}</div>
-                                <div className="font-bold text-slate-900 dark:text-white mb-1">{event.theme}</div>
-                                <p className="text-xs text-slate-500">{event.desc}</p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
+                <EventEditorTab venues={venues} locale={locale} />
             )}
 
             {/* Modal */}
@@ -473,8 +497,8 @@ function MenuEditorTab({ venues, locale, qrData, setQrData, qrLoading, setQrLoad
                             </button>
                             <button onClick={saveMenu}
                                 className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all ${saveStatus === 'saved' ? 'bg-green-600 text-white' :
-                                        saveStatus === 'saving' ? 'bg-blue-600 text-white animate-pulse' :
-                                            'bg-cyan-600 hover:bg-cyan-500 text-white'
+                                    saveStatus === 'saving' ? 'bg-blue-600 text-white animate-pulse' :
+                                        'bg-cyan-600 hover:bg-cyan-500 text-white'
                                     }`}>
                                 <Save size={14} />
                                 {saveStatus === 'saving' ? 'Kaydediliyor...' : saveStatus === 'saved' ? '✓ Kaydedildi' : 'Menüyü Kaydet'}
@@ -728,6 +752,254 @@ function MenuItemForm({ initialData, onSave, onCancel }: {
                     <Save size={12} /> {initialData ? 'Güncelle' : 'Ekle'}
                 </button>
             </div>
+        </div>
+    )
+
+}
+
+// ─── Event Editor Tab ──────────────────────────────────────────────
+
+interface DiningEvent {
+    id: string
+    diningId: string
+    locale: string
+    title: string
+    description?: string
+    date?: string
+    time?: string
+    image?: string
+    isActive: boolean
+}
+
+function EventEditorTab({ venues, locale }: { venues: DiningVenue[], locale: string }) {
+    const [events, setEvents] = useState<DiningEvent[]>([])
+    const [loading, setLoading] = useState(true)
+    const [selectedVenue, setSelectedVenue] = useState<string>('all')
+    const [isModalOpen, setIsModalOpen] = useState(false)
+    const [editingEvent, setEditingEvent] = useState<DiningEvent | null>(null)
+    const [formData, setFormData] = useState({
+        diningId: venues[0]?.id || '',
+        title: '',
+        description: '',
+        date: '',
+        time: '',
+        image: '',
+        isActive: true
+    })
+
+    const fetchEvents = async () => {
+        try {
+            setLoading(true)
+            const res = await fetch(`/api/admin/dining-events?locale=${locale}`)
+            if (res.ok) {
+                const data = await res.json()
+                setEvents(data)
+            }
+        } catch (error) {
+            console.error('Failed to fetch dining events:', error)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    useEffect(() => {
+        fetchEvents()
+    }, [locale])
+
+    const handleEdit = (event: DiningEvent) => {
+        setEditingEvent(event)
+        setFormData({
+            diningId: event.diningId,
+            title: event.title,
+            description: event.description || '',
+            date: event.date ? new Date(event.date).toISOString().split('T')[0] : '',
+            time: event.time || '',
+            image: event.image || '',
+            isActive: event.isActive
+        })
+        setIsModalOpen(true)
+    }
+
+    const handleCreate = () => {
+        setEditingEvent(null)
+        setFormData({
+            diningId: selectedVenue === 'all' ? (venues[0]?.id || '') : selectedVenue,
+            title: '', description: '', date: '', time: '', image: '', isActive: true
+        })
+        setIsModalOpen(true)
+    }
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
+        try {
+            const body = { ...formData, locale }
+            if (editingEvent) {
+                await fetch(`/api/admin/dining-events/${editingEvent.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                })
+            } else {
+                await fetch('/api/admin/dining-events', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                })
+            }
+            setIsModalOpen(false)
+            fetchEvents()
+        } catch (error) {
+            console.error('Error saving event:', error)
+            alert('Kaydedilirken hata oluştu.')
+        }
+    }
+
+    const handleDelete = async (id: string) => {
+        if (!confirm('Bu etkinliği silmek istediğinize emin misiniz?')) return
+        try {
+            await fetch(`/api/admin/dining-events/${id}`, { method: 'DELETE' })
+            fetchEvents()
+        } catch (error) {
+            console.error('Error deleting event:', error)
+        }
+    }
+
+    const filteredEvents = selectedVenue === 'all' ? events : events.filter(e => e.diningId === selectedVenue)
+
+    return (
+        <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+                <div className="flex gap-2 overflow-x-auto pb-1 max-w-full">
+                    <button onClick={() => setSelectedVenue('all')}
+                        className={`px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${selectedVenue === 'all'
+                            ? 'bg-cyan-600 text-white shadow-lg shadow-cyan-600/20'
+                            : 'bg-white dark:bg-[#1e293b] text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-white/10 hover:border-cyan-500/50'
+                            }`}>
+                        Tüm Etkinlikler
+                    </button>
+                    {venues.map(v => (
+                        <button key={v.id} onClick={() => setSelectedVenue(v.id)}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-all ${selectedVenue === v.id
+                                ? 'bg-cyan-600 text-white shadow-lg shadow-cyan-600/20'
+                                : 'bg-white dark:bg-[#1e293b] text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-white/10 hover:border-cyan-500/50'
+                                }`}>
+                            {v.name}
+                        </button>
+                    ))}
+                </div>
+                <button onClick={handleCreate} className="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium transition-colors whitespace-nowrap">
+                    <Plus size={18} /> Yeni Etkinlik
+                </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {loading ? (
+                    <div className="col-span-full p-8 text-center text-slate-500">Yükleniyor...</div>
+                ) : filteredEvents.length === 0 ? (
+                    <div className="col-span-full bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-200 dark:border-white/10 p-12 text-center">
+                        <Star className="mx-auto text-slate-300 dark:text-slate-600 mb-3" size={48} />
+                        <p className="text-slate-500 font-medium">Bu restorana ait etkinlik bulunamadı.</p>
+                    </div>
+                ) : (
+                    filteredEvents.map(event => {
+                        const venueName = venues.find(v => v.id === event.diningId)?.name || 'Bilinmeyen Restoran'
+                        return (
+                            <div key={event.id} className="bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-200 dark:border-white/10 overflow-hidden shadow-sm flex flex-col group">
+                                <div className="relative h-48 bg-slate-100 dark:bg-slate-800">
+                                    {event.image ? (
+                                        <img src={event.image} alt={event.title} className="w-full h-full object-cover" />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-slate-300">
+                                            <ImageIcon size={48} />
+                                        </div>
+                                    )}
+                                    <div className="absolute top-4 left-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm px-3 py-1 rounded-lg text-xs font-bold text-slate-900 dark:text-white shadow-sm">
+                                        {venueName}
+                                    </div>
+                                    <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button onClick={() => handleEdit(event)} className="p-2 bg-white/90 dark:bg-slate-900/90 hover:bg-white dark:hover:bg-slate-800 rounded-lg text-slate-700 dark:text-white shadow-sm transition-colors">
+                                            <Edit2 size={16} />
+                                        </button>
+                                        <button onClick={() => handleDelete(event.id)} className="p-2 bg-white/90 dark:bg-slate-900/90 hover:bg-red-50 dark:hover:bg-red-900/40 rounded-lg text-red-600 shadow-sm transition-colors">
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="p-5 flex-1 flex flex-col">
+                                    <div className="flex justify-between items-start mb-2">
+                                        <h4 className="font-bold text-lg text-slate-900 dark:text-white leading-tight">{event.title}</h4>
+                                        {!event.isActive && <span className="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full whitespace-nowrap ml-2">Pasif</span>}
+                                    </div>
+                                    <p className="text-sm text-slate-500 mb-4 flex-1 line-clamp-3">{event.description}</p>
+                                    <div className="flex items-center gap-4 text-xs font-medium text-slate-600 dark:text-slate-400 mt-auto pt-4 border-t border-slate-100 dark:border-white/5">
+                                        {event.date && (
+                                            <div className="flex items-center gap-1.5"><Star size={14} className="text-cyan-600" /> {new Date(event.date).toLocaleDateString(locale === 'tr' ? 'tr-TR' : 'en-US')}</div>
+                                        )}
+                                        {event.time && (
+                                            <div className="flex items-center gap-1.5"><Clock size={14} className="text-cyan-600" /> {event.time}</div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        )
+                    })
+                )}
+            </div>
+
+            {/* Modal */}
+            {isModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+                    <div className="bg-white dark:bg-[#1e293b] w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-200 dark:border-white/10 shadow-2xl">
+                        <form onSubmit={handleSubmit}>
+                            <div className="p-6 border-b border-slate-200 dark:border-white/10 flex justify-between items-center sticky top-0 bg-white dark:bg-[#1e293b] z-10">
+                                <h3 className="text-xl font-bold text-slate-900 dark:text-white">{editingEvent ? 'Etkinlik Düzenle' : 'Yeni Etkinlik Ekle'}</h3>
+                                <button type="button" onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-white/10 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"><X size={20} /></button>
+                            </div>
+                            <div className="p-6 space-y-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Restoran Seçin</label>
+                                    <select required value={formData.diningId} onChange={e => setFormData({ ...formData, diningId: e.target.value })} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm outline-none focus:ring-2 focus:ring-cyan-500">
+                                        <option value="" disabled>Restoran seçin...</option>
+                                        {venues.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Etkinlik Başlığı</label>
+                                    <input type="text" required value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm outline-none focus:ring-2 focus:ring-cyan-500" placeholder="Örn: Geleneksel Türk Gecesi" />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Tarih (Opsiyonel)</label>
+                                        <input type="date" value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm outline-none focus:ring-2 focus:ring-cyan-500" />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Saat (Opsiyonel)</label>
+                                        <input type="text" value={formData.time} onChange={e => setFormData({ ...formData, time: e.target.value })} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm outline-none focus:ring-2 focus:ring-cyan-500" placeholder="19:00 - 22:00" />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Görsel URL</label>
+                                    <input type="text" value={formData.image} onChange={e => setFormData({ ...formData, image: e.target.value })} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm outline-none focus:ring-2 focus:ring-cyan-500" />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Açıklama</label>
+                                    <textarea rows={3} value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} className="w-full bg-slate-50 dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 rounded-lg p-2.5 text-slate-900 dark:text-white text-sm outline-none focus:ring-2 focus:ring-cyan-500"></textarea>
+                                </div>
+                                <div className="flex items-center mt-2">
+                                    <label className="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" checked={formData.isActive} onChange={e => setFormData({ ...formData, isActive: e.target.checked })} className="rounded border-slate-300" />
+                                        <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Aktif</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div className="p-6 border-t border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#1e293b] sticky bottom-0 rounded-b-2xl flex justify-end gap-3 z-10">
+                                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/5 transition-colors">İptal</button>
+                                <button type="submit" className="bg-cyan-600 hover:bg-cyan-500 text-white px-6 py-2 rounded-lg font-bold shadow-lg shadow-cyan-600/20 transition-all flex items-center gap-2"><Save size={18} /> Kaydet</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
