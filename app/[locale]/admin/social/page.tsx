@@ -2,7 +2,7 @@
 export const dynamic = 'force-dynamic'
 
 import React, { useState } from 'react'
-import { Share2, Instagram, Twitter, Facebook, Youtube, TrendingUp, TrendingDown, Users, Heart, MessageCircle, Eye, ExternalLink, Link2, Unlink, BarChart3, Calendar, ArrowUp, ArrowDown, Minus } from 'lucide-react'
+import { Share2, Instagram, Twitter, Facebook, Youtube, TrendingUp, TrendingDown, Users, Heart, MessageCircle, Eye, ExternalLink, Link2, Unlink, BarChart3, Calendar, ArrowUp, ArrowDown, Minus, Settings, Key, Clock, CheckCircle2, AlertCircle, FileText } from 'lucide-react'
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, AreaChart, Area, PieChart, Pie, Cell } from 'recharts'
 
 // ─── Types ─────────────────────────────────────────────────────
@@ -80,8 +80,23 @@ const RECENT_POSTS = [
 ]
 
 export default function SocialMediaPage() {
-    const [activeTab, setActiveTab] = useState<'overview' | 'analytics' | 'schedule'>('overview')
+    const [activeTab, setActiveTab] = useState<'overview' | 'analytics' | 'schedule' | 'settings'>('overview')
     const [chartType, setChartType] = useState<'engagement' | 'growth'>('engagement')
+    const [savedPosts, setSavedPosts] = useState<any[]>([])
+    const [apiKeys, setApiKeys] = useState<Record<string, string>>({
+        instagram_token: '',
+        facebook_token: '',
+        twitter_key: '',
+        twitter_secret: '',
+    })
+
+    // Load saved posts from localStorage on mount
+    React.useEffect(() => {
+        try {
+            const stored = localStorage.getItem('bdr-social-posts')
+            if (stored) setSavedPosts(JSON.parse(stored))
+        } catch { }
+    }, [])
 
     const fmt = (n: number) => n >= 1000 ? `${(n / 1000).toFixed(1)}K` : n.toString()
 
@@ -97,10 +112,10 @@ export default function SocialMediaPage() {
                     <p className="text-slate-500 dark:text-slate-400">Sosyal medya hesaplarınızı bağlayın ve performansınızı takip edin.</p>
                 </div>
                 <div className="flex gap-2">
-                    {(['overview', 'analytics', 'schedule'] as const).map(tab => (
+                    {(['overview', 'analytics', 'schedule', 'settings'] as const).map(tab => (
                         <button key={tab} onClick={() => setActiveTab(tab)}
                             className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${activeTab === tab ? 'bg-cyan-600 text-white shadow-lg shadow-cyan-600/20' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5'}`}>
-                            {tab === 'overview' ? 'Genel Bakış' : tab === 'analytics' ? 'Analytics' : 'Paylaşım Planı'}
+                            {tab === 'overview' ? 'Genel Bakış' : tab === 'analytics' ? 'Analytics' : tab === 'schedule' ? 'Takvim' : 'API Ayarları'}
                         </button>
                     ))}
                 </div>
@@ -285,18 +300,211 @@ export default function SocialMediaPage() {
             )}
 
             {activeTab === 'analytics' && (
-                <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm p-12 text-center">
-                    <BarChart3 size={48} className="mx-auto text-slate-300 dark:text-slate-600 mb-4" />
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Detaylı Analytics</h3>
-                    <p className="text-sm text-slate-500 max-w-md mx-auto">Bu bölüm sosyal medya API entegrasyonu tamamlandığında aktif olacaktır. Şu anda genel bakış verilerini kullanabilirsiniz.</p>
+                <div className="space-y-6">
+                    {/* Platform Comparison */}
+                    <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm">
+                        <div className="p-4 border-b border-slate-200 dark:border-white/10">
+                            <h3 className="font-bold text-slate-900 dark:text-white">Platform Karşılaştırması</h3>
+                        </div>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left">
+                                <thead className="bg-slate-50 dark:bg-[#0f172a] text-slate-500 text-xs uppercase tracking-wider">
+                                    <tr>
+                                        <th className="p-4">Platform</th>
+                                        <th className="p-4">Takipçi</th>
+                                        <th className="p-4">Büyüme</th>
+                                        <th className="p-4">Post</th>
+                                        <th className="p-4">Etkileşim</th>
+                                        <th className="p-4">Erişim</th>
+                                        <th className="p-4">Durum</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-200 dark:divide-white/5">
+                                    {ACCOUNTS.map(a => (
+                                        <tr key={a.platform} className="hover:bg-slate-50 dark:hover:bg-white/5">
+                                            <td className="p-4">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: a.color + '20', color: a.color }}>{a.icon}</div>
+                                                    <span className="font-bold text-slate-900 dark:text-white text-sm">{a.platform}</span>
+                                                </div>
+                                            </td>
+                                            <td className="p-4 font-bold text-slate-900 dark:text-white">{fmt(a.followers)}</td>
+                                            <td className="p-4">
+                                                <span className={`text-sm font-bold ${a.followersChange >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                                                    {a.followersChange >= 0 ? '+' : ''}{a.followersChange}%
+                                                </span>
+                                            </td>
+                                            <td className="p-4 text-sm text-slate-600 dark:text-slate-300">{a.posts}</td>
+                                            <td className="p-4 font-bold text-slate-900 dark:text-white">{a.engagement}%</td>
+                                            <td className="p-4 text-sm text-slate-600 dark:text-slate-300">{fmt(a.reach)}</td>
+                                            <td className="p-4">
+                                                {a.connected ? (
+                                                    <span className="px-2 py-1 bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600 text-xs rounded-lg font-bold flex items-center gap-1 w-fit"><CheckCircle2 size={12} /> Bağlı</span>
+                                                ) : (
+                                                    <span className="px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-500 text-xs rounded-lg font-bold flex items-center gap-1 w-fit"><AlertCircle size={12} /> Bağlı Değil</span>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {/* Content Type Performance Detail */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm">
+                            <div className="p-4 border-b border-slate-200 dark:border-white/10">
+                                <h3 className="font-bold text-slate-900 dark:text-white">İçerik Türü Performansı</h3>
+                            </div>
+                            <div className="p-4 h-64">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={CONTENT_PERFORMANCE}>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-slate-200 dark:text-slate-700" />
+                                        <XAxis dataKey="type" tick={{ fontSize: 11 }} stroke="currentColor" className="text-slate-500" />
+                                        <YAxis tick={{ fontSize: 11 }} stroke="currentColor" className="text-slate-500" />
+                                        <Tooltip content={({ active, payload, label }) => {
+                                            if (active && payload && payload.length) {
+                                                return (
+                                                    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 rounded-xl shadow-lg">
+                                                        <p className="text-xs text-slate-500 mb-1">{label}</p>
+                                                        <p className="font-bold text-slate-900 dark:text-white">Etkileşim: {payload[0].value}%</p>
+                                                    </div>
+                                                )
+                                            }
+                                            return null
+                                        }} />
+                                        <Bar dataKey="engagement" fill="#06b6d4" radius={[8, 8, 0, 0]} />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </div>
+
+                        <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm">
+                            <div className="p-4 border-b border-slate-200 dark:border-white/10">
+                                <h3 className="font-bold text-slate-900 dark:text-white">En İyi Paylaşım Saatleri</h3>
+                            </div>
+                            <div className="p-4">
+                                <div className="grid grid-cols-2 gap-3">
+                                    {[
+                                        { time: '09:00 - 11:00', label: 'Sabah', engagement: '5.2%', best: true },
+                                        { time: '12:00 - 14:00', label: 'Öğle', engagement: '3.8%', best: false },
+                                        { time: '17:00 - 19:00', label: 'Akşam', engagement: '6.1%', best: true },
+                                        { time: '21:00 - 23:00', label: 'Gece', engagement: '4.5%', best: false },
+                                    ].map(slot => (
+                                        <div key={slot.time} className={`p-3 rounded-xl border ${slot.best ? 'border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/10' : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800'}`}>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <Clock size={14} className={slot.best ? 'text-emerald-500' : 'text-slate-400'} />
+                                                <span className="text-xs font-bold text-slate-900 dark:text-white">{slot.label}</span>
+                                            </div>
+                                            <p className="text-xs text-slate-500">{slot.time}</p>
+                                            <p className={`text-sm font-bold mt-1 ${slot.best ? 'text-emerald-600' : 'text-slate-600 dark:text-slate-300'}`}>{slot.engagement}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             )}
 
             {activeTab === 'schedule' && (
-                <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm p-12 text-center">
-                    <Calendar size={48} className="mx-auto text-slate-300 dark:text-slate-600 mb-4" />
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Paylaşım Planı</h3>
-                    <p className="text-sm text-slate-500 max-w-md mx-auto">Sosyal medya paylaşımlarınızı planlayın. API entegrasyonuyla otomatik paylaşım yapabilirsiniz. Yakında aktif olacak.</p>
+                <div className="space-y-6">
+                    <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm">
+                        <div className="p-4 border-b border-slate-200 dark:border-white/10 flex items-center justify-between">
+                            <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2"><Calendar size={18} className="text-cyan-500" /> İçerik Takvimi</h3>
+                            <a href="social/content" className="text-xs px-3 py-1.5 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500 transition-colors font-medium">+ Yeni İçerik Oluştur</a>
+                        </div>
+
+                        {savedPosts.length === 0 ? (
+                            <div className="p-12 text-center">
+                                <FileText size={48} className="mx-auto text-slate-300 dark:text-slate-600 mb-4" />
+                                <h4 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Henüz kaydedilmiş içerik yok</h4>
+                                <p className="text-sm text-slate-500 max-w-md mx-auto mb-4">İçerik Üretici sayfasından AI ile içerik oluşturun, taslak olarak kaydedin veya tarih belirleyerek zamanlang.</p>
+                                <a href="social/content" className="inline-block px-6 py-2.5 bg-cyan-600 text-white rounded-lg font-medium hover:bg-cyan-500 transition-colors">İçerik Üretici&apos;ye Git</a>
+                            </div>
+                        ) : (
+                            <div className="divide-y divide-slate-200 dark:divide-white/5">
+                                {savedPosts.map(post => (
+                                    <div key={post.id} className="p-4 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+                                        <div className="flex items-start gap-4">
+                                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${post.status === 'scheduled' ? 'bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600' : 'bg-amber-100 dark:bg-amber-900/20 text-amber-600'
+                                                }`}>
+                                                {post.status === 'scheduled' ? <Clock size={18} /> : <FileText size={18} />}
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <span className="font-bold text-slate-900 dark:text-white text-sm truncate">{post.topic}</span>
+                                                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${post.status === 'scheduled' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-600'
+                                                        }`}>
+                                                        {post.status === 'scheduled' ? 'Zamanlı' : 'Taslak'}
+                                                    </span>
+                                                    <span className="text-[10px] px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-slate-500 font-bold">{post.platform}</span>
+                                                </div>
+                                                <p className="text-xs text-slate-500">
+                                                    {post.scheduledDate ? `${post.scheduledDate} ${post.scheduledTime || ''}` : new Date(post.createdAt).toLocaleDateString('tr-TR')}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {activeTab === 'settings' && (
+                <div className="space-y-6">
+                    <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm">
+                        <div className="p-4 border-b border-slate-200 dark:border-white/10">
+                            <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2"><Settings size={18} className="text-cyan-500" /> API Bağlantı Ayarları</h3>
+                            <p className="text-xs text-slate-500 mt-1">Otomatik paylaşım için platform API anahtarlarınızı yapılandırın.</p>
+                        </div>
+                        <div className="p-6 space-y-6">
+                            {[
+                                { platform: 'Instagram', icon: <Instagram size={18} />, color: '#E4405F', fields: [{ key: 'instagram_token', label: 'Access Token', placeholder: 'Instagram Graph API token' }] },
+                                { platform: 'Facebook', icon: <Facebook size={18} />, color: '#1877F2', fields: [{ key: 'facebook_token', label: 'Page Access Token', placeholder: 'Facebook page token' }] },
+                                { platform: 'Twitter / X', icon: <Twitter size={18} />, color: '#1DA1F2', fields: [{ key: 'twitter_key', label: 'API Key', placeholder: 'Consumer API key' }, { key: 'twitter_secret', label: 'API Secret', placeholder: 'Consumer API secret' }] },
+                            ].map(p => (
+                                <div key={p.platform} className="bg-slate-50 dark:bg-[#0f172a] rounded-xl p-4 border border-slate-200 dark:border-white/10">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: p.color + '15', color: p.color }}>
+                                            {p.icon}
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-slate-900 dark:text-white text-sm">{p.platform}</h4>
+                                            <p className="text-[10px] text-slate-500">Otomatik paylaşım için kimlik bilgileri</p>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-3">
+                                        {p.fields.map(f => (
+                                            <div key={f.key}>
+                                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">{f.label}</label>
+                                                <div className="flex gap-2">
+                                                    <input
+                                                        type="password"
+                                                        value={apiKeys[f.key] || ''}
+                                                        onChange={(e) => setApiKeys(prev => ({ ...prev, [f.key]: e.target.value }))}
+                                                        placeholder={f.placeholder}
+                                                        className="flex-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-400 outline-none focus:ring-2 focus:ring-cyan-500"
+                                                    />
+                                                    <button className="px-3 py-2 bg-cyan-600 text-white rounded-lg text-xs font-bold hover:bg-cyan-500 transition-colors flex items-center gap-1">
+                                                        <Key size={12} /> Kaydet
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+
+                            <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-xl p-4">
+                                <p className="text-sm text-amber-800 dark:text-amber-300 font-medium">Otomatik Paylaşım — Yakında</p>
+                                <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">API anahtarlarınızı ayarladıktan sonra zaman planlı içerikler otomatik olarak paylaşılacaktır. Bu özellik yakında aktif olacak.</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>
