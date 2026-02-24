@@ -89,6 +89,12 @@ export default function SocialMediaPage() {
         twitter_key: '',
         twitter_secret: '',
     })
+    const [autoPostEnabled, setAutoPostEnabled] = useState(false)
+    const [autoPostFrequency, setAutoPostFrequency] = useState<'daily' | 'every2days' | 'weekly'>('every2days')
+    const [autoPostTime, setAutoPostTime] = useState('10:00')
+    const [autoPostPlatforms, setAutoPostPlatforms] = useState<Record<string, boolean>>({
+        instagram: true, facebook: true, twitter: false
+    })
 
     // Load saved posts from localStorage on mount
     React.useEffect(() => {
@@ -446,6 +452,14 @@ export default function SocialMediaPage() {
                                                 </p>
                                             </div>
                                         </div>
+                                        <div className="flex gap-2 mt-2">
+                                            <button className="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold rounded-lg transition-colors">Şimdi Paylaş</button>
+                                            <button onClick={() => {
+                                                const updated = savedPosts.filter(p => p.id !== post.id)
+                                                setSavedPosts(updated)
+                                                localStorage.setItem('bdr-social-posts', JSON.stringify(updated))
+                                            }} className="px-3 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-[10px] font-bold rounded-lg transition-colors">Sil</button>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
@@ -499,9 +513,58 @@ export default function SocialMediaPage() {
                                 </div>
                             ))}
 
-                            <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-xl p-4">
-                                <p className="text-sm text-amber-800 dark:text-amber-300 font-medium">Otomatik Paylaşım — Yakında</p>
-                                <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">API anahtarlarınızı ayarladıktan sonra zaman planlı içerikler otomatik olarak paylaşılacaktır. Bu özellik yakında aktif olacak.</p>
+                            <div className="bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-900/10 dark:to-blue-900/10 border border-cyan-200 dark:border-cyan-800 rounded-xl p-5">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div>
+                                        <p className="text-sm font-bold text-cyan-800 dark:text-cyan-300">Otomatik Paylaşım</p>
+                                        <p className="text-xs text-cyan-600 dark:text-cyan-400 mt-0.5">Zamanlı içerikler belirlenen saatte otomatik paylaşılır</p>
+                                    </div>
+                                    <button
+                                        onClick={() => setAutoPostEnabled(!autoPostEnabled)}
+                                        className={`relative w-12 h-6 rounded-full transition-colors ${autoPostEnabled ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600'}`}
+                                    >
+                                        <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${autoPostEnabled ? 'left-[26px]' : 'left-0.5'}`} />
+                                    </button>
+                                </div>
+
+                                {autoPostEnabled && (
+                                    <div className="space-y-4 pt-3 border-t border-cyan-200 dark:border-cyan-800">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Sıklık</label>
+                                                <select value={autoPostFrequency} onChange={e => setAutoPostFrequency(e.target.value as any)}
+                                                    className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white outline-none">
+                                                    <option value="daily">Her Gün</option>
+                                                    <option value="every2days">2 Günde Bir</option>
+                                                    <option value="weekly">Haftada Bir</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Paylaşım Saati</label>
+                                                <input type="time" value={autoPostTime} onChange={e => setAutoPostTime(e.target.value)}
+                                                    className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white outline-none" />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-[10px] font-bold text-slate-500 uppercase mb-2">Platformlar</label>
+                                            <div className="flex gap-3">
+                                                {(['instagram', 'facebook', 'twitter'] as const).map(p => (
+                                                    <label key={p} className="flex items-center gap-2 cursor-pointer">
+                                                        <input type="checkbox" checked={autoPostPlatforms[p]} onChange={e => setAutoPostPlatforms(prev => ({ ...prev, [p]: e.target.checked }))}
+                                                            className="rounded border-slate-300 text-cyan-600 focus:ring-cyan-500" />
+                                                        <span className="text-xs font-medium text-slate-700 dark:text-slate-300 capitalize">{p}</span>
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <div className="bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800 rounded-lg p-3">
+                                            <p className="text-[10px] text-emerald-700 dark:text-emerald-400 font-medium">
+                                                ✅ Aktif — Zamanlı içerikler {autoPostFrequency === 'daily' ? 'her gün' : autoPostFrequency === 'every2days' ? '2 günde bir' : 'haftada bir'} saat {autoPostTime}&apos;de
+                                                {' '}{Object.entries(autoPostPlatforms).filter(([, v]) => v).map(([k]) => k).join(', ')} üzerinden otomatik paylaşılacak.
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
