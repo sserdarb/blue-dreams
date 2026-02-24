@@ -19,7 +19,8 @@ import {
   Zap,
   ChevronRight,
   Eye,
-  EyeOff
+  EyeOff,
+  UserPlus
 } from 'lucide-react';
 
 const initialState = {
@@ -71,6 +72,12 @@ export default function LoginPage() {
   const pathname = usePathname();
   const locale = pathname.split('/')[1] || 'tr';
   const [showPassword, setShowPassword] = useState(false);
+  const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [regName, setRegName] = useState('');
+  const [regEmail, setRegEmail] = useState('');
+  const [regPassword, setRegPassword] = useState('');
+  const [regLoading, setRegLoading] = useState(false);
+  const [regMessage, setRegMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   async function handleLogin(prevState: any, formData: FormData) {
     const result = await login(formData);
@@ -88,6 +95,29 @@ export default function LoginPage() {
       router.refresh();
     }
   }, [state.success, router, locale]);
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setRegLoading(true);
+    setRegMessage(null);
+    try {
+      const res = await fetch('/api/admin/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: regName, email: regEmail, password: regPassword }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setRegMessage({ type: 'success', text: data.message || 'Kayıt talebiniz alındı!' });
+        setRegName(''); setRegEmail(''); setRegPassword('');
+      } else {
+        setRegMessage({ type: 'error', text: data.error || 'Kayıt başarısız' });
+      }
+    } catch {
+      setRegMessage({ type: 'error', text: 'Bağlantı hatası' });
+    }
+    setRegLoading(false);
+  };
 
   return (
     <div className="min-h-screen bg-[#030712] flex relative overflow-hidden">
@@ -165,76 +195,165 @@ export default function LoginPage() {
             </p>
           </div>
 
-          {/* Login Card */}
+          {/* Login/Register Card */}
           <div className="bg-white/[0.03] backdrop-blur-2xl border border-white/[0.08] rounded-2xl p-8 lg:p-10 shadow-2xl shadow-black/20">
-            {/* Card Header */}
-            <div className="mb-8">
-              <div className="flex items-center gap-2 mb-2">
-                <Lock size={18} className="text-cyan-400" />
-                <h2 className="text-xl font-bold text-white">Sisteme Giriş</h2>
-              </div>
-              <p className="text-slate-500 text-sm">
-                Yönetim paneline erişmek için kimlik bilgilerinizi girin
-              </p>
+            {/* Mode Tabs */}
+            <div className="flex bg-white/[0.03] rounded-xl p-1 mb-8 border border-white/5">
+              <button
+                onClick={() => { setMode('login'); setRegMessage(null); }}
+                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all ${mode === 'login' ? 'bg-cyan-500/20 text-cyan-400 shadow-sm' : 'text-slate-500 hover:text-slate-300'}`}
+              >
+                <Lock size={15} /> Giriş Yap
+              </button>
+              <button
+                onClick={() => { setMode('register'); setRegMessage(null); }}
+                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all ${mode === 'register' ? 'bg-purple-500/20 text-purple-400 shadow-sm' : 'text-slate-500 hover:text-slate-300'}`}
+              >
+                <UserPlus size={15} /> Kayıt Talebi
+              </button>
             </div>
 
-            <form action={formAction} className="space-y-5">
-              {/* Email */}
-              <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-                  E-posta Adresi
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  required
-                  autoComplete="email"
-                  className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-white/20 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition-all text-sm"
-                  placeholder="admin@bluedreams.com"
-                />
-              </div>
+            {mode === 'login' ? (
+              <>
+                {/* Card Header */}
+                <div className="mb-8">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Lock size={18} className="text-cyan-400" />
+                    <h2 className="text-xl font-bold text-white">Sisteme Giriş</h2>
+                  </div>
+                  <p className="text-slate-500 text-sm">
+                    Yönetim paneline erişmek için kimlik bilgilerinizi girin
+                  </p>
+                </div>
 
-              {/* Password */}
-              <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-                  Şifre
-                </label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    name="password"
-                    required
-                    autoComplete="current-password"
-                    className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-white/20 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition-all text-sm pr-12"
-                    placeholder="••••••••"
-                  />
+                <form action={formAction} className="space-y-5">
+                  {/* Email */}
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                      E-posta Adresi
+                    </label>
+                    <input
+                      type="email"
+                      name="email"
+                      required
+                      autoComplete="email"
+                      className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-white/20 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition-all text-sm"
+                      placeholder="admin@bluedreams.com"
+                    />
+                  </div>
+
+                  {/* Password */}
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+                      Şifre
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        name="password"
+                        required
+                        autoComplete="current-password"
+                        className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-white/20 focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition-all text-sm pr-12"
+                        placeholder="••••••••"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors p-1"
+                      >
+                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Error */}
+                  {state.error && (
+                    <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-red-400 text-sm flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0" />
+                      {state.error}
+                    </div>
+                  )}
+
+                  {/* Submit */}
                   <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors p-1"
+                    type="submit"
+                    className="w-full bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-400 hover:to-cyan-500 text-white py-3.5 px-4 rounded-xl font-bold tracking-wider uppercase text-sm transition-all shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 flex items-center justify-center gap-2 group"
                   >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    Giriş Yap
+                    <ChevronRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
                   </button>
+                </form>
+              </>
+            ) : (
+              <>
+                {/* Register Header */}
+                <div className="mb-8">
+                  <div className="flex items-center gap-2 mb-2">
+                    <UserPlus size={18} className="text-purple-400" />
+                    <h2 className="text-xl font-bold text-white">Kayıt Talebi</h2>
+                  </div>
+                  <p className="text-slate-500 text-sm">
+                    Bilgilerinizi girin, yönetici onayından sonra giriş yapabilirsiniz
+                  </p>
                 </div>
-              </div>
 
-              {/* Error */}
-              {state.error && (
-                <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-red-400 text-sm flex items-center gap-2">
-                  <div className="w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0" />
-                  {state.error}
-                </div>
-              )}
+                <form onSubmit={handleRegister} className="space-y-5">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Ad Soyad</label>
+                    <input
+                      type="text"
+                      required
+                      value={regName}
+                      onChange={(e) => setRegName(e.target.value)}
+                      className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-white/20 focus:outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 transition-all text-sm"
+                      placeholder="Adınız Soyadınız"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">E-posta Adresi</label>
+                    <input
+                      type="email"
+                      required
+                      value={regEmail}
+                      onChange={(e) => setRegEmail(e.target.value)}
+                      className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-white/20 focus:outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 transition-all text-sm"
+                      placeholder="email@example.com"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Şifre</label>
+                    <input
+                      type="password"
+                      required
+                      minLength={6}
+                      value={regPassword}
+                      onChange={(e) => setRegPassword(e.target.value)}
+                      className="w-full bg-white/[0.04] border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-white/20 focus:outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 transition-all text-sm"
+                      placeholder="Min. 6 karakter"
+                    />
+                  </div>
 
-              {/* Submit */}
-              <button
-                type="submit"
-                className="w-full bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-400 hover:to-cyan-500 text-white py-3.5 px-4 rounded-xl font-bold tracking-wider uppercase text-sm transition-all shadow-lg shadow-cyan-500/25 hover:shadow-cyan-500/40 flex items-center justify-center gap-2 group"
-              >
-                Giriş Yap
-                <ChevronRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
-              </button>
-            </form>
+                  {regMessage && (
+                    <div className={`rounded-xl px-4 py-3 text-sm flex items-center gap-2 ${regMessage.type === 'success'
+                        ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'
+                        : 'bg-red-500/10 border border-red-500/20 text-red-400'
+                      }`}>
+                      <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${regMessage.type === 'success' ? 'bg-emerald-400' : 'bg-red-400'}`} />
+                      {regMessage.text}
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={regLoading}
+                    className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-400 hover:to-purple-500 text-white py-3.5 px-4 rounded-xl font-bold tracking-wider uppercase text-sm transition-all shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    {regLoading ? 'Gönderiliyor...' : 'Kayıt Talebi Gönder'}
+                    <ChevronRight size={16} />
+                  </button>
+                </form>
+              </>
+            )}
 
             {/* Footer */}
             <div className="mt-8 pt-6 border-t border-white/5">
