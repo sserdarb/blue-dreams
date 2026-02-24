@@ -3,7 +3,7 @@ import QRCode from 'qrcode'
 
 export async function POST(request: NextRequest) {
     try {
-        const { restaurantId, baseUrl } = await request.json()
+        const { restaurantId, baseUrl, darkColor, lightColor } = await request.json()
 
         if (!restaurantId) {
             return NextResponse.json({ error: 'restaurantId is required' }, { status: 400 })
@@ -16,8 +16,8 @@ export async function POST(request: NextRequest) {
             width: 512,
             margin: 2,
             color: {
-                dark: '#1e293b',
-                light: '#ffffff',
+                dark: darkColor || '#1e293b',
+                light: lightColor || '#ffffff',
             },
             errorCorrectionLevel: 'H',
         })
@@ -28,8 +28,8 @@ export async function POST(request: NextRequest) {
             width: 512,
             margin: 2,
             color: {
-                dark: '#1e293b',
-                light: '#ffffff',
+                dark: darkColor || '#1e293b',
+                light: lightColor || '#ffffff',
             },
             errorCorrectionLevel: 'H',
         })
