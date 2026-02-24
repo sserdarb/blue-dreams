@@ -4,7 +4,7 @@ import { useState, useMemo, useRef, useCallback } from 'react'
 import { exportPdf } from '@/lib/export-pdf'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { Calendar, Search, ChevronLeft, ChevronRight, Eye, Check, X, Clock, Download, RefreshCw, ArrowRightLeft, TrendingUp, BarChart3, Filter, FileDown } from 'lucide-react'
-import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts'
 import type { ExchangeRates } from '@/lib/services/elektra'
 
 interface ReservationRow {
@@ -580,6 +580,62 @@ export default function ReservationsClient({ initialData, comparisonData, compar
                     </div>
                 ))}
             </div>
+
+            {/* Channel & Status Charts */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-5 shadow-sm">
+                    <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4 flex items-center gap-2">
+                        <ArrowRightLeft size={16} className="text-purple-500 dark:text-purple-400" /> Kanal Dağılımı
+                    </h3>
+                    <div className="h-[220px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                                <Pie
+                                    data={Object.entries(channelSummary).map(([name, v], i) => ({
+                                        name, value: v.count,
+                                        color: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#ef4444', '#14b8a6'][i % 7]
+                                    }))}
+                                    cx="50%" cy="50%" innerRadius={55} outerRadius={85} dataKey="value" nameKey="name" paddingAngle={2}
+                                >
+                                    {Object.entries(channelSummary).map(([,], i) => (
+                                        <Cell key={i} fill={['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#ef4444', '#14b8a6'][i % 7]} />
+                                    ))}
+                                </Pie>
+                                <Tooltip formatter={(value: any) => [value, 'Rezervasyon']} />
+                                <Legend verticalAlign="bottom" height={36} formatter={(value: any) => <span className="text-xs text-slate-600 dark:text-slate-300">{value}</span>} />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+
+                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-5 shadow-sm">
+                    <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4 flex items-center gap-2">
+                        <Filter size={16} className="text-amber-500 dark:text-amber-400" /> Durum Dağılımı
+                    </h3>
+                    <div className="h-[220px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart
+                                data={(() => {
+                                    const map = new Map<string, number>()
+                                    filtered.forEach(r => map.set(r.status, (map.get(r.status) || 0) + 1))
+                                    return Array.from(map.entries()).map(([name, count]) => ({
+                                        name: name === 'Reservation' ? 'Onaylı' : name === 'InHouse' ? 'Konaklamada' : name === 'CheckOut' ? 'Çıkış' : name === 'Waiting' ? 'Beklemede' : name,
+                                        count
+                                    })).sort((a, b) => b.count - a.count)
+                                })()}
+                                layout="vertical"
+                            >
+                                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" className="dark:[&>line]:stroke-[#374151]" horizontal={false} opacity={0.5} />
+                                <XAxis type="number" fontSize={11} />
+                                <YAxis dataKey="name" type="category" fontSize={11} width={80} />
+                                <Tooltip />
+                                <Bar dataKey="count" name="Adet" fill="#f59e0b" radius={[0, 6, 6, 0]} />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+            </div>
+
             {/* Comparison Mode Indicator */}
             {compareYear && comparisonMetrics.compCount > 0 && (
                 <div className="text-xs text-slate-400 dark:text-slate-500 flex items-center gap-1.5">

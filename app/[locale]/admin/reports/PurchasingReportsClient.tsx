@@ -109,10 +109,12 @@ export default function PurchasingReportsClient({ kpis, stockItems, purchaseOrde
         }))
     }, [filteredOrders])
 
-    // Monthly spend
+    // Monthly spend (with previous year comparison)
     const monthlySpend = useMemo(() => {
         const map = new Map<string, number>()
+        const prevMap = new Map<string, number>()
         const MONTHS_SHORT = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara']
+        const currentYear = new Date().getFullYear()
         filteredOrders.forEach(o => {
             const m = parseInt(o.date.slice(5, 7)) - 1
             if (m >= 0 && m < 12) {
@@ -120,14 +122,47 @@ export default function PurchasingReportsClient({ kpis, stockItems, purchaseOrde
                 map.set(key, (map.get(key) || 0) + o.totalAmount)
             }
         })
+        // Previous year orders from all orders (not filtered by date preset)
+        purchaseOrders.forEach(o => {
+            const y = parseInt(o.date.slice(0, 4))
+            if (y === currentYear - 1) {
+                const m = parseInt(o.date.slice(5, 7)) - 1
+                if (m >= 0 && m < 12) {
+                    const key = MONTHS_SHORT[m]
+                    prevMap.set(key, (prevMap.get(key) || 0) + o.totalAmount)
+                }
+            }
+        })
         return MONTHS_SHORT.map(m => ({
             name: m,
-            Harcama: Math.round((map.get(m) || 0) / 1000)
+            Harcama: Math.round((map.get(m) || 0) / 1000),
+            'ÖncekiYıl': Math.round((prevMap.get(m) || 0) / 1000),
         }))
-    }, [filteredOrders])
+    }, [filteredOrders, purchaseOrders])
 
     // Filtered total spend
     const filteredTotalSpend = useMemo(() => filteredOrders.reduce((s, o) => s + o.totalAmount, 0), [filteredOrders])
+
+    // Previous year total for YoY comparison
+    const prevYearSpend = useMemo(() => {
+        const currentYear = new Date().getFullYear()
+        return purchaseOrders
+            .filter(o => parseInt(o.date.slice(0, 4)) === currentYear - 1)
+            .reduce((s, o) => s + o.totalAmount, 0)
+    }, [purchaseOrders])
+
+    const yoyPct = prevYearSpend > 0 ? ((filteredTotalSpend - prevYearSpend) / prevYearSpend * 100) : 0
+
+    // Department breakdown
+    const departmentData = useMemo(() => {
+        const map = new Map<string, number>()
+        filteredOrders.forEach(o => {
+            map.set(o.department, (map.get(o.department) || 0) + o.totalAmount)
+        })
+        return Array.from(map.entries())
+            .map(([name, value], i) => ({ name, value: Math.round(value / 1000), color: CATEGORY_COLORS[i % CATEGORY_COLORS.length] }))
+            .sort((a, b) => b.value - a.value)
+    }, [filteredOrders])
 
     // Top 10 vendors
     const topVendors = useMemo(() => vendors.slice(0, 10), [vendors])
@@ -209,7 +244,7 @@ export default function PurchasingReportsClient({ kpis, stockItems, purchaseOrde
                     {/* KPI Cards */}
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                         {[
-                            { label: 'Toplam Harcama', value: fmtTry(filteredTotalSpend), icon: ShoppingCart, gradient: 'from-orange-500 to-amber-500' },
+                            { label: 'Toplam Harcama', value: fmtTry(filteredTotalSpend), icon: ShoppingCart, gradient: 'from-orange-500 to-amber-500', yoy: yoyPct },
                             { label: 'Sipariş', value: fmt(filteredOrders.length), icon: Truck, gradient: 'from-blue-500 to-cyan-500' },
                             { label: 'Kritik Stok', value: fmt(kpis.criticalItems), icon: AlertTriangle, gradient: 'from-red-500 to-rose-500' },
                             { label: 'Tedarikçi Performansı', value: `%${kpis.avgPerformance}`, icon: TrendingUp, gradient: 'from-emerald-500 to-teal-500' },
@@ -223,6 +258,11 @@ export default function PurchasingReportsClient({ kpis, stockItems, purchaseOrde
                                     <span className="text-xs text-slate-500 font-medium">{card.label}</span>
                                 </div>
                                 <div className="text-2xl font-bold text-slate-900 dark:text-white">{card.value}</div>
+                                {'yoy' in card && card.yoy !== undefined && card.yoy !== 0 && (
+                                    <span className={`text-[10px] font-bold mt-1 inline-block px-1.5 py-0.5 rounded ${card.yoy > 0 ? 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400' : 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'}`}>
+                                        {card.yoy > 0 ? '+' : ''}{card.yoy.toFixed(1)}% YoY
+                                    </span>
+                                )}
                             </div>
                         ))}
                     </div>
@@ -236,10 +276,35 @@ export default function PurchasingReportsClient({ kpis, stockItems, purchaseOrde
                                     <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                                     <XAxis dataKey="name" tick={{ fontSize: 11 }} />
                                     <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `${v}K`} />
-                                    <Tooltip formatter={(value: any) => [`₺${value}K`, '']} />
-                                    <Bar dataKey="Harcama" fill="#f59e0b" radius={[6, 6, 0, 0]} />
+                                    <Tooltip formatter={(value: any, name: any) => [`₺${value}K`, name === 'ÖncekiYıl' ? 'Önceki Yıl' : 'Bu Yıl']} />
+                                    <Legend />
+                                    <Bar dataKey="Harcama" name="Bu Yıl" fill="#f59e0b" radius={[6, 6, 0, 0]} />
+                                    <Line type="monotone" dataKey="ÖncekiYıl" name="Önceki Yıl" stroke="#94a3b8" strokeDasharray="5 5" strokeWidth={2} dot={false} />
                                 </BarChart>
                             </ResponsiveContainer>
+                        </div>
+
+                        <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-200 dark:border-white/10 p-5">
+                            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Departman Harcama Dağılımı</h3>
+                            <ResponsiveContainer width="100%" height={200}>
+                                <PieChart>
+                                    <Pie data={departmentData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} dataKey="value" nameKey="name" paddingAngle={2}>
+                                        {departmentData.map((d, i) => <Cell key={i} fill={d.color} />)}
+                                    </Pie>
+                                    <Tooltip formatter={(value: any) => [`₺${value}K`, '']} />
+                                </PieChart>
+                            </ResponsiveContainer>
+                            <div className="space-y-1 mt-2">
+                                {departmentData.slice(0, 6).map((d, i) => (
+                                    <div key={i} className="flex items-center justify-between text-xs">
+                                        <div className="flex items-center gap-1.5">
+                                            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: d.color }} />
+                                            <span className="text-slate-600 dark:text-slate-400">{d.name}</span>
+                                        </div>
+                                        <span className="font-bold text-slate-700 dark:text-slate-300">₺{d.value}K</span>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
 
                         <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-200 dark:border-white/10 p-5">
