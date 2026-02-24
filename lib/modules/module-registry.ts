@@ -182,6 +182,23 @@ export const MODULE_REGISTRY: ModuleDefinition[] = [
         href: '/integrations/booking', dataSource: 'local', defaultEnabled: true,
         description: 'Rezervasyon motoru entegrasyonu',
     },
+
+    // ── Görev Yönetimi ──
+    {
+        id: 'nav-tasks', label: 'Görevler', section: 'section-gorevler',
+        href: '/tasks', dataSource: 'local', defaultEnabled: true,
+        description: 'Kanban tabanlı görev takibi, durumlar, öncelikler, departman ataması',
+    },
+    {
+        id: 'nav-workflows', label: 'İş Akışları', section: 'section-gorevler',
+        href: '/tasks/workflows', dataSource: 'local', defaultEnabled: true,
+        description: 'AI destekli iş akışı şablonları, adım yönetimi ve kullanıcı ataması',
+    },
+    {
+        id: 'nav-mail-tasks', label: 'Mail Entegrasyonu', section: 'section-gorevler',
+        href: '/tasks/mail', dataSource: 'local', defaultEnabled: true,
+        description: 'IMAP/SMTP mail bağlantısı, e-posta senkronizasyonu ve AI ile görev dönüşümü',
+    },
 ]
 
 // ─── Helpers ───

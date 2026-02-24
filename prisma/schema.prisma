@@ -391,17 +391,29 @@ model WorkflowStep {
 }
 
 model MailIntegration {
-  id           String    @id @default(uuid())
-  userId       String // AdminUser who connected
-  provider     String    @default("google") // google, outlook
-  email        String
-  accessToken  String
-  refreshToken String
-  expiresAt    DateTime
-  isActive     Boolean   @default(true)
-  lastSyncAt   DateTime?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  id          String    @id @default(uuid())
+  userId      String // AdminUser who configured
+  provider    String    @default("imap") // imap, google, outlook
+  email       String
+  // IMAP settings
+  imapHost    String    @default("")
+  imapPort    Int       @default(993)
+  imapUser    String    @default("")
+  imapPass    String    @default("") // encrypted
+  imapSsl     Boolean   @default(true)
+  // SMTP settings
+  smtpHost    String    @default("")
+  smtpPort    Int       @default(587)
+  smtpUser    String    @default("")
+  smtpPass    String    @default("") // encrypted
+  smtpSsl     Boolean   @default(true)
+  // Status
+  isActive    Boolean   @default(true)
+  isConnected Boolean   @default(false)
+  lastSyncAt  DateTime?
+  syncCount   Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
 
 model Notification {

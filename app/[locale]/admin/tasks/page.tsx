@@ -408,7 +408,7 @@ function TaskCard({ task, onDragStart, onEdit, onDelete }: {
     )
 }
 
-// ─── Task Modal Component ───
+// ─── Task Detail/Edit Modal with Comments ───
 function TaskModal({ task, departments, onClose, onSave }: {
     task?: Task | null
     departments: Department[]
@@ -427,6 +427,38 @@ function TaskModal({ task, departments, onClose, onSave }: {
         tags: task?.tags ? JSON.parse(task.tags).join(', ') : '',
     })
     const [saving, setSaving] = useState(false)
+    const [comments, setComments] = useState<{ id: string; content: string; author: { name: string }; createdAt: string }[]>([])
+    const [newComment, setNewComment] = useState('')
+    const [loadingComments, setLoadingComments] = useState(false)
+    const [submittingComment, setSubmittingComment] = useState(false)
+
+    // Fetch comments when editing existing task
+    useEffect(() => {
+        if (!task?.id) return
+        setLoadingComments(true)
+        fetch(`/api/admin/tasks/${task.id}/comments`)
+            .then(r => r.ok ? r.json() : [])
+            .then(data => setComments(Array.isArray(data) ? data : []))
+            .catch(() => { })
+            .finally(() => setLoadingComments(false))
+    }, [task?.id])
+
+    const addComment = async () => {
+        if (!newComment.trim() || !task?.id) return
+        setSubmittingComment(true)
+        try {
+            const res = await fetch(`/api/admin/tasks/${task.id}/comments`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content: newComment, authorId: 'system' }),
+            })
+            if (res.ok) {
+                const comment = await res.json()
+                setComments(prev => [comment, ...prev])
+                setNewComment('')
+            }
+        } catch { /* silent */ }
+        setSubmittingComment(false)
+    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -445,9 +477,9 @@ function TaskModal({ task, departments, onClose, onSave }: {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 w-full max-w-xl shadow-2xl">
-                <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-slate-700">
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white">{task ? 'Görevi Düzenle' : 'Yeni Görev'}</h3>
+            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
+                <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-800 z-10">
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white">{task ? 'Görev Detayı' : 'Yeni Görev'}</h3>
                     <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700"><X size={20} /></button>
                 </div>
 
@@ -458,6 +490,22 @@ function TaskModal({ task, departments, onClose, onSave }: {
                     <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                         placeholder="Açıklama (isteğe bağlı)..." rows={3} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-cyan-500 resize-none" />
 
+                    {/* Quick status buttons */}
+                    {task && (
+                        <div>
+                            <label className="text-[10px] text-slate-500 uppercase font-bold mb-1.5 block">Hızlı Durum</label>
+                            <div className="flex gap-1.5 flex-wrap">
+                                {STATUSES.map(s => (
+                                    <button key={s.key} type="button" onClick={() => setForm(f => ({ ...f, status: s.key }))}
+                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${form.status === s.key ? `${s.color} text-white` : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}`}>
+                                        <div className={`w-2 h-2 rounded-full ${form.status === s.key ? 'bg-white/50' : s.color}`} />
+                                        {s.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
                     <div className="grid grid-cols-2 gap-3">
                         <div>
                             <label className="text-[10px] text-slate-500 uppercase font-bold mb-1 block">Öncelik</label>
@@ -466,13 +514,15 @@ function TaskModal({ task, departments, onClose, onSave }: {
                                 {Object.entries(PRIORITIES).map(([k, v]) => <option key={k} value={k}>{v.icon} {v.label}</option>)}
                             </select>
                         </div>
-                        <div>
-                            <label className="text-[10px] text-slate-500 uppercase font-bold mb-1 block">Durum</label>
-                            <select value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))}
-                                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm">
-                                {STATUSES.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
-                            </select>
-                        </div>
+                        {!task && (
+                            <div>
+                                <label className="text-[10px] text-slate-500 uppercase font-bold mb-1 block">Durum</label>
+                                <select value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value }))}
+                                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm">
+                                    {STATUSES.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
+                                </select>
+                            </div>
+                        )}
                         <div>
                             <label className="text-[10px] text-slate-500 uppercase font-bold mb-1 block">Departman</label>
                             <select value={form.departmentId} onChange={e => setForm(f => ({ ...f, departmentId: e.target.value }))}
@@ -500,6 +550,51 @@ function TaskModal({ task, departments, onClose, onSave }: {
                                 placeholder="tag1, tag2..." className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm" />
                         </div>
                     </div>
+
+                    {/* Comments Section */}
+                    {task && (
+                        <div className="border-t border-slate-200 dark:border-slate-700 pt-4 mt-4">
+                            <h4 className="text-xs font-bold text-slate-500 uppercase flex items-center gap-1.5 mb-3">
+                                <MessageSquare size={12} /> Yorumlar {comments.length > 0 && `(${comments.length})`}
+                            </h4>
+                            <div className="flex gap-2 mb-3">
+                                <input type="text" value={newComment} onChange={e => setNewComment(e.target.value)}
+                                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addComment() } }}
+                                    placeholder="Yorum yazın..."
+                                    className="flex-1 px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-cyan-500" />
+                                <button type="button" onClick={addComment} disabled={submittingComment || !newComment.trim()}
+                                    className="px-3 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-bold disabled:opacity-50 transition-colors">
+                                    Gönder
+                                </button>
+                            </div>
+                            {loadingComments ? (
+                                <p className="text-xs text-slate-400 text-center py-2">Yükleniyor...</p>
+                            ) : comments.length > 0 ? (
+                                <div className="space-y-2 max-h-40 overflow-y-auto">
+                                    {comments.map(c => (
+                                        <div key={c.id} className="bg-slate-50 dark:bg-slate-900 rounded-lg p-3">
+                                            <div className="flex items-center justify-between mb-1">
+                                                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{c.author?.name || 'Sistem'}</span>
+                                                <span className="text-[10px] text-slate-400">{new Date(c.createdAt).toLocaleString('tr-TR')}</span>
+                                            </div>
+                                            <p className="text-sm text-slate-600 dark:text-slate-400">{c.content}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-xs text-slate-400 text-center py-2">Henüz yorum yok</p>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Task metadata */}
+                    {task && (
+                        <div className="flex items-center gap-3 text-[10px] text-slate-400 border-t border-slate-200 dark:border-slate-700 pt-3">
+                            <span>Oluşturulma: {new Date(task.createdAt).toLocaleString('tr-TR')}</span>
+                            <span>Güncelleme: {new Date(task.updatedAt).toLocaleString('tr-TR')}</span>
+                            {task.completedAt && <span className="text-emerald-500">Tamamlanma: {new Date(task.completedAt).toLocaleString('tr-TR')}</span>}
+                        </div>
+                    )}
 
                     <div className="flex gap-3 justify-end pt-2">
                         <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 text-sm font-medium">İptal</button>

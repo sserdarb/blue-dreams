@@ -51,12 +51,16 @@ export function ModuleProvider({ children }: { children: React.ReactNode }) {
             const stored = localStorage.getItem(STORAGE_KEY)
             if (stored) {
                 const parsed = JSON.parse(stored) as Partial<ModuleConfig>
-                setConfig(prev => ({
-                    ...prev,
-                    ...parsed,
-                    // Ensure all default modules exist
-                    enabledModules: parsed.enabledModules || prev.enabledModules,
-                }))
+                setConfig(prev => {
+                    // Auto-add any new default-enabled modules that weren't in stored list
+                    const stored = parsed.enabledModules || prev.enabledModules
+                    const newDefaults = MODULE_REGISTRY.filter(m => m.defaultEnabled && !stored.includes(m.id)).map(m => m.id)
+                    return {
+                        ...prev,
+                        ...parsed,
+                        enabledModules: [...stored, ...newDefaults],
+                    }
+                })
             }
         } catch { /* first use */ }
     }, [])
