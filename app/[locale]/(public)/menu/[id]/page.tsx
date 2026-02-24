@@ -83,6 +83,30 @@ const RESTAURANTS: Record<string, Restaurant> = {
             },
         ]
     },
+    '3': {
+        id: '3', name: 'Snack Bar',
+        description: 'Havuz başı atıştırmalık ve içecekler',
+        image: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/bar1.jpg',
+        categories: [
+            {
+                id: 'sb1', name: 'Atıştırmalıklar', icon: 'appetizer', order: 1,
+                items: [
+                    { id: 'sb-i1', name: 'Klasik Hamburger', description: 'Dana köfte, cheddar, marul, domates, turşu', price: 'All Inclusive', image: '', allergens: ['Gluten', 'Süt'], isVegetarian: false, isVegan: false, isGlutenFree: false, order: 1 },
+                    { id: 'sb-i2', name: 'Margarita Pizza', description: 'İnce hamur, mozzarella, domates sosu, fesleğen', price: 'All Inclusive', image: '', allergens: ['Gluten', 'Süt'], isVegetarian: true, isVegan: false, isGlutenFree: false, order: 2 },
+                    { id: 'sb-i3', name: 'Club Sandwich', description: 'Tavuk, pastırma, yumurta, marul, domates', price: 'All Inclusive', image: '', allergens: ['Gluten', 'Yumurta'], isVegetarian: false, isVegan: false, isGlutenFree: false, order: 3 },
+                    { id: 'sb-i4', name: 'Patates Kızartması', description: 'Çıtır patates, ketçap ve mayo ile', price: 'All Inclusive', image: '', allergens: [], isVegetarian: true, isVegan: true, isGlutenFree: true, order: 4 },
+                ]
+            },
+            {
+                id: 'sb2', name: 'İçecekler', icon: 'drink', order: 2,
+                items: [
+                    { id: 'sb-i5', name: 'Taze Limonata', description: 'Ev yapımı nane limonata', price: 'All Inclusive', image: '', allergens: [], isVegetarian: true, isVegan: true, isGlutenFree: true, order: 1 },
+                    { id: 'sb-i6', name: 'Smoothie Bowl', description: 'Muz, çilek, yaban mersini, granola', price: 'All Inclusive', image: '', allergens: ['Gluten'], isVegetarian: true, isVegan: true, isGlutenFree: false, order: 2 },
+                    { id: 'sb-i7', name: 'Mojito (Alkolsüz)', description: 'Lime, nane, soda', price: 'All Inclusive', image: '', allergens: [], isVegetarian: true, isVegan: true, isGlutenFree: true, order: 3 },
+                ]
+            },
+        ]
+    },
 }
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
@@ -99,10 +123,23 @@ const CATEGORY_COLORS: Record<string, string> = {
     'drink': 'from-amber-500/20 to-amber-600/5',
 }
 
+// Slug → ID mapping (matches what admin generates)
+const SLUG_TO_ID: Record<string, string> = {
+    'ana-restoran': '1',
+    'a-la-carte-restoran': '2',
+    'snack-bar': '3',
+    'aqua-restaurant': '1',
+    'blue-a-la-carte': '2',
+    '1': '1',
+    '2': '2',
+    '3': '3',
+}
+
 // ─── Component ─────────────────────────────────────────────────
 export default function PublicMenuPage() {
     const params = useParams()
-    const restaurantId = (params?.id as string) || '1'
+    const rawId = (params?.id as string) || '1'
+    const restaurantId = SLUG_TO_ID[rawId] || rawId
     const restaurant = RESTAURANTS[restaurantId] || RESTAURANTS['1']
 
     const [searchTerm, setSearchTerm] = useState('')
