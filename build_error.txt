@@ -1,0 +1,30 @@
+> temp_app@0.1.0 build
+> prisma generate && next build
+
+Prisma schema loaded from prisma/schema.prisma
+
+✔ Generated Prisma Client (v5.22.0) to ./node_modules/@prisma/client in 295ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Want to turn off tips and other hints? https://pris.ly/tip-4-nohints
+
+ ⚠ Found lockfile missing swc dependencies, patching...
+   ▲ Next.js 15.1.0
+
+   Creating an optimized production build ...
+ ⚠ Lockfile was successfully patched, please run "npm install" to ensure @next/swc dependencies are downloaded
+Failed to compile.
+
+./node_modules/recharts/es6/util/ReactUtils.js
+Module not found: Can't resolve 'react-is'
+
+https://nextjs.org/docs/messages/module-not-found
+
+Import trace for requested module:
+./node_modules/recharts/es6/cartesian/Area.js
+__barrel_optimize__?names=Area,AreaChart,CartesianGrid,Cell,Legend,Pie,PieChart,ResponsiveContainer,Tooltip,XAxis,YAxis!=!./node_modules/recharts/es6/index.js
+./app/[locale]/admin/analytics/page.tsx
+
+
+> Build failed because of webpack errors

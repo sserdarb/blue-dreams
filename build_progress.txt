@@ -1,0 +1,40 @@
+Prisma schema loaded from prisma/schema.prisma
+
+✔ Generated Prisma Client (v5.22.0) to ./node_modules/@prisma/client in 276ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Want real-time updates to your database without manual polling? Discover how with Pulse: https://pris.ly/tip-0-pulse
+
+   ▲ Next.js 15.1.0
+
+   Creating an optimized production build ...
+Failed to compile.
+
+./app/[locale]/admin/bigdata/BigDataClient.tsx
+Module not found: Can't resolve '@/components/admin/ModuleOffline'
+
+https://nextjs.org/docs/messages/module-not-found
+
+./app/[locale]/admin/extras/ExtrasClient.tsx
+Module not found: Can't resolve '@/components/admin/ModuleOffline'
+
+https://nextjs.org/docs/messages/module-not-found
+
+./app/[locale]/admin/purchasing/PurchasingClient.tsx
+Module not found: Can't resolve '@/components/admin/ModuleOffline'
+
+https://nextjs.org/docs/messages/module-not-found
+
+./app/[locale]/admin/reports/FinanceReportsClient.tsx
+Module not found: Can't resolve '@/lib/utils/price-mode'
+
+https://nextjs.org/docs/messages/module-not-found
+
+./app/[locale]/admin/reports/ManagementReportsClient.tsx
+Module not found: Can't resolve '@/lib/utils/price-mode'
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+> Build failed because of webpack errors

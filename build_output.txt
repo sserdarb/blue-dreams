@@ -1,23 +1,65 @@
 
-> temp_app@0.1.0 build
-> next build
+added 9 packages, changed 1 package, and audited 271 packages in 4s
 
-   Ôû▓ Next.js 15.1.0
-   - Environments: .env.local
+42 packages are looking for funding
+  run `npm fund` for details
 
-   Creating an optimized production build ...
- Ô£ô Compiled successfully
-   Linting and checking validity of types ...
- Ô¿» ESLint: Cannot find module 'C:\Users\sserd\OneDrive\Belgeler\Antigravity\blue-dreams-fix\node_modules\eslint-config-next\core-web-vitals' imported from C:\Users\sserd\OneDrive\Belgeler\Antigravity\blue-dreams-fix\eslint.config.mjs Did you mean to import "eslint-config-next/core-web-vitals.js"?
-Failed to compile.
+6 vulnerabilities (5 high, 1 critical)
 
-./app/[locale]/(public)/layout.tsx:22:21
-Type error: Property 'title' does not exist on type '{ children: { id: string; isActive: boolean; createdAt: Date; updatedAt: Date; locale: string; order: number; label: string; url: string; target: string; parentId: string | null; }[]; } & { ...; }'.
+To address issues that do not require attention, run:
+  npm audit fix
 
-  20 |     // Map to Navbar expected format
-  21 |     const menuItems = dbMenuItems.map(item => ({
-> 22 |         label: item.title,
-     |                     ^
-  23 |         url: item.url,
-  24 |         // target: item.target 
-  25 |     }))
+To address all issues possible, run:
+  npm audit fix --force
+
+Some issues need review, and may require choosing
+a different dependency.
+
+Run `npm audit` for details.
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "postgres", schema "public" at "aco8occkkskwgcsgckoo8gos:5432"
+
+The database is already in sync with the Prisma schema.
+
+Running generate... (Use --skip-generate to skip the generators)
+[2K[1A[2K[GRunning generate... - Prisma Client
+[2K[1A[2K[G✔ Generated Prisma Client (v5.22.0) to ./node_modules/@prisma/client in 265ms
+
+┌─────────────────────────────────────────────────────────┐
+│  Update available 5.22.0 -> 7.4.1                       │
+│                                                         │
+│  This is a major update - please follow the guide at    │
+│  https://pris.ly/d/major-version-upgrade                │
+│                                                         │
+│  Run the following to update                            │
+│    npm i --save-dev prisma@latest                       │
+│    npm i @prisma/client@latest                          │
+└─────────────────────────────────────────────────────────┘
+Prisma schema loaded from prisma/schema.prisma
+
+✔ Generated Prisma Client (v5.22.0) to ./node_modules/@prisma/client in 266ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Easily identify and fix slow SQL queries in your app. Optimize helps you enhance your visibility: https://pris.ly/--optimize
+
+
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/app/scripts/migrate_home_content.ts' imported from /app/
+    at finalizeResolution (node:internal/modules/esm/resolve:283:11)
+    at moduleResolve (node:internal/modules/esm/resolve:952:10)
+    at defaultResolve (node:internal/modules/esm/resolve:1188:11)
+    at nextResolve (node:internal/modules/esm/hooks:864:28)
+    at resolveBase (file:///app/node_modules/tsx/dist/esm/index.mjs?1771852847291:2:3744)
+    at resolveDirectory (file:///app/node_modules/tsx/dist/esm/index.mjs?1771852847291:2:4243)
+    at resolveTsPaths (file:///app/node_modules/tsx/dist/esm/index.mjs?1771852847291:2:4984)
+    at resolve (file:///app/node_modules/tsx/dist/esm/index.mjs?1771852847291:2:5361)
+    at nextResolve (node:internal/modules/esm/hooks:864:28)
+    at Hooks.resolve (node:internal/modules/esm/hooks:306:30) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///app/scripts/migrate_home_content.ts'
+}
+
+Node.js v20.20.0

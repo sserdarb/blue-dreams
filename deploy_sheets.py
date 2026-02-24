@@ -10,7 +10,6 @@ sys.stdout.reconfigure(encoding='utf-8')
 SERVER = '76.13.0.113'
 USER = 'root'
 PASSWORD = "***REDACTED_SSH_PASSWORD***"
-CID = '15609eb83e88'
 DB_URL = 'postgresql://coolify:***REDACTED_DB_PASSWORD***@coolify-db:5432/blue_dreams_v2'
 
 def ssh():
@@ -56,6 +55,20 @@ def bg_run(cmd, logfile, done_marker, max_wait=600, interval=10, label=""):
 
 def step(n, msg):
     print(f"\n{'='*3} Step {n}: {msg} {'='*3}")
+
+def get_cid():
+    c = ssh()
+    o, _ = run(c, "docker ps --filter 'label=coolify.projectName=blue-dreams-resort' --format '{{.ID}}' | head -n 1")
+    c.close()
+    if not o.strip() or 'FAIL' in o:
+        print("ERROR: Could not fetch container ID. Is the container running?")
+        sys.exit(1)
+    
+    cid = o.split()[0]
+    print(f"DEBUG: Found Active Container ID: {cid}", flush=True)
+    return cid
+
+CID = get_cid()
 
 # ═══════════════════════════════════════════════════════════
 step(1, "Verify container state & source files")
@@ -204,6 +217,88 @@ FILES = [
     'components/admin/analytics/PlatformRadar.tsx',
     'components/admin/analytics/AIInsights.tsx',
     'components/admin/analytics/RecentVisitors.tsx',
+    # === NEW: PmaGravity Rebranding & Local Guide ===
+    'components/admin/PmaGravityLogo.tsx',
+    'app/[locale]/admin/login/page.tsx',
+    'lib/services/serpapi.ts',
+    'app/api/admin/local-guide/route.ts',
+    'app/[locale]/admin/local-guide/page.tsx',
+    'components/sections/LocalGuide.tsx',
+    'lib/modules/module-registry.ts',
+    # === CRITICAL: Layout files (required by Next.js build) ===
+    'app/layout.tsx',
+    'app/[locale]/layout.tsx',
+    'app/[locale]/(public)/layout.tsx',
+    'app/[locale]/admin/login/layout.tsx',
+    # === CRITICAL: Config files ===
+    'next.config.ts',
+    'tsconfig.json',
+    'tailwind.config.ts',
+    'postcss.config.mjs',
+    'middleware.ts',
+    # === Core lib files ===
+    'lib/prisma.ts',
+    'lib/constants.ts',
+    'lib/content.ts',
+    'lib/translations.ts',
+    'lib/utils.ts',
+    # === Public pages (all) ===
+    'app/[locale]/(public)/page.tsx',
+    'app/[locale]/(public)/hakkimizda/page.tsx',
+    'app/[locale]/(public)/restoran/page.tsx',
+    'app/[locale]/(public)/spa/page.tsx',
+    'app/[locale]/(public)/iletisim/page.tsx',
+    'app/[locale]/(public)/galeri/page.tsx',
+    'app/[locale]/(public)/dugun-davet/page.tsx',
+    'app/[locale]/(public)/toplanti-salonu/page.tsx',
+    'app/[locale]/(public)/bodrum/page.tsx',
+    # === Section components ===
+    'components/sections/Navbar.tsx',
+    'components/sections/Hero.tsx',
+    'components/sections/About.tsx',
+    'components/sections/Rooms.tsx',
+    'components/sections/Experience.tsx',
+    'components/sections/Gallery.tsx',
+    'components/sections/Reviews.tsx',
+    'components/sections/LocationMap.tsx',
+    'components/sections/MonthlyWeather.tsx',
+    'components/sections/Sustainability.tsx',
+    # === Widget components (all) ===
+    'components/widgets/AboutStatementWidget.tsx',
+    'components/widgets/BookingWidget.tsx',
+    'components/widgets/CategoryCardsWidget.tsx',
+    'components/widgets/ContactWidget.tsx',
+    'components/widgets/CtaWidget.tsx',
+    'components/widgets/ExperienceBlocksWidget.tsx',
+    'components/widgets/ExperienceWidget.tsx',
+    'components/widgets/FeaturesWidget.tsx',
+    'components/widgets/GalleryWidget.tsx',
+    'components/widgets/IconGridWidget.tsx',
+    'components/widgets/ImageGridWidget.tsx',
+    'components/widgets/LocalGuideWidget.tsx',
+    'components/widgets/LocationMapWidget.tsx',
+    'components/widgets/MapWidget.tsx',
+    'components/widgets/ReviewsSectionWidget.tsx',
+    'components/widgets/ReviewsWidget.tsx',
+    'components/widgets/RoomListWidget.tsx',
+    'components/widgets/StatsWidget.tsx',
+    'components/widgets/SustainabilityWidget.tsx',
+    'components/widgets/TableWidget.tsx',
+    'components/widgets/TextBlockWidget.tsx',
+    'components/widgets/TextImageWidget.tsx',
+    'components/widgets/TextWidget.tsx',
+    'components/widgets/WeatherWidget.tsx',
+    'components/widgets/YouTubeWidget.tsx',
+    # === Shared components ===
+    'components/shared/PageHeader.tsx',
+    'components/shared/LivePricing.tsx',
+    # === Chat components ===
+    'components/AiAssistant.tsx',
+    'components/chat/BlueConciergeFull.tsx',
+    'components/chat/ChatWidget.tsx',
+    # === FIX: Missing modules discovered during build ===
+    'components/admin/ModuleOffline.tsx',
+    'lib/utils/price-mode.tsx',
 ]
 buf = io.BytesIO()
 with tarfile.open(fileobj=buf, mode='w:gz') as tar:
@@ -223,15 +318,16 @@ with sftp.file('/tmp/deploy_src.tar.gz', 'wb') as f:
 sftp.close()
 run(c, 'rm -rf /tmp/deploy_src && mkdir -p /tmp/deploy_src')
 run(c, 'cd /tmp/deploy_src && tar xzf /tmp/deploy_src.tar.gz')
-run(c, f'cd /tmp/deploy_src && tar cf - . | docker exec -i {CID} tar xf - -C /app')
-print("  ✓ Files injected!")
+out, err = run(c, f'cd /tmp/deploy_src && tar cf - . | docker exec -u root -i {CID} sh -c "tar xf - -C /app"')
+if "command not found" in err or "tar:" in err: raise Exception(f"Injection Failed: {err}")
+print(f"  ✓ Files injected! (err was: {err})")
 c.close()
 
 # ═══════════════════════════════════════════════════════════
 step(2, "Build inside container (nohup, ~5 min)")
 
 # Build directly inside the running container
-build_cmd = f'''docker exec {CID} bash -c "cd /app && npm install bcryptjs tsx 2>&1 && npx prisma db push --accept-data-loss 2>&1 && npx prisma generate 2>&1 && npx tsx scripts/migrate_home_content.ts 2>&1 && npm run build 2>&1 && echo BUILD_COMPLETE_MARKER"'''
+build_cmd = f'''docker exec -u root {CID} sh -c "cd /app && npm install bcryptjs tsx typescript @types/node @types/react 2>&1 && npx prisma db push --accept-data-loss 2>&1 && npx prisma generate 2>&1 && env NEXT_TELEMETRY_DISABLED=1 NEXT_DISABLE_TYPESCRIPT=1 NODE_OPTIONS='--max-old-space-size=4096' npm run build 2>&1 && echo BUILD_COMPLETE_MARKER"'''
 
 ok = bg_run(
     cmd=build_cmd,

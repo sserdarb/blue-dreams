@@ -49,7 +49,7 @@ try:
       -H "X-GitHub-Event: push" \\
       -H "X-Hub-Signature-256: {signature}" \\
       -d '{json_payload}' \\
-      http://127.0.0.1:8000/webhooks/source/github/events"""
+      http://127.0.0.1:8080/webhooks/source/github/events"""
       
     stdin, stdout, stderr = c.exec_command(cmd)
     print("STDOUT:", stdout.read().decode())
