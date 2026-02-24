@@ -45,3 +45,11 @@ next-env.d.ts
 # SQLite
 *.db
 *.db-journal
+
+# Deploy/helper scripts (contain credentials)
+*.py
+!scripts/events-scraper/main.py
+
+# Log/output files
+*.txt
+container_pkg.json
