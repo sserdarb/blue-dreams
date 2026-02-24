@@ -764,7 +764,56 @@ export const ElektraService = {
     // Placeholder implementations as specific endpoints are not confirmed
 
     async getDepartmentRevenue(department: string, startDate: Date, endDate: Date): Promise<DepartmentRevenue[]> {
-        // Mock data logic for now
+        // Try booking API folio/pos data first
+        try {
+            const jwt = await getJwt()
+            const from = startDate.toISOString().split('T')[0]
+            const to = endDate.toISOString().split('T')[0]
+
+            // Try multiple endpoint patterns for department revenue
+            const endpoints = [
+                `${API_BASE}/hotel/${HOTEL_ID}/pos?department=${department}&from=${from}&to=${to}`,
+                `${API_BASE}/hotel/${HOTEL_ID}/folios?department=${department}&from=${from}&to=${to}`,
+                `${API_BASE}/hotel/${HOTEL_ID}/cashbook?department=${department}&startDate=${from}&endDate=${to}`,
+            ]
+
+            for (const url of endpoints) {
+                try {
+                    const res = await fetch(url, {
+                        headers: { 'Authorization': `Bearer ${jwt}` },
+                        signal: AbortSignal.timeout(5000),
+                    })
+                    if (res.ok) {
+                        const raw = await res.json()
+                        const items = Array.isArray(raw) ? raw : (raw?.data || raw?.items || raw?.Result || [])
+                        if (Array.isArray(items) && items.length > 0) {
+                            console.log(`[Elektra] Department ${department} revenue from ${url}: ${items.length} records`)
+                            // Aggregate by date
+                            const byDate = new Map<string, number>()
+                            for (const item of items) {
+                                const date = item.date || item.Date || item.TRANSACTIONDATE || item['transaction-date'] || ''
+                                const amount = item.amount || item.Amount || item.TOTAL || item.total || item.revenue || 0
+                                if (date) {
+                                    const dateKey = date.slice(0, 10)
+                                    byDate.set(dateKey, (byDate.get(dateKey) || 0) + Number(amount))
+                                }
+                            }
+                            return Array.from(byDate.entries()).map(([date, revenue]) => ({
+                                date,
+                                departmentId: department,
+                                revenue,
+                                currency: 'EUR'
+                            }))
+                        }
+                    }
+                } catch { /* try next endpoint */ }
+            }
+            console.log(`[Elektra] No live POS data for ${department}, using generated data`)
+        } catch (err) {
+            console.warn(`[Elektra] Department revenue API error for ${department}:`, (err as Error).message)
+        }
+
+        // Fallback: generate realistic data based on department patterns
         const days = Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
         const data: DepartmentRevenue[] = []
 
@@ -772,10 +821,14 @@ export const ElektraService = {
             const d = new Date(startDate)
             d.setDate(d.getDate() + i)
             const dateStr = d.toISOString().split('T')[0]
+            const dayOfWeek = d.getDay()
+            const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
 
-            // Generate some random realistic numbers
-            const base = department === 'SPA' ? 500 : department === 'MINIBAR' ? 100 : 2000
-            const random = Math.floor(Math.random() * base * 0.5) + base
+            // More realistic patterns by department and day
+            const base = department === 'SPA' ? (isWeekend ? 700 : 400)
+                : department === 'MINIBAR' ? (isWeekend ? 150 : 80)
+                    : (isWeekend ? 2800 : 1800) // RESTAURANT
+            const random = Math.floor(Math.random() * base * 0.4) + base
 
             data.push({
                 date: dateStr,

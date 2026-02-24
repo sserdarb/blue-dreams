@@ -225,6 +225,7 @@ export const AccountingService = {
     },
 
     async getAccountingReceipts(fromDate?: string, toDate?: string): Promise<{ receipts: AccountingReceipt[]; source: 'live' | 'demo' }> {
+        // Attempt 1: ERP API (SP function)
         try {
             const params: Record<string, unknown> = {}
             if (fromDate) params.STARTDATE = fromDate
@@ -252,10 +253,70 @@ export const AccountingService = {
                     return { receipts, source: 'live' }
                 }
             }
-            console.log('[Accounting] Receipts: no data, using demo')
+            console.log('[Accounting] Receipts: no data from ERP, trying booking API...')
         } catch (err) {
-            console.warn('[Accounting] Receipts error:', (err as Error).message)
+            console.warn('[Accounting] Receipts ERP error:', (err as Error).message)
         }
+
+        // Attempt 2: Booking API folio endpoint (alternative source)
+        try {
+            const bookingApiBase = 'https://bookingapi.elektraweb.com'
+            const hotelId = 33264
+            const userCode = process.env.ELEKTRA_USER_CODE || 'asis'
+            const password = process.env.ELEKTRA_PASSWORD || ''
+
+            if (password) {
+                const loginRes = await fetch(`${bookingApiBase}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 'hotel-id': hotelId, 'usercode': userCode, 'password': password }),
+                    signal: AbortSignal.timeout(5000),
+                })
+                if (loginRes.ok) {
+                    const loginData = await loginRes.json()
+                    const jwt = loginData?.jwt
+                    if (jwt) {
+                        const from = fromDate || new Date(Date.now() - 90 * 86400000).toISOString().split('T')[0]
+                        const to = toDate || new Date().toISOString().split('T')[0]
+
+                        // Try folio/cashbook endpoints
+                        for (const ep of ['folios', 'cashbook', 'receipts']) {
+                            try {
+                                const res = await fetch(`${bookingApiBase}/hotel/${hotelId}/${ep}?from=${from}&to=${to}`, {
+                                    headers: { 'Authorization': `Bearer ${jwt}` },
+                                    signal: AbortSignal.timeout(5000),
+                                })
+                                if (res.ok) {
+                                    const raw = await res.json()
+                                    const items = Array.isArray(raw) ? raw : (raw?.data || raw?.items || [])
+                                    if (Array.isArray(items) && items.length > 0) {
+                                        console.log(`[Accounting] ${ep} returned ${items.length} items via booking API`)
+                                        const receipts: AccountingReceipt[] = items.map((r: any, idx: number) => ({
+                                            id: String(r.id || r.Id || r.ID || idx + 1),
+                                            date: (r.date || r.Date || r.DATE || r['transaction-date'] || '').slice(0, 10),
+                                            receiptNo: r.receiptNo || r.folioNo || r['folio-no'] || r.id || '',
+                                            type: r.type || r.Type || r.description || '',
+                                            description: r.description || r.Description || r.explanation || '',
+                                            debit: r.debit ?? r.Debit ?? r.amount ?? 0,
+                                            credit: r.credit ?? r.Credit ?? 0,
+                                            balance: r.balance ?? r.Balance ?? 0,
+                                            currency: r.currency || r.Currency || 'TRY',
+                                            accountCode: r.accountCode || r.departmentId || '',
+                                            accountName: r.accountName || r.department || '',
+                                        }))
+                                        return { receipts, source: 'live' }
+                                    }
+                                }
+                            } catch { /* try next */ }
+                        }
+                    }
+                }
+            }
+            console.log('[Accounting] Booking API: no receipt data available')
+        } catch (err) {
+            console.warn('[Accounting] Booking API fallback error:', (err as Error).message)
+        }
+
         return { receipts: generateDemoReceipts(), source: 'demo' }
     },
 
