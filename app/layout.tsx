@@ -79,6 +79,12 @@ export default function RootLayout({
     <html lang="tr">
       <head>
         <AnalyticsScripts />
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#0891b2" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="BD PMS" />
+        <link rel="apple-touch-icon" href="/icon-192.png" />
       </head>
       <body
         className={`${poppins.variable} ${playfair.variable} antialiased font-sans`}

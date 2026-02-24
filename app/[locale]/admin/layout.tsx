@@ -7,6 +7,7 @@ export const dynamic = 'force-dynamic'
 
 import { ThemeProvider } from '@/components/admin/ThemeProvider'
 import { ModuleProvider } from '@/lib/modules/module-context'
+import NotificationBell from '@/components/admin/NotificationBell'
 
 export default async function AdminLayout({
   children,
@@ -36,12 +37,30 @@ export default async function AdminLayout({
 
           {/* Main Content */}
           <main className="transition-all duration-300 md:ml-64 pt-16 md:pt-0">
+            {/* Top Bar with Notifications */}
+            <div className="hidden md:flex items-center justify-end px-8 py-3 border-b border-slate-100 dark:border-slate-800">
+              <NotificationBell />
+            </div>
             <div className="p-4 md:p-8">
               {children}
             </div>
           </main>
         </div>
+
+        {/* PWA Service Worker Registration */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js').catch(function() {});
+                });
+              }
+            `,
+          }}
+        />
       </ModuleProvider>
     </ThemeProvider>
   )
 }
+
