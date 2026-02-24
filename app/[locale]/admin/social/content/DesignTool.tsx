@@ -164,23 +164,39 @@ export default function DesignTool() {
         const tpl = TEMPLATES.find(t => t.id === templateId)
         if (!tpl) return
 
-        // Reset canvas size if needed (e.g. story vs post)
-        // Here we assume most are square/portrait, let's auto-fit
-        // setCanvasWidth(1080); setCanvasHeight(1080);
+        const newLayers: Layer[] = []
+        for (const l of tpl.layers) {
+            let layer: any = {
+                ...l,
+                id: genId(),
+                visible: true,
+                locked: isCorporateMode && (l.data?.text?.includes('Blue Dreams') || l.type === 'shape' && l.data?.fill === '#005f73'),
+                opacity: l.opacity || 100,
+                x: l.x || 0,
+                y: l.y || 0,
+                width: l.width || 100,
+                height: l.height || 100,
+            }
 
-        const newLayers = tpl.layers.map(l => ({
-            ...l,
-            id: genId(),
-            visible: true,
-            // If corporate mode is on, lock "fixed" layers (conceptually)
-            locked: isCorporateMode && (l.data?.text?.includes('Blue Dreams') || l.type === 'shape' && l.data?.fill === '#005f73'),
-            // Re-hydrate any missing props
-            opacity: l.opacity || 100,
-            x: l.x || 0,
-            y: l.y || 0,
-            width: l.width || 100,
-            height: l.height || 100,
-        })) as Layer[]
+            // Convert placeholder shapes to actual images if needed
+            if (layer.type === 'shape' && (layer.name === 'Image Placeholder' || layer.name === 'Room Image')) {
+                layer.type = 'image'
+                const src = layer.name === 'Room Image'
+                    ? 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=1080&q=80' // Luxury Room
+                    : 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=1080&q=80' // Food
+
+                layer.data = { ...layer.data, src }
+
+                // Load the image asynchronously
+                const img = new Image()
+                img.crossOrigin = "anonymous"
+                img.onload = () => {
+                    setLayers(prev => prev.map(pl => pl.id === layer.id ? { ...pl, data: { ...pl.data, img } } : pl))
+                }
+                img.src = src
+            }
+            newLayers.push(layer as Layer)
+        }
 
         setLayers(newLayers)
         setActiveLayerId(newLayers[newLayers.length - 1]?.id)
@@ -735,22 +751,35 @@ export default function DesignTool() {
                     {/* TEMPLATES PANEL */}
                     {activePanel === 'templates' && (
                         <div className="flex-1 overflow-y-auto p-3 grid grid-cols-2 gap-3 content-start">
-                            {TEMPLATES.map(tpl => (
-                                <button
-                                    key={tpl.id}
-                                    onClick={() => loadTemplate(tpl.id)}
-                                    className="group relative aspect-square bg-slate-100 rounded-lg overflow-hidden border border-slate-200 hover:border-cyan-500 hover:shadow-md transition-all text-left"
-                                >
-                                    {/* Placeholder Preview */}
-                                    <div className="absolute inset-0 flex items-center justify-center bg-slate-50">
-                                        <LayoutTemplate className="text-slate-300" size={32} />
-                                    </div>
-                                    <div className="absolute inset-x-0 bottom-0 bg-white/90 p-2 border-t border-slate-100">
-                                        <div className="text-[10px] font-bold text-slate-800 truncate">{tpl.name}</div>
-                                        <div className="text-[9px] text-slate-500">{tpl.category}</div>
-                                    </div>
-                                </button>
-                            ))}
+                            {TEMPLATES.map(tpl => {
+                                // Default background image per category to fix overlapping blank templates issue
+                                const bgMap: Record<string, string> = {
+                                    'Sales': 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=300&q=80',
+                                    'Events': 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?auto=format&fit=crop&w=300&q=80',
+                                    'F&B': 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=300&q=80',
+                                    'Rooms': 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=300&q=80',
+                                    'Reviews': 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=300&q=80'
+                                }
+                                const bgImg = tpl.preview || bgMap[tpl.category] || bgMap['Rooms']
+
+                                return (
+                                    <button
+                                        key={tpl.id}
+                                        onClick={() => loadTemplate(tpl.id)}
+                                        className="group relative aspect-square bg-slate-100 rounded-lg overflow-hidden border border-slate-200 hover:border-cyan-500 hover:shadow-md transition-all text-left"
+                                    >
+                                        {/* Placeholder Preview */}
+                                        <div className="absolute inset-0 flex items-center justify-center bg-slate-50 bg-cover bg-center" style={{ backgroundImage: `url(${bgImg})` }}>
+                                            <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors"></div>
+                                            <LayoutTemplate className="text-white/50 relative z-10" size={32} />
+                                        </div>
+                                        <div className="absolute inset-x-0 bottom-0 bg-white/95 p-2 border-t border-slate-100 backdrop-blur-sm">
+                                            <div className="text-[10px] font-bold text-slate-800 truncate">{tpl.name}</div>
+                                            <div className="text-[9px] text-slate-500">{tpl.category}</div>
+                                        </div>
+                                    </button>
+                                )
+                            })}
                         </div>
                     )}
 

@@ -167,8 +167,20 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
         const totalRoomNights = res.reduce((s, r) => s + r.nights * r.roomCount, 0)
         const totalRevenue = res.reduce((s, r) => s + convert(r.totalPrice, r.currency), 0)
         const resCount = res.length
+
+        // Advanced Yield Metrics
+        const assumedTotalRooms = 300 // Varsayılan oda kapasitesi
+        const start = new Date(dateRange.start)
+        const end = new Date(dateRange.end)
+        const daysInPeriod = Math.max(1, Math.ceil((end.getTime() - start.getTime()) / (1000 * 3600 * 24)))
+        const totalAvailableRoomNights = assumedTotalRooms * daysInPeriod
+
         const adr = totalRoomNights > 0 ? totalRevenue / totalRoomNights : 0
+        const revpar = totalAvailableRoomNights > 0 ? totalRevenue / totalAvailableRoomNights : 0
+        const occupancy = totalAvailableRoomNights > 0 ? (totalRoomNights / totalAvailableRoomNights) * 100 : 0
+        const alos = resCount > 0 ? totalRoomNights / resCount : 0
         const avgBookingValue = resCount > 0 ? totalRevenue / resCount : 0
+
         // ADB: average daily board — revenue per reservation per night
         const totalNightsOnly = res.reduce((s, r) => s + r.nights, 0)
         const adb = totalNightsOnly > 0 ? totalRevenue / totalNightsOnly : 0
@@ -177,9 +189,16 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
         const prevRevenue = filteredPrevReservations.reduce((s, r) => s + convert(r.totalPrice, r.currency), 0)
         const prevRN = filteredPrevReservations.reduce((s, r) => s + r.nights * r.roomCount, 0)
         const prevAdr = prevRN > 0 ? prevRevenue / prevRN : 0
+        const prevRevpar = totalAvailableRoomNights > 0 ? prevRevenue / totalAvailableRoomNights : 0
+        const prevOccupancy = totalAvailableRoomNights > 0 ? (prevRN / totalAvailableRoomNights) * 100 : 0
+        const prevAlos = filteredPrevReservations.length > 0 ? prevRN / filteredPrevReservations.length : 0
 
-        return { totalRoomNights, totalRevenue, resCount, adr, avgBookingValue, adb, prevRevenue, prevRN, prevAdr }
-    }, [filteredReservations, filteredPrevReservations, currency]) // eslint-disable-line react-hooks/exhaustive-deps
+        return {
+            totalRoomNights, totalRevenue, resCount, adr, avgBookingValue, adb,
+            revpar, occupancy, alos,
+            prevRevenue, prevRN, prevAdr, prevRevpar, prevOccupancy, prevAlos
+        }
+    }, [filteredReservations, filteredPrevReservations, currency, dateRange]) // eslint-disable-line react-hooks/exhaustive-deps
 
     // Channel breakdown
     const channelData = useMemo(() => {
@@ -504,20 +523,23 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
                     {/* KPI Cards */}
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                         {[
-                            { label: 'Rezervasyon', value: fmt(stats.resCount), sub: `${currentYear}`, icon: Calendar },
-                            { label: 'Room Night', value: fmt(stats.totalRoomNights), sub: `Toplam`, icon: BedDouble },
                             { label: 'Gelir', value: fmtC(stats.totalRevenue), sub: diffPct(stats.totalRevenue, stats.prevRevenue), icon: DollarSign },
+                            { label: 'RevPAR', value: fmtC(stats.revpar), sub: diffPct(stats.revpar, stats.prevRevpar), icon: TrendingUp },
                             { label: 'ADR', value: fmtC(stats.adr), sub: diffPct(stats.adr, stats.prevAdr), icon: TrendingUp },
-                            { label: 'ADB', value: fmtC(stats.adb), sub: 'Gece Başına', icon: BedDouble },
-                            { label: 'Ort. Rez.', value: fmtC(stats.avgBookingValue), sub: 'Rez. Başına', icon: BarChart3 },
+                            { label: 'Doluluk (Occ)', value: `${stats.occupancy.toFixed(1)}%`, sub: diffPct(stats.occupancy, stats.prevOccupancy), icon: BarChart3 },
+                            { label: 'Room Night', value: fmt(stats.totalRoomNights), sub: diffPct(stats.totalRoomNights, stats.prevRN), icon: BedDouble },
+                            { label: 'ALOS', value: stats.alos.toFixed(1), sub: diffPct(stats.alos, stats.prevAlos), icon: Calendar },
+                            { label: 'Rezervasyon', value: fmt(stats.resCount), sub: `${currentYear}`, icon: Calendar },
+                            { label: 'Ort. Rez. (ABV)', value: fmtC(stats.avgBookingValue), sub: 'Rez. Başına Gelir', icon: DollarSign },
+                            { label: 'ADB', value: fmtC(stats.adb), sub: 'Gece Başına Misafir', icon: BedDouble },
                         ].map((kpi, i) => (
                             <div key={i} className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
                                 <div className="flex items-center gap-2 mb-2">
                                     <kpi.icon size={16} className="text-emerald-600" />
-                                    <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">{kpi.label}</span>
+                                    <span className="text-xs text-gray-500 dark:text-gray-400 font-medium truncate" title={kpi.label}>{kpi.label}</span>
                                 </div>
-                                <p className="text-xl font-black text-gray-900 dark:text-white">{kpi.value}</p>
-                                <p className={`text-xs mt-1 ${kpi.sub?.startsWith('+') ? 'text-green-600' : kpi.sub?.startsWith('-') ? 'text-red-500' : 'text-gray-400'}`}>
+                                <p className="text-lg md:text-xl font-black text-gray-900 dark:text-white truncate">{kpi.value}</p>
+                                <p className={`text-[10px] md:text-xs mt-1 truncate ${kpi.sub?.startsWith('+') ? 'text-emerald-600' : kpi.sub?.startsWith('-') ? 'text-red-500' : 'text-gray-400'}`}>
                                     {kpi.sub}
                                 </p>
                             </div>
