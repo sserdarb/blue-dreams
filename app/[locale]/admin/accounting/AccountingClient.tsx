@@ -175,7 +175,7 @@ export default function AccountingClient({ data, error }: Props) {
                         {/* Stock by Group Pie */}
                         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
                             <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Stok Dağılımı (Değer)</h3>
-                            <div className="h-64">
+                            <div className="h-64 min-h-[256px]">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <PieChart>
                                         <Pie data={stockByGroup} dataKey="value" nameKey="group" cx="50%" cy="50%" outerRadius={90} label={({ name, percent }: any) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false}>
@@ -190,7 +190,7 @@ export default function AccountingClient({ data, error }: Props) {
                         {/* Monthly Debit/Credit */}
                         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
                             <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Aylık Borç / Alacak</h3>
-                            <div className="h-64">
+                            <div className="h-64 min-h-[256px]">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart data={monthlyReceipts}>
                                         <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
@@ -210,7 +210,7 @@ export default function AccountingClient({ data, error }: Props) {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
                             <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Fiş Tipi Dağılımı</h3>
-                            <div className="h-64">
+                            <div className="h-64 min-h-[256px]">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <PieChart>
                                         <Pie data={receiptByType} dataKey="count" nameKey="type" cx="50%" cy="50%" outerRadius={90} label={({ name, percent }: any) => `${String(name).slice(0, 12)} ${(percent * 100).toFixed(0)}%`} labelLine={false}>
@@ -224,7 +224,7 @@ export default function AccountingClient({ data, error }: Props) {
 
                         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
                             <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">30 Günlük Doluluk Tahmini</h3>
-                            <div className="h-64">
+                            <div className="h-64 min-h-[256px]">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <AreaChart data={forecast}>
                                         <CartesianGrid strokeDasharray="3 3" opacity={0.3} />

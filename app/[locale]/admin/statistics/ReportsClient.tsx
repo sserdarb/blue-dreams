@@ -3752,7 +3752,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
                             >{p.label}</button>
                         ))}
                         {/* Date Basis Toggle */}
-                        <div className="flex bg-slate-100 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden ml-2">
+                        <div className="flex bg-slate-100 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden ml-0 sm:ml-2">
                             <button
                                 onClick={() => setDateBasis('sale')}
                                 className={`px-3 py-1.5 text-xs font-bold transition-all flex items-center gap-1 ${dateBasis === 'sale' ? 'bg-cyan-600 text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
@@ -3768,12 +3768,12 @@ export default function ReportsClient({ reservations, comparisonReservations = [
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                         {/* Date Picker */}
-                        <div className="flex items-center bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-1">
-                            <input type="date" value={startDate} onChange={e => { setStartDate(e.target.value); setActivePreset('') }} className="bg-transparent text-sm font-medium px-2 py-1 outline-none text-slate-900 dark:text-white" />
+                        <div className="flex items-center bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-1 min-w-0">
+                            <input type="date" value={startDate} onChange={e => { setStartDate(e.target.value); setActivePreset('') }} className="bg-transparent text-xs sm:text-sm font-medium px-1.5 sm:px-2 py-1 outline-none text-slate-900 dark:text-white w-[110px] sm:w-auto" />
                             <span className="text-slate-400 dark:text-slate-600">—</span>
-                            <input type="date" value={endDate} onChange={e => { setEndDate(e.target.value); setActivePreset('') }} className="bg-transparent text-sm font-medium px-2 py-1 outline-none text-slate-900 dark:text-white" />
+                            <input type="date" value={endDate} onChange={e => { setEndDate(e.target.value); setActivePreset('') }} className="bg-transparent text-xs sm:text-sm font-medium px-1.5 sm:px-2 py-1 outline-none text-slate-900 dark:text-white w-[110px] sm:w-auto" />
                         </div>
 
                         {/* Gross/Net Toggle */}
@@ -3799,8 +3799,9 @@ export default function ReportsClient({ reservations, comparisonReservations = [
                         >
                             <Sparkles size={16} className={autoAiProgress ? 'animate-pulse' : ''} />
                             {autoAiProgress
-                                ? `${autoAiProgress.current}/${autoAiProgress.total} ${t.aiInterpretingProgress}`
-                                : `🤖 ${t.aiInterpretAll}`}
+                                ? `${autoAiProgress.current}/${autoAiProgress.total}`
+                                : <span className="hidden sm:inline">🤖 {t.aiInterpretAll}</span>}
+                            <span className="sm:hidden">🤖 AI</span>
                         </button>
 
                         <button onClick={handlePdfExport} disabled={pdfExporting} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50" title="PDF Export">
@@ -3817,8 +3818,8 @@ export default function ReportsClient({ reservations, comparisonReservations = [
                             Yenile
                         </button>
                         {lastUpdated && (
-                            <span className="text-xs text-slate-500 whitespace-nowrap" suppressHydrationWarning title={new Date(lastUpdated).toLocaleString('tr-TR')}>
-                                Son: {new Date(lastUpdated).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
+                            <span className="text-xs text-slate-500 whitespace-nowrap hidden sm:inline" suppressHydrationWarning title={lastUpdated}>
+                                Son: {lastUpdated.slice(11, 16)}
                             </span>
                         )}
                     </div>
