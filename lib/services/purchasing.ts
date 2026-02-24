@@ -371,7 +371,7 @@ function generateMonthlyPerformance(): PurchasePerformance {
 export const ERP_API_BASE = 'https://4001.hoteladvisor.net'
 
 // Tenant 33264: Blue Dreams Resort — Stok, Satın Alma, Muhasebe
-export const ERP_API_KEY = 'erpapi#33264$3f0bf0d889c1723648966a7e8c26447f9d2bde5a8ca747fa46536c765f7482945125e976d750ece41c32f839c4febb7f33cda567c1145ff3789a4905833320b4'
+export const ERP_API_KEY = process.env.ELEKTRA_ERP_API_KEY || 'erpapi#33264$3f0bf0d889c1723648966a7e8c26447f9d2bde5a8ca747fa46536c765f7482945125e976d750ece41c32f839c4febb7f33cda567c1145ff3789a4905833320b4'
 // Aliases used by finance.ts and hr.ts
 export const ERP_API_KEY_STOCK = ERP_API_KEY
 export const ERP_API_KEY_FRONT = ERP_API_KEY

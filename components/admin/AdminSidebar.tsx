@@ -1,7 +1,8 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import {
     LayoutDashboard,
     FileText,
@@ -48,9 +49,17 @@ interface AdminSidebarProps {
 
 export default function AdminSidebar({ locale, t }: AdminSidebarProps) {
     const [isOpen, setIsOpen] = useState(false)
+    const [clickedId, setClickedId] = useState<string | null>(null)
     const { theme, toggleTheme } = useTheme()
     const { config } = useModules()
     const { enabledModules } = config
+    const pathname = usePathname()
+
+    const handleClick = useCallback((id: string) => {
+        setClickedId(id)
+        setIsOpen(false)
+        setTimeout(() => setClickedId(null), 300)
+    }, [])
 
     if (!t) return null
 
@@ -183,16 +192,37 @@ export default function AdminSidebar({ locale, t }: AdminSidebarProps) {
                                 </p>
                                 {visibleItems.map((item) => {
                                     const Icon = item.icon || PieChart
+                                    const itemPath = `/${locale}/admin${item.href}`
+                                    const isActive = item.href === ''
+                                        ? pathname === `/${locale}/admin` || pathname === `/${locale}/admin/`
+                                        : pathname?.startsWith(itemPath)
+                                    const isClicked = clickedId === item.id
                                     return (
                                         <Link
                                             key={item.id}
                                             data-nav-id={item.id}
-                                            href={`/${locale}/admin${item.href}`}
-                                            onClick={() => setIsOpen(false)}
-                                            className="flex items-center gap-3 px-4 py-3 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white transition-all group"
+                                            href={itemPath}
+                                            onClick={() => handleClick(item.id)}
+                                            className={`relative flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group overflow-hidden
+                                                ${isActive
+                                                    ? 'bg-cyan-50 dark:bg-cyan-900/20 text-cyan-700 dark:text-cyan-300 border-l-3 border-cyan-500 shadow-sm'
+                                                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'
+                                                }
+                                                ${isClicked ? 'scale-[0.97] opacity-80' : 'scale-100'}
+                                            `}
+                                            style={{ transition: 'transform 150ms ease, opacity 150ms ease, background-color 200ms ease' }}
                                         >
-                                            <Icon size={18} className="text-slate-400 dark:text-slate-500 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition-colors" />
-                                            <span className="font-medium text-sm">{item.label}</span>
+                                            {isClicked && (
+                                                <span className="absolute inset-0 bg-cyan-400/20 dark:bg-cyan-400/10 animate-ping rounded-lg" style={{ animationDuration: '300ms', animationIterationCount: 1 }} />
+                                            )}
+                                            <Icon size={18} className={`transition-all duration-200 ${isActive
+                                                ? 'text-cyan-600 dark:text-cyan-400 scale-110'
+                                                : 'text-slate-400 dark:text-slate-500 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 group-hover:scale-110'
+                                                }`} />
+                                            <span className={`font-medium text-sm ${isActive ? 'font-semibold' : ''}`}>{item.label}</span>
+                                            {isActive && (
+                                                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
+                                            )}
                                         </Link>
                                     )
                                 })}
