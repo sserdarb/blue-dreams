@@ -1,13 +1,14 @@
 // AI Yield Analysis — Gemini-powered pricing evaluation
 import { NextResponse } from 'next/server'
 import { GoogleGenAI } from "@google/genai"
-import { GEMINI_API_KEY } from '@/lib/ai-config'
+import { getGeminiApiKey, GEMINI_MODEL } from '@/lib/ai-config'
 import { ScraperService } from '@/lib/services/scraper'
 
 export async function POST(request: Request) {
     try {
         const payload = await request.json()
-        const apiKey = process.env.GEMINI_API_KEY || GEMINI_API_KEY
+        const { key: apiKey, source } = await getGeminiApiKey()
+        console.log(`[Yield AI] Using API key from ${source}`)
 
         if (!apiKey) {
             return NextResponse.json({ error: 'API key not configured' }, { status: 500 })
@@ -68,7 +69,7 @@ export async function POST(request: Request) {
 
         const ai = new GoogleGenAI({ apiKey })
         const response = await ai.models.generateContent({
-            model: 'gemini-2.0-flash',
+            model: GEMINI_MODEL,
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
             config: {
                 temperature: 0.4, // More analytical/precise

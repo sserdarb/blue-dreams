@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { GEMINI_API_KEY } from '@/lib/ai-config'
+import { getGeminiApiKey, GEMINI_REST_MODEL } from '@/lib/ai-config'
 
 const BRAND_CONTEXT = `
 Blue Dreams Resort & Spa — Torba Bay, Bodrum, Turkey
@@ -35,7 +35,8 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
         }
 
-        const apiKey = process.env.GEMINI_API_KEY || GEMINI_API_KEY
+        const { key: apiKey, source } = await getGeminiApiKey()
+        console.log(`[Social Content] Using API key from ${source}`)
         if (!apiKey) {
             return NextResponse.json({ error: 'API key not configured' }, { status: 500 })
         }
@@ -68,7 +69,7 @@ Generate a social media post with:
 Return ONLY valid JSON: {"title":"...","body":"...","hashtags":["#tag1","#tag2"]}`
 
             const res = await fetch(
-                `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+                `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_REST_MODEL}:generateContent?key=${apiKey}`,
                 {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },

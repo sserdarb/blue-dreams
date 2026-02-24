@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { GoogleGenAI, Type, FunctionDeclaration } from "@google/genai"
 import { prisma } from '@/lib/prisma'
 import { fetchSheetData, extractSheetId } from '@/lib/services/google-sheets'
-import { GEMINI_API_KEY } from '@/lib/ai-config'
+import { getGeminiApiKey, GEMINI_MODEL } from '@/lib/ai-config'
 import { ElektraService } from '@/lib/services/elektra'
 
 // Tool Definitions
@@ -106,18 +106,9 @@ export async function POST(request: Request) {
         // 1. Fetch Dynamic Content from DB
         const context = await getContextData(locale)
 
-        // 3-tier API key fallback: DB settings → env var → hardcoded
-        const envKey = process.env.GEMINI_API_KEY
-        const dbKey = context.settings?.apiKey
-        const apiKey = dbKey || envKey || GEMINI_API_KEY
-
-        if (dbKey) {
-            console.log('[AI Chat] Using API key from DB aiSettings')
-        } else if (envKey) {
-            console.log('[AI Chat] Using API key from env var')
-        } else if (GEMINI_API_KEY) {
-            console.log('[AI Chat] Using hardcoded fallback API key from ai-config.ts')
-        }
+        // 3-tier API key: DB settings → env var → empty
+        const { key: apiKey, source: keySource } = await getGeminiApiKey(locale)
+        console.log(`[AI Chat] Using API key from ${keySource}`)
 
         if (!apiKey) {
             console.error('[AI Chat] No API key configured in any source')
@@ -189,7 +180,7 @@ export async function POST(request: Request) {
         // 3. Generate Content
         console.log('[AI Chat] Calling Gemini with', chatHistory.length, 'messages')
         const response = await ai.models.generateContent({
-            model: 'gemini-2.0-flash',
+            model: GEMINI_MODEL,
             contents: chatHistory,
             config: {
                 systemInstruction: systemPrompt,

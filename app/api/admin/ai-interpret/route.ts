@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { GEMINI_API_KEY } from '@/lib/ai-config'
+import { getGeminiApiKey, GEMINI_REST_MODEL } from '@/lib/ai-config'
 
 export async function POST(request: Request) {
     try {
@@ -34,13 +34,14 @@ Kurallar:
 - Emoji kullanma
 - Raporun amacına uygun yorum yap`
 
-        const apiKey = process.env.GEMINI_API_KEY || GEMINI_API_KEY
+        const { key: apiKey, source } = await getGeminiApiKey(locale as string)
+        console.log(`[AI Interpret] Using API key from ${source}`)
         if (!apiKey) {
             return NextResponse.json({ error: 'AI API key not configured' }, { status: 500 })
         }
 
         const res = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+            `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_REST_MODEL}:generateContent?key=${apiKey}`,
             {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
