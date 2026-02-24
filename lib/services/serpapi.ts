@@ -2,7 +2,7 @@
 // Fetches Bodrum attractions from Google Maps and events from TripAdvisor
 // via SerpAPI. Results are cached for 24 hours.
 
-const SERPAPI_KEY = 'f519aa9be117d03fd6c6fc7a97ac554b66d94ce7c2946e1c1321fb59f4f3740d'
+const SERPAPI_KEY = process.env.SERPAPI_KEY || ''
 const SERPAPI_BASE = 'https://serpapi.com/search.json'
 
 // ─── Types ──────────────────────────────────────────────────────
