@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useRef } from 'react'
+import { useState, useMemo, useRef, useCallback } from 'react'
 import { exportPdf } from '@/lib/export-pdf'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { Calendar, Search, ChevronLeft, ChevronRight, Eye, Check, X, Clock, Download, RefreshCw, ArrowRightLeft, TrendingUp, BarChart3, Filter, FileDown } from 'lucide-react'
@@ -87,7 +87,19 @@ export default function ReservationsClient({ initialData, comparisonData, compar
     const [priceRange, setPriceRange] = useState({ min: '', max: '' })
     const [page, setPage] = useState(1)
     const [selectedRes, setSelectedRes] = useState<ReservationRow | null>(null)
+    const [sortBy, setSortBy] = useState<keyof ReservationRow | ''>('')
+    const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc')
     const limit = 50
+
+    const toggleSort = useCallback((col: keyof ReservationRow) => {
+        if (sortBy === col) {
+            setSortDir(d => d === 'asc' ? 'desc' : 'asc')
+        } else {
+            setSortBy(col)
+            setSortDir('asc')
+        }
+        setPage(1)
+    }, [sortBy])
 
     // Apply Booking Date Filter (Server Reload)
     const applyBookingFilter = () => {
@@ -297,9 +309,24 @@ export default function ReservationsClient({ initialData, comparisonData, compar
 
     const fmt = (n: number) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency, maximumFractionDigits: 0 }).format(n)
 
-    // Pagination
-    const totalPages = Math.ceil(filtered.length / limit)
-    const paginated = filtered.slice((page - 1) * limit, page * limit)
+    // Pagination (after sort)
+    const sorted = useMemo(() => {
+        if (!sortBy) return filtered
+        return [...filtered].sort((a, b) => {
+            const av = a[sortBy]
+            const bv = b[sortBy]
+            if (av == null && bv == null) return 0
+            if (av == null) return 1
+            if (bv == null) return -1
+            let cmp = 0
+            if (typeof av === 'number' && typeof bv === 'number') cmp = av - bv
+            else cmp = String(av).localeCompare(String(bv), 'tr')
+            return sortDir === 'asc' ? cmp : -cmp
+        })
+    }, [filtered, sortBy, sortDir])
+
+    const totalPages = Math.ceil(sorted.length / limit)
+    const paginated = sorted.slice((page - 1) * limit, page * limit)
 
     // ... CSV Export ...
     const exportCSV = () => {
@@ -670,14 +697,30 @@ export default function ReservationsClient({ initialData, comparisonData, compar
                             <thead>
                                 <tr className="border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-indigo-950/20">
                                     <th className="text-left py-3 px-4 text-slate-500 text-xs font-medium uppercase tracking-widest">Voucher</th>
-                                    <th className="text-left py-3 px-4 text-slate-500 text-xs font-medium uppercase tracking-widest">Misafir / Uyruk</th>
-                                    <th className="text-left py-3 px-4 text-slate-500 text-xs font-medium uppercase tracking-widest">Acente / Kanal</th>
-                                    <th className="text-left py-3 px-4 text-slate-500 text-xs font-medium uppercase tracking-widest">Oda</th>
-                                    <th className="text-left py-3 px-4 text-slate-500 text-xs font-medium uppercase tracking-widest">Giriş</th>
-                                    <th className="text-left py-3 px-4 text-slate-500 text-xs font-medium uppercase tracking-widest">Çıkış</th>
-                                    <th className="text-right py-3 px-4 text-slate-500 text-xs font-medium uppercase tracking-widest">Tutar</th>
-                                    <th className="text-left py-3 px-4 text-slate-500 text-xs font-medium uppercase tracking-widest">Rezervasyon</th>
-                                    <th className="text-left py-3 px-4 text-slate-500 text-xs font-medium uppercase tracking-widest">Durum</th>
+                                    <th onClick={() => toggleSort('guestName')} className="text-left py-3 px-4 text-slate-500 text-xs font-medium uppercase tracking-widest cursor-pointer hover:text-cyan-600 select-none">
+                                        Misafir / Uyruk {sortBy === 'guestName' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
+                                    </th>
+                                    <th onClick={() => toggleSort('agency')} className="text-left py-3 px-4 text-slate-500 text-xs font-medium uppercase tracking-widest cursor-pointer hover:text-cyan-600 select-none">
+                                        Acente / Kanal {sortBy === 'agency' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
+                                    </th>
+                                    <th onClick={() => toggleSort('roomType')} className="text-left py-3 px-4 text-slate-500 text-xs font-medium uppercase tracking-widest cursor-pointer hover:text-cyan-600 select-none">
+                                        Oda {sortBy === 'roomType' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
+                                    </th>
+                                    <th onClick={() => toggleSort('checkIn')} className="text-left py-3 px-4 text-slate-500 text-xs font-medium uppercase tracking-widest cursor-pointer hover:text-cyan-600 select-none">
+                                        Giriş {sortBy === 'checkIn' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
+                                    </th>
+                                    <th onClick={() => toggleSort('checkOut')} className="text-left py-3 px-4 text-slate-500 text-xs font-medium uppercase tracking-widest cursor-pointer hover:text-cyan-600 select-none">
+                                        Çıkış {sortBy === 'checkOut' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
+                                    </th>
+                                    <th onClick={() => toggleSort('totalPrice')} className="text-right py-3 px-4 text-slate-500 text-xs font-medium uppercase tracking-widest cursor-pointer hover:text-cyan-600 select-none">
+                                        Tutar {sortBy === 'totalPrice' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
+                                    </th>
+                                    <th onClick={() => toggleSort('saleDate')} className="text-left py-3 px-4 text-slate-500 text-xs font-medium uppercase tracking-widest cursor-pointer hover:text-cyan-600 select-none">
+                                        Rezervasyon {sortBy === 'saleDate' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
+                                    </th>
+                                    <th onClick={() => toggleSort('status')} className="text-left py-3 px-4 text-slate-500 text-xs font-medium uppercase tracking-widest cursor-pointer hover:text-cyan-600 select-none">
+                                        Durum {sortBy === 'status' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
+                                    </th>
                                     <th className="text-right py-3 px-4 text-slate-500 text-xs font-medium uppercase tracking-widest"></th>
                                 </tr>
                             </thead>
@@ -742,7 +785,7 @@ export default function ReservationsClient({ initialData, comparisonData, compar
             {totalPages > 1 && (
                 <div className="flex items-center justify-between">
                     <p className="text-slate-500 text-sm">
-                        {filtered.length.toLocaleString('tr-TR')} kayıttan {((page - 1) * limit) + 1}–{Math.min(page * limit, filtered.length)} gösteriliyor
+                        {sorted.length.toLocaleString('tr-TR')} kayıttan {((page - 1) * limit) + 1}–{Math.min(page * limit, sorted.length)} gösteriliyor
                     </p>
                     <div className="flex items-center gap-2">
                         <button
