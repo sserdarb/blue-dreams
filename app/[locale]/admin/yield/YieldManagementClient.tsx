@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import { getAdminTranslations, type AdminLocale } from '@/lib/admin-translations'
 import { exportPdf } from '@/lib/export-pdf'
+import Link from 'next/link'
 
 // ─── Types ────────────────────────────────────────────────────
 
@@ -539,8 +540,8 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
                         if (!isHigh && !isLow) return null
                         return (
                             <div className={`flex items-center gap-3 p-4 rounded-xl border ${isHigh
-                                    ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-500/30'
-                                    : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-500/30'
+                                ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-500/30'
+                                : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-500/30'
                                 }`}>
                                 <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${isHigh ? 'bg-emerald-500' : 'bg-red-500'
                                     }`}>
@@ -919,6 +920,27 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
                     </div>
                 </div>
             )}
+
+            {/* Cross-Module Navigation */}
+            <div className="bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl p-5">
+                <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mb-3">İlgili Modüller</p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {[
+                        { href: `/${locale}/admin/reports`, label: 'Yönetim Raporları', desc: 'S26, Pace, milliyet', icon: BarChart3 },
+                        { href: `/${locale}/admin/reservations`, label: 'Rezervasyonlar', desc: 'Detaylı liste ve filtre', icon: Calendar },
+                        { href: `/${locale}/admin/extras`, label: 'Ekstra Satışlar', desc: 'SPA, minibar, restoran', icon: DollarSign },
+                        { href: `/${locale}/admin/purchasing`, label: 'Satın Alma', desc: 'Stok, tedarik, trendler', icon: Database },
+                    ].map((m, i) => (
+                        <Link key={i} href={m.href} className="flex items-center gap-3 p-3 bg-white dark:bg-white/5 rounded-lg border border-gray-200 dark:border-white/10 hover:border-emerald-400 dark:hover:border-emerald-500 transition-colors group">
+                            <m.icon size={18} className="text-gray-400 group-hover:text-emerald-500 transition-colors flex-shrink-0" />
+                            <div className="min-w-0">
+                                <p className="text-sm font-medium text-gray-700 dark:text-gray-200 group-hover:text-emerald-700 dark:group-hover:text-white truncate">{m.label}</p>
+                                <p className="text-[10px] text-gray-400 truncate">{m.desc}</p>
+                            </div>
+                        </Link>
+                    ))}
+                </div>
+            </div>
         </div>
     )
 }

@@ -5,6 +5,7 @@ import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, R
 import { Download, FileText, Calendar, TrendingUp, TrendingDown, Building2, Printer, Mail, BellRing, Sparkles, ArrowUpDown, Filter, Sun, Snowflake, CloudSun, LayoutDashboard, Share2, Users, Globe, Store, CalendarCheck } from 'lucide-react'
 import { type PriceMode, displayPrice, PriceModeToggle } from '@/lib/utils/price-mode'
 import { useParams } from 'next/navigation'
+import Link from 'next/link'
 import { getAdminTranslations, type AdminLocale, type AdminTranslations } from '@/lib/admin-translations'
 
 // ─── Types ────────────────────────────────────────────────────
@@ -1531,6 +1532,27 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
                         </select>
                         <button className="bg-blue-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-blue-500 transition-colors">Etkinleştir</button>
                     </div>
+                </div>
+            </div>
+
+            {/* Cross-Module Navigation */}
+            <div className="bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5">
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mb-3">İlgili Modüller</p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {[
+                        { href: `/${locale}/admin/yield`, label: 'Yield Management', desc: 'ADR analizi, fiyat matrisi', icon: TrendingUp },
+                        { href: `/${locale}/admin/reservations`, label: 'Rezervasyonlar', desc: 'Detaylı liste ve filtre', icon: Calendar },
+                        { href: `/${locale}/admin/extras`, label: 'Ekstra Satışlar', desc: 'SPA, minibar, restoran', icon: Store },
+                        { href: `/${locale}/admin/statistics`, label: 'İstatistikler', desc: 'Kanal & performans', icon: LayoutDashboard },
+                    ].map((m, i) => (
+                        <Link key={i} href={m.href} className="flex items-center gap-3 p-3 bg-white dark:bg-white/5 rounded-lg border border-slate-200 dark:border-white/10 hover:border-cyan-400 dark:hover:border-cyan-500 transition-colors group">
+                            <m.icon size={18} className="text-slate-400 group-hover:text-cyan-500 transition-colors flex-shrink-0" />
+                            <div className="min-w-0">
+                                <p className="text-sm font-medium text-slate-700 dark:text-slate-200 group-hover:text-cyan-700 dark:group-hover:text-white truncate">{m.label}</p>
+                                <p className="text-[10px] text-slate-400 truncate">{m.desc}</p>
+                            </div>
+                        </Link>
+                    ))}
                 </div>
             </div>
         </div>

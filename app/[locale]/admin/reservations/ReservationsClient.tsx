@@ -917,6 +917,27 @@ export default function ReservationsClient({ initialData, comparisonData, compar
                     </div>
                 </div>
             )}
+
+            {/* Cross-Module Navigation */}
+            <div className="bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5">
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mb-3">İlgili Modüller</p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {[
+                        { href: pathname.replace('/reservations', '/yield'), label: 'Yield Management', desc: 'ADR analizi, fiyat matrisi', icon: TrendingUp },
+                        { href: pathname.replace('/reservations', '/reports'), label: 'Yönetim Raporları', desc: 'S26, Pace, milliyet', icon: BarChart3 },
+                        { href: pathname.replace('/reservations', '/extras'), label: 'Ekstra Satışlar', desc: 'SPA, minibar, restoran', icon: ArrowRightLeft },
+                        { href: pathname.replace('/reservations', '/statistics'), label: 'İstatistikler', desc: 'Kanal & performans', icon: BarChart3 },
+                    ].map((m, i) => (
+                        <a key={i} href={m.href} className="flex items-center gap-3 p-3 bg-white dark:bg-white/5 rounded-lg border border-slate-200 dark:border-white/10 hover:border-cyan-400 dark:hover:border-cyan-500 transition-colors group">
+                            <m.icon size={18} className="text-slate-400 group-hover:text-cyan-500 transition-colors flex-shrink-0" />
+                            <div className="min-w-0">
+                                <p className="text-sm font-medium text-slate-700 dark:text-slate-200 group-hover:text-cyan-700 dark:group-hover:text-white truncate">{m.label}</p>
+                                <p className="text-[10px] text-slate-400 truncate">{m.desc}</p>
+                            </div>
+                        </a>
+                    ))}
+                </div>
+            </div>
         </div>
     )
 }

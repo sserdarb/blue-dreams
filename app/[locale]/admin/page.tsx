@@ -205,40 +205,34 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
 
           {/* Quick Links + Mini Stats */}
           <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 shadow-sm">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6">Hızlı Erişim</h2>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6">Modül Hub</h2>
 
-            <div className="space-y-3">
-              <Link
-                href={`/${locale}/admin/pages/new`}
-                className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-white/5 rounded-lg hover:bg-cyan-50 dark:hover:bg-cyan-500/20 transition-colors group border border-slate-100 dark:border-transparent"
-              >
-                <FileText size={20} className="text-slate-500 group-hover:text-cyan-600 dark:group-hover:text-cyan-400" />
-                <span className="text-slate-600 dark:text-slate-300 group-hover:text-cyan-700 dark:group-hover:text-white">Yeni Sayfa Oluştur</span>
-              </Link>
-
-              <Link
-                href={`/${locale}/admin/files`}
-                className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-white/5 rounded-lg hover:bg-cyan-50 dark:hover:bg-cyan-500/20 transition-colors group border border-slate-100 dark:border-transparent"
-              >
-                <Users size={20} className="text-slate-500 group-hover:text-cyan-600 dark:group-hover:text-cyan-400" />
-                <span className="text-slate-600 dark:text-slate-300 group-hover:text-cyan-700 dark:group-hover:text-white">Medya Yükle</span>
-              </Link>
-
-              <Link
-                href={`/${locale}/admin/settings`}
-                className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-white/5 rounded-lg hover:bg-cyan-50 dark:hover:bg-cyan-500/20 transition-colors group border border-slate-100 dark:border-transparent"
-              >
-                <TrendingUp size={20} className="text-slate-500 group-hover:text-cyan-600 dark:group-hover:text-cyan-400" />
-                <span className="text-slate-600 dark:text-slate-300 group-hover:text-cyan-700 dark:group-hover:text-white">Site Ayarları</span>
-              </Link>
-
-              <Link
-                href={`/${locale}/admin/analytics`}
-                className="flex items-center gap-3 p-4 bg-slate-50 dark:bg-white/5 rounded-lg hover:bg-cyan-50 dark:hover:bg-cyan-500/20 transition-colors group border border-slate-100 dark:border-transparent"
-              >
-                <Eye size={20} className="text-slate-500 group-hover:text-cyan-600 dark:group-hover:text-cyan-400" />
-                <span className="text-slate-600 dark:text-slate-300 group-hover:text-cyan-700 dark:group-hover:text-white">Analytics Ayarları</span>
-              </Link>
+            <div className="space-y-2">
+              {[
+                { href: `/${locale}/admin/reservations`, label: 'Rezervasyonlar', desc: 'Filtre, sıralama, YoY', icon: Calendar, color: 'cyan' },
+                { href: `/${locale}/admin/yield`, label: 'Yield Management', desc: 'ADR uyarıları, fiyat matrisi', icon: TrendingUp, color: 'emerald' },
+                { href: `/${locale}/admin/reports`, label: 'Yönetim Raporları', desc: 'S26, Pace, kanal, milliyet', icon: FileText, color: 'purple' },
+                { href: `/${locale}/admin/extras`, label: 'Ekstra Satışlar', desc: 'SPA, minibar, restoran', icon: DollarSign, color: 'amber' },
+                { href: `/${locale}/admin/social`, label: 'Sosyal Medya', desc: 'İçerik üretici, takvim', icon: Eye, color: 'pink' },
+                { href: `/${locale}/admin/purchasing`, label: 'Satın Alma', desc: 'Stok, tedarik, trendler', icon: Users, color: 'orange' },
+                { href: `/${locale}/admin/social/content`, label: 'AI İçerik Üretici', desc: '4 platform × 4 dil', icon: Building2, color: 'indigo' },
+                { href: `/${locale}/admin/files`, label: 'Dosya Yöneticisi', desc: 'AI + Pexels, stok foto', icon: Eye, color: 'teal' },
+              ].map((item, i) => (
+                <Link
+                  key={i}
+                  href={item.href}
+                  className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-white/5 rounded-lg hover:bg-cyan-50 dark:hover:bg-cyan-500/20 transition-colors group border border-slate-100 dark:border-transparent"
+                >
+                  <div className={`w-8 h-8 rounded-lg bg-${item.color}-500/20 flex items-center justify-center`}>
+                    <item.icon size={16} className={`text-${item.color}-500`} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-slate-700 dark:text-slate-200 text-sm font-medium group-hover:text-cyan-700 dark:group-hover:text-white">{item.label}</p>
+                    <p className="text-slate-400 text-[10px] truncate">{item.desc}</p>
+                  </div>
+                  <ArrowRight size={14} className="text-slate-300 group-hover:text-cyan-500 flex-shrink-0" />
+                </Link>
+              ))}
             </div>
 
             {/* Mini Stats — Real data */}
