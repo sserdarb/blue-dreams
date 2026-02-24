@@ -197,6 +197,60 @@ const translations: Record<AdminLocale, AdminTranslations> = {
             budgetRealization: 'Bütçe Gerçekleşme',
             ofTarget: 'hedefin'
         },
+        // Time presets
+        presetToday: 'Bugün',
+        presetYesterday: 'Dün',
+
+        // AI buttons
+        aiInterpretAll: 'Tümünü Yorumla',
+        aiInterpreted: 'Yorumlandı',
+        aiInterpretingProgress: 'yorumlanıyor...',
+
+        // Day names
+        dayNames: ['Paz', 'Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt'],
+        monthNamesFull: ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'],
+
+        // Fallback labels
+        unknown: 'Bilinmiyor',
+        unspecified: 'Belirtilmemiş',
+        other: 'Diğer',
+
+        // Report sections
+        statisticsReports: 'İstatistik Raporları',
+        allCategories: 'Tüm Kategoriler',
+        totalRes: 'Toplam Rez.',
+        confirmed: 'Onaylı',
+        cancelled: 'İptal',
+        walkIn: 'Walk-in',
+        direct: 'Direkt',
+        tourOperator: 'Tur Operatörü',
+        onlineRes: 'Online Rez.',
+
+        // Revenue widget titles
+        upsellRevenue: 'Upsell Gelirleri',
+        ancillaryRevenue: 'Ek Hizmet Gelirleri',
+        lateCheckout: 'Geç Çıkış Geliri',
+        earlyCheckin: 'Erken Giriş Geliri',
+        spaWellness: 'Spa & Wellness',
+        laundry: 'Çamaşırhane',
+        parking: 'Otopark',
+        transferRevenue: 'Transfer',
+        meetingRoomRevenue: 'Toplantı Salonu',
+
+        // Staff roles
+        reception: 'Resepsiyon',
+        resOffice: 'Rezervasyon',
+        nightAudit: 'Gece Müdürü',
+
+        // CRM / Local Guide
+        localGuide: 'Çevre Rehberi',
+        localization: 'Lokalizasyon',
+        approve: 'Onayla',
+        reject: 'Kaldır',
+        approved: 'Onaylı',
+        pending: 'Bekleyen',
+        all: 'Tümü',
+
         widgets: {
             cancelCount: 'İptal Sayısı',
             rate: 'oran',
@@ -401,6 +455,44 @@ const translations: Record<AdminLocale, AdminTranslations> = {
             budgetRealization: 'Budget Realization',
             ofTarget: 'of target'
         },
+        presetToday: 'Today',
+        presetYesterday: 'Yesterday',
+        aiInterpretAll: 'Interpret All',
+        aiInterpreted: 'Interpreted',
+        aiInterpretingProgress: 'interpreting...',
+        dayNames: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+        monthNamesFull: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+        unknown: 'Unknown',
+        unspecified: 'Unspecified',
+        other: 'Other',
+        statisticsReports: 'Statistics Reports',
+        allCategories: 'All Categories',
+        totalRes: 'Total Res.',
+        confirmed: 'Confirmed',
+        cancelled: 'Cancelled',
+        walkIn: 'Walk-in',
+        direct: 'Direct',
+        tourOperator: 'Tour Operator',
+        onlineRes: 'Online Res.',
+        upsellRevenue: 'Upsell Revenue',
+        ancillaryRevenue: 'Ancillary Revenue',
+        lateCheckout: 'Late Checkout Revenue',
+        earlyCheckin: 'Early Check-in Revenue',
+        spaWellness: 'Spa & Wellness',
+        laundry: 'Laundry',
+        parking: 'Parking',
+        transferRevenue: 'Transfer',
+        meetingRoomRevenue: 'Meeting Room',
+        reception: 'Reception',
+        resOffice: 'Reservations',
+        nightAudit: 'Night Audit',
+        localGuide: 'Local Guide',
+        localization: 'Localization',
+        approve: 'Approve',
+        reject: 'Remove',
+        approved: 'Approved',
+        pending: 'Pending',
+        all: 'All',
         widgets: {
             cancelCount: 'Cancellations',
             rate: 'rate',
@@ -605,6 +697,44 @@ const translations: Record<AdminLocale, AdminTranslations> = {
             budgetRealization: 'Budget-Realisierung',
             ofTarget: 'vom Ziel'
         },
+        presetToday: 'Heute',
+        presetYesterday: 'Gestern',
+        aiInterpretAll: 'Alle Interpretieren',
+        aiInterpreted: 'Interpretiert',
+        aiInterpretingProgress: 'wird interpretiert...',
+        dayNames: ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'],
+        monthNamesFull: ['Januar', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'],
+        unknown: 'Unbekannt',
+        unspecified: 'Nicht angegeben',
+        other: 'Sonstige',
+        statisticsReports: 'Statistikberichte',
+        allCategories: 'Alle Kategorien',
+        totalRes: 'Gesamt Res.',
+        confirmed: 'Bestätigt',
+        cancelled: 'Storniert',
+        walkIn: 'Walk-in',
+        direct: 'Direkt',
+        tourOperator: 'Reiseveranstalter',
+        onlineRes: 'Online Res.',
+        upsellRevenue: 'Upselling-Umsatz',
+        ancillaryRevenue: 'Nebenerlöse',
+        lateCheckout: 'Spätabreise-Umsatz',
+        earlyCheckin: 'Frühanreise-Umsatz',
+        spaWellness: 'Spa & Wellness',
+        laundry: 'Wäscherei',
+        parking: 'Parkplatz',
+        transferRevenue: 'Transfer',
+        meetingRoomRevenue: 'Tagungsraum',
+        reception: 'Rezeption',
+        resOffice: 'Reservierung',
+        nightAudit: 'Nachtauditor',
+        localGuide: 'Reiseführer',
+        localization: 'Lokalisierung',
+        approve: 'Genehmigen',
+        reject: 'Entfernen',
+        approved: 'Genehmigt',
+        pending: 'Ausstehend',
+        all: 'Alle',
         widgets: {
             cancelCount: 'Stornierungen',
             rate: 'Rate',
@@ -809,6 +939,44 @@ const translations: Record<AdminLocale, AdminTranslations> = {
             budgetRealization: 'Реализация Бюджета',
             ofTarget: 'от цели'
         },
+        presetToday: 'Сегодня',
+        presetYesterday: 'Вчера',
+        aiInterpretAll: 'Интерпретировать Все',
+        aiInterpreted: 'Интерпретировано',
+        aiInterpretingProgress: 'интерпретация...',
+        dayNames: ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'],
+        monthNamesFull: ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'],
+        unknown: 'Неизвестно',
+        unspecified: 'Не указано',
+        other: 'Прочее',
+        statisticsReports: 'Статистические отчёты',
+        allCategories: 'Все категории',
+        totalRes: 'Общ. Бронь',
+        confirmed: 'Подтверждённые',
+        cancelled: 'Отменённые',
+        walkIn: 'Walk-in',
+        direct: 'Прямые',
+        tourOperator: 'Туроператор',
+        onlineRes: 'Онлайн Бронь',
+        upsellRevenue: 'Доход от Апселлов',
+        ancillaryRevenue: 'Доп. услуги',
+        lateCheckout: 'Поздний выезд',
+        earlyCheckin: 'Ранний заезд',
+        spaWellness: 'Спа и Велнес',
+        laundry: 'Прачечная',
+        parking: 'Парковка',
+        transferRevenue: 'Трансфер',
+        meetingRoomRevenue: 'Конференц-зал',
+        reception: 'Ресепшн',
+        resOffice: 'Бронирование',
+        nightAudit: 'Ночной аудитор',
+        localGuide: 'Путеводитель',
+        localization: 'Локализация',
+        approve: 'Одобрить',
+        reject: 'Удалить',
+        approved: 'Одобрено',
+        pending: 'Ожидание',
+        all: 'Все',
         widgets: {
             cancelCount: 'Отмены',
             rate: 'рейт',
@@ -1016,6 +1184,47 @@ export interface AdminTranslations {
         budgetRealization: string
         ofTarget: string
     }
+
+    // New i18n keys
+    presetToday: string
+    presetYesterday: string
+    aiInterpretAll: string
+    aiInterpreted: string
+    aiInterpretingProgress: string
+    dayNames: string[]
+    monthNamesFull: string[]
+    unknown: string
+    unspecified: string
+    other: string
+    statisticsReports: string
+    allCategories: string
+    totalRes: string
+    confirmed: string
+    cancelled: string
+    walkIn: string
+    direct: string
+    tourOperator: string
+    onlineRes: string
+    upsellRevenue: string
+    ancillaryRevenue: string
+    lateCheckout: string
+    earlyCheckin: string
+    spaWellness: string
+    laundry: string
+    parking: string
+    transferRevenue: string
+    meetingRoomRevenue: string
+    reception: string
+    resOffice: string
+    nightAudit: string
+    localGuide: string
+    localization: string
+    approve: string
+    reject: string
+    approved: string
+    pending: string
+    all: string
+
     widgets: {
         cancelCount: string
         rate: string

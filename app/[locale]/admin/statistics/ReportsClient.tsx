@@ -89,14 +89,16 @@ function getPresetDates(preset: string): { start: string; end: string } {
     }
 }
 
-const DATE_PRESETS = [
-    { key: 'today', label: 'Bugün' },
-    { key: '7d', label: 'Son 7 Gün' },
-    { key: '30d', label: 'Son 30 Gün' },
-    { key: 'month', label: 'Bu Ay' },
-    { key: 'season', label: 'Bu Sezon' },
-    { key: 'year', label: 'Bu Yıl' },
-]
+function getDatePresets(t: AdminTranslations) {
+    return [
+        { key: 'today', label: t.presetToday },
+        { key: '7d', label: t.last7Days },
+        { key: '30d', label: t.last30Days },
+        { key: 'month', label: t.thisMonth },
+        { key: 'season', label: t.thisSeason },
+        { key: 'year', label: t.thisYear },
+    ]
+}
 
 // ─── Props ───
 interface Props { reservations: Reservation[]; comparisonReservations?: Reservation[]; error: string | null; lastUpdated?: string | null; locale?: string; taxRates?: { vatAccommodation: number; taxAccommodation: number; vatFnb: number } }
@@ -104,16 +106,16 @@ interface Props { reservations: Reservation[]; comparisonReservations?: Reservat
 import ModuleOffline from '@/components/admin/ModuleOffline'
 
 export default function ReportsClient({ reservations, comparisonReservations = [], error, lastUpdated, locale: propLocale }: Props) {
-    if (error) {
-        return <ModuleOffline moduleName="Raporlar ve İstatistikler" dataSource="elektra" offlineReason={error} />
-    }
-
     const params = useParams()
     const locale = (propLocale as AdminLocale) || (params?.locale as AdminLocale) || 'tr'
     const t = getAdminTranslations(locale) as AdminTranslations
     const reportRef = useRef<HTMLDivElement>(null)
     const [refreshing, setRefreshing] = useState(false)
     const [pdfExporting, setPdfExporting] = useState(false)
+
+    if (error) {
+        return <ModuleOffline moduleName={t.statisticsReports} dataSource="elektra" offlineReason={error} />
+    }
 
     // ─── State ───
     const [currency, setCurrency] = useState<CurrencyCode>('TRY')
@@ -3669,7 +3671,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
                             className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold transition-all ${aiResults[w.id] ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400' : 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white shadow-sm hover:shadow-md hover:from-purple-600 hover:to-indigo-600'}`}
                         >
                             {aiLoading[w.id] ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
-                            {aiResults[w.id] ? '✓ Yorumlandı' : 'AI Yorumla'}
+                            {aiResults[w.id] ? `✓ ${t.aiInterpreted}` : t.aiInterpret}
                         </button>
                         <button onClick={() => toggleWidget(w.id)} className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400 transition-colors">
                             <X size={14} />
@@ -3709,7 +3711,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
         return (
             <div className="p-8 text-center text-red-400 bg-red-900/20 rounded-2xl border border-red-800/50">
                 <Activity size={48} className="mx-auto mb-4 opacity-50" />
-                <h3 className="font-bold">Veri Yüklenemedi</h3>
+                <h3 className="font-bold">{t.loadingError}</h3>
                 <p>{error}</p>
             </div>
         )
@@ -3730,7 +3732,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
                                 : 'text-slate-500 hover:text-slate-300'
                                 }`}
                         >
-                            {tab === 'all' ? 'Tümü' : (typeof (t as any)[tab] === 'string' ? (t as any)[tab] : tab)}
+                            {tab === 'all' ? t.all : (typeof (t as any)[tab] === 'string' ? (t as any)[tab] : tab)}
                         </button>
                     ))}
                 </div>
@@ -3739,7 +3741,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
                 <div className="flex flex-col md:flex-row items-center justify-between gap-3">
                     {/* Date Presets */}
                     <div className="flex gap-1 flex-wrap">
-                        {DATE_PRESETS.map(p => (
+                        {getDatePresets(t).map(p => (
                             <button
                                 key={p.key}
                                 onClick={() => applyPreset(p.key)}
@@ -3777,21 +3779,15 @@ export default function ReportsClient({ reservations, comparisonReservations = [
                         {/* Gross/Net Toggle */}
                         <PriceModeToggle mode={priceMode} onChange={setPriceMode} />
 
-                        {/* Currency Selector */}
-                        <div className="relative group">
-                            <button className="flex items-center gap-2 bg-cyan-900/30 text-cyan-400 hover:bg-cyan-900/50 px-4 py-2.5 rounded-xl font-bold transition-colors border border-cyan-800/50">
-                                <span className="w-5 h-5 rounded-full bg-cyan-800/50 flex items-center justify-center text-xs">{CURRENCY_SYMBOLS[currency]}</span>
-                                {currency}
-                            </button>
-                            <div className="absolute top-full right-0 mt-2 bg-slate-800 rounded-xl shadow-xl border border-slate-700 p-2 hidden group-hover:block z-20 min-w-[120px]">
-                                {(['TRY', 'EUR'] as CurrencyCode[]).map(c => (
-                                    <button key={c} onClick={() => setCurrency(c)}
-                                        className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 hover:bg-slate-700 ${currency === c ? 'text-cyan-400 bg-cyan-900/30' : 'text-slate-300'}`}>
-                                        <span className="w-5 h-5 rounded-full bg-slate-700 flex items-center justify-center text-xs">{CURRENCY_SYMBOLS[c]}</span>
-                                        {c}
-                                    </button>
-                                ))}
-                            </div>
+                        {/* Currency Selector — Button style */}
+                        <div className="flex bg-slate-900 rounded-xl border border-slate-700 overflow-hidden">
+                            {(['TRY', 'EUR'] as CurrencyCode[]).map(c => (
+                                <button key={c} onClick={() => setCurrency(c)}
+                                    className={`flex items-center gap-1.5 px-3 py-2 text-xs font-bold transition-all ${currency === c ? 'bg-cyan-600 text-white' : 'text-slate-400 hover:text-white hover:bg-slate-700'}`}>
+                                    <span className="w-5 h-5 rounded-full bg-slate-700/50 flex items-center justify-center text-xs">{CURRENCY_SYMBOLS[c]}</span>
+                                    {c}
+                                </button>
+                            ))}
                         </div>
 
                         {/* Auto AI Commentary */}
@@ -3799,12 +3795,12 @@ export default function ReportsClient({ reservations, comparisonReservations = [
                             onClick={autoInterpretAll}
                             disabled={!!autoAiProgress}
                             className="flex items-center gap-2 bg-violet-600 hover:bg-violet-700 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50 border border-violet-500/50"
-                            title="Tüm widgetları sırayla AI ile yorumla"
+                            title={t.aiInterpretAll}
                         >
                             <Sparkles size={16} className={autoAiProgress ? 'animate-pulse' : ''} />
                             {autoAiProgress
-                                ? `${autoAiProgress.current}/${autoAiProgress.total} yorumlanıyor...`
-                                : '🤖 Tümünü Yorumla'}
+                                ? `${autoAiProgress.current}/${autoAiProgress.total} ${t.aiInterpretingProgress}`
+                                : `🤖 ${t.aiInterpretAll}`}
                         </button>
 
                         <button onClick={handlePdfExport} disabled={pdfExporting} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2.5 rounded-xl transition-colors disabled:opacity-50" title="PDF Export">
