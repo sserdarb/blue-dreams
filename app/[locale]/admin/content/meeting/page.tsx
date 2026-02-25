@@ -49,15 +49,39 @@ export default function MeetingPage() {
         features: ''
     })
 
-    // Mock Data for now as API might not exist
+    // Fetch from real API
     useEffect(() => {
-        // In a real scenario, fetch from /api/content/meeting-rooms
-        // For now, mock it to "Activate" the panel visually
-        setHalls([
-            { id: '1', name: 'Grand Ballroom', description: 'En büyük salonumuz.', image: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/meeting1.jpg', area: '450', height: '4.5', capacityTheater: '400', capacityClass: '250', capacityBanquet: '300', capacityCocktail: '500', order: 1, features: 'Sahne, Ses Sistemi, Projeksiyon' }
-        ])
-        setLoading(false)
+        fetchHalls()
     }, [locale])
+
+    const fetchHalls = async () => {
+        setLoading(true)
+        try {
+            const res = await fetch(`/api/admin/meeting-rooms?locale=${locale}`)
+            if (res.ok) {
+                const data = await res.json()
+                // Map API fields to component fields
+                setHalls(data.map((r: any) => ({
+                    id: r.id,
+                    name: r.title,
+                    description: '',
+                    image: r.image || '',
+                    area: r.area || '',
+                    height: r.height || '',
+                    capacityTheater: r.capacity?.split('/')[0]?.trim() || '',
+                    capacityClass: r.capacity?.split('/')[1]?.trim() || '',
+                    capacityBanquet: '',
+                    capacityCocktail: '',
+                    order: r.order || 0,
+                    features: r.type || '',
+                })))
+            }
+        } catch (err) {
+            console.error('Failed to fetch meeting rooms', err)
+        } finally {
+            setLoading(false)
+        }
+    }
 
     const handleEdit = (hall: MeetingRoom) => {
         setEditingHall(hall)
@@ -88,15 +112,49 @@ export default function MeetingPage() {
         setIsModalOpen(true)
     }
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        // Mock Save
-        if (editingHall) {
-            setHalls(halls.map(h => h.id === editingHall.id ? { ...h, ...formData } : h))
-        } else {
-            setHalls([...halls, { ...formData, id: Date.now().toString() }])
+        try {
+            const capacity = [formData.capacityTheater, formData.capacityClass].filter(Boolean).join(' / ')
+            const payload = {
+                title: formData.name,
+                area: formData.area,
+                capacity,
+                height: formData.height,
+                type: formData.features || 'meeting',
+                image: formData.image,
+                locale,
+                order: formData.order,
+            }
+
+            if (editingHall) {
+                await fetch(`/api/admin/meeting-rooms/${editingHall.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                })
+            } else {
+                await fetch('/api/admin/meeting-rooms', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                })
+            }
+            setIsModalOpen(false)
+            fetchHalls()
+        } catch (err) {
+            console.error('Save failed', err)
         }
-        setIsModalOpen(false)
+    }
+
+    const handleDelete = async (id: string) => {
+        if (!confirm('Bu salonu silmek istediğinizden emin misiniz?')) return
+        try {
+            await fetch(`/api/admin/meeting-rooms/${id}`, { method: 'DELETE' })
+            fetchHalls()
+        } catch (err) {
+            console.error('Delete failed', err)
+        }
     }
 
     return (
@@ -156,6 +214,9 @@ export default function MeetingPage() {
                                             <td className="p-4 text-right">
                                                 <button onClick={() => handleEdit(hall)} className="p-2 hover:bg-slate-100 dark:hover:bg-white/10 rounded-lg text-slate-400 hover:text-cyan-600 dark:hover:text-white transition-colors">
                                                     <Edit2 size={16} />
+                                                </button>
+                                                <button onClick={() => handleDelete(hall.id)} className="p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg text-slate-400 hover:text-red-600 transition-colors ml-1">
+                                                    <Trash2 size={16} />
                                                 </button>
                                             </td>
                                         </tr>
