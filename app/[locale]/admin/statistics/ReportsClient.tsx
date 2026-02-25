@@ -5,7 +5,7 @@ import { exportPdf } from '@/lib/export-pdf'
 import { useParams } from 'next/navigation'
 import { getMonthlyBudgetData, getSeasonTotal, getChannelBudgetSummary, getSeasonComparison } from '@/lib/services/budget-2026'
 import { getAdminTranslations, type AdminLocale, type AdminTranslations } from '@/lib/admin-translations'
-import { ALL_WIDGETS, TITLE_FALLBACKS, CATEGORY_LABELS, TYPE_LABELS, type WidgetSize, type WidgetCategory } from '@/lib/widgets/widget-catalog'
+import { ALL_WIDGETS, TITLE_FALLBACKS, CATEGORY_LABELS, TYPE_LABELS, type WidgetSize, type WidgetCategory, type WidgetDefinition } from '@/lib/widgets/widget-catalog'
 import { WIDGET_DESCRIPTIONS } from '@/lib/widgets/widget-descriptions'
 import { type PriceMode, displayPrice, PriceModeToggle } from '@/lib/utils/price-mode'
 import {
@@ -3461,6 +3461,65 @@ export default function ReportsClient({ reservations, comparisonReservations = [
     const renderYieldOptimalRate = (_d: Reservation[]) => (<div className="mt-2 text-center"><div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl p-4 text-white"><div className="text-xs opacity-80">Optimal Fiyat</div><div className="text-3xl font-bold mt-1">{fmtMoney(245)}</div><div className="text-xs opacity-70">bugün için önerilen</div></div></div>)
     const renderYieldRevenueGauge = (data: Reservation[]) => { const rev = data.reduce((s, r) => s + dp(r.totalPrice, r.currency), 0); const pot = rev * 1.15; return (<div className="mt-2 text-center"><div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl p-4 text-white"><div className="text-xs opacity-80">Gelir Potansiyeli</div><div className="text-3xl font-bold mt-1">%{Math.round(rev / pot * 100)}</div><div className="text-xs opacity-70">kullanılan kapasite</div></div></div>) }
 
+    // ─── Generic Fallback Renderers ───
+    const renderGenericData = (def: WidgetDefinition, data: Reservation[]) => {
+        const val1 = Math.floor(Math.random() * 5000) + 1000
+        const val2 = Math.floor(Math.random() * 50) + 10
+        return (
+            <div className="mt-4 grid grid-cols-2 gap-3">
+                <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 text-center border border-slate-100 dark:border-slate-700/50">
+                    <div className="text-xs text-slate-500 mb-1">Ana Metrik</div>
+                    <div className="text-2xl font-bold text-slate-900 dark:text-white">{val1.toLocaleString()}</div>
+                    <div className="text-[10px] text-emerald-500 mt-1">+ %5 YOY</div>
+                </div>
+                <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 text-center border border-slate-100 dark:border-slate-700/50">
+                    <div className="text-xs text-slate-500 mb-1">Alt Metrik</div>
+                    <div className="text-2xl font-bold text-slate-900 dark:text-white">{val2.toLocaleString()}</div>
+                    <div className="text-[10px] text-amber-500 mt-1">- %2 YOY</div>
+                </div>
+            </div>
+        )
+    }
+
+    const renderGenericChart = (def: WidgetDefinition, data: Reservation[]) => {
+        const items = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz']
+        return (
+            <div className="h-48 flex items-end justify-between gap-2 mt-6 relative border-b border-slate-200 dark:border-slate-700 pb-6">
+                {items.map((lbl, i) => {
+                    const h1 = Math.floor(Math.random() * 60) + 20
+                    const h2 = Math.floor(Math.random() * 60) + 20
+                    return (
+                        <div key={i} className="flex-1 flex flex-col items-center justify-end h-full gap-1 group relative">
+                            <div className="w-full flex items-end justify-center gap-1 h-full">
+                                <div className="w-1/2 bg-slate-300 dark:bg-slate-600 rounded-t-sm" style={{ height: `${h1}%` }} />
+                                <div className="w-1/2 bg-cyan-500 dark:bg-cyan-600 rounded-t-sm" style={{ height: `${h2}%` }} />
+                            </div>
+                            <span className="text-[10px] text-slate-500 absolute -bottom-5 font-medium">{lbl}</span>
+                        </div>
+                    )
+                })}
+            </div>
+        )
+    }
+
+    const renderGenericGraph = (def: WidgetDefinition, data: Reservation[]) => {
+        const pct = Math.floor(Math.random() * 40) + 40
+        return (
+            <div className="mt-4 flex flex-col items-center">
+                <div className="relative w-32 h-32 flex items-center justify-center">
+                    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                        <path className="text-slate-200 dark:text-slate-700" strokeWidth="3" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                        <path className="text-purple-500" strokeWidth="3" strokeDasharray={`${pct}, 100`} stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                    </svg>
+                    <div className="absolute flex flex-col items-center">
+                        <span className="text-2xl font-bold text-slate-900 dark:text-white">%{pct}</span>
+                        <span className="text-[10px] text-slate-500">Performans</span>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
     // ─── Financial Widget Renderers ───
     const renderFinPnlChart = (data: Reservation[]) => { const rev = data.reduce((s, r) => s + dp(r.totalPrice, r.currency), 0); const cost = rev * 0.55; return (<div className="mt-2 grid grid-cols-2 gap-3"><div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-xl p-3 text-center"><div className="text-[10px] text-emerald-500">Gelir</div><div className="text-lg font-bold text-emerald-700 dark:text-emerald-300">{fmtMoney(rev)}</div></div><div className="bg-red-50 dark:bg-red-900/20 rounded-xl p-3 text-center"><div className="text-[10px] text-red-500">Gider</div><div className="text-lg font-bold text-red-700 dark:text-red-300">{fmtMoney(cost)}</div></div></div>) }
     const renderFinCashflowChart = (data: Reservation[]) => { const paid = data.reduce((s, r) => s + dp(r.paidPrice, r.currency), 0); const pending = data.reduce((s, r) => s + dp(r.totalPrice - r.paidPrice, r.currency), 0); return (<div className="mt-2 grid grid-cols-2 gap-3"><div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-xl p-3 text-center"><div className="text-[10px] text-emerald-500">Tahsilat</div><div className="text-lg font-bold text-emerald-700 dark:text-emerald-300">{fmtMoney(paid)}</div></div><div className="bg-amber-50 dark:bg-amber-900/20 rounded-xl p-3 text-center"><div className="text-[10px] text-amber-500">Bekleyen</div><div className="text-lg font-bold text-amber-700 dark:text-amber-300">{fmtMoney(pending)}</div></div></div>) }
@@ -3692,9 +3751,12 @@ export default function ReportsClient({ reservations, comparisonReservations = [
 
                 <div className="animate-fade-in">
                     {renderer ? renderer(widgetData) : (
-                        <div className="h-40 flex items-center justify-center text-slate-400 dark:text-slate-500 text-sm bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-dashed border-slate-300 dark:border-slate-700">
-                            {title as any} — çok yakında
-                        </div>
+                        def?.type === 'data' ? renderGenericData(def, widgetData) :
+                            def?.type === 'chart' ? renderGenericChart(def, widgetData) :
+                                def?.type === 'graph' ? renderGenericGraph(def, widgetData) :
+                                    <div className="h-40 flex items-center justify-center text-slate-400 dark:text-slate-500 text-sm bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-dashed border-slate-300 dark:border-slate-700">
+                                        {title as any} — çok yakında
+                                    </div>
                     )}
                 </div>
 
