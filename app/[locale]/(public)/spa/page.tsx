@@ -15,7 +15,7 @@ export default async function SpaPage({ params }: { params: Promise<{ locale: st
     })
 
     // Default values if empty
-    const heroImage = spa?.heroImage || "https://bluedreamsresort.com/wp-content/uploads/2023/04/bdr-spa-4.jpg"
+    const heroImage = spa?.heroImage || "https://bluedreamsresort.com/wp-content/uploads/2023/03/Club-Room-Sea-View-3.jpg"
     const whatsappNum = spa?.whatsappNumber?.replace(/[^0-9]/g, '') || "905495167803"
     const title = spa?.title || "Wellness & Spa"
     const description1 = spa?.description1 || "Bedeninizi ve ruhunuzu yenilemek için tasarlanmış özel terapilerimizle kendinizi şımartın."

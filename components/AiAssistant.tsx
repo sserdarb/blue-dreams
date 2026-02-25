@@ -745,9 +745,9 @@ const AiAssistant: React.FC<AiAssistantProps> = ({ isOpen, onClose }) => {
   const processMessage = async (newMessages: Message[]) => {
     setIsLoading(true);
     try {
-      const apiKey = process.env.API_KEY;
+      const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
       if (!apiKey) {
-        throw new Error("API Key is missing");
+        throw new Error("NEXT_PUBLIC_GEMINI_API_KEY is missing");
       }
 
       const ai = new GoogleGenAI({ apiKey });
@@ -937,10 +937,10 @@ const AiAssistant: React.FC<AiAssistantProps> = ({ isOpen, onClose }) => {
 
                   {/* Message Bubble */}
                   <div className={`relative max-w-[90%] md:max-w-[80%] p-5 md:p-6 text-base leading-relaxed shadow-xl backdrop-blur-md ${msg.role === 'user'
-                      ? 'bg-brand text-white rounded-2xl rounded-tr-sm'
-                      : msg.isFunctionCall
-                        ? 'bg-white/10 text-white/80 border border-white/20 italic rounded-2xl'
-                        : 'bg-white/95 text-gray-800 rounded-2xl rounded-tl-sm'
+                    ? 'bg-brand text-white rounded-2xl rounded-tr-sm'
+                    : msg.isFunctionCall
+                      ? 'bg-white/10 text-white/80 border border-white/20 italic rounded-2xl'
+                      : 'bg-white/95 text-gray-800 rounded-2xl rounded-tl-sm'
                     }`}>
                     {msg.text}
                   </div>
@@ -1006,8 +1006,8 @@ const AiAssistant: React.FC<AiAssistantProps> = ({ isOpen, onClose }) => {
             <button
               onClick={startListening}
               className={`p-3 rounded-full transition-all duration-300 ${isListening
-                  ? 'bg-red-500 text-white animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.5)]'
-                  : 'hover:bg-gray-100 text-gray-500 hover:text-brand'
+                ? 'bg-red-500 text-white animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.5)]'
+                : 'hover:bg-gray-100 text-gray-500 hover:text-brand'
                 }`}
               title="Sesli Komut"
             >
