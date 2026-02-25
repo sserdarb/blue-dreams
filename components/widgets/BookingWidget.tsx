@@ -101,9 +101,11 @@ export default function BookingWidget() {
     }
 
     const handleBookDirect = (roomType: string) => {
-        const baseUrl = 'https://blue-dreams.rezervasyonal.com/'
-        const params = new URLSearchParams({ arrival: checkIn, departure: checkOut, adults: guests })
-        window.open(`${baseUrl}?${params.toString()}`, '_blank')
+        // Open WhatsApp with pre-filled message for direct booking
+        const message = encodeURIComponent(
+            `Merhaba, ${roomType} için ${checkIn} - ${checkOut} tarihleri arasında ${guests} kişilik rezervasyon yapmak istiyorum.`
+        )
+        window.open(`https://wa.me/902523371111?text=${message}`, '_blank')
     }
 
     const handleAlternativeSearch = (alt: AlternativeDate) => {

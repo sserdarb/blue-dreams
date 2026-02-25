@@ -160,9 +160,7 @@ export default function Navbar({ locale = 'tr', menuItems }: { locale?: string; 
 
                         {/* Reservation Button */}
                         <a
-                            href="https://blue-dreams.rezervasyonal.com/"
-                            target="_blank"
-                            rel="noreferrer"
+                            href={`/${currentLocale}/rezervasyon`}
                             className="bg-white hover:bg-gray-100 text-dark px-6 py-2 text-[11px] font-bold tracking-[0.15em] uppercase transition-all duration-300 rounded-sm"
                         >
                             {reservationLabel}
@@ -204,9 +202,7 @@ export default function Navbar({ locale = 'tr', menuItems }: { locale?: string; 
                         </a>
 
                         <a
-                            href="https://blue-dreams.rezervasyonal.com/"
-                            target="_blank"
-                            rel="noreferrer"
+                            href={`/${currentLocale}/rezervasyon`}
                             className="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 text-[9px] font-bold tracking-widest uppercase rounded-sm border border-white/10 hidden sm:block"
                         >
                             {currentLocale === 'en' ? 'Reservation' : 'Rezervasyon'}
@@ -287,9 +283,7 @@ export default function Navbar({ locale = 'tr', menuItems }: { locale?: string; 
                         </button>
 
                         <a
-                            href="https://blue-dreams.rezervasyonal.com/"
-                            target="_blank"
-                            rel="noreferrer"
+                            href={`/${currentLocale}/rezervasyon`}
                             className="bg-brand hover:bg-brand-light text-white w-full md:w-auto md:px-8 py-4 text-sm font-bold tracking-widest uppercase rounded shadow-lg flex items-center justify-center gap-3 transition-transform hover:-translate-y-1"
                         >
                             <Calendar size={18} />

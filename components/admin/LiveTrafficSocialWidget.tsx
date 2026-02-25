@@ -1,45 +1,73 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
-import { Eye, Users, MousePointer, Activity, TrendingUp, RefreshCw } from 'lucide-react'
+import React, { useEffect, useState, useCallback } from 'react'
+import { Eye, Users, MousePointer, Activity, TrendingUp, RefreshCw, BarChart3 } from 'lucide-react'
 
 // Fetch live traffic and social data from our APIs
 export default function LiveTrafficSocialWidget() {
     const [traffic, setTraffic] = useState<any>(null)
     const [social, setSocial] = useState<any>(null)
     const [loading, setLoading] = useState(true)
+    const [source, setSource] = useState<'ga4' | 'internal' | null>(null)
 
-    useEffect(() => {
-        let isMounted = true
-        async function fetchData() {
-            setLoading(true)
+    const fetchData = useCallback(async () => {
+        setLoading(true)
+        try {
+            // Try GA4 first, fallback to internal
+            let trafficData = null
+
+            // First try GA4
             try {
-                const [trafficRes, socialRes] = await Promise.all([
-                    fetch('/api/admin/analytics/traffic'),
-                    fetch('/api/admin/analytics/social')
-                ])
-
-                if (!isMounted) return
-
-                if (trafficRes.ok) {
-                    const tData = await trafficRes.json()
-                    if (tData.success) setTraffic(tData.totals)
+                const gaRes = await fetch('/api/admin/analytics/traffic')
+                if (gaRes.ok) {
+                    const gData = await gaRes.json()
+                    if (gData.success && gData.totals) {
+                        trafficData = gData.totals
+                        setSource('ga4')
+                    }
                 }
+            } catch { /* GA4 not configured */ }
 
+            // Fallback to internal PageView data
+            if (!trafficData) {
+                try {
+                    const intRes = await fetch('/api/admin/analytics/internal')
+                    if (intRes.ok) {
+                        const iData = await intRes.json()
+                        if (iData.success) {
+                            trafficData = iData.totals
+                            setSource('internal')
+                        }
+                    }
+                } catch { /* Internal also failed */ }
+            }
+
+            if (trafficData) {
+                setTraffic(trafficData)
+            }
+
+            // Social media
+            try {
+                const socialRes = await fetch('/api/admin/analytics/social')
                 if (socialRes.ok) {
                     const sData = await socialRes.json()
                     if (sData.success) setSocial(sData.data)
                 }
-            } catch (error) {
-                console.error('Error fetching live widgets', error)
-            } finally {
-                if (isMounted) setLoading(false)
-            }
-        }
+            } catch { /* Social not configured */ }
 
-        fetchData()
-        return () => { isMounted = false }
+        } catch (error) {
+            console.error('Error fetching live widgets', error)
+        } finally {
+            setLoading(false)
+        }
     }, [])
+
+    useEffect(() => {
+        fetchData()
+        // Auto-refresh every 60 seconds
+        const interval = setInterval(fetchData, 60000)
+        return () => clearInterval(interval)
+    }, [fetchData])
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
@@ -50,41 +78,50 @@ export default function LiveTrafficSocialWidget() {
                         <Activity className="text-blue-500" size={20} />
                         <h3 className="text-lg font-bold text-slate-900 dark:text-white">Web Trafiği (Son 30 Gün)</h3>
                     </div>
-                    {loading ? <RefreshCw size={14} className="animate-spin text-slate-400" /> : (
-                        traffic ? (
-                            <span className="text-xs bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full flex items-center gap-1">
-                                <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
-                                GA4 Canlı
-                            </span>
-                        ) : (
-                            <span className="text-xs bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full">Kurulum Bekliyor</span>
-                        )
-                    )}
+                    <div className="flex items-center gap-2">
+                        {loading ? <RefreshCw size={14} className="animate-spin text-slate-400" /> : (
+                            traffic ? (
+                                <span className="text-xs bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full flex items-center gap-1">
+                                    <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                                    {source === 'ga4' ? 'GA4 Canlı' : 'Dahili Canlı'}
+                                </span>
+                            ) : (
+                                <span className="text-xs bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full">Kurulum Bekliyor</span>
+                            )
+                        )}
+                        <button onClick={fetchData} disabled={loading} className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-50">
+                            <RefreshCw size={14} className={`text-slate-400 ${loading ? 'animate-spin' : ''}`} />
+                        </button>
+                    </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                     <div className="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg">
                         <p className="text-slate-500 text-xs mb-1">Ziyaretçiler</p>
                         <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                            {loading ? '...' : (traffic?.users?.toLocaleString() || '18,492')}
+                            {loading ? '...' : (traffic?.visitors?.toLocaleString() || traffic?.users?.toLocaleString() || '—')}
                         </p>
                     </div>
                     <div className="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg">
                         <p className="text-slate-500 text-xs mb-1">Sayfa Görüntüleme</p>
                         <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                            {loading ? '...' : (traffic?.pageViews?.toLocaleString() || '45,210')}
+                            {loading ? '...' : (traffic?.pageViews?.toLocaleString() || '—')}
                         </p>
                     </div>
                     <div className="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg">
-                        <p className="text-slate-500 text-xs mb-1">Oturumlar</p>
+                        <p className="text-slate-500 text-xs mb-1">
+                            {source === 'internal' ? 'Bugün' : 'Oturumlar'}
+                        </p>
                         <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                            {loading ? '...' : (traffic?.sessions?.toLocaleString() || '22,105')}
+                            {loading ? '...' : (source === 'internal' ? (traffic?.todayViews?.toLocaleString() || '—') : (traffic?.sessions?.toLocaleString() || '—'))}
                         </p>
                     </div>
                     <div className="bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg">
-                        <p className="text-slate-500 text-xs mb-1">Ort. Bounce Rate</p>
+                        <p className="text-slate-500 text-xs mb-1">
+                            {source === 'internal' ? 'Şu An Aktif' : 'Ort. Bounce Rate'}
+                        </p>
                         <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                            %{loading ? '...' : (traffic?.averageBounceRate || '42.5')}
+                            {loading ? '...' : (source === 'internal' ? (traffic?.activeNow || '—') : `%${traffic?.averageBounceRate || '—'}`)}
                         </p>
                     </div>
                 </div>
