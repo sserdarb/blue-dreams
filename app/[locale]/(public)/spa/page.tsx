@@ -87,39 +87,76 @@ export default async function SpaPage({ params }: { params: Promise<{ locale: st
                 </div>
             </section>
 
-            {/* Services List */}
+            {/* Services List - Premium Design */}
             {services.length > 0 && (
-                <section className="py-24 px-4 bg-[#F5F5F3]">
+                <section className="py-24 px-4 bg-gradient-to-b from-[#F5F5F3] to-white">
                     <div className="max-w-7xl mx-auto">
                         <div className="text-center mb-20">
-                            <h2 className="text-3xl md:text-4xl font-serif text-gray-900 tracking-wide font-light mb-4">
-                                {locale === 'tr' ? 'Örnek Hizmetlerimiz' : 'Featured Services'}
+                            <span className="text-xs font-bold uppercase tracking-[0.3em] text-[#7A7869]">
+                                {locale === 'tr' ? 'KENDİNİZİ ŞIMARTIN' : 'TREAT YOURSELF'}
+                            </span>
+                            <h2 className="text-3xl md:text-5xl font-serif text-gray-900 tracking-wide font-light mt-3 mb-4">
+                                {locale === 'tr' ? 'Hizmetlerimiz' : 'Our Services'}
                             </h2>
-                            <div className="w-16 h-px bg-[#7A7869] mx-auto"></div>
+                            <div className="w-20 h-[2px] bg-gradient-to-r from-transparent via-[#7A7869] to-transparent mx-auto mb-6"></div>
+                            <p className="text-gray-500 max-w-xl mx-auto font-light">
+                                {locale === 'tr'
+                                    ? 'Uzman terapistlerimiz eşliğinde huzur ve yenilenme yolculuğu.'
+                                    : 'A journey of peace and rejuvenation with our expert therapists.'}
+                            </p>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-                            {services.map((service) => (
-                                <div key={service.id} className="group cursor-pointer">
-                                    <div className="relative aspect-[4/5] mb-6 overflow-hidden bg-white">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {services.map((service, index) => (
+                                <div
+                                    key={service.id}
+                                    className={`group relative bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100 hover:border-[#c5a47e]/30 hover:-translate-y-2 ${index === 0 && services.length > 2 ? 'lg:row-span-2' : ''
+                                        }`}
+                                >
+                                    {/* Image */}
+                                    <div className={`relative overflow-hidden ${index === 0 && services.length > 2 ? 'aspect-[3/4]' : 'aspect-[4/3]'
+                                        }`}>
                                         {service.image ? (
-                                            <Image
+                                            <img
                                                 src={service.image}
                                                 alt={service.title}
-                                                fill
-                                                className="object-cover transition-transform duration-1000 group-hover:scale-[1.03] group-hover:opacity-90 grayscale-[20%]"
+                                                className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                                                loading="lazy"
                                             />
                                         ) : (
-                                            <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-300">
+                                            <div className="w-full h-full flex items-center justify-center bg-[#F5F5F3] text-[#c5a47e]">
                                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" className="w-20 h-20">
                                                     <path d="M12 21C12 21 8 18 5 13C2 8 5 4 12 3C19 4 22 8 19 13C16 18 12 21 12 21Z" />
                                                 </svg>
                                             </div>
                                         )}
+                                        {/* Gradient Overlay */}
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+
+                                        {/* Title on Image */}
+                                        <div className="absolute bottom-0 left-0 right-0 p-6">
+                                            <h3 className="text-xl md:text-2xl font-serif text-white tracking-wide drop-shadow-lg">{service.title}</h3>
+                                        </div>
+
+                                        {/* Gold accent line */}
+                                        <div className="absolute bottom-0 left-0 w-0 h-[3px] bg-gradient-to-r from-[#c5a47e] to-[#d4b896] group-hover:w-full transition-all duration-700"></div>
                                     </div>
-                                    <div className="text-center px-4">
-                                        <h3 className="text-xl font-serif text-gray-900 mb-3 tracking-wide">{service.title}</h3>
+
+                                    {/* Description */}
+                                    <div className="p-6">
                                         <p className="text-sm text-gray-500 leading-relaxed font-light">{service.description}</p>
+                                        <div className="mt-4 pt-4 border-t border-gray-100">
+                                            <a
+                                                href={`https://wa.me/${whatsappNum}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="inline-flex items-center gap-2 text-sm font-medium text-[#7A7869] hover:text-[#c5a47e] transition-colors group/link"
+                                            >
+                                                <MessageCircle size={14} />
+                                                {locale === 'tr' ? 'Randevu Al' : 'Book Appointment'}
+                                                <span className="transition-transform group-hover/link:translate-x-0.5">→</span>
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
                             ))}
