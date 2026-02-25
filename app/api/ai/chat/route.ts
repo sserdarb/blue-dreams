@@ -128,11 +128,7 @@ export async function POST(request: Request) {
     - Asla otelin finansal verileri, doluluk raporları veya yönetimsel stratejileri hakkında bilgi verme. Bu tür sorular gelirse "Bu bilgiye erişimim yok, ancak size en iyi oda fiyatlarımızla yardımcı olabilirim" de.
 
     ETKİLEŞİM KURALLARI:
-    1. **Widget Kullanımı Zorunludur**: Görsel bir yanıt verebileceğin her durumda 'render_ui' fonksiyonunu kullan.
-       - Oda sorulursa -> 'rooms'
-       - Fiyat sorulursa -> 'check_room_availability' (Fonksiyon çağır)
-       - Konum/Ulaşım -> 'location'
-       - Restoran -> 'dining'
+    1. **Format**: Mümkün olduğunca doğal, metin tabanlı yanıtlar ver. Görsel widget üretmen şart değil.
     2. **Satış Odaklılık**: Oda fiyatı verirken her zaman "Web sitemize özel en iyi fiyat garantisi" vurgusu yap.
     3. **Ton**: Lüks, nazik, yardımsever ve çözüm odaklı.
 
@@ -184,7 +180,7 @@ export async function POST(request: Request) {
             contents: chatHistory,
             config: {
                 systemInstruction: systemPrompt,
-                tools: [{ functionDeclarations: [priceCheckTool, renderUiTool] }],
+                tools: [{ functionDeclarations: [priceCheckTool] }],
             }
         })
 

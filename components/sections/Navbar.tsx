@@ -13,7 +13,14 @@ const WhatsAppIcon = ({ size = 20, className = "" }: { size?: number, className?
     </svg>
 )
 
-export default function Navbar({ locale = 'tr', menuItems }: { locale?: string; menuItems?: { label: string; url: string }[] }) {
+export interface NavItem {
+    label: string
+    url: string
+    target?: string
+    children?: NavItem[]
+}
+
+export default function Navbar({ locale = 'tr', menuItems }: { locale?: string; menuItems?: NavItem[] }) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
     const [isScrolled, setIsScrolled] = useState(false)
     const pathname = usePathname()
@@ -22,8 +29,13 @@ export default function Navbar({ locale = 'tr', menuItems }: { locale?: string; 
     // Detect locale from pathname if not provided
     const currentLocale = locale || pathname.split('/')[1] || 'tr'
     const constantNavItems = getNavItems(currentLocale)
-    const navItems = menuItems && menuItems.length > 0
-        ? menuItems.map(m => ({ label: m.label, href: m.url }))
+    const navItems: any[] = menuItems && menuItems.length > 0
+        ? menuItems.map(m => ({
+            label: m.label,
+            href: m.url,
+            target: m.target,
+            children: m.children ? m.children.map(c => ({ label: c.label, href: c.url, target: c.target })) : undefined
+        }))
         : constantNavItems
 
     const handleLanguageChange = (langCode: string) => {
@@ -228,14 +240,31 @@ export default function Navbar({ locale = 'tr', menuItems }: { locale?: string; 
                     {/* Menu Items */}
                     <div className="flex flex-col items-center space-y-6 md:space-y-4 mb-12 md:mb-8 text-center animate-fade-in-up">
                         {navItems.map((item) => (
-                            <a
-                                key={item.label}
-                                href={item.href}
-                                onClick={() => setIsMobileMenuOpen(false)}
-                                className="text-3xl md:text-4xl lg:text-5xl font-serif text-white hover:text-brand transition-colors"
-                            >
-                                {item.label}
-                            </a>
+                            <div key={item.label} className="flex flex-col items-center space-y-2 mt-4">
+                                <a
+                                    href={item.href}
+                                    target={item.target || '_self'}
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className="text-3xl md:text-4xl lg:text-5xl font-serif text-white hover:text-brand transition-colors"
+                                >
+                                    {item.label}
+                                </a>
+                                {item.children && item.children.length > 0 && (
+                                    <div className="flex flex-col items-center space-y-3 py-2 border-t border-white/10 mt-3 w-48 mx-auto">
+                                        {item.children.map((child: any) => (
+                                            <a
+                                                key={child.label}
+                                                href={child.href}
+                                                target={child.target || '_self'}
+                                                onClick={() => setIsMobileMenuOpen(false)}
+                                                className="text-lg md:text-xl font-medium text-white/70 hover:text-brand transition-colors"
+                                            >
+                                                {child.label}
+                                            </a>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         ))}
                     </div>
 

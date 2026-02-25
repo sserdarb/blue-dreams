@@ -100,8 +100,9 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
     }
 
     const { currentYear, currentYearReservations, prevYearReservations, allReservations, exchangeRates, cacheStatus } = data
-    const t = getAdminTranslations((locale || 'tr') as AdminLocale)
-    const SEASON_LABELS_I18N: Record<SeasonType, string> = { HIGH: t.seasonHigh, SHOULDER: t.seasonShoulder, LOW: t.seasonLow, OFF: t.seasonOff }
+    const trans = getAdminTranslations((locale || 'tr') as AdminLocale)
+    const t = trans.yieldPage
+    const SEASON_LABELS_I18N: Record<SeasonType, string> = { HIGH: (t as any).seasonHigh, SHOULDER: (t as any).seasonShoulder, LOW: (t as any).seasonLow, OFF: (t as any).seasonOff }
 
     const [activeTab, setActiveTab] = useState<'overview' | 'channels' | 'agencies' | 'pricing' | 'ai'>('overview')
     const [currency, setCurrency] = useState<'EUR' | 'TRY'>('EUR')
@@ -279,7 +280,7 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
     const monthlyData = useMemo(() => {
         const months = Array.from({ length: 12 }, (_, i) => ({
             month: i,
-            label: t.monthNames[i],
+            label: trans.monthNames[i],
             roomNights: 0, revenue: 0, count: 0, season: getSeason(i),
             prevRoomNights: 0, prevRevenue: 0, prevCount: 0,
         }))
@@ -364,9 +365,9 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
             }
             const res = await fetch('/api/admin/yield-analysis', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
             const data = await res.json()
-            setAiAnalysis(data.analysis || 'Analiz alınamadı.')
+            setAiAnalysis(data.analysis || trans.noData || 'Analiz alınamadı.')
         } catch {
-            setAiAnalysis('AI analizi şu anda kullanılamıyor.')
+            setAiAnalysis(trans.loadingError || 'AI analizi şu anda kullanılamıyor.')
         }
         setAiLoading(false)
     }
@@ -378,7 +379,7 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
         await exportPdf({
             element: contentRef.current,
             filename: `yield-management-${currentYear}`,
-            title: `${t.yieldTitle} — ${currentYear}`,
+            title: `${(t as any).title} — ${currentYear}`,
             subtitle: `${dateRange.start} → ${dateRange.end} | ${currency}`,
             orientation: 'landscape',
             onStart: () => setPdfExporting(true),
@@ -389,11 +390,11 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
     // ─── UI ───────────────────────────────────────────────────
 
     const tabs = [
-        { key: 'overview', label: t.tabOverview, icon: BarChart3 },
-        { key: 'channels', label: t.tabChannels, icon: PieIcon },
-        { key: 'agencies', label: t.tabAgencies, icon: Globe2 },
-        { key: 'pricing', label: t.tabPricing, icon: DollarSign },
-        { key: 'ai', label: t.tabAi, icon: Sparkles },
+        { key: 'overview', label: (t as any).overview, icon: BarChart3 },
+        { key: 'channels', label: (t as any).channels, icon: PieIcon },
+        { key: 'agencies', label: (t as any).agencies, icon: Globe2 },
+        { key: 'pricing', label: (t as any).pricing, icon: DollarSign },
+        { key: 'ai', label: (t as any).ai, icon: Sparkles },
     ] as const
 
     const diffPct = (curr: number, prev: number) => {
@@ -410,9 +411,9 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
                         <TrendingUp className="text-emerald-600" size={32} />
-                        {t.yieldTitle}
+                        {(t as any).title}
                     </h1>
-                    <p className="text-gray-500 dark:text-gray-400 mt-1">{t.yieldSubtitle} — {currentYear}</p>
+                    <p className="text-gray-500 dark:text-gray-400 mt-1">{(t as any).subtitle} — {currentYear}</p>
                 </div>
 
                 <div className="flex items-center gap-3">
@@ -421,12 +422,12 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
                         <Database size={14} />
                         <span>
                             {cacheStatus.lastUpdated
-                                ? `${t.lastUpdate}: ${new Date(cacheStatus.lastUpdated).toLocaleTimeString(locale || 'tr-TR')}`
-                                : t.cacheEmpty}
+                                ? `${(t as any).lastUpdate}: ${new Date(cacheStatus.lastUpdated).toLocaleTimeString(locale || 'tr-TR')}`
+                                : (t as any).cacheEmpty}
                         </span>
                         {cacheStatus.isStale && (
                             <span className="text-amber-500 flex items-center gap-1">
-                                <AlertTriangle size={12} /> {t.stale}
+                                <AlertTriangle size={12} /> {(t as any).stale}
                             </span>
                         )}
                     </div>
@@ -438,7 +439,7 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
                         className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
                     >
                         <RefreshCw size={16} className={refreshing ? 'animate-spin' : ''} />
-                        {refreshing ? t.refreshing : t.refresh}
+                        {refreshing ? (t as any).refreshing : (t as any).refresh}
                     </button>
 
                     {/* PDF Export */}
@@ -460,14 +461,14 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
                                 onClick={() => setDatePreset(p)}
                                 className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${datePreset === p ? 'bg-emerald-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
                             >
-                                {p === 'month' ? t.thisMonth : p === 'season' ? t.thisSeason : t.thisYear}
+                                {p === 'month' ? (t as any).thisMonth : p === 'season' ? (t as any).thisSeason : (t as any).thisYear}
                             </button>
                         ))}
                         <button
                             onClick={() => setDatePreset('custom')}
                             className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${datePreset === 'custom' ? 'bg-emerald-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
                         >
-                            {t.custom}
+                            {(t as any).custom}
                         </button>
                     </div>
                     {datePreset === 'custom' && (
@@ -507,12 +508,15 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
             <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
                 {tabs.map(t => (
                     <button
-                        key={t.key}
-                        onClick={() => setActiveTab(t.key)}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === t.key ? 'bg-white dark:bg-gray-700 text-emerald-600 shadow-sm' : 'text-gray-600 dark:text-gray-300 hover:text-gray-900'}`}
+                        key={(t as any).key}
+                        onClick={() => setActiveTab((t as any).key)}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeTab === (t as any).key ? 'bg-white dark:bg-gray-700 text-emerald-600 shadow-sm' : 'text-gray-600 dark:text-gray-300 hover:text-gray-900'}`}
                     >
-                        <t.icon size={16} />
-                        <span className="hidden md:inline">{t.label}</span>
+                        {(() => {
+                            const Icon = (t as any).icon;
+                            return <Icon size={16} />;
+                        })()}
+                        <span className="hidden md:inline">{(t as any).label}</span>
                     </button>
                 ))}
             </div>
@@ -523,15 +527,15 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
                     {/* KPI Cards */}
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                         {[
-                            { label: 'Gelir', value: fmtC(stats.totalRevenue), sub: diffPct(stats.totalRevenue, stats.prevRevenue), icon: DollarSign },
-                            { label: 'RevPAR', value: fmtC(stats.revpar), sub: diffPct(stats.revpar, stats.prevRevpar), icon: TrendingUp },
-                            { label: 'ADR', value: fmtC(stats.adr), sub: diffPct(stats.adr, stats.prevAdr), icon: TrendingUp },
-                            { label: 'Doluluk (Occ)', value: `${stats.occupancy.toFixed(1)}%`, sub: diffPct(stats.occupancy, stats.prevOccupancy), icon: BarChart3 },
-                            { label: 'Room Night', value: fmt(stats.totalRoomNights), sub: diffPct(stats.totalRoomNights, stats.prevRN), icon: BedDouble },
-                            { label: 'ALOS', value: stats.alos.toFixed(1), sub: diffPct(stats.alos, stats.prevAlos), icon: Calendar },
-                            { label: 'Rezervasyon', value: fmt(stats.resCount), sub: `${currentYear}`, icon: Calendar },
-                            { label: 'Ort. Rez. (ABV)', value: fmtC(stats.avgBookingValue), sub: 'Rez. Başına Gelir', icon: DollarSign },
-                            { label: 'ADB', value: fmtC(stats.adb), sub: 'Gece Başına Misafir', icon: BedDouble },
+                            { label: (t as any).kpiRevenue, value: fmtC(stats.totalRevenue), sub: diffPct(stats.totalRevenue, stats.prevRevenue), icon: DollarSign },
+                            { label: (t as any).kpiRevpar, value: fmtC(stats.revpar), sub: diffPct(stats.revpar, stats.prevRevpar), icon: TrendingUp },
+                            { label: (t as any).kpiAdr, value: fmtC(stats.adr), sub: diffPct(stats.adr, stats.prevAdr), icon: TrendingUp },
+                            { label: (t as any).kpiOcc, value: `${stats.occupancy.toFixed(1)}%`, sub: diffPct(stats.occupancy, stats.prevOccupancy), icon: BarChart3 },
+                            { label: (t as any).kpiRn, value: fmt(stats.totalRoomNights), sub: diffPct(stats.totalRoomNights, stats.prevRN), icon: BedDouble },
+                            { label: (t as any).kpiAlos, value: stats.alos.toFixed(1), sub: diffPct(stats.alos, stats.prevAlos), icon: Calendar },
+                            { label: (t as any).kpiRes, value: fmt(stats.resCount), sub: `${currentYear}`, icon: Calendar },
+                            { label: (t as any).kpiAbv, value: fmtC(stats.avgBookingValue), sub: (t as any).kpiAbvSub, icon: DollarSign },
+                            { label: (t as any).kpiAdb, value: fmtC(stats.adb), sub: (t as any).kpiAdbSub, icon: BedDouble },
                         ].map((kpi, i) => (
                             <div key={i} className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
                                 <div className="flex items-center gap-2 mb-2">
@@ -571,10 +575,10 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
                                 </div>
                                 <div>
                                     <p className={`text-sm font-bold ${isHigh ? 'text-emerald-700 dark:text-emerald-300' : 'text-red-700 dark:text-red-300'}`}>
-                                        {isHigh ? '✅ Yüksek Fiyat Uyarısı' : '⚠️ Düşük Fiyat Uyarısı'}
+                                        {isHigh ? '{(t as any).highPriceAlert}' : '{(t as any).lowPriceAlert}'}
                                     </p>
                                     <p className="text-xs text-gray-600 dark:text-gray-400">
-                                        Bu ay ({monthlyData[currentMonth]?.label}) ADR: {fmtC(currentMonthData.adr)} — Ortalama ADR: {fmtC(avgAdr)} ({pctDiff > 0 ? '+' : ''}{pctDiff.toFixed(1)}%)
+                                        {(t as any).thisMonthLabel} ({monthlyData[currentMonth]?.label}) ADR: {fmtC(currentMonthData.adr)} — {(t as any).avgAdrLabel} {fmtC(avgAdr)} ({pctDiff > 0 ? '+' : ''}{pctDiff.toFixed(1)}%)
                                     </p>
                                 </div>
                             </div>
@@ -583,7 +587,7 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
 
                     {/* Monthly ADR + Room Nights Chart */}
                     <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
-                        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">{t.monthlyAdrRoomNight}</h3>
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">{(t as any).monthlyAdrRoomNight}</h3>
                         <ResponsiveContainer width="100%" height={350}>
                             <BarChart data={monthlyData}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
@@ -621,7 +625,7 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Pie Chart */}
                         <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
-                            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">{t.channelDist}</h3>
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">{(t as any).channelDist}</h3>
                             <ResponsiveContainer width="100%" height={300}>
                                 <PieChart>
                                     <Pie data={channelData} dataKey="count" nameKey="name" cx="50%" cy="50%" outerRadius={100} label={(props: any) => `${props.name} ${props.pct}%`} labelLine={false}>
@@ -634,7 +638,7 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
 
                         {/* Revenue Bar */}
                         <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
-                            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">{t.channelRevenue}</h3>
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">{(t as any).channelRevenue}</h3>
                             <ResponsiveContainer width="100%" height={300}>
                                 <BarChart data={channelData} layout="vertical">
                                     <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
@@ -654,11 +658,11 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
                         <table className="w-full text-sm">
                             <thead>
                                 <tr className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
-                                    <th className="text-left p-4 font-bold text-gray-600 dark:text-gray-300">Kanal</th>
-                                    <th className="text-right p-4 font-bold text-gray-600 dark:text-gray-300">Rez.</th>
+                                    <th className="text-left p-4 font-bold text-gray-600 dark:text-gray-300">{(t as any).channel}</th>
+                                    <th className="text-right p-4 font-bold text-gray-600 dark:text-gray-300">{(t as any).count}</th>
                                     <th className="text-right p-4 font-bold text-gray-600 dark:text-gray-300">%</th>
-                                    <th className="text-right p-4 font-bold text-gray-600 dark:text-gray-300">Room Night</th>
-                                    <th className="text-right p-4 font-bold text-gray-600 dark:text-gray-300">Gelir</th>
+                                    <th className="text-right p-4 font-bold text-gray-600 dark:text-gray-300">{(t as any).kpiRn}</th>
+                                    <th className="text-right p-4 font-bold text-gray-600 dark:text-gray-300">{(t as any).kpiRevenue}</th>
                                     <th className="text-right p-4 font-bold text-gray-600 dark:text-gray-300">ADR</th>
                                 </tr>
                             </thead>
@@ -687,20 +691,20 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
                 <div className="space-y-6">
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
                         <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-                            <h3 className="text-lg font-bold text-gray-900 dark:text-white">{t.agencyAnalysis}</h3>
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-white">{(t as any).agencyAnalysis}</h3>
                             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{agencyData.length} acenta • sıralama: gelire göre</p>
                         </div>
 
                         <table className="w-full text-sm">
                             <thead>
                                 <tr className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
-                                    <th className="text-left p-3 font-bold text-gray-600 dark:text-gray-300">Acenta</th>
-                                    <th className="text-left p-3 font-bold text-gray-600 dark:text-gray-300">Kanal</th>
-                                    <th className="text-left p-3 font-bold text-gray-600 dark:text-gray-300">Ülke</th>
-                                    <th className="text-right p-3 font-bold text-gray-600 dark:text-gray-300">Rez.</th>
+                                    <th className="text-left p-3 font-bold text-gray-600 dark:text-gray-300">{(t as any).agency}</th>
+                                    <th className="text-left p-3 font-bold text-gray-600 dark:text-gray-300">{(t as any).channel}</th>
+                                    <th className="text-left p-3 font-bold text-gray-600 dark:text-gray-300">{(t as any).country}</th>
+                                    <th className="text-right p-3 font-bold text-gray-600 dark:text-gray-300">{(t as any).count}</th>
                                     <th className="text-right p-3 font-bold text-gray-600 dark:text-gray-300">R.Night</th>
-                                    <th className="text-right p-3 font-bold text-gray-600 dark:text-gray-300">Gelir</th>
-                                    <th className="text-right p-3 font-bold text-gray-600 dark:text-gray-300">Ort. Fiyat</th>
+                                    <th className="text-right p-3 font-bold text-gray-600 dark:text-gray-300">{(t as any).kpiRevenue}</th>
+                                    <th className="text-right p-3 font-bold text-gray-600 dark:text-gray-300">{(t as any).avgPrice}</th>
                                     <th className="text-right p-3 font-bold text-gray-600 dark:text-gray-300">ADR</th>
                                     <th className="text-center p-3 font-bold text-gray-600 dark:text-gray-300"></th>
                                 </tr>
@@ -733,19 +737,19 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
                                                 <td colSpan={9} className="bg-gray-50 dark:bg-gray-900/50 p-4">
                                                     <div className="grid grid-cols-2 md:grid-cols-6 gap-4 text-xs">
                                                         <div>
-                                                            <span className="text-gray-500 dark:text-gray-400">{t.totalRevLabel}</span>
+                                                            <span className="text-gray-500 dark:text-gray-400">{(t as any).totalRevLabel}</span>
                                                             <p className="text-lg font-black text-emerald-600">{fmtC(a.revenue)}</p>
                                                         </div>
                                                         <div>
-                                                            <span className="text-gray-500 dark:text-gray-400">{t.avgStayNights}</span>
+                                                            <span className="text-gray-500 dark:text-gray-400">{(t as any).avgStayNights}</span>
                                                             <p className="text-lg font-black text-gray-900 dark:text-white">{a.count > 0 ? (a.roomNights / a.count).toFixed(1) : 0} gece</p>
                                                         </div>
                                                         <div>
-                                                            <span className="text-gray-500 dark:text-gray-400">{t.revenueShare}</span>
+                                                            <span className="text-gray-500 dark:text-gray-400">{(t as any).revenueShare}</span>
                                                             <p className="text-lg font-black text-blue-600">%{stats.totalRevenue > 0 ? ((a.revenue / stats.totalRevenue) * 100).toFixed(1) : 0}</p>
                                                         </div>
                                                         <div>
-                                                            <span className="text-gray-500 dark:text-gray-400">{t.roomNightShare}</span>
+                                                            <span className="text-gray-500 dark:text-gray-400">{(t as any).roomNightShare}</span>
                                                             <p className="text-lg font-black text-purple-600">%{stats.totalRoomNights > 0 ? ((a.roomNights / stats.totalRoomNights) * 100).toFixed(1) : 0}</p>
                                                         </div>
                                                         <div>
@@ -785,8 +789,8 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
                     <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
                         <div className="flex items-center justify-between mb-2">
                             <div>
-                                <h3 className="text-lg font-bold text-gray-900 dark:text-white">{t.priceVolumeMatrix}</h3>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">Her nokta bir rezervasyon: X = gecelik ortalama fiyat, Y = room nights</p>
+                                <h3 className="text-lg font-bold text-gray-900 dark:text-white">{(t as any).priceVolumeMatrix}</h3>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">{(t as any).matrixDesc}</p>
                             </div>
                             <div className="flex gap-2">
                                 <select
@@ -794,7 +798,7 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
                                     onChange={e => setPricingChannelFilter(e.target.value)}
                                     className="px-2 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-xs font-bold outline-none cursor-pointer"
                                 >
-                                    <option value="ALL">Tüm Kanallar</option>
+                                    <option value="ALL">{(t as any).allChannels}</option>
                                     {uniqueChannels.map(c => <option key={c} value={c}>{c}</option>)}
                                 </select>
                                 <select
@@ -802,15 +806,15 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
                                     onChange={e => setPricingAgencyFilter(e.target.value)}
                                     className="px-2 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-xs font-bold outline-none cursor-pointer max-w-[160px]"
                                 >
-                                    <option value="ALL">Tüm Acenteler</option>
+                                    <option value="ALL">{(t as any).allAgencies}</option>
                                     {uniqueAgencies.map(a => <option key={a} value={a}>{a}</option>)}
                                 </select>
                             </div>
                         </div>
                         <div className="flex items-center gap-3 mb-4">
-                            <p className="text-[10px] text-gray-400">{scatterData.length} rezervasyon gösteriliyor</p>
+                            <p className="text-[10px] text-gray-400">{scatterData.length} {(t as any).showingRes}</p>
                             <div className="flex-1" />
-                            <span className="text-[10px] text-gray-500 font-medium">Hariç Tut:</span>
+                            <span className="text-[10px] text-gray-500 font-medium">{(t as any).exclude}</span>
                             <input type="date" value={excludeStart} onChange={e => setExcludeStart(e.target.value)}
                                 className="text-[10px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded px-1.5 py-1 text-gray-700 dark:text-gray-300" />
                             <span className="text-gray-400 text-[10px]">–</span>
@@ -818,7 +822,7 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
                                 className="text-[10px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded px-1.5 py-1 text-gray-700 dark:text-gray-300" />
                             {(excludeStart || excludeEnd) && (
                                 <button onClick={() => { setExcludeStart(''); setExcludeEnd('') }}
-                                    className="text-[10px] text-red-500 hover:text-red-400 font-bold">Temizle</button>
+                                    className="text-[10px] text-red-500 hover:text-red-400 font-bold">{(t as any).clear}</button>
                             )}
                         </div>
                         <ResponsiveContainer width="100%" height={400}>
@@ -858,7 +862,7 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
 
                     {/* Monthly ADR by Season */}
                     <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
-                        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">{t.periodAdrComparison}</h3>
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">{(t as any).periodAdrComparison}</h3>
                         <ResponsiveContainer width="100%" height={300}>
                             <BarChart data={monthlyData}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
@@ -874,7 +878,7 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
                             {(['HIGH', 'SHOULDER', 'LOW', 'OFF'] as SeasonType[]).map(s => (
                                 <span key={s} className="flex items-center gap-1 text-xs">
                                     <span className="w-3 h-3 rounded-full" style={{ backgroundColor: SEASON_COLORS[s] }}></span>
-                                    {SEASON_LABELS[s]}
+                                    {SEASON_LABELS_I18N[s]}
                                 </span>
                             ))}
                         </div>
@@ -889,9 +893,9 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
                         <div className="flex items-center justify-between mb-4">
                             <div>
                                 <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                                    <Sparkles className="text-purple-600" size={20} /> {t.aiPriceEval}
+                                    <Sparkles className="text-purple-600" size={20} /> {(t as any).aiPriceEval}
                                 </h3>
-                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t.aiPriceDesc}</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{(t as any).aiPriceDesc}</p>
                             </div>
                             <button
                                 onClick={handleAiAnalysis}
@@ -899,26 +903,26 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
                                 className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white text-sm px-6 py-3 rounded-lg transition-all disabled:opacity-50 shadow-lg"
                             >
                                 <Sparkles size={16} className={aiLoading ? 'animate-pulse' : ''} />
-                                {aiLoading ? t.analyzing : t.startAnalysis}
+                                {aiLoading ? (t as any).analyzing : (t as any).startAnalysis}
                             </button>
                         </div>
 
                         {/* Summary Cards for AI context */}
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
                             <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
-                                <span className="text-xs text-gray-500 dark:text-gray-400">{t.totalRevLabel}</span>
+                                <span className="text-xs text-gray-500 dark:text-gray-400">{(t as any).totalRevLabel}</span>
                                 <p className="text-lg font-black text-emerald-600">{fmtC(stats.totalRevenue)}</p>
                             </div>
                             <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
-                                <span className="text-xs text-gray-500 dark:text-gray-400">{t.avgAdr}</span>
+                                <span className="text-xs text-gray-500 dark:text-gray-400">{(t as any).avgAdr}</span>
                                 <p className="text-lg font-black text-blue-600">{fmtC(stats.adr)}</p>
                             </div>
                             <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
-                                <span className="text-xs text-gray-500 dark:text-gray-400">{t.roomNightLabel}</span>
+                                <span className="text-xs text-gray-500 dark:text-gray-400">{(t as any).roomNightLabel}</span>
                                 <p className="text-lg font-black text-purple-600">{fmt(stats.totalRoomNights)}</p>
                             </div>
                             <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
-                                <span className="text-xs text-gray-500 dark:text-gray-400">{t.channelCount}</span>
+                                <span className="text-xs text-gray-500 dark:text-gray-400">{(t as any).channelCount}</span>
                                 <p className="text-lg font-black text-gray-900 dark:text-white">{channelData.length}</p>
                             </div>
                         </div>
@@ -948,7 +952,7 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
                 <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-widest mb-3">İlgili Modüller</p>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     {[
-                        { href: `/${locale}/admin/reports`, label: 'Yönetim Raporları', desc: 'S26, Pace, milliyet', icon: BarChart3 },
+                        { href: `/${locale}/admin/reports`, label: trans.reportsPage.managementReports, desc: 'S26, Pace, milliyet', icon: BarChart3 },
                         { href: `/${locale}/admin/reservations`, label: 'Rezervasyonlar', desc: 'Detaylı liste ve filtre', icon: Calendar },
                         { href: `/${locale}/admin/extras`, label: 'Ekstra Satışlar', desc: 'SPA, minibar, restoran', icon: DollarSign },
                         { href: `/${locale}/admin/purchasing`, label: 'Satın Alma', desc: 'Stok, tedarik, trendler', icon: Database },

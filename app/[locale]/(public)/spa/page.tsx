@@ -14,20 +14,20 @@ export default async function SpaPage({ params }: { params: Promise<{ locale: st
         include: { services: { where: { isActive: true }, orderBy: { order: 'asc' } } }
     })
 
-    if (!spa) {
-        return (
-            <div className="flex items-center justify-center min-h-[50vh] text-center p-8 bg-[#FDFBF7]">
-                <div>
-                    <h1 className="text-3xl font-serif text-gray-900 mb-4">Spa Sayfası Yapılandırılmadı</h1>
-                    <p className="text-gray-500">Bu sayfa henüz Admin panelden oluşturulmamış.</p>
-                </div>
-            </div>
-        )
-    }
-
     // Default values if empty
-    const heroImage = spa.heroImage || "https://bluedreamsresort.com/wp-content/uploads/2023/04/bdr-spa-4.jpg"
-    const whatsappNum = spa.whatsappNumber?.replace(/[^0-9]/g, '') || "905000000000"
+    const heroImage = spa?.heroImage || "https://bluedreamsresort.com/wp-content/uploads/2023/04/bdr-spa-4.jpg"
+    const whatsappNum = spa?.whatsappNumber?.replace(/[^0-9]/g, '') || "905495167803"
+    const title = spa?.title || "Wellness & Spa"
+    const description1 = spa?.description1 || "Bedeninizi ve ruhunuzu yenilemek için tasarlanmış özel terapilerimizle kendinizi şımartın."
+    const description2 = spa?.description2 || "Uzman terapistlerimiz eşliğinde huzur dolu bir yolculuğa çıkın."
+    const description3 = spa?.description3 || "Geleneksel hamam, sauna ve çeşitli masaj seçeneklerimizle rahatlayın."
+    const customLogo = spa?.customLogo || null
+    const services = spa?.services || [
+        { id: '1', title: 'Geleneksel Türk Hamamı', description: 'Geleneksel kese ve köpük masajı ile yenilenin.', image: 'https://bluedreamsresort.com/wp-content/uploads/2023/04/bdr-spa-2.jpg', isActive: true, order: 1 },
+        { id: '2', title: 'Aromaterapi Masajı', description: 'Özel bitkisel yağlar ile uygulanan rahatlatıcı masaj.', image: 'https://bluedreamsresort.com/wp-content/uploads/2023/04/bdr-spa-3.jpg', isActive: true, order: 2 },
+        { id: '3', title: 'Cilt Bakımı', description: 'Doğal ürünlerle uygulanan derinlemesine cilt bakım kürleri.', image: 'https://bluedreamsresort.com/wp-content/uploads/2023/04/bdr-spa-1.jpg', isActive: true, order: 3 },
+    ]
+    const whatsappText = spa?.whatsappText || 'Rezervasyon Yapın'
 
     return (
         <main className="min-h-screen bg-[#FAFAFA]">
@@ -44,9 +44,9 @@ export default async function SpaPage({ params }: { params: Promise<{ locale: st
                     <div className="absolute inset-0 bg-black/30" />
                 </div>
                 <div className="relative z-10 text-center px-4 max-w-4xl mx-auto mt-20">
-                    {spa.customLogo ? (
+                    {customLogo ? (
                         <div className="relative w-48 h-24 mx-auto mb-8">
-                            <Image src={spa.customLogo} alt={spa.title} fill className="object-contain filter invert" />
+                            <Image src={customLogo} alt={title} fill className="object-contain filter invert" />
                         </div>
                     ) : (
                         <h1 className="text-5xl md:text-7xl font-serif font-light text-white mb-6 tracking-[0.2em] drop-shadow-md">
@@ -54,7 +54,7 @@ export default async function SpaPage({ params }: { params: Promise<{ locale: st
                         </h1>
                     )}
                     <p className="text-sm md:text-base text-white/90 font-light tracking-[0.3em] uppercase max-w-2xl mx-auto">
-                        {spa.title}
+                        {title}
                     </p>
                 </div>
             </section>
@@ -69,39 +69,37 @@ export default async function SpaPage({ params }: { params: Promise<{ locale: st
                         </svg>
                     </div>
 
-                    {spa.description1 && <p className="text-xl md:text-2xl text-gray-800 font-serif leading-relaxed font-light">{spa.description1}</p>}
-                    {spa.description2 && <p className="text-gray-500 leading-relaxed font-light">{spa.description2}</p>}
-                    {spa.description3 && <p className="text-gray-500 leading-relaxed font-light">{spa.description3}</p>}
+                    <p className="text-xl md:text-2xl text-gray-800 font-serif leading-relaxed font-light">{description1}</p>
+                    {description2 && <p className="text-gray-500 leading-relaxed font-light">{description2}</p>}
+                    {description3 && <p className="text-gray-500 leading-relaxed font-light">{description3}</p>}
 
-                    {spa.whatsappNumber && (
-                        <div className="pt-8">
-                            <a
-                                href={`https://wa.me/${whatsappNum}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center justify-center gap-3 px-10 py-4 bg-[#7A7869] hover:bg-[#5C5A4C] text-white transition-all duration-300 tracking-[0.1em] text-sm uppercase font-medium shadow-md shadow-[#7A7869]/20"
-                            >
-                                <MessageCircle size={18} />
-                                {spa.whatsappText || 'Rezervasyon Yapın'}
-                            </a>
-                        </div>
-                    )}
+                    <div className="pt-8">
+                        <a
+                            href={`https://wa.me/${whatsappNum}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center justify-center gap-3 px-10 py-4 bg-[#7A7869] hover:bg-[#5C5A4C] text-white transition-all duration-300 tracking-[0.1em] text-sm uppercase font-medium shadow-md shadow-[#7A7869]/20"
+                        >
+                            <MessageCircle size={18} />
+                            {whatsappText}
+                        </a>
+                    </div>
                 </div>
             </section>
 
             {/* Services List */}
-            {spa.services.length > 0 && (
+            {services.length > 0 && (
                 <section className="py-24 px-4 bg-[#F5F5F3]">
                     <div className="max-w-7xl mx-auto">
                         <div className="text-center mb-20">
                             <h2 className="text-3xl md:text-4xl font-serif text-gray-900 tracking-wide font-light mb-4">
-                                {locale === 'tr' ? 'Öne Çıkan Hizmetlerimiz' : 'Featured Services'}
+                                {locale === 'tr' ? 'Örnek Hizmetlerimiz' : 'Featured Services'}
                             </h2>
                             <div className="w-16 h-px bg-[#7A7869] mx-auto"></div>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-                            {spa.services.map((service) => (
+                            {services.map((service) => (
                                 <div key={service.id} className="group cursor-pointer">
                                     <div className="relative aspect-[4/5] mb-6 overflow-hidden bg-white">
                                         {service.image ? (
@@ -131,7 +129,7 @@ export default async function SpaPage({ params }: { params: Promise<{ locale: st
             )}
 
             {/* Gallery (If exists) */}
-            {spa.gallery && (() => {
+            {spa?.gallery && (() => {
                 try {
                     const galleryImages = JSON.parse(spa.gallery) as string[]
                     if (galleryImages.length > 0) {

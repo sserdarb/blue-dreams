@@ -1,0 +1,745 @@
+
+> temp_app@0.1.0 build
+> prisma generate && next build
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+
+Ô£ö Generated Prisma Client (v5.22.0) to .\node_modules\@prisma\client in 157ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Easily identify and fix slow SQL queries in your app. Optimize helps you enhance your visibility: https://pris.ly/--optimize
+
+   Ôû▓ Next.js 15.1.0
+   - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+Found 1 warning while optimizing generated CSS:
+
+Ôöé     -webkit-overflow-scrolling: touch;
+Ôöé   }
+Ôöé   .grid-cols-1.md\\:grid-cols-4 {
+Ôöå                     ^-- 'grid-cols-4' is not recognized as a valid pseudo-class. Did you mean '::grid-cols-4' (pseudo-element) or is this a typo?
+Ôöå
+Ôöé     gap: 0.75rem;
+Ôöé   }
+
+ Ô£ô Compiled successfully
+   Linting and checking validity of types ...
+
+./app/api/admin/mail-integration/convert/route.ts
+2:10  Warning: 'prisma' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/api/admin/register/route.ts
+7:40  Warning: 'department' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+23:15  Warning: 'user' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./app/api/ai/chat/route.ts
+193:13  Warning: 'finalResponse' is never reassigned. Use 'const' instead.  prefer-const
+
+./app/api/ai/settings/route.ts
+15:13  Warning: 'settings' is never reassigned. Use 'const' instead.  prefer-const
+31:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/api/ai/sheets/route.ts
+36:18  Warning: 'e' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/api/booking/calendar/route.ts
+20:15  Warning: 'firstDay' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./app/api/content/rooms/route.ts
+14:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+61:14  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/(public)/menu/[id]/page.tsx
+5:117  Warning: 'Wine' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/(public)/restoran/page.tsx
+5:8  Warning: 'Link' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/(public)/spa/page.tsx
+5:8  Warning: 'Link' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/accounting/AccountingClient.tsx
+7:52  Warning: 'ArrowDownRight' is defined but never used.  @typescript-eslint/no-unused-vars
+8:12  Warning: 'Filter' is defined but never used.  @typescript-eslint/no-unused-vars
+8:20  Warning: 'RefreshCw' is defined but never used.  @typescript-eslint/no-unused-vars
+68:25  Warning: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+69:27  Warning: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+77:26  Warning: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+78:30  Warning: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+93:26  Warning: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+106:27  Warning: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+119:29  Warning: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+
+./app/[locale]/admin/ai/page.tsx
+12:12  Warning: 'loading' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+34:8  Warning: React Hook useEffect has a missing dependency: 'fetchSettings'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+72:18  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/ai-training/page.tsx
+38:11  Warning: 'locale' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/analytics/page.tsx
+6:22  Warning: 'Check' is defined but never used.  @typescript-eslint/no-unused-vars
+6:42  Warning: 'ExternalLink' is defined but never used.  @typescript-eslint/no-unused-vars
+7:5  Warning: 'Eye' is defined but never used.  @typescript-eslint/no-unused-vars
+7:10  Warning: 'EyeOff' is defined but never used.  @typescript-eslint/no-unused-vars
+7:43  Warning: 'Key' is defined but never used.  @typescript-eslint/no-unused-vars
+9:5  Warning: 'Map' is defined but never used.  @typescript-eslint/no-unused-vars
+12:5  Warning: 'LineChart' is defined but never used.  @typescript-eslint/no-unused-vars
+12:16  Warning: 'Line' is defined but never used.  @typescript-eslint/no-unused-vars
+12:39  Warning: 'BarChart' is defined but never used.  @typescript-eslint/no-unused-vars
+12:49  Warning: 'Bar' is defined but never used.  @typescript-eslint/no-unused-vars
+65:12  Warning: 'error' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+78:22  Warning: 'err' is defined but never used.  @typescript-eslint/no-unused-vars
+102:18  Warning: 'err' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/bigdata/BigDataClient.tsx
+6:69  Warning: 'getChannelBudgetSummary' is defined but never used.  @typescript-eslint/no-unused-vars
+10:7  Warning: 'fmtK' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+27:54  Warning: 'locale' is defined but never used.  @typescript-eslint/no-unused-vars
+30:11  Warning: The 'reservations' logical expression could make the dependencies of useMemo Hook (at line 103) change on every render. To fix this, wrap the initialization of 'reservations' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+31:11  Warning: The 'prevReservations' logical expression could make the dependencies of useMemo Hook (at line 103) change on every render. Move it inside the useMemo callback. Alternatively, wrap the initialization of 'prevReservations' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+32:11  Warning: The 'occupancy' logical expression could make the dependencies of useMemo Hook (at line 103) change on every render. Move it inside the useMemo callback. Alternatively, wrap the initialization of 'occupancy' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+489:37  Warning: 'a' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/bigdata/page.tsx
+1:10  Warning: 'BigDataService' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/content/dining/page.tsx
+5:40  Warning: 'Search' is defined but never used.  @typescript-eslint/no-unused-vars
+5:98  Warning: 'Layout' is defined but never used.  @typescript-eslint/no-unused-vars
+69:8  Warning: React Hook useEffect has a missing dependency: 'fetchVenues'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+375:12  Warning: 'editingCat' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+375:24  Warning: 'setEditingCat' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+807:8  Warning: React Hook useEffect has a missing dependency: 'fetchEvents'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/[locale]/admin/content/meeting/page.tsx
+5:23  Warning: 'Trash2' is defined but never used.  @typescript-eslint/no-unused-vars
+5:48  Warning: 'AlertCircle' is defined but never used.  @typescript-eslint/no-unused-vars
+5:61  Warning: 'Users' is defined but never used.  @typescript-eslint/no-unused-vars
+5:68  Warning: 'FileText' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/content/rooms/page.tsx
+5:40  Warning: 'Search' is defined but never used.  @typescript-eslint/no-unused-vars
+5:48  Warning: 'AlertCircle' is defined but never used.  @typescript-eslint/no-unused-vars
+48:8  Warning: React Hook useEffect has a missing dependency: 'fetchRooms'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+73:18  Warning: 'e' is defined but never used.  @typescript-eslint/no-unused-vars
+209:62  Warning: 'e' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/content/spa/page.tsx
+62:8  Warning: React Hook useEffect has a missing dependency: 'fetchSpaData'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/[locale]/admin/content/sports/page.tsx
+58:8  Warning: React Hook useEffect has a missing dependency: 'fetchSports'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/[locale]/admin/crm/page.tsx
+13:11  Warning: 't' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/crm/ReviewsClient.tsx
+7:10  Warning: 'Input' is defined but never used.  @typescript-eslint/no-unused-vars
+59:90  Warning: 'initialMetrics' is defined but never used.  @typescript-eslint/no-unused-vars
+64:23  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+65:24  Warning: React Hook "useRef" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+66:45  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+67:45  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+68:45  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+69:43  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+72:39  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+77:35  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+79:39  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+80:49  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+81:43  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+92:29  Warning: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+97:23  Warning: 'min' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+110:25  Warning: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+143:21  Warning: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+
+./app/[locale]/admin/extras/ExtrasClient.tsx
+6:28  Warning: 'Download' is defined but never used.  @typescript-eslint/no-unused-vars
+6:38  Warning: 'ArrowRightLeft' is defined but never used.  @typescript-eslint/no-unused-vars
+26:39  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+27:37  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+29:11  Warning: 'RATES' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+42:20  Warning: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+47:9  Warning: React Hook useMemo has a missing dependency: 'calcTotal'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/[locale]/admin/extras/page.tsx
+3:37  Warning: 'AdminLocale' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/files/FileManager.tsx
+9:13  Warning: 'MoreVertical' is defined but never used.  @typescript-eslint/no-unused-vars
+9:27  Warning: 'X' is defined but never used.  @typescript-eslint/no-unused-vars
+113:14  Warning: 'err' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/integrations/booking/page.tsx
+5:52  Warning: 'Globe' is defined but never used.  @typescript-eslint/no-unused-vars
+5:69  Warning: 'Users' is defined but never used.  @typescript-eslint/no-unused-vars
+5:76  Warning: 'CreditCard' is defined but never used.  @typescript-eslint/no-unused-vars
+48:11  Warning: 'locale' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/integrations/restaurants/page.tsx
+4:27  Warning: 'useRef' is defined but never used.  @typescript-eslint/no-unused-vars
+5:71  Warning: 'Wine' is defined but never used.  @typescript-eslint/no-unused-vars
+5:128  Warning: 'ImageIcon' is defined but never used.  @typescript-eslint/no-unused-vars
+5:147  Warning: 'Printer' is defined but never used.  @typescript-eslint/no-unused-vars
+5:171  Warning: 'ExternalLink' is defined but never used.  @typescript-eslint/no-unused-vars
+107:12  Warning: 'showQrPanel' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+107:25  Warning: 'setShowQrPanel' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/local-guide/page.tsx
+5:40  Warning: 'X' is defined but never used.  @typescript-eslint/no-unused-vars
+5:54  Warning: 'Search' is defined but never used.  @typescript-eslint/no-unused-vars
+6:53  Warning: 'Eye' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/localization/page.tsx
+30:11  Warning: 'params' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/marketing/MarketingClient.tsx
+15:24  Warning: 'ArrowDownRight' is defined but never used.  @typescript-eslint/no-unused-vars
+15:60  Warning: 'MousePointer' is defined but never used.  @typescript-eslint/no-unused-vars
+15:74  Warning: 'Eye' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/marketing/page.tsx
+7:5  Warning: 'params' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/menu/page.tsx
+55:8  Warning: React Hook useEffect has a missing dependency: 'fetchMenuItems'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/[locale]/admin/pages/[id]/editor/page.tsx
+4:24  Warning: 'getWidgetIcon' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/purchasing/PurchasingClient.tsx
+5:26  Warning: 'TrendingDown' is defined but never used.  @typescript-eslint/no-unused-vars
+5:55  Warning: 'CheckCircle' is defined but never used.  @typescript-eslint/no-unused-vars
+11:22  Warning: 'BarChart' is defined but never used.  @typescript-eslint/no-unused-vars
+11:32  Warning: 'Bar' is defined but never used.  @typescript-eslint/no-unused-vars
+12:26  Warning: 'RadialBarChart' is defined but never used.  @typescript-eslint/no-unused-vars
+12:42  Warning: 'RadialBar' is defined but never used.  @typescript-eslint/no-unused-vars
+12:53  Warning: 'Legend' is defined but never used.  @typescript-eslint/no-unused-vars
+75:28  Warning: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+94:31  Warning: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+100:30  Warning: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+386:62  Warning: 'i' is defined but never used.  @typescript-eslint/no-unused-vars
+468:68  Warning: 'i' is defined but never used.  @typescript-eslint/no-unused-vars
+623:133  Warning: 'i' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/reports/FinanceReportsClient.tsx
+5:70  Warning: 'Receipt' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/reports/HRReportsClient.tsx
+5:28  Warning: 'Briefcase' is defined but never used.  @typescript-eslint/no-unused-vars
+5:39  Warning: 'GraduationCap' is defined but never used.  @typescript-eslint/no-unused-vars
+5:54  Warning: 'Heart' is defined but never used.  @typescript-eslint/no-unused-vars
+5:96  Warning: 'ArrowUpRight' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/reports/ManagementReportsClient.tsx
+5:77  Warning: 'Printer' is defined but never used.  @typescript-eslint/no-unused-vars
+187:11  Warning: The 'monthNamesLocal' logical expression could make the dependencies of useMemo Hook (at line 254) change on every render. To fix this, wrap the initialization of 'monthNamesLocal' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+187:11  Warning: The 'monthNamesLocal' logical expression could make the dependencies of useMemo Hook (at line 255) change on every render. To fix this, wrap the initialization of 'monthNamesLocal' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+244:8  Warning: React Hook useMemo has a missing dependency: 'isWithinYtd'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+251:8  Warning: React Hook useMemo has a missing dependency: 'isWithinYtd'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+315:8  Warning: React Hook useMemo has missing dependencies: 'priceMode' and 'totalTaxRate'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+338:8  Warning: React Hook useMemo has missing dependencies: 'priceMode' and 'totalTaxRate'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+361:8  Warning: React Hook useMemo has missing dependencies: 'priceMode' and 'totalTaxRate'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+404:8  Warning: React Hook useMemo has missing dependencies: 'priceMode' and 'totalTaxRate'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+428:27  Warning: 'daysInM' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+450:8  Warning: React Hook useMemo has missing dependencies: 'priceMode' and 'totalTaxRate'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+608:19  Warning: 'sConf' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+658:8  Warning: React Hook useMemo has a missing dependency: 'monthNamesShort'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./app/[locale]/admin/reports/page.tsx
+24:11  Warning: 't' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/reports/PurchasingReportsClient.tsx
+4:113  Warning: 'LineChart' is defined but never used.  @typescript-eslint/no-unused-vars
+5:92  Warning: 'ArrowUpRight' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/reports/ReportGroupNav.tsx
+3:21  Warning: 'useSearchParams' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/reservations/ReservationsClient.tsx
+5:34  Warning: 'useSearchParams' is defined but never used.  @typescript-eslint/no-unused-vars
+69:20  Warning: React Hook "useRouter" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+70:22  Warning: React Hook "usePathname" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+71:24  Warning: React Hook "useRef" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+72:45  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+75:53  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+76:43  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+78:35  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+79:41  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+80:33  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+81:37  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+82:33  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+85:47  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+87:41  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+88:29  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+89:43  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+90:33  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+91:35  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+94:24  Warning: React Hook "useCallback" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+149:22  Warning: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+184:11  Warning: 'convert' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+200:26  Warning: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+202:9  Warning: React Hook useMemo has a missing dependency: 'getAmount'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+205:28  Warning: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+213:8  Warning: React Hook useMemo has a missing dependency: 'getAmount'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+216:28  Warning: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+225:32  Warning: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+249:31  Warning: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+255:8  Warning: React Hook useMemo has a missing dependency: 'getAmount'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+258:23  Warning: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+308:8  Warning: React Hook useMemo has a missing dependency: 'getAmount'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+313:20  Warning: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+
+./app/[locale]/admin/rooms/RoomsClient.tsx
+4:57  Warning: 'ArrowUpDown' is defined but never used.  @typescript-eslint/no-unused-vars
+4:75  Warning: 'Check' is defined but never used.  @typescript-eslint/no-unused-vars
+48:7  Warning: 'AGENCY_CHANNELS' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+68:33  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+69:31  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+70:35  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+71:24  Warning: React Hook "useRef" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+72:45  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+89:37  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+90:33  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+93:45  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+95:31  Warning: React Hook "useCallback" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+147:20  Warning: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+160:25  Warning: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+
+./app/[locale]/admin/settings/SettingsPageClient.tsx
+4:10  Warning: 'Settings' is defined but never used.  @typescript-eslint/no-unused-vars
+4:35  Warning: 'Shield' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/social/content/DesignTool.tsx
+6:26  Warning: 'Upload' is defined but never used.  @typescript-eslint/no-unused-vars
+6:34  Warning: 'Undo2' is defined but never used.  @typescript-eslint/no-unused-vars
+6:41  Warning: 'Redo2' is defined but never used.  @typescript-eslint/no-unused-vars
+7:26  Warning: 'Copy' is defined but never used.  @typescript-eslint/no-unused-vars
+7:38  Warning: 'Unlock' is defined but never used.  @typescript-eslint/no-unused-vars
+7:46  Warning: 'ChevronUp' is defined but never used.  @typescript-eslint/no-unused-vars
+7:57  Warning: 'ChevronDown' is defined but never used.  @typescript-eslint/no-unused-vars
+8:11  Warning: 'Minus' is defined but never used.  @typescript-eslint/no-unused-vars
+8:45  Warning: 'Layers' is defined but never used.  @typescript-eslint/no-unused-vars
+8:53  Warning: 'RotateCw' is defined but never used.  @typescript-eslint/no-unused-vars
+9:32  Warning: 'Save' is defined but never used.  @typescript-eslint/no-unused-vars
+9:38  Warning: 'FileDown' is defined but never used.  @typescript-eslint/no-unused-vars
+9:48  Warning: 'FileUp' is defined but never used.  @typescript-eslint/no-unused-vars
+10:14  Warning: 'Settings2' is defined but never used.  @typescript-eslint/no-unused-vars
+10:25  Warning: 'SlidersHorizontal' is defined but never used.  @typescript-eslint/no-unused-vars
+63:7  Warning: 'CANVAS_BG_COLORS' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+84:25  Warning: 'setStrokeColor' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+85:22  Warning: 'setFontSize' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+86:24  Warning: 'setFontFamily' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+87:12  Warning: 'opacity' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+87:21  Warning: 'setOpacity' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+102:12  Warning: 'history' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+102:21  Warning: 'setHistory' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+103:12  Warning: 'historyIndex' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+103:26  Warning: 'setHistoryIndex' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+108:22  Warning: 'setCanvasBg' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+112:26  Warning: 'setRecentColors' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+169:17  Warning: 'layer' is never reassigned. Use 'const' instead.  prefer-const
+300:8  Warning: React Hook useCallback has an unnecessary dependency: 'activeLayerId'. Either exclude it or remove the dependency array.  react-hooks/exhaustive-deps
+461:11  Warning: 'duplicateLayer' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+469:11  Warning: 'moveLayerUp' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+479:11  Warning: 'moveLayerDown' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+502:11  Warning: 'handleImageUpload' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/social/content/page.tsx
+8:59  Warning: 'Send' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/social/content/VideoEditor.tsx
+3:35  Warning: 'useCallback' is defined but never used.  @typescript-eslint/no-unused-vars
+6:22  Warning: 'Music' is defined but never used.  @typescript-eslint/no-unused-vars
+7:5  Warning: 'Upload' is defined but never used.  @typescript-eslint/no-unused-vars
+7:13  Warning: 'ChevronLeft' is defined but never used.  @typescript-eslint/no-unused-vars
+7:26  Warning: 'ChevronRight' is defined but never used.  @typescript-eslint/no-unused-vars
+7:40  Warning: 'Maximize2' is defined but never used.  @typescript-eslint/no-unused-vars
+7:51  Warning: 'Minimize2' is defined but never used.  @typescript-eslint/no-unused-vars
+8:5  Warning: 'RotateCw' is defined but never used.  @typescript-eslint/no-unused-vars
+8:32  Warning: 'Move' is defined but never used.  @typescript-eslint/no-unused-vars
+8:38  Warning: 'Layers' is defined but never used.  @typescript-eslint/no-unused-vars
+8:46  Warning: 'Clock' is defined but never used.  @typescript-eslint/no-unused-vars
+8:53  Warning: 'Sparkles' is defined but never used.  @typescript-eslint/no-unused-vars
+9:5  Warning: 'SlidersHorizontal' is defined but never used.  @typescript-eslint/no-unused-vars
+9:33  Warning: 'Eye' is defined but never used.  @typescript-eslint/no-unused-vars
+9:38  Warning: 'EyeOff' is defined but never used.  @typescript-eslint/no-unused-vars
+9:46  Warning: 'Lock' is defined but never used.  @typescript-eslint/no-unused-vars
+9:52  Warning: 'Unlock' is defined but never used.  @typescript-eslint/no-unused-vars
+10:16  Warning: 'FileAudio' is defined but never used.  @typescript-eslint/no-unused-vars
+10:27  Warning: 'Save' is defined but never used.  @typescript-eslint/no-unused-vars
+10:33  Warning: 'Undo2' is defined but never used.  @typescript-eslint/no-unused-vars
+10:40  Warning: 'Redo2' is defined but never used.  @typescript-eslint/no-unused-vars
+10:47  Warning: 'MoreHorizontal' is defined but never used.  @typescript-eslint/no-unused-vars
+11:30  Warning: 'Wand2' is defined but never used.  @typescript-eslint/no-unused-vars
+30:11  Warning: 'TextOverlay' is defined but never used.  @typescript-eslint/no-unused-vars
+124:12  Warning: 'showFilters' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+124:25  Warning: 'setShowFilters' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+125:12  Warning: 'showTransitions' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+125:29  Warning: 'setShowTransitions' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+126:12  Warning: 'showTextEditor' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+126:28  Warning: 'setShowTextEditor' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/social/page.tsx
+5:57  Warning: 'TrendingUp' is defined but never used.  @typescript-eslint/no-unused-vars
+5:69  Warning: 'TrendingDown' is defined but never used.  @typescript-eslint/no-unused-vars
+5:112  Warning: 'Eye' is defined but never used.  @typescript-eslint/no-unused-vars
+5:117  Warning: 'ExternalLink' is defined but never used.  @typescript-eslint/no-unused-vars
+5:167  Warning: 'ArrowUp' is defined but never used.  @typescript-eslint/no-unused-vars
+5:176  Warning: 'ArrowDown' is defined but never used.  @typescript-eslint/no-unused-vars
+5:187  Warning: 'Minus' is defined but never used.  @typescript-eslint/no-unused-vars
+6:101  Warning: 'Legend' is defined but never used.  @typescript-eslint/no-unused-vars
+6:126  Warning: 'PieChart' is defined but never used.  @typescript-eslint/no-unused-vars
+6:136  Warning: 'Pie' is defined but never used.  @typescript-eslint/no-unused-vars
+6:141  Warning: 'Cell' is defined but never used.  @typescript-eslint/no-unused-vars
+84:12  Warning: 'chartType' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+84:23  Warning: 'setChartType' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/statistics/page.tsx
+6:16  Warning: 'getCachedReservations' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/statistics/ReportsClient.tsx
+12:29  Warning: 'Building2' is defined but never used.  @typescript-eslint/no-unused-vars
+12:40  Warning: 'Users' is defined but never used.  @typescript-eslint/no-unused-vars
+12:47  Warning: 'Download' is defined but never used.  @typescript-eslint/no-unused-vars
+12:57  Warning: 'BarChart3' is defined but never used.  @typescript-eslint/no-unused-vars
+12:68  Warning: 'PieChart' is defined but never used.  @typescript-eslint/no-unused-vars
+13:15  Warning: 'Target' is defined but never used.  @typescript-eslint/no-unused-vars
+13:70  Warning: 'ChevronUp' is defined but never used.  @typescript-eslint/no-unused-vars
+14:5  Warning: 'Settings2' is defined but never used.  @typescript-eslint/no-unused-vars
+14:41  Warning: 'LayoutGrid' is defined but never used.  @typescript-eslint/no-unused-vars
+14:64  Warning: 'Minimize2' is defined but never used.  @typescript-eslint/no-unused-vars
+15:16  Warning: 'Hotel' is defined but never used.  @typescript-eslint/no-unused-vars
+15:29  Warning: 'Clock' is defined but never used.  @typescript-eslint/no-unused-vars
+15:47  Warning: 'Phone' is defined but never used.  @typescript-eslint/no-unused-vars
+15:54  Warning: 'UserCheck' is defined but never used.  @typescript-eslint/no-unused-vars
+15:65  Warning: 'LineChart' is defined but never used.  @typescript-eslint/no-unused-vars
+16:13  Warning: 'Filter' is defined but never used.  @typescript-eslint/no-unused-vars
+121:37  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+122:39  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks
+126:39  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+127:35  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+128:45  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+129:39  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+131:47  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+132:47  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+133:39  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+134:39  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+135:49  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+136:45  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+137:47  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+138:39  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+139:47  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+140:45  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+141:51  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+142:53  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+144:5  Warning: React Hook "useEffect" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+155:21  Warning: React Hook "useCallback" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+163:16  Warning: React Hook "useCallback" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+167:22  Warning: React Hook "useCallback" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+175:22  Warning: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+184:32  Warning: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+569:15  Warning: 'maxRate' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+686:15  Warning: 'allDates' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+699:15  Warning: 'chartData' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+711:15  Warning: 'maxVal' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+738:31  Warning: 'compTotal' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+1134:29  Warning: 'data' is defined but never used.  @typescript-eslint/no-unused-vars
+1309:13  Warning: 'cumOffset' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+2109:32  Warning: 'data' is defined but never used.  @typescript-eslint/no-unused-vars
+2365:35  Warning: 'data' is defined but never used.  @typescript-eslint/no-unused-vars
+2620:51  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+2828:11  Warning: 'renderResBoardMix' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+3234:41  Warning: '_data' is defined but never used.  @typescript-eslint/no-unused-vars
+3238:40  Warning: '_data' is defined but never used.  @typescript-eslint/no-unused-vars
+3248:36  Warning: '_data' is defined but never used.  @typescript-eslint/no-unused-vars
+3249:35  Warning: '_data' is defined but never used.  @typescript-eslint/no-unused-vars
+3255:34  Warning: '_data' is defined but never used.  @typescript-eslint/no-unused-vars
+3257:38  Warning: '_data' is defined but never used.  @typescript-eslint/no-unused-vars
+3271:33  Warning: '_data' is defined but never used.  @typescript-eslint/no-unused-vars
+3272:35  Warning: '_data' is defined but never used.  @typescript-eslint/no-unused-vars
+3273:32  Warning: '_data' is defined but never used.  @typescript-eslint/no-unused-vars
+3274:34  Warning: '_data' is defined but never used.  @typescript-eslint/no-unused-vars
+3275:31  Warning: '_data' is defined but never used.  @typescript-eslint/no-unused-vars
+3276:36  Warning: '_data' is defined but never used.  @typescript-eslint/no-unused-vars
+3282:39  Warning: '_data' is defined but never used.  @typescript-eslint/no-unused-vars
+3283:36  Warning: '_data' is defined but never used.  @typescript-eslint/no-unused-vars
+3284:31  Warning: '_data' is defined but never used.  @typescript-eslint/no-unused-vars
+3287:36  Warning: 'data' is defined but never used.  @typescript-eslint/no-unused-vars
+3295:32  Warning: '_data' is defined but never used.  @typescript-eslint/no-unused-vars
+3299:37  Warning: '_data' is defined but never used.  @typescript-eslint/no-unused-vars
+3300:35  Warning: '_data' is defined but never used.  @typescript-eslint/no-unused-vars
+3301:34  Warning: '_data' is defined but never used.  @typescript-eslint/no-unused-vars
+3325:38  Warning: '_data' is defined but never used.  @typescript-eslint/no-unused-vars
+3330:32  Warning: '_data' is defined but never used.  @typescript-eslint/no-unused-vars
+3331:36  Warning: '_data' is defined but never used.  @typescript-eslint/no-unused-vars
+3333:50  Warning: '_' is defined but never used.  @typescript-eslint/no-unused-vars
+3333:53  Warning: 'i' is defined but never used.  @typescript-eslint/no-unused-vars
+3338:32  Warning: '_data' is defined but never used.  @typescript-eslint/no-unused-vars
+3345:35  Warning: '_data' is defined but never used.  @typescript-eslint/no-unused-vars
+3346:34  Warning: '_data' is defined but never used.  @typescript-eslint/no-unused-vars
+3347:34  Warning: '_data' is defined but never used.  @typescript-eslint/no-unused-vars
+3348:36  Warning: '_data' is defined but never used.  @typescript-eslint/no-unused-vars
+3349:35  Warning: '_data' is defined but never used.  @typescript-eslint/no-unused-vars
+3351:37  Warning: '_data' is defined but never used.  @typescript-eslint/no-unused-vars
+3356:33  Warning: '_data' is defined but never used.  @typescript-eslint/no-unused-vars
+3357:33  Warning: '_data' is defined but never used.  @typescript-eslint/no-unused-vars
+3365:33  Warning: '_data' is defined but never used.  @typescript-eslint/no-unused-vars
+3366:40  Warning: '_data' is defined but never used.  @typescript-eslint/no-unused-vars
+3370:35  Warning: '_data' is defined but never used.  @typescript-eslint/no-unused-vars
+3387:41  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3388:37  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3389:40  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3390:34  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3391:30  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3392:36  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3397:35  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3398:38  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3400:39  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3401:39  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3403:34  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3404:32  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3405:34  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3406:36  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3407:34  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3408:34  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3409:35  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3413:39  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3414:34  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3415:35  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3418:39  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3419:39  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3421:38  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3422:34  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3423:34  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3424:36  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3425:36  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3427:32  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3428:31  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3429:37  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3430:39  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3431:36  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3433:35  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3434:33  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3436:34  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3437:41  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3438:43  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3446:38  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3447:36  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3448:37  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3452:38  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3453:35  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3456:40  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3457:35  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3459:41  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3460:39  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3461:37  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3468:31  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3469:36  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3474:35  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+3476:34  Warning: '_d' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/tasks/mail/page.tsx
+8:18  Warning: 'TestTube' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/tasks/page.tsx
+7:19  Warning: 'Filter' is defined but never used.  @typescript-eslint/no-unused-vars
+7:47  Warning: 'AlertTriangle' is defined but never used.  @typescript-eslint/no-unused-vars
+8:5  Warning: 'MoreHorizontal' is defined but never used.  @typescript-eslint/no-unused-vars
+8:36  Warning: 'Paperclip' is defined but never used.  @typescript-eslint/no-unused-vars
+9:5  Warning: 'ChevronDown' is defined but never used.  @typescript-eslint/no-unused-vars
+9:27  Warning: 'Sparkles' is defined but never used.  @typescript-eslint/no-unused-vars
+9:37  Warning: 'GripVertical' is defined but never used.  @typescript-eslint/no-unused-vars
+10:5  Warning: 'Flag' is defined but never used.  @typescript-eslint/no-unused-vars
+10:11  Warning: 'Tag' is defined but never used.  @typescript-eslint/no-unused-vars
+10:16  Warning: 'GitBranch' is defined but never used.  @typescript-eslint/no-unused-vars
+10:33  Warning: 'Bell' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/tasks/workflows/page.tsx
+6:19  Warning: 'Edit2' is defined but never used.  @typescript-eslint/no-unused-vars
+6:32  Warning: 'X' is defined but never used.  @typescript-eslint/no-unused-vars
+6:59  Warning: 'Building2' is defined but never used.  @typescript-eslint/no-unused-vars
+7:5  Warning: 'GripVertical' is defined but never used.  @typescript-eslint/no-unused-vars
+7:19  Warning: 'ChevronRight' is defined but never used.  @typescript-eslint/no-unused-vars
+8:19  Warning: 'Circle' is defined but never used.  @typescript-eslint/no-unused-vars
+8:46  Warning: 'MoreVertical' is defined but never used.  @typescript-eslint/no-unused-vars
+9:20  Warning: 'Settings2' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/[locale]/admin/yield/YieldManagementClient.tsx
+5:20  Warning: 'LineChart' is defined but never used.  @typescript-eslint/no-unused-vars
+11:20  Warning: 'Clock' is defined but never used.  @typescript-eslint/no-unused-vars
+102:73  Warning: 'allReservations' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+106:39  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+107:37  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+108:41  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+109:41  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+110:39  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+111:49  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+112:45  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+113:61  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+114:59  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+115:45  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+116:41  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+117:24  Warning: React Hook "useRef" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+121:41  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+122:43  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+123:39  Warning: React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+125:23  Warning: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+142:34  Warning: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+150:38  Warning: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+165:19  Warning: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+204:25  Warning: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+228:24  Warning: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+279:25  Warning: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+317:25  Warning: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+336:28  Warning: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+337:28  Warning: React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks
+
+./app/[locale]/layout.tsx
+3:3  Warning: 'params' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/admin/DraggableWidgetList.tsx
+3:20  Warning: 'useRef' is defined but never used.  @typescript-eslint/no-unused-vars
+3:28  Warning: 'useCallback' is defined but never used.  @typescript-eslint/no-unused-vars
+19:5  Warning: 'pageId' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/admin/MenuManager.tsx
+5:24  Warning: 'GripVertical' is defined but never used.  @typescript-eslint/no-unused-vars
+5:52  Warning: 'Save' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/admin/PmaGravityLogo.tsx
+12:42  Warning: 'size' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+12:69  Warning: 'showText' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./components/admin/SettingsModuleManager.tsx
+4:28  Warning: 'Users' is defined but never used.  @typescript-eslint/no-unused-vars
+4:105  Warning: 'X' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/admin/SiteSettingsForm.tsx
+54:18  Warning: 'e' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/admin/widget-editors/FeaturesEditor.tsx
+75:18  Warning: 'e' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/admin/widget-editors/TextEditor.tsx
+35:18  Warning: 'e' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/admin/WidgetJsonEditor.tsx
+27:14  Warning: 'e' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/AiAssistant.tsx
+2:219  Warning: 'Ruler' is defined but never used.  @typescript-eslint/no-unused-vars
+131:53  Warning: 'adults' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/booking/BookingWidget.tsx
+4:87  Warning: 'Eye' is defined but never used.  @typescript-eslint/no-unused-vars
+162:18  Warning: 'err' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/chat/AiAssistant.tsx
+4:74  Warning: 'MapPin' is defined but never used.  @typescript-eslint/no-unused-vars
+4:82  Warning: 'Download' is defined but never used.  @typescript-eslint/no-unused-vars
+4:144  Warning: 'Plane' is defined but never used.  @typescript-eslint/no-unused-vars
+4:151  Warning: 'Car' is defined but never used.  @typescript-eslint/no-unused-vars
+4:156  Warning: 'Map' is defined but never used.  @typescript-eslint/no-unused-vars
+4:161  Warning: 'Check' is defined but never used.  @typescript-eslint/no-unused-vars
+4:168  Warning: 'Maximize' is defined but never used.  @typescript-eslint/no-unused-vars
+5:10  Warning: 'jsPDF' is defined but never used.  @typescript-eslint/no-unused-vars
+125:58  Warning: 'e' is defined but never used.  @typescript-eslint/no-unused-vars
+322:18  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+345:17  Warning: img elements must have an alt prop, either with meaningful text, or an empty string for decorative images.  jsx-a11y/alt-text
+392:41  Warning: img elements must have an alt prop, either with meaningful text, or an empty string for decorative images.  jsx-a11y/alt-text
+
+./components/chat/BlueConciergeFull.tsx
+4:105  Warning: 'Download' is defined but never used.  @typescript-eslint/no-unused-vars
+4:252  Warning: 'UtensilsCrossed' is defined but never used.  @typescript-eslint/no-unused-vars
+372:37  Warning: 'locale' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+438:38  Warning: 'locale' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+853:8  Warning: React Hook useCallback has a missing dependency: 'handleSend'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/Experience.tsx
+2:10  Warning: 'ArrowRight' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/Gallery.tsx
+71:6  Warning: React Hook useEffect has a missing dependency: 'allImages'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./components/Navbar.tsx
+17:42  Warning: 'locale' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./components/sections/Footer.tsx
+3:31  Warning: 'Twitter' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/sections/Navbar.tsx
+4:66  Warning: 'Search' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/widgets/AvailabilityCalendar.tsx
+5:41  Warning: 'Info' is defined but never used.  @typescript-eslint/no-unused-vars
+50:22  Warning: 'setChildren' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./components/widgets/GalleryWidget.tsx
+24:11  Warning: The 'images' logical expression could make the dependencies of useMemo Hook (at line 33) change on every render. To fix this, wrap the initialization of 'images' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+
+./components/widgets/RoomBookingWidget.tsx
+8:8  Warning: 'Image' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./lib/ai-config.ts
+25:14  Warning: 'e' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./lib/constants.ts
+1:10  Warning: 'Wifi' is defined but never used.  @typescript-eslint/no-unused-vars
+1:16  Warning: 'Utensils' is defined but never used.  @typescript-eslint/no-unused-vars
+1:26  Warning: 'Droplets' is defined but never used.  @typescript-eslint/no-unused-vars
+1:36  Warning: 'Sun' is defined but never used.  @typescript-eslint/no-unused-vars
+1:41  Warning: 'Activity' is defined but never used.  @typescript-eslint/no-unused-vars
+1:51  Warning: 'Waves' is defined but never used.  @typescript-eslint/no-unused-vars
+1:58  Warning: 'Wine' is defined but never used.  @typescript-eslint/no-unused-vars
+1:64  Warning: 'Bike' is defined but never used.  @typescript-eslint/no-unused-vars
+1:70  Warning: 'Dog' is defined but never used.  @typescript-eslint/no-unused-vars
+1:75  Warning: 'ShoppingBag' is defined but never used.  @typescript-eslint/no-unused-vars
+1:88  Warning: 'Speaker' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./lib/modules/module-context.tsx
+4:32  Warning: 'ModuleDefinition' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./lib/services/booking-service.ts
+50:9  Warning: 'adults' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+51:9  Warning: 'children' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+52:9  Warning: 'currency' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./lib/services/elektra-cache.ts
+195:18  Warning: 'e' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./lib/services/elektra.ts
+948:28  Warning: 'startDate' is defined but never used.  @typescript-eslint/no-unused-vars
+948:45  Warning: 'endDate' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./lib/services/finance.ts
+98:7  Warning: 'HOTEL_ID' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./lib/services/marketing.ts
+25:24  Warning: 'startDate' is defined but never used.  @typescript-eslint/no-unused-vars
+25:41  Warning: 'endDate' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./lib/services/scraper.ts
+1:10  Warning: 'prisma' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./lib/utils/geo-currency.ts
+54:11  Warning: 'activeCurrency' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+Failed to compile.
+
+./app/[locale]/admin/page.tsx:38:55
+Type error: This expression is not callable.
+  Type 'AdminTranslations' has no call signatures.
+
+  36 |             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+  37 |           </span>
+> 38 |           <span className="text-emerald-300 text-sm">{t('connectionStatus')}</span>
+     |                                                       ^
+  39 |         </div>
+  40 |
+  41 |         {/* Header */}

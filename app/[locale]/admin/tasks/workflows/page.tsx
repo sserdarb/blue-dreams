@@ -8,6 +8,8 @@ import {
     CheckCircle2, Circle, Zap, Brain, Wand2, MoreVertical, Copy,
     AlertTriangle, Settings2, ArrowDown
 } from 'lucide-react'
+import { getAdminTranslations, AdminTranslations, AdminLocale } from '@/lib/admin-translations'
+import { useParams } from 'next/navigation'
 
 // ─── Types ───
 interface WorkflowStep {
@@ -59,6 +61,10 @@ const AI_TEMPLATES = [
 ]
 
 export default function WorkflowsPage() {
+    const params = useParams()
+    const locale = (params?.locale as AdminLocale) || 'tr'
+    const t = getAdminTranslations(locale) as AdminTranslations
+
     const [workflows, setWorkflows] = useState<Workflow[]>([])
     const [loading, setLoading] = useState(true)
     const [selectedWf, setSelectedWf] = useState<Workflow | null>(null)
@@ -221,24 +227,24 @@ export default function WorkflowsPage() {
     return (
         <div className="h-[calc(100vh-120px)] flex flex-col gap-4">
             {/* Header */}
-            <div className="flex items-center justify-between flex-shrink-0">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between flex-shrink-0 gap-3">
                 <div>
                     <h1 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                        <GitBranch className="text-cyan-500" size={22} /> İş Akışları
+                        <GitBranch className="text-cyan-500" size={22} /> {(t as any).workflows || 'İş Akışları'}
                     </h1>
                     <p className="text-sm text-slate-500 mt-0.5">AI destekli iş akışı şablonları oluşturun ve yönetin</p>
                 </div>
                 <button onClick={startNew}
-                    className="flex items-center gap-1.5 bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors shadow-lg shadow-cyan-600/20">
+                    className="flex items-center justify-center gap-1.5 bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors shadow-lg shadow-cyan-600/20 w-full sm:w-auto">
                     <Plus size={16} /> Yeni Akış
                 </button>
             </div>
 
-            {/* 3-Column Layout */}
-            <div className="flex-1 grid grid-cols-12 gap-4 min-h-0">
+            {/* Layout */}
+            <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-0 overflow-y-auto lg:overflow-hidden">
 
                 {/* ═══ COLUMN 1: Workflow List + AI Templates ═══ */}
-                <div className="col-span-3 flex flex-col gap-3 overflow-y-auto pr-1">
+                <div className="col-span-1 lg:col-span-3 flex flex-col gap-3 lg:overflow-y-auto pr-1">
                     {/* AI Templates */}
                     <div className="bg-gradient-to-br from-violet-50 to-cyan-50 dark:from-violet-900/20 dark:to-cyan-900/20 rounded-2xl border border-violet-200 dark:border-violet-800/50 p-4">
                         <h3 className="text-xs font-bold text-violet-600 dark:text-violet-400 flex items-center gap-1.5 mb-3">
@@ -318,7 +324,7 @@ export default function WorkflowsPage() {
                 </div>
 
                 {/* ═══ COLUMN 2: Workflow Steps / Stages ═══ */}
-                <div className="col-span-5 flex flex-col bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+                <div className="col-span-1 lg:col-span-5 flex flex-col bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden min-h-[500px] lg:min-h-0">
                     {(selectedWf || isCreating) ? (
                         <>
                             {/* Name/Desc Header */}
@@ -398,10 +404,10 @@ export default function WorkflowsPage() {
                             {/* Save Bar */}
                             <div className="p-4 border-t border-slate-200 dark:border-slate-700 flex justify-between items-center flex-shrink-0 bg-slate-50 dark:bg-slate-900/30">
                                 <button onClick={() => { setSelectedWf(null); setIsCreating(false) }}
-                                    className="px-4 py-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 text-sm font-medium">İptal</button>
+                                    className="px-4 py-2 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 text-sm font-medium">{t.cancel}</button>
                                 <button onClick={saveWorkflow} disabled={saving || !editName.trim() || editingSteps.length === 0}
-                                    className="flex items-center gap-2 bg-cyan-600 hover:bg-cyan-500 text-white px-6 py-2 rounded-lg text-sm font-bold transition-colors disabled:opacity-50 shadow-lg shadow-cyan-600/20">
-                                    <Save size={16} /> {saving ? 'Kaydediliyor…' : selectedWf ? 'Güncelle' : 'Oluştur'}
+                                    className="flex items-center justify-center gap-2 bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 sm:px-6 rounded-lg text-sm font-bold transition-colors disabled:opacity-50 shadow-lg shadow-cyan-600/20 w-auto">
+                                    <Save size={16} /> {saving ? t.saving : (selectedWf ? t.edit : t.add)}
                                 </button>
                             </div>
                         </>
@@ -417,7 +423,7 @@ export default function WorkflowsPage() {
                 </div>
 
                 {/* ═══ COLUMN 3: AI Assistant + Preview ═══ */}
-                <div className="col-span-4 flex flex-col gap-3 overflow-y-auto">
+                <div className="col-span-1 lg:col-span-4 flex flex-col gap-3 lg:overflow-y-auto pb-4 lg:pb-0">
                     {/* Flow Preview */}
                     {(selectedWf || isCreating) && editingSteps.length > 0 && (
                         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4">

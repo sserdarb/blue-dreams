@@ -7,6 +7,8 @@ import {
     Inbox, X, Clock, Loader2, Server, Lock, Wifi, WifiOff,
     Eye, EyeOff, TestTube, Trash2, ArrowRight
 } from 'lucide-react'
+import { getAdminTranslations, AdminTranslations, AdminLocale } from '@/lib/admin-translations'
+import { useParams } from 'next/navigation'
 
 interface EmailMessage {
     id: string; subject: string; from: string; date: string; snippet: string; isRead: boolean
@@ -31,6 +33,10 @@ const EMPTY_CONFIG: MailConfig = {
 }
 
 export default function MailIntegrationPage() {
+    const params = useParams()
+    const locale = (params?.locale as AdminLocale) || 'tr'
+    const t = getAdminTranslations(locale) as AdminTranslations
+
     const [emails, setEmails] = useState<EmailMessage[]>([])
     const [selectedEmail, setSelectedEmail] = useState<EmailMessage | null>(null)
     const [converting, setConverting] = useState(false)
@@ -146,26 +152,26 @@ export default function MailIntegrationPage() {
             <div className="flex items-center justify-between flex-wrap gap-3">
                 <div>
                     <h1 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                        <Mail className="text-violet-500" size={22} /> Mail Entegrasyonu
+                        <Mail className="text-violet-500" size={22} /> {t.mailIntegrationPage.title}
                     </h1>
-                    <p className="text-sm text-slate-500 mt-1">E-postaları AI ile görevlere dönüştürün</p>
+                    <p className="text-sm text-slate-500 mt-1">{t.mailIntegrationPage.subtitle}</p>
                 </div>
                 <div className="flex items-center gap-2">
                     {config.id && (
                         <>
                             <span className={`text-xs font-bold flex items-center gap-1 ${config.isConnected ? 'text-emerald-600' : 'text-amber-500'}`}>
-                                {config.isConnected ? <><Wifi size={12} /> Bağlı</> : <><WifiOff size={12} /> Bağlantı Yok</>}
+                                {config.isConnected ? <><Wifi size={12} /> {t.mailIntegrationPage.connected}</> : <><WifiOff size={12} /> {t.mailIntegrationPage.disconnected}</>}
                             </span>
                             <button onClick={syncEmails} disabled={syncing}
                                 className="flex items-center gap-1.5 text-xs text-white bg-cyan-600 hover:bg-cyan-500 px-3 py-2 rounded-lg font-bold transition-colors disabled:opacity-50">
                                 <RefreshCw size={12} className={syncing ? 'animate-spin' : ''} />
-                                {syncing ? 'Senkronize...' : 'Senkronize Et'}
+                                {syncing ? t.mailIntegrationPage.syncing : t.mailIntegrationPage.sync}
                             </button>
                         </>
                     )}
                     <button onClick={() => setShowSettings(!showSettings)}
                         className="flex items-center gap-1.5 text-xs bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-3 py-2 rounded-lg font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700">
-                        <Settings size={12} /> Ayarlar
+                        <Settings size={12} /> {t.mailIntegrationPage.settings}
                     </button>
                 </div>
             </div>
@@ -181,25 +187,25 @@ export default function MailIntegrationPage() {
             {showSettings && (
                 <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm">
                     <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-4">
-                        <Server size={16} className="text-cyan-500" /> Mail Sunucu Ayarları
+                        <Server size={16} className="text-cyan-500" /> {t.mailIntegrationPage.serverSettings}
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* IMAP */}
                         <div className="space-y-3">
-                            <h4 className="text-xs font-bold text-slate-500 uppercase flex items-center gap-1"><Inbox size={12} /> IMAP (Gelen)</h4>
+                            <h4 className="text-xs font-bold text-slate-500 uppercase flex items-center gap-1"><Inbox size={12} /> {t.mailIntegrationPage.imapTitle}</h4>
                             <input value={config.email} onChange={e => setConfig(p => ({ ...p, email: e.target.value }))}
-                                placeholder="E-posta adresi" className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-cyan-500" />
+                                placeholder={t.mailIntegrationPage.emailAddress} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-cyan-500" />
                             <div className="grid grid-cols-3 gap-2">
                                 <input value={config.imapHost} onChange={e => setConfig(p => ({ ...p, imapHost: e.target.value }))}
                                     placeholder="IMAP Host" className="col-span-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-cyan-500" />
                                 <input type="number" value={config.imapPort} onChange={e => setConfig(p => ({ ...p, imapPort: Number(e.target.value) }))}
-                                    placeholder="Port" className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-cyan-500" />
+                                    placeholder={t.mailIntegrationPage.port} className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-cyan-500" />
                             </div>
                             <input value={config.imapUser} onChange={e => setConfig(p => ({ ...p, imapUser: e.target.value }))}
-                                placeholder="Kullanıcı adı" className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-cyan-500" />
+                                placeholder={t.mailIntegrationPage.username} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-cyan-500" />
                             <div className="relative">
                                 <input type={showPass ? 'text' : 'password'} value={imapPass} onChange={e => setImapPass(e.target.value)}
-                                    placeholder={config.id ? '••••• (değiştirmek için yazın)' : 'Şifre'}
+                                    placeholder={t.mailIntegrationPage.password}
                                     className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 pr-9 text-sm outline-none focus:border-cyan-500" />
                                 <button onClick={() => setShowPass(!showPass)} className="absolute right-2 top-2 text-slate-400 hover:text-slate-600">
                                     {showPass ? <EyeOff size={14} /> : <Eye size={14} />}
@@ -214,19 +220,19 @@ export default function MailIntegrationPage() {
 
                         {/* SMTP */}
                         <div className="space-y-3">
-                            <h4 className="text-xs font-bold text-slate-500 uppercase flex items-center gap-1"><ArrowRight size={12} /> SMTP (Giden)</h4>
-                            <p className="text-[10px] text-slate-400">Boş bırakılırsa IMAP ayarları kullanılır</p>
+                            <h4 className="text-xs font-bold text-slate-500 uppercase flex items-center gap-1"><ArrowRight size={12} /> {t.mailIntegrationPage.smtpTitle}</h4>
+                            <p className="text-[10px] text-slate-400">{t.mailIntegrationPage.emptySmtpDesc}</p>
                             <div className="grid grid-cols-3 gap-2">
                                 <input value={config.smtpHost} onChange={e => setConfig(p => ({ ...p, smtpHost: e.target.value }))}
                                     placeholder="SMTP Host" className="col-span-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-cyan-500" />
                                 <input type="number" value={config.smtpPort} onChange={e => setConfig(p => ({ ...p, smtpPort: Number(e.target.value) }))}
-                                    placeholder="Port" className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-cyan-500" />
+                                    placeholder={t.mailIntegrationPage.port} className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-cyan-500" />
                             </div>
                             <input value={config.smtpUser} onChange={e => setConfig(p => ({ ...p, smtpUser: e.target.value }))}
-                                placeholder="Kullanıcı adı (aynı ise boş bırakın)" className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-cyan-500" />
+                                placeholder={t.mailIntegrationPage.username} className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-cyan-500" />
                             <div className="relative">
                                 <input type={showPass ? 'text' : 'password'} value={smtpPass} onChange={e => setSmtpPass(e.target.value)}
-                                    placeholder="Şifre (aynı ise boş bırakın)"
+                                    placeholder={t.mailIntegrationPage.password}
                                     className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 pr-9 text-sm outline-none focus:border-cyan-500" />
                             </div>
                             <label className="flex items-center gap-2 text-xs text-slate-500">
@@ -242,23 +248,23 @@ export default function MailIntegrationPage() {
                             <button onClick={saveConfig} disabled={saving || !config.email || !config.imapHost}
                                 className="flex items-center gap-2 bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors disabled:opacity-50">
                                 {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-                                {saving ? 'Kaydediliyor...' : 'Kaydet & Bağlan'}
+                                {saving ? t.saving : t.mailIntegrationPage.saveAndConnect}
                             </button>
                             {config.id && (
                                 <button onClick={() => setShowSettings(false)}
-                                    className="px-4 py-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-sm font-medium">İptal</button>
+                                    className="px-4 py-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg text-sm font-medium">{t.cancel}</button>
                             )}
                         </div>
                         {config.id && (
                             <button onClick={deleteConfig} className="flex items-center gap-1 text-xs text-red-400 hover:text-red-600 transition-colors">
-                                <Trash2 size={12} /> Bağlantıyı Kaldır
+                                <Trash2 size={12} /> {t.mailIntegrationPage.cancelConnection}
                             </button>
                         )}
                     </div>
 
                     {config.lastSyncAt && (
                         <p className="text-[10px] text-slate-400 mt-2 flex items-center gap-1">
-                            <Clock size={10} /> Son senkronizasyon: {new Date(config.lastSyncAt).toLocaleString('tr-TR')} ({config.syncCount} kez)
+                            <Clock size={10} /> {t.mailIntegrationPage.lastSync}: {new Date(config.lastSyncAt).toLocaleString('tr-TR')} ({config.syncCount} kez)
                         </p>
                     )}
                 </div>
@@ -269,16 +275,16 @@ export default function MailIntegrationPage() {
                 {/* Email List */}
                 <div className="lg:col-span-1 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
                     <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-                        <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2"><Inbox size={16} /> Gelen Kutusu</h3>
+                        <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2"><Inbox size={16} /> {t.mailIntegrationPage.inbox}</h3>
                         <span className="text-[10px] bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 px-2 py-0.5 rounded-full font-bold">
-                            {emails.filter(e => !e.isRead).length} yeni
+                            {emails.filter(e => !e.isRead).length} {t.mailIntegrationPage.new}
                         </span>
                     </div>
                     {emails.length === 0 ? (
                         <div className="p-8 text-center">
                             <Mail className="mx-auto text-slate-300 dark:text-slate-600 mb-2" size={32} />
                             <p className="text-xs text-slate-400">
-                                {config.id ? 'Senkronize Et butonuna tıklayarak e-postalarınızı çekin' : 'Önce mail sunucu ayarlarını yapılandırın'}
+                                {config.id ? t.mailIntegrationPage.syncing : t.mailIntegrationPage.configFirstDesc}
                             </p>
                         </div>
                     ) : (
@@ -309,30 +315,30 @@ export default function MailIntegrationPage() {
                                     <button onClick={() => { setSelectedEmail(null); setSuggestion(null) }} className="p-1 text-slate-400 hover:text-slate-900"><X size={18} /></button>
                                 </div>
                                 <div className="flex items-center gap-2 mb-3">
-                                    <span className="text-xs text-slate-500">Gönderen:</span>
+                                    <span className="text-xs text-slate-500">{t.mailIntegrationPage.sender}</span>
                                     <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{selectedEmail.from}</span>
                                     <span className="text-xs text-slate-400">{(() => { try { return new Date(selectedEmail.date).toLocaleString('tr-TR') } catch { return '' } })()}</span>
                                 </div>
                                 <div className="bg-slate-50 dark:bg-slate-900/50 rounded-xl p-4 text-sm text-slate-700 dark:text-slate-300 mb-4">
-                                    {selectedEmail.snippet || '(İçerik yok)'}
+                                    {selectedEmail.snippet || t.mailIntegrationPage.noContent}
                                 </div>
                                 <button onClick={() => convertToTask(selectedEmail)} disabled={converting}
                                     className="flex items-center gap-2 bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-lg shadow-violet-600/20 disabled:opacity-50">
                                     {converting ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
-                                    {converting ? 'AI Analiz Ediyor...' : 'AI ile Göreve Dönüştür'}
+                                    {converting ? t.mailIntegrationPage.aiAnalyzing : t.mailIntegrationPage.aiAnalyze}
                                 </button>
                             </div>
 
                             {suggestion && (
                                 <div className="bg-gradient-to-br from-violet-50 to-cyan-50 dark:from-violet-900/20 dark:to-cyan-900/20 rounded-2xl border border-violet-200 dark:border-violet-800 p-5 shadow-sm">
                                     <h3 className="text-sm font-bold text-violet-700 dark:text-violet-300 flex items-center gap-2 mb-4">
-                                        <Sparkles size={16} /> AI Görev Önerisi
+                                        <Sparkles size={16} /> {t.mailIntegrationPage.aiSuggestion}
                                     </h3>
                                     <div className="space-y-3 mb-4">
-                                        <div><label className="text-[10px] text-slate-500 uppercase font-bold">Başlık</label><p className="text-sm font-bold text-slate-900 dark:text-white">{suggestion.title}</p></div>
+                                        <div><label className="text-[10px] text-slate-500 uppercase font-bold">{t.mailIntegrationPage.title}</label><p className="text-sm font-bold text-slate-900 dark:text-white">{suggestion.title}</p></div>
                                         <div><label className="text-[10px] text-slate-500 uppercase font-bold">Açıklama</label><p className="text-sm text-slate-700 dark:text-slate-300">{suggestion.description}</p></div>
                                         <div className="flex gap-4 flex-wrap">
-                                            <div><label className="text-[10px] text-slate-500 uppercase font-bold">Öncelik</label><p className="text-sm font-bold capitalize">{suggestion.priority}</p></div>
+                                            <div><label className="text-[10px] text-slate-500 uppercase font-bold">{t.priority}</label><p className="text-sm font-bold capitalize">{suggestion.priority}</p></div>
                                             <div><label className="text-[10px] text-slate-500 uppercase font-bold">Departman</label><p className="text-sm font-bold">{suggestion.suggestedDepartment}</p></div>
                                             <div><label className="text-[10px] text-slate-500 uppercase font-bold">Tahmini Süre</label><p className="text-sm font-bold">{suggestion.estimatedMin} dk</p></div>
                                         </div>
@@ -348,10 +354,10 @@ export default function MailIntegrationPage() {
                                         <button onClick={createTaskFromSuggestion} disabled={creating}
                                             className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-colors disabled:opacity-50">
                                             {creating ? <Loader2 size={14} className="animate-spin" /> : <CheckSquare size={14} />}
-                                            {creating ? 'Oluşturuluyor...' : 'Görev Olarak Oluştur'}
+                                            {creating ? t.mailIntegrationPage.creating : t.mailIntegrationPage.createAsTask}
                                         </button>
                                         <button onClick={() => setSuggestion(null)}
-                                            className="px-4 py-2 text-slate-500 hover:bg-white dark:hover:bg-slate-800 rounded-xl text-sm font-medium">İptal</button>
+                                            className="px-4 py-2 text-slate-500 hover:bg-white dark:hover:bg-slate-800 rounded-xl text-sm font-medium">{t.cancel}</button>
                                     </div>
                                 </div>
                             )}
@@ -359,8 +365,8 @@ export default function MailIntegrationPage() {
                     ) : (
                         <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-12 text-center shadow-sm">
                             <Mail className="mx-auto text-slate-300 dark:text-slate-600 mb-3" size={48} />
-                            <p className="text-slate-500 font-medium">Bir e-posta seçin</p>
-                            <p className="text-slate-400 text-sm mt-1">AI ile görevlere dönüştürmek için sol taraftaki bir e-postaya tıklayın</p>
+                            <p className="text-slate-500 font-medium">{t.mailIntegrationPage.inbox}</p>
+                            <p className="text-slate-400 text-sm mt-1">{t.mailIntegrationPage.selectEmailDesc}</p>
                         </div>
                     )}
                 </div>

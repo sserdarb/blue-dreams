@@ -44,6 +44,7 @@ import { AdminTranslations } from '@/lib/admin-translations'
 import { useTheme } from '@/components/admin/ThemeProvider'
 import { useModules } from '@/lib/modules/module-context'
 import PmaGravityLogo from '@/components/admin/PmaGravityLogo'
+import NotificationBell from '@/components/admin/NotificationBell'
 
 interface AdminSidebarProps {
     locale: string
@@ -86,6 +87,7 @@ export default function AdminSidebar({ locale, t }: AdminSidebarProps) {
                 { id: 'nav-extras', href: '/extras', label: t.extras, icon: ShoppingBag },
                 { id: 'nav-crm', href: '/crm', label: t.crm, icon: PieChart },
                 { id: 'nav-marketing', href: '/marketing', label: t.marketing, icon: Megaphone },
+                { id: 'nav-analytics', href: '/analytics', label: t.analytics, icon: BarChart3 },
                 { id: 'nav-social', href: '/social', label: t.socialMedia, icon: Share2 },
                 { id: 'nav-content-gen', href: '/social/content', label: t.contentCreator, icon: Sparkles },
             ]
@@ -126,6 +128,7 @@ export default function AdminSidebar({ locale, t }: AdminSidebarProps) {
                 { id: 'nav-hotel-rooms', href: '/content/rooms', label: t.rooms, icon: BedDouble },
                 { id: 'nav-dining', href: '/content/dining', label: t.dining, icon: UtensilsCrossed },
                 { id: 'nav-spa', href: '/content/spa', label: t.spaWellness, icon: Sparkles },
+                { id: 'nav-sports', href: '/content/sports', label: t.sportsAndActivities || 'Spor & Aktiviteler', icon: PartyPopper },
                 { id: 'nav-meeting', href: '/content/meeting', label: t.meeting, icon: Users },
                 { id: 'nav-activities', href: '/activities', label: t.activities, icon: PartyPopper },
                 { id: 'nav-local-guide', href: '/local-guide', label: t.localGuide, icon: Compass },
@@ -137,7 +140,6 @@ export default function AdminSidebar({ locale, t }: AdminSidebarProps) {
             id: 'section-entegrasyon',
             label: t.navIntegrations,
             items: [
-                { id: 'nav-analytics', href: '/analytics', label: t.analytics, icon: BarChart3 },
                 { id: 'nav-concierge', href: '/chat', label: t.blueConcierge, icon: MessageSquare },
                 { id: 'nav-booking', href: '/integrations/booking', label: t.bookingEngine, icon: CreditCard },
             ]
@@ -147,14 +149,17 @@ export default function AdminSidebar({ locale, t }: AdminSidebarProps) {
     return (
         <>
             <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-white dark:bg-[#0f172a] border-b border-slate-200 dark:border-white/10 flex items-center px-4 z-40 justify-between">
-                <div className="flex items-center gap-3">
-                    <PmaGravityLogo size={28} textSize="sm" />
+                <div className="flex items-center gap-2">
                     <button
                         onClick={() => setIsOpen(!isOpen)}
-                        className="p-2 text-slate-600 dark:text-white hover:bg-slate-100 dark:hover:bg-white/10 rounded-lg transition-colors"
+                        className="p-1.5 -ml-1 text-slate-600 dark:text-white hover:bg-slate-100 dark:hover:bg-white/10 rounded-lg transition-colors"
                     >
                         {isOpen ? <X size={24} /> : <HamburgerIcon size={24} />}
                     </button>
+                    <PmaGravityLogo size={28} textSize="sm" />
+                </div>
+                <div className="flex items-center">
+                    <NotificationBell />
                 </div>
             </div>
 

@@ -1119,7 +1119,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
                 </div>
                 <div className="flex justify-between items-center mt-4 p-3 bg-slate-100 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-700/50">
                     <div>
-                        <p className="text-xs text-slate-400">Gelecek 14 Gün Toplam (Onaylı)</p>
+                        <p className="text-xs text-slate-400">{t.widgets.next14DaysTotal}</p>
                         <p className="text-xl font-bold text-white">{fmtMoney(chartData.reduce((a, b) => a + b.revenue, 0))}</p>
                     </div>
                     <div className="text-right">
@@ -1145,9 +1145,9 @@ export default function ReportsClient({ reservations, comparisonReservations = [
                 <table className="w-full text-sm text-left">
                     <thead className="bg-slate-900/50 text-xs text-slate-400 uppercase">
                         <tr>
-                            <th className="px-3 py-2">Operatör</th>
-                            <th className="px-3 py-2 text-center">İşlem</th>
-                            <th className="px-3 py-2 text-right">Puan</th>
+                            <th className="px-3 py-2">{t.widgets.operator}</th>
+                            <th className="px-3 py-2 text-center">{t.widgets.operation}</th>
+                            <th className="px-3 py-2 text-right">{t.widgets.score}</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-700">
@@ -1180,7 +1180,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
         const max = Math.max(...sorted.map(([, v]) => v), 1)
         return (
             <div className="mt-2">
-                <div className="text-xs text-slate-500 dark:text-slate-400 mb-2">Son 30 gün</div>
+                <div className="text-xs text-slate-500 dark:text-slate-400 mb-2">{t.widgets.last30Days}</div>
                 <div className="h-48 flex items-end gap-px overflow-x-auto">
                     {sorted.map(([day, val], i) => (
                         <div key={i} className="flex-1 min-w-[8px] flex flex-col items-center justify-end h-full group relative">
@@ -1222,7 +1222,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
         }
         return (
             <div className="mt-2">
-                <div className="text-xs text-slate-500 dark:text-slate-400 mb-2">Son 12 hafta</div>
+                <div className="text-xs text-slate-500 dark:text-slate-400 mb-2">{t.widgets.last12Weeks}</div>
                 <div className="h-48 flex items-end gap-1.5">
                     {sorted.map(([week, val], i) => (
                         <div key={i} className="flex-1 flex flex-col items-center justify-end h-full group relative">
@@ -1326,7 +1326,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
 
     const renderRevNationalityChart = (data: Reservation[]) => {
         const nat: Record<string, number> = {}
-        data.forEach(r => { const n = r.nationality || 'Bilinmeyen'; nat[n] = (nat[n] || 0) + dp(r.totalPrice, r.currency) })
+        data.forEach(r => { const n = r.nationality || t.widgets.unknown; nat[n] = (nat[n] || 0) + dp(r.totalPrice, r.currency) })
         const sorted = Object.entries(nat).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value).slice(0, 10)
         const max = Math.max(...sorted.map(s => s.value), 1)
         return (
@@ -1346,7 +1346,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
 
     const renderRevSegmentChart = (data: Reservation[]) => {
         const seg: Record<string, number> = {}
-        data.forEach(r => { const s = r.agency ? (r.channel === 'Booking.com' || r.channel === 'Expedia' ? 'OTA' : r.channel === 'Direct' ? 'Direkt' : 'Acenta') : 'Walk-in'; seg[s] = (seg[s] || 0) + dp(r.totalPrice, r.currency) })
+        data.forEach(r => { const s = r.agency ? (r.channel === 'Booking.com' || r.channel === 'Expedia' ? 'OTA' : r.channel === 'Direct' ? t.widgets.direct : t.widgets.agency) : 'Walk-in'; seg[s] = (seg[s] || 0) + dp(r.totalPrice, r.currency) })
         const total = Object.values(seg).reduce((a, b) => a + b, 0) || 1
         const sorted = Object.entries(seg).map(([name, value]) => ({ name, value, pct: (value / total) * 100 })).sort((a, b) => b.value - a.value)
         const colors = ['from-violet-500 to-purple-600', 'from-cyan-500 to-blue-600', 'from-emerald-500 to-green-600', 'from-amber-500 to-orange-600']
@@ -1358,7 +1358,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
                             <span className="font-medium text-sm">{s.name}</span>
                             <span className="text-lg font-bold">{fmtMoney(s.value)}</span>
                         </div>
-                        <div className="text-xs opacity-80 mt-1">Toplam gelirin %{s.pct.toFixed(1)}&apos;i</div>
+                        <div className="text-xs opacity-80 mt-1">{t.widgets.pctOfTotalRevenue.replace('{pct}', s.pct.toFixed(1))}</div>
                     </div>
                 ))}
             </div>
@@ -1368,7 +1368,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
     const renderRevMealplanChart = (data: Reservation[]) => {
         const boards: Record<string, { revenue: number; count: number }> = {}
         data.forEach(r => {
-            const b = r.boardType || 'Belirtilmemiş'
+            const b = r.boardType || t.widgets.unspecified
             if (!boards[b]) boards[b] = { revenue: 0, count: 0 }
             boards[b].revenue += dp(r.totalPrice, r.currency)
             boards[b].count++
@@ -1387,7 +1387,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
                             <div className="flex-1 h-2.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
                                 <div className="h-full bg-gradient-to-r from-orange-500 to-yellow-400 rounded-full" style={{ width: `${(b.revenue / maxRev) * 100}%` }} />
                             </div>
-                            <span className="text-[10px] text-slate-400">{b.count} rez · ort {fmtMoney(b.avg)}</span>
+                            <span className="text-[10px] text-slate-400">{b.count} {t.widgets.resSuffix} · {t.widgets.avg} {fmtMoney(b.avg)}</span>
                         </div>
                     </div>
                 ))}
@@ -1410,7 +1410,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
         const sampled = points.filter((_, i) => i % step === 0 || i === points.length - 1)
         return (
             <div className="mt-2">
-                <div className="text-xs text-slate-500 mb-2">Kümülatif gelir hızı</div>
+                <div className="text-xs text-slate-500 mb-2">{t.widgets.cumulativeRevenuePace}</div>
                 <div className="h-40 relative">
                     <svg viewBox={`0 0 ${sampled.length * 20} 100`} className="w-full h-full" preserveAspectRatio="none">
                         <defs><linearGradient id="paceGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#06b6d4" stopOpacity="0.3" /><stop offset="100%" stopColor="#06b6d4" stopOpacity="0" /></linearGradient></defs>
@@ -1419,7 +1419,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
                     </svg>
                 </div>
                 <div className="flex justify-between text-[10px] text-slate-400 mt-1">
-                    <span>{sampled[0]?.date}</span><span>Toplam: {fmtMoney(cum)}</span><span>{sampled[sampled.length - 1]?.date}</span>
+                    <span>{sampled[0]?.date}</span><span>{t.widgets.totalStr}: {fmtMoney(cum)}</span><span>{sampled[sampled.length - 1]?.date}</span>
                 </div>
             </div>
         )
@@ -1443,7 +1443,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
                 {forecast.map((f, i) => (
                     <div key={i} className="flex-1 flex flex-col items-center justify-end h-full group relative">
                         <div className="absolute bottom-full mb-1 bg-slate-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 z-10 whitespace-nowrap pointer-events-none">
-                            {f.month}: {fmtMoney(f.forecast)} {f.isFuture ? '(tahmin)' : ''}
+                            {f.month}: {fmtMoney(f.forecast)} {f.isFuture ? `(${t.widgets.estimate})` : ''}
                         </div>
                         <div className={`w-full rounded-t-sm ${f.isFuture ? 'bg-gradient-to-t from-amber-500/60 to-amber-300/40 border border-dashed border-amber-400' : 'bg-gradient-to-t from-blue-600 to-cyan-400'}`}
                             style={{ height: `${(f.forecast / max) * 100}%`, minHeight: '3px' }} />
@@ -1475,7 +1475,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
                     </svg>
                 </div>
                 <div className="flex justify-between text-[9px] text-slate-400">{points.map((p, i) => <span key={i}>{p.month}</span>)}</div>
-                <div className="text-right text-sm font-bold text-purple-600 dark:text-purple-400 mt-1">Toplam: {fmtMoney(cum)}</div>
+                <div className="text-right text-sm font-bold text-purple-600 dark:text-purple-400 mt-1">{t.widgets.totalStr}: {fmtMoney(cum)}</div>
             </div>
         )
     }
@@ -1486,7 +1486,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
         const max = Math.max(...hours, 1)
         return (
             <div className="mt-2">
-                <div className="text-[10px] text-slate-400 mb-1">Satış saati bazlı dağılım (tahmini)</div>
+                <div className="text-[10px] text-slate-400 mb-1">{t.widgets.salesByHourEst}</div>
                 <div className="h-32 flex items-end gap-px">
                     {hours.map((v, h) => (
                         <div key={h} className="flex-1 flex flex-col items-center justify-end h-full group relative">
@@ -1509,23 +1509,23 @@ export default function ReportsClient({ reservations, comparisonReservations = [
             <div className="mt-2 space-y-4">
                 <div className="grid grid-cols-2 gap-3">
                     <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-3 text-center">
-                        <div className="text-xs text-blue-600 dark:text-blue-400 mb-1">Brüt Gelir</div>
+                        <div className="text-xs text-blue-600 dark:text-blue-400 mb-1">{t.grossRevenue}</div>
                         <div className="text-lg font-bold text-blue-700 dark:text-blue-300">{fmtMoney(gross)}</div>
                     </div>
                     <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-xl p-3 text-center">
-                        <div className="text-xs text-emerald-600 dark:text-emerald-400 mb-1">Net Gelir</div>
+                        <div className="text-xs text-emerald-600 dark:text-emerald-400 mb-1">{t.netRevenue}</div>
                         <div className="text-lg font-bold text-emerald-700 dark:text-emerald-300">{fmtMoney(net)}</div>
                     </div>
                 </div>
                 <div className="bg-red-50 dark:bg-red-900/20 rounded-xl p-3">
                     <div className="flex justify-between items-center">
-                        <span className="text-xs text-red-600 dark:text-red-400">KDV + Konaklama Vergisi</span>
+                        <span className="text-xs text-red-600 dark:text-red-400">{t.vatAndAccTax}</span>
                         <span className="font-bold text-red-700 dark:text-red-300">{fmtMoney(tax)}</span>
                     </div>
                     <div className="h-2 bg-red-200 dark:bg-red-800 rounded-full mt-2 overflow-hidden">
                         <div className="h-full bg-red-500 rounded-full" style={{ width: `${taxPct}%` }} />
                     </div>
-                    <div className="text-[10px] text-red-500 mt-1 text-right">%{taxPct.toFixed(1)} vergi oranı</div>
+                    <div className="text-[10px] text-red-500 mt-1 text-right">{t.widgets.taxRate.replace('{pct}', taxPct.toFixed(1))}</div>
                 </div>
             </div>
         )
@@ -1534,7 +1534,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
     const renderRevCommissionChart = (data: Reservation[]) => {
         const ch: Record<string, { revenue: number; count: number }> = {}
         data.forEach(r => {
-            const c = r.channel || 'Diğer'
+            const c = r.channel || t.widgets.other
             if (!ch[c]) ch[c] = { revenue: 0, count: 0 }
             ch[c].revenue += dp(r.totalPrice, r.currency)
             ch[c].count++
@@ -1547,7 +1547,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
         const totalComm = sorted.reduce((s, c) => s + c.commission, 0)
         return (
             <div className="space-y-2 mt-2">
-                <div className="text-xs text-slate-500 mb-1">Tahmini komisyon dağılımı</div>
+                <div className="text-xs text-slate-500 mb-1">{t.widgets.estCommissionDist}</div>
                 {sorted.slice(0, 8).map((c, i) => (
                     <div key={i} className="flex items-center justify-between text-xs">
                         <span className="text-slate-600 dark:text-slate-300 flex-1">{c.name}</span>
@@ -1556,7 +1556,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
                     </div>
                 ))}
                 <div className="border-t border-slate-200 dark:border-slate-700 pt-2 flex justify-between text-sm font-bold">
-                    <span className="text-slate-700 dark:text-slate-300">Toplam Komisyon</span>
+                    <span className="text-slate-700 dark:text-slate-300">{t.widgets.totalCommission}</span>
                     <span className="text-red-600 dark:text-red-400">-{fmtMoney(totalComm)}</span>
                 </div>
             </div>
@@ -1683,9 +1683,9 @@ export default function ReportsClient({ reservations, comparisonReservations = [
         return (
             <div className="mt-2 text-center">
                 <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4">
-                    <div className="text-xs text-slate-500 mb-1">{title} (tahmini)</div>
+                    <div className="text-xs text-slate-500 mb-1">{title} ({t.widgets.estimate})</div>
                     <div className="text-2xl font-bold text-slate-900 dark:text-white">{fmtMoney(estimated)}</div>
-                    <div className="text-[10px] text-slate-400 mt-1">Toplam gelirin ~%{pctOfTotal}&apos;i</div>
+                    <div className="text-[10px] text-slate-400 mt-1">{t.widgets.pctOfTotalRevenue.replace('{pct}', pctOfTotal.toString())}</div>
                 </div>
             </div>
         )
@@ -2642,8 +2642,8 @@ export default function ReportsClient({ reservations, comparisonReservations = [
                 {/* Date basis toggle */}
                 <div className="flex items-center justify-between">
                     <div className="flex gap-1">
-                        <button onClick={() => setCancelDateBasis('checkIn')} className={`px-2 py-1 rounded text-[10px] font-bold transition-colors ${cancelDateBasis === 'checkIn' ? 'bg-red-500 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'}`}>Konaklama Tarihi</button>
-                        <button onClick={() => setCancelDateBasis('saleDate')} className={`px-2 py-1 rounded text-[10px] font-bold transition-colors ${cancelDateBasis === 'saleDate' ? 'bg-red-500 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'}`}>Rezervasyon Tarihi</button>
+                        <button onClick={() => setCancelDateBasis('checkIn')} className={`px-2 py-1 rounded text-[10px] font-bold transition-colors ${cancelDateBasis === 'checkIn' ? 'bg-red-500 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'}`}>{t.stayDate}</button>
+                        <button onClick={() => setCancelDateBasis('saleDate')} className={`px-2 py-1 rounded text-[10px] font-bold transition-colors ${cancelDateBasis === 'saleDate' ? 'bg-red-500 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300'}`}>{t.reservationDate}</button>
                     </div>
                     <span className="text-[10px] text-red-400 font-bold">Genel: %{overallRate} | {totalCancelled} iptal | {fmtMoney(totalCancelledRev)}</span>
                 </div>
@@ -3481,9 +3481,10 @@ export default function ReportsClient({ reservations, comparisonReservations = [
         if (!def) return null
         if (activeTab !== 'all' && def.group !== activeTab) return null
 
-        const rawT = t[def.titleKey as keyof AdminTranslations];
-        const titleText = typeof rawT === 'string' ? rawT : undefined;
-        const title = w.customTitle || titleText || TITLE_FALLBACKS[def.titleKey] || def.titleKey
+        const rawT = t.widgetTitles ? t.widgetTitles[def.titleKey as keyof typeof t.widgetTitles] : undefined;
+        const fallbackT = typeof t[def.titleKey as keyof AdminTranslations] === 'string' ? t[def.titleKey as keyof AdminTranslations] : undefined;
+        const titleText = rawT || fallbackT;
+        const title = w.customTitle || titleText || TITLE_FALLBACKS[def.titleKey] || def.titleKey as string
         const sizeClass = SIZE_CLASSES[w.size || def.defaultSize]
 
         // Apply per-widget channel filter
@@ -3652,7 +3653,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
                 <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2 cursor-move opacity-50 hover:opacity-100">
                         <GripVertical size={16} className="text-slate-500" />
-                        <h3 className="font-bold text-slate-900 dark:text-white text-lg">{title}</h3>
+                        <h3 className="font-bold text-slate-900 dark:text-white text-lg">{title as any}</h3>
                         {w.filters?.channel && <span className="text-xs bg-cyan-100 dark:bg-cyan-900/50 text-cyan-700 dark:text-cyan-400 px-2 py-0.5 rounded">{w.filters.channel}</span>}
                     </div>
                     <div className="flex items-center gap-1">
@@ -3692,7 +3693,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
                 <div className="animate-fade-in">
                     {renderer ? renderer(widgetData) : (
                         <div className="h-40 flex items-center justify-center text-slate-400 dark:text-slate-500 text-sm bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-dashed border-slate-300 dark:border-slate-700">
-                            {title} — çok yakında
+                            {title as any} — çok yakında
                         </div>
                     )}
                 </div>
@@ -3757,13 +3758,13 @@ export default function ReportsClient({ reservations, comparisonReservations = [
                                 onClick={() => setDateBasis('sale')}
                                 className={`px-3 py-1.5 text-xs font-bold transition-all flex items-center gap-1 ${dateBasis === 'sale' ? 'bg-cyan-600 text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
                             >
-                                <CalendarCheck size={12} />Rez. Tarihi
+                                <CalendarCheck size={12} />{t.reservationDate}
                             </button>
                             <button
                                 onClick={() => setDateBasis('stay')}
                                 className={`px-3 py-1.5 text-xs font-bold transition-all flex items-center gap-1 ${dateBasis === 'stay' ? 'bg-emerald-600 text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
                             >
-                                <BedDouble size={12} />Konaklama
+                                <BedDouble size={12} />{t.stay}
                             </button>
                         </div>
                     </div>
@@ -3812,14 +3813,14 @@ export default function ReportsClient({ reservations, comparisonReservations = [
                             onClick={handleRefresh}
                             disabled={refreshing}
                             className="flex items-center gap-2 px-3 py-2.5 bg-emerald-900/30 text-emerald-400 hover:bg-emerald-900/50 rounded-xl font-bold transition-all border border-emerald-800/50 disabled:opacity-50 text-sm"
-                            title="Verileri yenile"
+                            title={t.refresh}
                         >
                             <RefreshCw size={16} className={refreshing ? 'animate-spin' : ''} />
-                            Yenile
+                            {t.refresh}
                         </button>
                         {lastUpdated && (
                             <span className="text-xs text-slate-500 whitespace-nowrap hidden sm:inline" suppressHydrationWarning title={lastUpdated}>
-                                Son: {lastUpdated.slice(11, 16)}
+                                {t.lastUpdate}: {lastUpdated.slice(11, 16)}
                             </span>
                         )}
                     </div>
@@ -3880,14 +3881,14 @@ export default function ReportsClient({ reservations, comparisonReservations = [
                                 <div className="flex gap-1 flex-wrap mb-2">
                                     <button onClick={() => setWidgetCatFilter('all')} className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ${widgetCatFilter === 'all' ? 'bg-cyan-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}>Tümü</button>
                                     {(Object.keys(CATEGORY_LABELS) as WidgetCategory[]).map(cat => (
-                                        <button key={cat} onClick={() => setWidgetCatFilter(cat)} className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ${widgetCatFilter === cat ? 'bg-cyan-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}>{CATEGORY_LABELS[cat]}</button>
+                                        <button key={cat} onClick={() => setWidgetCatFilter(cat)} className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ${widgetCatFilter === cat ? 'bg-cyan-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}>{(t.categoryLabels?.[(cat) as keyof typeof t.categoryLabels] || CATEGORY_LABELS[cat])}</button>
                                     ))}
                                 </div>
                                 {/* Type Filter */}
                                 <div className="flex gap-1">
                                     {(['all', 'chart', 'data', 'graph'] as const).map(tp => (
                                         <button key={tp} onClick={() => setWidgetTypeFilter(tp)} className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ${widgetTypeFilter === tp ? 'bg-purple-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}>
-                                            {tp === 'all' ? 'Tüm Tipler' : TYPE_LABELS[tp]}
+                                            {tp === 'all' ? 'Tüm Tipler' : (t.typeLabels?.[(tp) as keyof typeof t.typeLabels] || TYPE_LABELS[tp])}
                                         </button>
                                     ))}
                                 </div>
@@ -3913,7 +3914,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
                                                 <div className="min-w-0">
                                                     <div className="font-bold text-sm text-slate-900 dark:text-white truncate">{def.title || TITLE_FALLBACKS[def.titleKey] || wc.id}</div>
                                                     <div className="flex items-center gap-1.5 mt-0.5">
-                                                        <span className="text-[10px] text-slate-400 capitalize">{CATEGORY_LABELS[def.category]}</span>
+                                                        <span className="text-[10px] text-slate-400 capitalize">{(t.categoryLabels?.[(def.category) as keyof typeof t.categoryLabels] || CATEGORY_LABELS[def.category])}</span>
                                                         <span className="text-[10px] text-slate-600">·</span>
                                                         <span className="text-[10px] text-slate-400">{def.defaultSize}</span>
                                                     </div>

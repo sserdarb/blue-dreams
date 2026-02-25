@@ -18,7 +18,10 @@ interface Props {
     error?: string
 }
 
-export default function ExtrasClient({ spaData, minibarData, restaurantData, translations: t, error }: Props) {
+export default function ExtrasClient({ spaData, minibarData, restaurantData, translations: rawT, error }: Props) {
+    const t = rawT;
+    const e = rawT.extrasPage;
+
     if (error) {
         return <ModuleOffline moduleName="Ekstra Satışlar" dataSource="elektra" offlineReason={error} />
     }
@@ -114,7 +117,7 @@ export default function ExtrasClient({ spaData, minibarData, restaurantData, tra
                 <div onClick={() => setActiveTab('overview')} className={`cursor-pointer p-4 rounded-xl border transition-all ${activeTab === 'overview' ? 'bg-blue-600 text-white border-blue-500 shadow-lg scale-105' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-blue-500/50 text-slate-700 dark:text-slate-300'}`}>
                     <div className="flex justify-between items-start">
                         <div>
-                            <p className={`text-sm font-medium ${activeTab === 'overview' ? 'text-blue-100' : 'text-gray-500'}`}>Toplam Ekstra</p>
+                            <p className={`text-sm font-medium ${activeTab === 'overview' ? 'text-blue-100' : 'text-gray-500'}`}>{e?.totalExtras}</p>
                             <h3 className="text-2xl font-bold mt-1">{fmt(totals.all)}</h3>
                         </div>
                         <div className={`p-2 rounded-lg ${activeTab === 'overview' ? 'bg-blue-500' : 'bg-blue-50 text-blue-600'}`}>
@@ -165,7 +168,7 @@ export default function ExtrasClient({ spaData, minibarData, restaurantData, tra
                 <div className="flex items-center justify-between mb-6">
                     <h3 className="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
                         <BarChart3 size={20} className="text-gray-400" />
-                        {activeTab === 'overview' ? 'Günlük Toplam Gelir' :
+                        {activeTab === 'overview' ? e?.dailyTotalRev :
                             activeTab === 'spa' ? `${t.spaRevenue} Analizi` :
                                 activeTab === 'minibar' ? `${t.minibarRevenue} Analizi` :
                                     `${t.restaurantExtras} Analizi`}
@@ -198,23 +201,23 @@ export default function ExtrasClient({ spaData, minibarData, restaurantData, tra
                         {spaData.length === 0 && minibarData.length === 0 && restaurantData.length === 0 && (
                             <div className="py-16 text-center text-slate-400">
                                 <BarChart3 size={48} className="mx-auto mb-4 opacity-30" />
-                                <p className="font-medium">Seçili tarih aralığında veri bulunamadı</p>
-                                <p className="text-sm mt-1">Elektra PMS&#39;den veri geldiğinde grafikler otomatik görünecektir.</p>
+                                <p className="font-medium">{e?.noDataSelected}</p>
+                                <p className="text-sm mt-1">{e?.pmsWaiting}</p>
                             </div>
                         )}
                     </div>
                 )}
 
-                {activeTab === 'spa' && (spaData.length > 0 ? renderChart(spaData, '#9333ea', t.spaRevenue) : <div className="py-16 text-center text-slate-400"><Sparkles size={48} className="mx-auto mb-4 opacity-30" /><p>Spa gelir verisi bulunamadı</p></div>)}
-                {activeTab === 'minibar' && (minibarData.length > 0 ? renderChart(minibarData, '#d97706', t.minibarRevenue) : <div className="py-16 text-center text-slate-400"><Coffee size={48} className="mx-auto mb-4 opacity-30" /><p>Minibar gelir verisi bulunamadı</p></div>)}
-                {activeTab === 'restaurant' && (restaurantData.length > 0 ? renderChart(restaurantData, '#059669', t.restaurantExtras) : <div className="py-16 text-center text-slate-400"><UtensilsCrossed size={48} className="mx-auto mb-4 opacity-30" /><p>Restoran gelir verisi bulunamadı</p></div>)}
+                {activeTab === 'spa' && (spaData.length > 0 ? renderChart(spaData, '#9333ea', t.spaRevenue) : <div className="py-16 text-center text-slate-400"><Sparkles size={48} className="mx-auto mb-4 opacity-30" /><p>{e?.noSpaData}</p></div>)}
+                {activeTab === 'minibar' && (minibarData.length > 0 ? renderChart(minibarData, '#d97706', t.minibarRevenue) : <div className="py-16 text-center text-slate-400"><Coffee size={48} className="mx-auto mb-4 opacity-30" /><p>{e?.noMinibarData}</p></div>)}
+                {activeTab === 'restaurant' && (restaurantData.length > 0 ? renderChart(restaurantData, '#059669', t.restaurantExtras) : <div className="py-16 text-center text-slate-400"><UtensilsCrossed size={48} className="mx-auto mb-4 opacity-30" /><p>{e?.noRestData}</p></div>)}
             </div>
 
             {/* Department Comparison */}
             {(spaData.length > 0 || minibarData.length > 0 || restaurantData.length > 0) && (
                 <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm">
                     <h3 className="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2 mb-4">
-                        <BarChart3 size={20} className="text-gray-400" /> Departman Karşılaştırması
+                        <BarChart3 size={20} className="text-gray-400" /> {e?.deptComparison}
                     </h3>
                     <ResponsiveContainer width="100%" height={250}>
                         <BarChart data={[
@@ -225,7 +228,7 @@ export default function ExtrasClient({ spaData, minibarData, restaurantData, tra
                             <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                             <XAxis dataKey="name" fontSize={12} />
                             <YAxis fontSize={12} tickFormatter={(v: number) => `${(v / 1000).toFixed(0)}K`} />
-                            <Tooltip formatter={(value: any) => [fmt(value), 'Gelir']} />
+                            <Tooltip formatter={(value: any) => [fmt(value), e?.revenue]} />
                             <Bar dataKey="value" name="Gelir" radius={[8, 8, 0, 0]}>
                                 {[
                                     <rect key="spa" fill="#9333ea" />,
@@ -252,13 +255,13 @@ export default function ExtrasClient({ spaData, minibarData, restaurantData, tra
 
             {/* Cross-Module Navigation */}
             <div className="bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5">
-                <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mb-3">İlgili Modüller</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mb-3">{e?.relatedModules}</p>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     {[
-                        { href: 'yield', label: 'Yield Management', desc: 'ADR analizi, fiyat matrisi', icon: TrendingUp },
-                        { href: 'reports', label: 'Yönetim Raporları', desc: 'S26, Pace, milliyet', icon: BarChart3 },
-                        { href: 'reservations', label: 'Rezervasyonlar', desc: 'Detaylı liste ve filtre', icon: Calendar },
-                        { href: 'purchasing', label: 'Satın Alma', desc: 'Stok, tedarik', icon: DollarSign },
+                        { href: 'yield', label: 'Yield Management', desc: e?.yieldDesc, icon: TrendingUp },
+                        { href: 'reports', label: '{t.reportsPage.managementReports}', desc: e?.reportsDesc, icon: BarChart3 },
+                        { href: 'reservations', label: '{t.reservationsPage?.reservations}', desc: e?.reservationsDesc, icon: Calendar },
+                        { href: 'purchasing', label: '{t.reportsPage.purchasingReports}', desc: e?.purchasingDesc, icon: DollarSign },
                     ].map((m, i) => (
                         <a key={i} href={`../${m.href}`} className="flex items-center gap-3 p-3 bg-white dark:bg-white/5 rounded-lg border border-slate-200 dark:border-white/10 hover:border-cyan-400 dark:hover:border-cyan-500 transition-colors group">
                             <m.icon size={18} className="text-slate-400 group-hover:text-cyan-500 transition-colors flex-shrink-0" />

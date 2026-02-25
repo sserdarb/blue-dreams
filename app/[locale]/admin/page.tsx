@@ -35,19 +35,19 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
           </span>
-          <span className="text-emerald-300 text-sm">{t('connectionStatus')}</span>
+          <span className="text-emerald-300 text-sm">{(t as any).connectionStatus}</span>
         </div>
 
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">{t('title')}</h1>
-            <p className="text-slate-500 dark:text-slate-400 mt-1">{t('subtitle')}</p>
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">{(t as any).title}</h1>
+            <p className="text-slate-500 dark:text-slate-400 mt-1">{(t as any).subtitle}</p>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-slate-500 text-sm">{t('lastUpdate')}</span>
+            <span className="text-slate-500 text-sm">{(t as any).lastUpdate}</span>
             <button className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-sm font-medium transition-colors">
-              {t('refresh')}
+              {(t as any).refresh}
             </button>
           </div>
         </div>
@@ -55,42 +55,42 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard
-            title={t('occupancyRate')}
+            title={(t as any).occupancyRate}
             value={stats.occupancyRate}
-            subtitle={`${stats.occupancyAvailable} ${t('availableRooms')} / ${stats.occupancyTotal} ${t('totalRooms')}`}
+            subtitle={`${stats.occupancyAvailable} ${(t as any).availableRooms} / ${stats.occupancyTotal} ${(t as any).totalRooms}`}
             icon={<Building2 size={24} />}
             trend="neutral"
-            trendValue={t('liveData')}
+            trendValue={(t as any).liveData}
             color="green"
           />
           <StatCard
-            title={t('todayReservation')}
+            title={(t as any).todayReservation}
             value={stats.todaySalesCount}
-            subtitle={`${t('todayRevenue')}: ${stats.todayRevenue}`}
+            subtitle={`${(t as any).todayRevenue}: ${stats.todayRevenue}`}
             secondaryValue={stats.todayRevenueEUR}
             icon={<Calendar size={24} />}
             trend="neutral"
-            trendValue={t('live')}
+            trendValue={(t as any).live}
             color="cyan"
           />
           <StatCard
-            title={t('monthlyRevenue')}
+            title={(t as any).monthlyRevenue}
             value={stats.totalRevenue}
             secondaryValue={stats.totalRevenueEUR}
-            subtitle={`${stats.monthlyReservationCount} ${t('reservationCount')}`}
+            subtitle={`${stats.monthlyReservationCount} ${(t as any).reservationCount}`}
             icon={<TrendingUp size={24} />}
             trend="neutral"
-            trendValue={t('live')}
+            trendValue={(t as any).live}
             color="purple"
           />
           <StatCard
-            title={t('adr')}
+            title={(t as any).adr}
             value={stats.adr}
             secondaryValue={stats.adrEUR}
-            subtitle={t('adrSubtitle')}
+            subtitle={(t as any).adrSubtitle}
             icon={<DollarSign size={24} />}
             trend="neutral"
-            trendValue={t('live')}
+            trendValue={(t as any).live}
             color="orange"
           />
         </div>
@@ -100,8 +100,8 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
           <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 shadow-sm">
             <div className="flex items-center gap-2 mb-6">
               <BedDouble size={20} className="text-emerald-500 dark:text-emerald-400" />
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">{t('roomStatus')}</h2>
-              <span className="ml-2 px-2 py-0.5 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs rounded-full font-medium">{t('live')}</span>
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white">{(t as any).roomStatus}</h2>
+              <span className="ml-2 px-2 py-0.5 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs rounded-full font-medium">{(t as any).live}</span>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
               {roomBreakdown.map((room: any) => {
@@ -117,7 +117,7 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
                         style={{ width: `${pct}%` }}
                       />
                     </div>
-                    <p className="text-slate-500 text-xs mt-1">{occupied}/{room.total} {t('occupied')}</p>
+                    <p className="text-slate-500 text-xs mt-1">{occupied}/{room.total} {(t as any).occupied}</p>
                   </div>
                 )
               })}
@@ -129,15 +129,15 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 shadow-sm">
             <div className="flex items-center gap-2 mb-6">
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">{t('reservationPerformance')}</h2>
-              <span className="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs rounded-full font-medium">{t('live')}</span>
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white">{(t as any).reservationPerformance}</h2>
+              <span className="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs rounded-full font-medium">{(t as any).live}</span>
             </div>
             <SalesChart data={salesData} />
           </div>
           <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 shadow-sm">
             <div className="flex items-center gap-2 mb-6">
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">{t('channelDistribution')}</h2>
-              <span className="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs rounded-full font-medium">{t('live')}</span>
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white">{(t as any).channelDistribution}</h2>
+              <span className="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs rounded-full font-medium">{(t as any).live}</span>
             </div>
             <ChannelPieChart data={channelData} />
           </div>
@@ -149,14 +149,14 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
           <div className="lg:col-span-2 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 shadow-sm">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2">
-                <h2 className="text-xl font-bold text-slate-900 dark:text-white">{t('recentReservations')}</h2>
-                <span className="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs rounded-full font-medium">{t('live')}</span>
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white">{(t as any).recentReservations}</h2>
+                <span className="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs rounded-full font-medium">{(t as any).live}</span>
               </div>
               <Link
                 href={`/${locale}/admin/reservations`}
                 className="text-cyan-400 hover:text-cyan-300 text-sm flex items-center gap-1 transition-colors"
               >
-                {t('viewAll')} <ArrowRight size={14} />
+                {(t as any).viewAll} <ArrowRight size={14} />
               </Link>
             </div>
 

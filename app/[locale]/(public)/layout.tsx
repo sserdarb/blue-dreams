@@ -17,12 +17,14 @@ export default async function PublicLayout({
     // Fetch dynamic menu items
     const dbMenuItems = await getMenuItems(locale)
 
-    // Map to Navbar expected format
-    const menuItems = dbMenuItems.map(item => ({
+    // Map to Navbar expected format (including children)
+    const mapMenuItem = (item: any): any => ({
         label: item.label,
         url: item.url,
-        // target: item.target 
-    }))
+        target: item.target || '_self',
+        children: item.children && item.children.length > 0 ? item.children.map(mapMenuItem) : undefined
+    })
+    const menuItems = dbMenuItems.map(mapMenuItem)
 
     return (
         <div className="min-h-screen flex flex-col">

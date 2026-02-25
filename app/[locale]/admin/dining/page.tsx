@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { Plus, Trash2, Edit, Save, X, RefreshCw, Image as ImageIcon, UtensilsCrossed, Wine, Coffee, ListOrdered } from 'lucide-react'
-import ImageUploader from '@/components/admin/ImageUploader'
 import { useParams } from 'next/navigation'
 
 interface Dining {
@@ -186,12 +185,9 @@ export default function DiningManagementPage() {
 
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Ana Görsel *</label>
-                                <ImageUploader
-                                    value={form.image}
-                                    onChange={(url) => setForm({ ...form, image: url })}
-                                    onRemove={() => setForm({ ...form, image: '' })}
-                                />
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Ana Görsel URL *</label>
+                                <input value={form.image} onChange={e => setForm({ ...form, image: e.target.value })}
+                                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white focus:border-orange-500 outline-none" />
                             </div>
 
                             <div className="pt-2">

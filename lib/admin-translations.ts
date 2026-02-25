@@ -40,6 +40,7 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         dining: 'Restoranlar',
         meeting: 'Toplantı',
         activities: 'Aktiviteler',
+        sportsAndActivities: 'Spor & Aktiviteler',
         aiTraining: 'AI Eğitim',
         users: 'Kullanıcılar',
         viewSite: 'Siteyi Görüntüle',
@@ -63,9 +64,84 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         assignee: 'Atanan',
         priority: 'Öncelik',
         dueDate: 'Bitiş Tarihi',
+        mailIntegrationPage: {
+            title: 'Mail Entegrasyonu',
+            subtitle: 'E-postaları AI ile görevlere dönüştürün',
+            connected: 'Bağlı',
+            disconnected: 'Bağlantı Yok',
+            sync: 'Senkronize Et',
+            syncing: 'Senkronize...',
+            settings: 'Ayarlar',
+            serverSettings: 'Mail Sunucu Ayarları',
+            imapTitle: 'IMAP (Gelen)',
+            smtpTitle: 'SMTP (Giden)',
+            emailAddress: 'E-posta adresi',
+            username: 'Kullanıcı adı',
+            password: 'Şifre',
+            port: 'Port',
+            emptySmtpDesc: 'Boş bırakılırsa IMAP ayarları kullanılır',
+            saveAndConnect: 'Kaydet & Bağlan',
+            cancelConnection: 'Bağlantıyı Kaldır',
+            lastSync: 'Son senkronizasyon',
+            inbox: 'Gelen Kutusu',
+            new: 'yeni',
+            selectEmailDesc: 'AI ile görevlere dönüştürmek için sol taraftaki bir e-postaya tıklayın',
+            configFirstDesc: 'Önce mail sunucu ayarlarını yapılandırın',
+            sender: 'Gönderen:',
+            noContent: '(İçerik yok)',
+            aiAnalyze: 'AI ile Göreve Dönüştür',
+            aiAnalyzing: 'AI Analiz Ediyor...',
+            aiSuggestion: 'AI Görev Önerisi',
+            createAsTask: 'Görev Olarak Oluştur',
+            creating: 'Oluşturuluyor...'
+        },
+        roomPricesPage: {
+            title: 'Oda Fiyatları & Müsaitlik',
+            subtitle: 'Elektra PMS — Hotelweb & Call Center kanalları',
+            live: 'Canlı',
+            pdfExporting: 'PDF...',
+            pdf: 'PDF',
+            bookingEngine: 'Booking Engine',
+            today: 'Bugün',
+            days7: '7 Gün',
+            days30: '30 Gün',
+            days60: '60 Gün',
+            days90: '90 Gün',
+            query: 'Sorgula',
+            loading: 'Yükleniyor...',
+            roomTypes: 'Oda Tipleri',
+            queryRange: 'Sorgu Aralığı',
+            avgNightly: 'Ort. Gecelik',
+            stopSale: 'Stop Sale',
+            sortLabel: 'Sırala:',
+            sortName: 'İsim',
+            sortPrice: 'Fiyat',
+            sortAvailable: 'Müsaitlik',
+            timelineTitle: 'Fiyat Timeline — Oda Tipi Bazında',
+            timelineSubtitlePrefix: 'Hotelweb & Call Center kanalları',
+            dailyPriceTable: 'Günlük Fiyat Tablosu',
+            dateHeader: 'Tarih',
+            noPrice: 'Fiyat yok',
+            startingPrice: 'başlangıç fiyatı',
+            availableLabel: 'Müsait',
+            avgPriceLabel: 'Ort. Fiyat',
+            minPriceLabel: 'Min. Fiyat',
+            occupancy: 'Doluluk',
+            bookNow: 'Rezervasyon Yap',
+            days: 'gün'
+        },
+        widgetTitles: { 'kpis': 'Toplam Gelir', 'monthly': 'Aylık Gelir', 'channels': 'Kanal Dağılımı', 'roomTypes': 'Oda Tipi Analizi', 'agencies': 'En İyi Acentalar', 'occupancy': 'Doluluk Oranı', 'adr': 'ADR', 'nationality': 'Misafir Milliyeti', 'velocity': 'Rezervasyon Hızı', 'lengthOfStay': 'Ort. Konaklama', 'revpar': 'RevPAR', 'budget': 'Bütçe Analizi', 'callCenter': 'Call Center Performansı', 'forecast': 'Gelecek Dönem Tahmini', 'operator': 'Operatör Performansı', 'rev-daily-chart': 'Günlük Gelir Grafiği', 'rev-weekly-chart': 'Haftalık Gelir Trendi', 'rev-yoy-chart': 'Yıllık Karşılaştırma', 'rev-roomtype-chart': 'Oda Tipine Göre Gelir', 'rev-channel-chart': 'Kanala Göre Gelir', 'rev-nationality-chart': 'Milliyete Göre Gelir', 'rev-segment-chart': 'Segmente Göre Gelir', 'rev-mealplan-chart': 'Pansiyon Tipine Göre Gelir', 'rev-pace-chart': 'Gelir Hızı (Pace)', 'rev-forecast-chart': 'Gelir Tahmini', 'rev-cumulative-chart': 'Kümülatif Gelir', 'rev-hourly-chart': 'Saatlik Gelir Dağılımı', 'rev-tax-chart': 'KDV & Vergi Dağılımı', 'rev-commission-chart': 'Komisyon Analizi', 'rev-refund-chart': 'İade & İptal Gelir Etkisi', 'rev-daily-kpi': 'Günlük Gelir KPI', 'rev-weekly-kpi': 'Haftalık Gelir Özeti', 'rev-monthly-kpi': 'Aylık Gelir Özeti', 'rev-quarterly-kpi': 'Çeyreklik Gelir Analizi', 'rev-upsell': 'Upsell Gelirleri', 'rev-ancillary': 'Ek Hizmet Gelirleri', 'rev-late-checkout': 'Geç Çıkış Geliri', 'rev-early-checkin': 'Erken Giriş Geliri', 'rev-minibar': 'Minibar Gelirleri', 'rev-spa': 'Spa & Wellness Gelirleri', 'rev-laundry': 'Çamaşırhane Gelirleri', 'rev-parking': 'Otopark Gelirleri', 'rev-transfer': 'Transfer Gelirleri', 'rev-meeting-room': 'Toplantı Salonu Gelirleri', 'rev-deposit': 'Depozito Durumu', 'rev-heatmap': 'Gelir Isı Haritası', 'rev-treemap': 'Gelir Ağaç Haritası', 'rev-waterfall': 'Gelir Şelale Grafiği', 'rev-scatter': 'Fiyat/Doluluk Scatter', 'rev-gauge': 'Bütçe Gerçekleşme Göstergesi', 'rev-sparklines': 'Gelir Mini Trendler', 'rev-funnel': 'Gelir Hunisi', 'rev-comparison-radar': 'Gelir Karşılaştırma Radar', 'occ-daily-chart': 'Günlük Doluluk Grafiği', 'occ-monthly-chart': 'Aylık Doluluk Trendi', 'occ-weekday-chart': 'Gün Bazlı Doluluk', 'occ-roomtype-chart': 'Oda Tipine Göre Doluluk', 'occ-floor-chart': 'Kat Bazlı Doluluk', 'occ-forecast-chart': '14 Gün Doluluk Tahmini', 'occ-yoy-chart': 'Doluluk YoY Karşılaştırma', 'occ-ooo-chart': 'Out of Order Oda Trendi', 'occ-upgrade-chart': 'Oda Upgrade Analizi', 'occ-status-chart': 'Oda Durumu Dağılımı', 'occ-category-mix': 'Oda Kategori Mix', 'occ-rate-analysis': 'Oda Fiyat Analizi', 'occ-today-status': 'Bugünkü Oda Durumu', 'occ-arrivals-today': 'Bugünkü Girişler', 'occ-departures-today': 'Bugünkü Çıkışlar', 'occ-stayovers': 'Stayover Misafirler', 'occ-no-shows': 'No-Show Raporu', 'occ-walkins': 'Walk-in Kayıtları', 'occ-vip-rooms': 'VIP Oda Ataması', 'occ-connecting': 'Connecting Oda Kullanımı', 'occ-housekeeping': 'Housekeeping Durumu', 'occ-maintenance': 'Bakım/Arıza Logu', 'occ-inhouse-list': 'In-House Misafir Listesi', 'occ-early-late': 'Erken Giriş / Geç Çıkış', 'occ-heatmap': 'Doluluk Isı Haritası', 'occ-floor-map': 'Kat Haritası Görünümü', 'occ-bubble': 'Doluluk Balon Grafiği', 'occ-gauge': 'Doluluk Göstergesi', 'occ-timeline': 'Oda Doluluk Timeline', 'guest-nationality-pie': 'Milliyet Dağılımı Pasta', 'guest-repeat-chart': 'Tekrar Misafir Trendi', 'guest-satisfaction-chart': 'Memnuniyet Trendi', 'guest-demographics-chart': 'Yaş & Cinsiyet Dağılımı', 'guest-spending-chart': 'Misafir Harcama Kalıbı', 'guest-los-chart': 'Konaklama Süresi Dağılımı', 'guest-source-chart': 'Misafir Kaynak Analizi', 'guest-loyalty-chart': 'Sadakat Programı İstatistik', 'guest-complaint-chart': 'Şikayet Kategori Dağılımı', 'guest-review-chart': 'Online Yorum Trendi', 'guest-vip-list': 'VIP Misafir Listesi', 'guest-repeat-list': 'Tekrar Gelen Misafirler', 'guest-birthday': 'Doğum Günü Takvimi', 'guest-anniversary': 'Yıl Dönümü Raporu', 'guest-special-req': 'Özel İstek Analizi', 'guest-allergy': 'Alerji & Diyet Raporu', 'guest-blacklist': 'Kara Liste', 'guest-feedback-summary': 'Geri Bildirim Özeti', 'guest-top-spenders': 'En Çok Harcayan Misafirler', 'guest-country-revenue': 'Ülke Bazlı Gelir', 'guest-preferences': 'Misafir Tercihleri', 'guest-communication': 'İletişim Logları', 'guest-world-map': 'Dünya Haritası Dağılımı', 'guest-satisfaction-radar': 'Memnuniyet Radar', 'guest-journey-sankey': 'Misafir Yolculuk Sankey', 'guest-segmentation-bubble': 'Segment Balon Grafiği', 'guest-retention-funnel': 'Misafir Tutma Hunisi', 'res-pace-chart': 'Booking Pace Raporu', 'res-leadtime-chart': 'Lead Time Analizi', 'res-cancel-chart': 'İptal Oranı Trendi', 'res-noshow-chart': 'No-Show Trendi', 'res-channel-trend': 'Kanal Bazlı Rez. Trendi', 'res-daily-pickup': 'Günlük Pick-Up', 'res-rate-code': 'Rate Code Performansı', 'res-promo-chart': 'Promosyon Kodu Analizi', 'res-group-chart': 'Grup Rez. Özeti', 'res-overbooking': 'Overbooking Analizi', 'res-modification': 'Rez. Değişiklik Trendi', 'res-board-mix': 'Pansiyon Tipi Mix', 'res-today-arrivals': 'Bugünkü Girişler Detay', 'res-today-departures': 'Bugünkü Çıkışlar Detay', 'res-pending': 'Bekleyen Rezervasyonlar', 'res-confirmed': 'Onaylı Rezervasyonlar', 'res-cancelled-list': 'İptal Edilen Rez. Listesi', 'res-waitlist': 'Bekleme Listesi', 'res-allotment': 'Allotment Kullanımı', 'res-agency-prod': 'Acenta Üretim Raporu', 'res-source-mix': 'Kaynak Mix Tablosu', 'res-avg-rate': 'Ortalama Fiyat Raporu', 'res-revenue-by-stay': 'Konaklama Bazlı Gelir', 'res-night-audit': 'Night Audit Özeti', 'res-pace-waterfall': 'Booking Pace Şelale', 'res-channel-sankey': 'Kanal Akış Sankey', 'res-heatmap': 'Rez. Yoğunluk Haritası', 'res-funnel': 'Rezervasyon Hunisi', 'res-calendar': 'Takvim Görünümü', 'res-comparison-bar': 'Sezon Karşılaştırma Bar', 'ops-checkin-volume': 'Check-in Hacmi', 'ops-checkout-volume': 'Check-out Hacmi', 'ops-housekeeping-chart': 'HK Temizlik Trendi', 'ops-maintenance-chart': 'Arıza Kategorileri', 'ops-request-chart': 'Misafir İstek Trendi', 'ops-response-time': 'Yanıt Süresi Analizi', 'ops-energy-chart': 'Enerji Tüketimi', 'ops-water-chart': 'Su Tüketimi', 'ops-complaint-trend': 'Şikayet Trendi', 'ops-task-completion': 'Görev Tamamlama Oranı', 'ops-mod-report': 'MOD Raporu', 'ops-night-audit-data': 'Night Audit Detay', 'ops-lost-found': 'Kayıp & Bulunmuş', 'ops-security-log': 'Güvenlik Logu', 'ops-incident': 'Olay Raporu', 'ops-pool-status': 'Havuz & Plaj Durumu', 'ops-parking': 'Otopark Doluluk', 'ops-laundry-stats': 'Çamaşırhane İstatistik', 'ops-minibar-track': 'Minibar Takibi', 'ops-shuttle-schedule': 'Transfer Programı', 'ops-amenity-usage': 'Amenity Kullanımı', 'ops-key-card': 'Kart Basımı İstatistik', 'ops-floor-heatmap': 'Kat Bazlı Isı Haritası', 'ops-timeline': 'Operasyon Timeline', 'ops-response-gauge': 'Yanıt Süresi Göstergesi', 'ops-energy-gauge': 'Enerji Tüketim Göstergesi', 'ops-task-kanban': 'Görev Kanban Görünümü', 'fnb-restaurant-rev': 'Restoran Geliri', 'fnb-bar-rev': 'Bar Geliri', 'fnb-roomservice-chart': 'Oda Servisi Trendi', 'fnb-breakfast-count': 'Kahvaltı Sayacı', 'fnb-allinc-consumption': 'AI Tüketim Analizi', 'fnb-menu-popularity': 'Menü Popülerlik', 'fnb-food-cost': 'Gıda Maliyet Oranı', 'fnb-beverage-cost': 'İçecek Maliyet Oranı', 'fnb-cover-count': 'Cover Sayısı Trendi', 'fnb-avg-check': 'Ortalama Hesap', 'fnb-daily-summary': 'F&B Günlük Özet', 'fnb-waste-report': 'İsraf Raporu', 'fnb-stock-alert': 'Stok Uyarıları', 'fnb-recipe-cost': 'Reçete Maliyeti', 'fnb-supplier-perf': 'Tedarikçi Performansı', 'fnb-special-diet': 'Özel Diyet Raporu', 'fnb-banquet-rev': 'Ziyafet Gelirleri', 'fnb-outlet-compare': 'Outlet Karşılaştırma', 'fnb-happy-hour': 'Happy Hour Performansı', 'fnb-inventory': 'F&B Envanter Durumu', 'fnb-treemap': 'F&B Gelir Ağaç Haritası', 'fnb-cost-gauge': 'Maliyet Oranı Göstergesi', 'fnb-popularity-bubble': 'Menü Popülerlik Balon', 'fnb-outlet-radar': 'Outlet Performans Radar', 'fnb-flow-sankey': 'F&B Akış Sankey', 'mkt-direct-vs-ota': 'Direkt vs OTA', 'mkt-website-conversion': 'Website Dönüşüm Oranı', 'mkt-email-campaign': 'E-posta Kampanya Perf.', 'mkt-social-engagement': 'Sosyal Medya Etkileşim', 'mkt-seo-ranking': 'SEO Sıralama Trendi', 'mkt-ppc-roi': 'PPC Reklam ROI', 'mkt-review-scores': 'Yorum Puanları Trendi', 'mkt-competitor-rate': 'Rakip Fiyat Analizi', 'mkt-market-share': 'Pazar Payı', 'mkt-brand-awareness': 'Marka Bilinirliği', 'mkt-campaign-summary': 'Kampanya Özeti', 'mkt-promo-redemption': 'Promosyon Kullanım', 'mkt-referral': 'Referans Kaynak Analizi', 'mkt-review-list': 'Son Yorumlar Listesi', 'mkt-meta-perf': 'Meta Search Performansı', 'mkt-ota-ranking': 'OTA Sıralama Durumu', 'mkt-loyalty-stats': 'Sadakat Programı KPI', 'mkt-newsletter': 'Newsletter İstatistik', 'mkt-influencer': 'Influencer İşbirliği', 'mkt-content-perf': 'İçerik Performansı', 'mkt-channel-funnel': 'Kanal Hunisi', 'mkt-attribution': 'Atıf Modeli Sankey', 'mkt-competitor-radar': 'Rakip Karşılaştırma Radar', 'mkt-roi-scatter': 'Kampanya ROI Scatter', 'mkt-journey-flow': 'Misafir Yolculuk Akışı', 'staff-schedule-chart': 'Vardiya Çizelgesi', 'staff-overtime-chart': 'Fazla Mesai Trendi', 'staff-labor-cost': 'İşçilik Maliyet Trendi', 'staff-productivity': 'Verimlilik Analizi', 'staff-turnover': 'Personel Devir Oranı', 'staff-training': 'Eğitim Tamamlama', 'staff-attendance': 'Devam Durumu', 'staff-department': 'Departman Dağılımı', 'staff-roster': 'Günlük Kadro Listesi', 'staff-leave': 'İzin Takibi', 'staff-performance': 'Performans Değerlendirme', 'staff-certification': 'Sertifika Durumu', 'staff-onboarding': 'İşe Alım Süreci', 'staff-payroll-summary': 'Maaş Bordrosu Özeti', 'staff-tip-report': 'Bahşiş Raporu', 'staff-uniform': 'Üniforma Takibi', 'staff-org-chart': 'Organizasyon Şeması', 'staff-workload-heatmap': 'İş Yükü Isı Haritası', 'staff-satisfaction-gauge': 'Personel Memnuniyet', 'staff-cost-pie': 'İşçilik Maliyet Dağılımı', 'yield-rate-strategy': 'Fiyat Strateji Performansı', 'yield-demand-forecast': 'Talep Tahmini', 'yield-compset': 'CompSet Analizi', 'yield-pickup': 'Pick-Up Raporu', 'yield-displacement': 'Displacement Analizi', 'yield-los-pattern': 'LOS Kalıbı', 'yield-dow-analysis': 'Gün Bazlı Analiz', 'yield-seasonal': 'Sezonsal Trend', 'yield-rate-shop': 'Rate Shopping Tablosu', 'yield-restrictions': 'Kısıtlama Raporu', 'yield-overrides': 'Manuel Fiyat Override', 'yield-segment-mix': 'Segment Mix Optimal', 'yield-channel-margin': 'Kanal Kar Marjı', 'yield-dynamic-pricing': 'Dinamik Fiyatlama Log', 'yield-benchmark': 'Benchmark KPI', 'yield-price-elasticity': 'Fiyat Esneklik Grafiği', 'yield-demand-heatmap': 'Talep Isı Haritası', 'yield-optimal-rate': 'Optimal Fiyat Göstergesi', 'yield-revenue-gauge': 'Gelir Potansiyel Gösterge', 'fin-pnl-chart': 'Kâr-Zarar Trendi', 'fin-cashflow-chart': 'Nakit Akış Grafiği', 'fin-ar-aging': 'Alacak Yaşlandırma', 'fin-ap-aging': 'Borç Yaşlandırma', 'fin-expense-chart': 'Gider Kategori Trendi', 'fin-payment-method': 'Ödeme Yöntemi Analizi', 'fin-tax-summary': 'Vergi Özet Raporu', 'fin-budget-gauge': 'Bütçe Gerçekleşme Gauge', 'fin-cost-breakdown': 'Maliyet Kırılım Treemap', 'fin-ratio-radar': 'Finansal Oran Radar' },
+        categoryLabels: { revenue: 'Gelir & Finans', occupancy: 'Doluluk & Oda', guest: 'Misafir & CRM', reservation: 'Rezervasyon & Satış', operations: 'Operasyon', fnb: 'Yiyecek & İçecek', marketing: 'Pazarlama', staff: 'Personel & İK', yield: 'Yield Yönetim', financial: 'Maliyet & Muhasebe' }, typeLabels: { chart: 'Grafik', data: 'Veri Tablosu', graph: 'Gelişmiş Grafik' },
+        reportsPage: {
+            managementReports: 'Yönetim Raporları',
+            financeReports: 'Finans Raporları',
+            purchasingReports: 'Satın Alma Raporları',
+            hrReports: 'İnsan Kaynakları Raporları',
+            elektraSubtext: 'Elektra ERP entegrasyonu ile güncel veriler'
+        , next14DaysTotal: 'Gelecek 14 Gün Toplamı', operator: 'Operatör', operation: 'Operasyon', score: 'Puan', last30Days: 'Son 30 Gün', last12Weeks: 'Son 12 Hafta', unknown: 'Bilinmeyen', direct: 'Direkt', agency: 'Acente', unspecified: 'Belirtilmemiş', other: 'Diğer', pctOfTotalRevenue: 'Toplam Gelirdeki Payı (%)', avg: 'Ortalama', cumulativeRevenuePace: 'Kümülatif Gelir Hızı', totalStr: 'Toplam', estimate: 'Tahmin', salesByHourEst: 'Saatlik Satış Tahmini', taxRate: 'Vergi Oranı', estCommissionDist: 'Tahmini Komisyon Dağılımı'},
 
         // Reports
-        reportTitle: 'Raporlar',
+        reportTitle: 'Kapsamlı Performans Raporu',
         totalRevenue: 'Toplam Gelir',
         totalReservations: 'Toplam Rezervasyon',
         avgDailyRate: 'Ort. Günlük Ücret',
@@ -114,6 +190,13 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         variance: 'Sapma',
         daily: 'Günlük',
         weekly: 'Haftalık',
+        grossRevenue: 'Brüt Gelir',
+        netRevenue: 'Net Gelir',
+        vatAndAccTax: 'KDV + Konaklama Vergisi',
+        stayDate: 'Konaklama Tarihi',
+        reservationDate: 'Rez. Tarihi',
+        stay: 'Konaklama',
+        dailyAverage: 'Günlük Ort',
         noData: 'Veri bulunamadı',
         loadingError: 'Veriler yüklenirken hata oluştu',
 
@@ -274,6 +357,7 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         all: 'Tümü',
 
         widgets: {
+            next14DaysTotal: 'Gelecek 14 Gün Toplamı', operator: 'Operatör', operation: 'Operasyon', score: 'Puan', last30Days: 'Son 30 Gün', last12Weeks: 'Son 12 Hafta', unknown: 'Bilinmeyen', direct: 'Direkt', agency: 'Acente', unspecified: 'Belirtilmemiş', other: 'Diğer', pctOfTotalRevenue: 'Toplam Gelirdeki Payı (%)', avg: 'Ortalama', cumulativeRevenuePace: 'Kümülatif Gelir Hızı', totalStr: 'Toplam', estimate: 'Tahmin', salesByHourEst: 'Saatlik Satış Tahmini', taxRate: 'Vergi Oranı', estCommissionDist: 'Tahmini Komisyon Dağılımı', 
             cancelCount: 'İptal Sayısı',
             rate: 'oran',
             revenueImpact: 'Gelir Etkisi',
@@ -293,6 +377,21 @@ const translations: Record<AdminLocale, AdminTranslations> = {
             resSuffix: 'rezervasyon',
             collectionRate: 'tahsilat oranı',
             occupancy: 'Doluluk'
+        },
+        bigDataPage: {
+            tabs: { overview: 'Genel Bakış', revenue: 'Gelir Analizi', occupancy: 'Doluluk', channels: 'Kanal & Acenta', guests: 'Misafir & Demografik', booking: 'Rez. Kalıpları', performance: 'Performans', forecast: 'Tahmin & Pace', comparative: 'Karşılaştırma', rawdata: 'Ham Veri' },
+            header: { title: 'Big Data Analytics', reservations: 'rezervasyon', countries: 'ülke', lastUpdate: 'Son güncelleme:', liveApi: 'Canlı API', loadingData: 'Veri yükleniyor...' },
+            overview: { budgetRealization: 'Bütçe Gerçekleşme', monthlyRevVsBudget: 'Aylık Gelir vs Bütçe', channelDist: 'Kanal Dağılımı', adrTrendMonthly: 'ADR Trendi (Aylık)', occupancyRate: 'Doluluk Oranı', nationalityDist: 'Milliyet Dağılımı', boardType: 'Pansiyon Tipi' },
+            revenue: { title: '💰 Gelir Analitiği — 10 Rapor & Grafik', seasonBudget: '📊 2026 Sezon Bütçesi', target: 'Hedef:', actual: 'Gerçekleşen:', realization: 'Gerçekleşme', remaining: 'Kalan', excess: 'Aşım', r1: 'R1: Günlük Gelir Trendi', r2: 'R2: Haftalık Gelir', r3: 'R3: Aylık Gelir vs Bütçe (€)', r5: 'R5: Gelir Tahmini (7 Günlük MA)', r6: 'R6: RevPAR Trendi', r7: 'R7: ADR Trendi', r8: 'R8: Para Birimi Dağılımı', r9: 'R9: Toplam vs Ödenen Gelir', r10: 'R10: Gelir Isı Haritası (Gün×Ay, ₺K)', tableTitle: 'Aylık Gelir & Bütçe Tablosu' },
+            occupancy: { title: '🛏️ Doluluk & Oda Analizi — 8 Rapor & Grafik', r11: 'R11: Günlük Doluluk Oranı (%)', r12: 'R12: Doluluk Tahmini', r13: 'R13: Oda Tipi Dağılımı', r14: 'R14: Doluluk vs ADR Korelasyon', r15: 'R15: Doluluk Isı Haritası (Gün×Ay, %)', r16: 'R16: Hafta İçi vs Hafta Sonu', r17: 'R17: Sezonluk Karşılaştırma', r18: 'R18: Boş Oda Kaybı (₺)', avgNightsSuffix: 'gece ort.', tableTitle: 'Oda Tipi Detay Tablosu' },
+            channels: { title: '📡 Kanal & Acenta Analizi — 7 Rapor & Grafik', r19: 'R19: Kanal Dağılımı', r20: 'R20: Kanal Bazlı Gelir Trendi', r21: 'R21: Kanal Bazlı ADR', r22: 'R22: Kanal Performans Trendi', r23: 'R23: OTA vs Direkt', r25: 'R25: Kanal Mix Değişimi (%)', r24: 'R24: Acenta Sıralaması (Top 30)', tableTitle: 'Kanal Özet Tablosu' },
+            guests: { title: '🌍 Misafir & Demografik Analiz — 7 Rapor & Grafik', r26: 'R26: Milliyet Dağılımı', r27: 'R27: Ülke Bazlı Gelir (₺)', r28: 'R28: Ülke Bazlı Ort. Kalış', r29: 'R29: Milliyet Trendi (Aylık)', r30: 'R30: Misafir Segmentasyonu', r31: 'R31: Milliyet-Kanal Matrisi', r32: 'R32: Ülke Bazlı Ort. Fiyat', tableTitle: 'Milliyet Detay Tablosu' },
+            booking: { title: '📋 Rezervasyon Kalıpları — 8 Rapor & Grafik', r33: 'R33: Rez. Lead Time Dağılımı', r34: 'R34: Rez. Günü Analizi (Hangi Gün)', r35: 'R35: İptal Oranı (Aylık)', r36: 'R36: Ortalama Kalış Süresi Trendi', r37: 'R37: Oda Sayısı Dağılımı', r38: 'R38: Pansiyon Tipi Dağılımı', r39: 'R39: Oda Tipi Tercihi', r40: 'R40: Kalış Süresi Dağılımı', leadTimeTable: 'Lead Time Detay Tablosu', stayLengthTable: 'Kalış Süresi Detay' },
+            performance: { title: '🎯 Performans Göstergeleri — 8 Rapor & Grafik', r41: 'R41: GOPPAR (Brüt Operasyonel Kâr / Oda)', r42: 'R42: TRevPAR (Toplam Gelir / Mevcut Oda)', r46: 'R46: Check-in Gün Dağılımı', r47: 'R47: Fiyat Segmenti Trendi', r48: 'R48: Aylık Performans & Bütçe İndeksi', r49: 'R49: Gelir Yoğunlaşma (Pareto)', r50: 'R50: Rate Tipi Analizi', tableTitle: 'Rate Tipi Detay Tablosu' },
+            forecast: { title: '⚡ Tahmin & Pace Raporu — 5 Rapor & Grafik', r5: 'R5: Gelir Tahmin (MA-7)', r43: 'R43: Pace Raporu (Bu Yıl vs Geçen Yıl)', r44: 'R44: Pick-up Analizi (Günlük Yeni Rez.)', r12: 'R12: Doluluk Tahmin', seasonalComp: 'Sezonluk Tahmin Karşılaştırma' },
+            comparative: { title: '📊 Karşılaştırmalı Raporlar — 5 Rapor & Grafik', r4: 'R4: Yıllık Karşılaştırma (YoY)', metric: 'Metrik', thisSeason: 'Bu Sezon', lastSeason: 'Geçen Sezon', change: 'Değişim', paceComp: 'Pace: Bu Yıl vs Geçen Yıl', seasonalRevComp: 'Sezonluk Gelir Karşılaştırma', channelAdrComp: 'Kanal Bazlı ADR Karşılaştırma', roomTypeRevComp: 'Oda Tipi Gelir Karşılaştırma' },
+            rawdata: { title: '🗄️ Ham Veri & Tablolar', searchPlaceholder: 'Ara (acenta, ülke, voucher, oda tipi)...', recordsSuffix: 'kayıt', tableTitle: 'Tüm Rezervasyonlar' },
+            tableCols: { month: 'Ay', resCount: 'Rez.', revenueYtl: 'Gelir (₺)', budgetEur: 'Bütçe (€)', actualEur: 'Gerçek (€)', remainingEur: 'Kalan (€)', percent: '%', adrYtl: 'ADR (₺)', roomType: 'Oda Tipi', avgRate: 'Ort. Fiyat', avgNights: 'Ort. Kalış', share: 'Pay (%)', channel: 'Kanal', agency: 'Acenta', country: 'Ülke', avgRateYtl: 'Ort. Fiyat (₺)', durationRange: 'Süre Aralığı', resCountLong: 'Rez. Sayısı', duration: 'Süre', realization: 'Gerçekleşme', occupancyRate: 'Doluluk (%)', revparYtl: 'RevPAR (₺)', rateType: 'Rate Tipi', voucher: 'Voucher', boardType: 'Pansiyon', checkIn: 'Giriş', checkOut: 'Çıkış', nights: 'Gece', price: 'Fiyat', currency: 'Döviz', status: 'Durum' }
         }
     },
     en: {
@@ -325,6 +424,7 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         dining: 'Restaurants',
         meeting: 'Meeting',
         activities: 'Activities',
+        sportsAndActivities: 'Sports & Activities',
         aiTraining: 'AI Training',
         users: 'Users',
         viewSite: 'View Site',
@@ -347,8 +447,82 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         assignee: 'Assignee',
         priority: 'Priority',
         dueDate: 'Due Date',
-
-        reportTitle: 'Reports',
+        mailIntegrationPage: {
+            title: 'Mail Integration',
+            subtitle: 'Convert emails to tasks with AI',
+            connected: 'Connected',
+            disconnected: 'Not Connected',
+            sync: 'Synchronize',
+            syncing: 'Syncing...',
+            settings: 'Settings',
+            serverSettings: 'Mail Server Settings',
+            imapTitle: 'IMAP (Incoming)',
+            smtpTitle: 'SMTP (Outgoing)',
+            emailAddress: 'Email address',
+            username: 'Username',
+            password: 'Password',
+            port: 'Port',
+            emptySmtpDesc: 'If empty, IMAP settings are used',
+            saveAndConnect: 'Save & Connect',
+            cancelConnection: 'Disconnect',
+            lastSync: 'Last synchronization',
+            inbox: 'Inbox',
+            new: 'new',
+            selectEmailDesc: 'Click an email on the left to convert it to a task with AI',
+            configFirstDesc: 'Configure mail server settings first',
+            sender: 'Sender:',
+            noContent: '(No content)',
+            aiAnalyze: 'Convert to Task with AI',
+            aiAnalyzing: 'AI Analyzing...',
+            aiSuggestion: 'AI Task Suggestion',
+            createAsTask: 'Create as Task',
+            creating: 'Creating...'
+        },
+        roomPricesPage: {
+            title: 'Room Prices & Availability',
+            subtitle: 'Elektra PMS — Hotelweb & Call Center channels',
+            live: 'Live',
+            pdfExporting: 'PDF...',
+            pdf: 'PDF',
+            bookingEngine: 'Booking Engine',
+            today: 'Today',
+            days7: '7 Days',
+            days30: '30 Days',
+            days60: '60 Days',
+            days90: '90 Days',
+            query: 'Query',
+            loading: 'Loading...',
+            roomTypes: 'Room Types',
+            queryRange: 'Query Range',
+            avgNightly: 'Avg. Nightly',
+            stopSale: 'Stop Sale',
+            sortLabel: 'Sort by:',
+            sortName: 'Name',
+            sortPrice: 'Price',
+            sortAvailable: 'Availability',
+            timelineTitle: 'Price Timeline — By Room Type',
+            timelineSubtitlePrefix: 'Hotelweb & Call Center channels',
+            dailyPriceTable: 'Daily Price Table',
+            dateHeader: 'Date',
+            noPrice: 'No price',
+            startingPrice: 'starting price',
+            availableLabel: 'Available',
+            avgPriceLabel: 'Avg. Price',
+            minPriceLabel: 'Min. Price',
+            occupancy: 'Occupancy',
+            bookNow: 'Book Now',
+            days: 'days'
+        },
+        widgetTitles: { 'kpis': 'Total Revenue', 'monthly': 'Monthly Revenue', 'channels': 'Channel Distribution', 'roomTypes': 'Room Tipi Analysis', 'agencies': 'En İyi Agencylar', 'occupancy': 'Occupancy Rate', 'adr': 'ADR', 'nationality': 'Guest Nationalityi', 'velocity': 'Reservation Hızı', 'lengthOfStay': 'Ort. Konaklama', 'revpar': 'RevPAR', 'budget': 'Bütçe Analysis', 'callCenter': 'Call Center Performanceı', 'forecast': 'Gelecek Dönem Forecast', 'operator': 'Operatör Performanceı', 'rev-daily-chart': 'Daily Revenue Chart', 'rev-weekly-chart': 'Weekly Revenue Trend', 'rev-yoy-chart': 'Yearly Comparison', 'rev-roomtype-chart': 'Room by Type Revenue', 'rev-channel-chart': 'Channela Göre Revenue', 'rev-nationality-chart': 'Nationalitye Göre Revenue', 'rev-segment-chart': 'by Segment Revenue', 'rev-mealplan-chart': 'Pansiyon by Type Revenue', 'rev-pace-chart': 'Revenue Hızı (Pace)', 'rev-forecast-chart': 'Revenue Forecast', 'rev-cumulative-chart': 'Cumulative Revenue', 'rev-hourly-chart': 'Hourly Revenue Distribution', 'rev-tax-chart': 'KDV & Tax Distribution', 'rev-commission-chart': 'Commission Analysis', 'rev-refund-chart': 'Refund & Cancellation Revenue Etkisi', 'rev-daily-kpi': 'Daily Revenue KPI', 'rev-weekly-kpi': 'Weekly Revenue Summary', 'rev-monthly-kpi': 'Monthly Revenue Summary', 'rev-quarterly-kpi': 'Quarterly Revenue Analysis', 'rev-upsell': 'Upsell Revenueleri', 'rev-ancillary': 'Ancillary Revenueleri', 'rev-late-checkout': 'Late Checkout Revenuei', 'rev-early-checkin': 'Early Check-in Revenuei', 'rev-minibar': 'Minibar Revenueleri', 'rev-spa': 'Spa & Wellness Revenueleri', 'rev-laundry': 'Laundry Revenueleri', 'rev-parking': 'Otopark Revenueleri', 'rev-transfer': 'Transfer Revenueleri', 'rev-meeting-room': 'Meeting Salonu Revenueleri', 'rev-deposit': 'Deposit Status', 'rev-heatmap': 'Revenue Heatmap', 'rev-treemap': 'Revenue Treemap', 'rev-waterfall': 'Revenue Waterfall Chart', 'rev-scatter': 'Price/Occupancy Scatter', 'rev-gauge': 'Bütçe Gerçekleşme Gauge', 'rev-sparklines': 'Revenue Mini Trendler', 'rev-funnel': 'Revenue Funnel', 'rev-comparison-radar': 'Revenue Comparison Radar', 'occ-daily-chart': 'Daily Occupancy Chart', 'occ-monthly-chart': 'Monthly Occupancy Trend', 'occ-weekday-chart': 'Gün Bazlı Occupancy', 'occ-roomtype-chart': 'Room by Type Occupancy', 'occ-floor-chart': 'Kat Bazlı Occupancy', 'occ-forecast-chart': '14 Gün Occupancy Forecast', 'occ-yoy-chart': 'Occupancy YoY Comparison', 'occ-ooo-chart': 'Out of Order Room Trend', 'occ-upgrade-chart': 'Room Upgrade Analysis', 'occ-status-chart': 'Room Status Distribution', 'occ-category-mix': 'Room Kategori Mix', 'occ-rate-analysis': 'Room Price Analysis', 'occ-today-status': 'Bugünkü Room Status', 'occ-arrivals-today': 'Bugünkü Arrivals', 'occ-departures-today': 'Bugünkü Departures', 'occ-stayovers': 'Stayover Guestler', 'occ-no-shows': 'No-Show Report', 'occ-walkins': 'Walk-in Kayıtları', 'occ-vip-rooms': 'VIP Room Ataması', 'occ-connecting': 'Connecting Room Kullanımı', 'occ-housekeeping': 'Housekeeping Status', 'occ-maintenance': 'Bakım/Maintenance Logu', 'occ-inhouse-list': 'In-House Guest List', 'occ-early-late': 'Early Check-in / Late Checkout', 'occ-heatmap': 'Occupancy Heatmap', 'occ-floor-map': 'Kat Haritası Görünümü', 'occ-bubble': 'Occupancy Balon Chart', 'occ-gauge': 'Occupancy Gauge', 'occ-timeline': 'Room Occupancy Timeline', 'guest-nationality-pie': 'Nationality Distribution Pasta', 'guest-repeat-chart': 'Tekrar Guest Trend', 'guest-satisfaction-chart': 'Satisfaction Trend', 'guest-demographics-chart': 'Yaş & Cinsiyet Distribution', 'guest-spending-chart': 'Guest Spending Kalıbı', 'guest-los-chart': 'Konaklama Duration Distribution', 'guest-source-chart': 'Guest Kaynak Analysis', 'guest-loyalty-chart': 'Sadakat Programı İstatistik', 'guest-complaint-chart': 'Complaint Kategori Distribution', 'guest-review-chart': 'Online Review Trend', 'guest-vip-list': 'VIP Guest List', 'guest-repeat-list': 'Tekrar Gelen Guestler', 'guest-birthday': 'Doğum Günü Takvimi', 'guest-anniversary': 'Yıl Dönümü Report', 'guest-special-req': 'Özel İstek Analysis', 'guest-allergy': 'Alerji & Diyet Report', 'guest-blacklist': 'Kara Liste', 'guest-feedback-summary': 'Geri Bildirim Summary', 'guest-top-spenders': 'En Çok Harcayan Guestler', 'guest-country-revenue': 'Ülke Bazlı Revenue', 'guest-preferences': 'Guest Tercihleri', 'guest-communication': 'İletişim Logları', 'guest-world-map': 'Dünya Haritası Distribution', 'guest-satisfaction-radar': 'Satisfaction Radar', 'guest-journey-sankey': 'Guest Yolculuk Sankey', 'guest-segmentation-bubble': 'Segment Balon Chart', 'guest-retention-funnel': 'Guest Tutma Funnel', 'res-pace-chart': 'Booking Pace Report', 'res-leadtime-chart': 'Lead Time Analysis', 'res-cancel-chart': 'Cancellation Rate Trend', 'res-noshow-chart': 'No-Show Trend', 'res-channel-trend': 'Channel Bazlı Rez. Trend', 'res-daily-pickup': 'Daily Pick-Up', 'res-rate-code': 'Rate Code Performanceı', 'res-promo-chart': 'Promosyon Kodu Analysis', 'res-group-chart': 'Grup Rez. Summary', 'res-overbooking': 'Overbooking Analysis', 'res-modification': 'Rez. Değişiklik Trend', 'res-board-mix': 'Pansiyon Tipi Mix', 'res-today-arrivals': 'Bugünkü Arrivals Detay', 'res-today-departures': 'Bugünkü Departures Detay', 'res-pending': 'Bekleyen Reservationlar', 'res-confirmed': 'Onaylı Reservationlar', 'res-cancelled-list': 'Cancellation Edilen Rez. List', 'res-waitlist': 'Bekleme List', 'res-allotment': 'Allotment Kullanımı', 'res-agency-prod': 'Agency Üretim Report', 'res-source-mix': 'Kaynak Mix Tablosu', 'res-avg-rate': 'Ortalama Price Report', 'res-revenue-by-stay': 'Konaklama Bazlı Revenue', 'res-night-audit': 'Night Audit Summary', 'res-pace-waterfall': 'Booking Pace Waterfall', 'res-channel-sankey': 'Channel Akış Sankey', 'res-heatmap': 'Rez. Yoğunluk Haritası', 'res-funnel': 'Reservation Funnel', 'res-calendar': 'Takvim Görünümü', 'res-comparison-bar': 'Sezon Comparison Bar', 'ops-checkin-volume': 'Check-in Hacmi', 'ops-checkout-volume': 'Check-out Hacmi', 'ops-housekeeping-chart': 'HK Housekeeping Trend', 'ops-maintenance-chart': 'Maintenance Kategorileri', 'ops-request-chart': 'Guest İstek Trend', 'ops-response-time': 'Yanıt Duration Analysis', 'ops-energy-chart': 'Enerji Tüketimi', 'ops-water-chart': 'Su Tüketimi', 'ops-complaint-trend': 'Complaint Trend', 'ops-task-completion': 'Görev Tamamlama Rate', 'ops-mod-report': 'MOD Report', 'ops-night-audit-data': 'Night Audit Detay', 'ops-lost-found': 'Kayıp & Bulunmuş', 'ops-security-log': 'Güvenlik Logu', 'ops-incident': 'Olay Report', 'ops-pool-status': 'Havuz & Plaj Status', 'ops-parking': 'Otopark Occupancy', 'ops-laundry-stats': 'Laundry İstatistik', 'ops-minibar-track': 'Minibar Takibi', 'ops-shuttle-schedule': 'Transfer Programı', 'ops-amenity-usage': 'Amenity Kullanımı', 'ops-key-card': 'Kart Basımı İstatistik', 'ops-floor-heatmap': 'Kat Bazlı Heatmap', 'ops-timeline': 'Operasyon Timeline', 'ops-response-gauge': 'Yanıt Duration Gauge', 'ops-energy-gauge': 'Enerji Tüketim Gauge', 'ops-task-kanban': 'Görev Kanban Görünümü', 'fnb-restaurant-rev': 'Restoran Revenuei', 'fnb-bar-rev': 'Bar Revenuei', 'fnb-roomservice-chart': 'Room Servisi Trend', 'fnb-breakfast-count': 'Kahvaltı Sayacı', 'fnb-allinc-consumption': 'AI Tüketim Analysis', 'fnb-menu-popularity': 'Menü Popülerlik', 'fnb-food-cost': 'Gıda Cost Rate', 'fnb-beverage-cost': 'İçecek Cost Rate', 'fnb-cover-count': 'Cover Sayısı Trend', 'fnb-avg-check': 'Ortalama Hesap', 'fnb-daily-summary': 'F&B Daily Özet', 'fnb-waste-report': 'İsraf Report', 'fnb-stock-alert': 'Stok Uyarıları', 'fnb-recipe-cost': 'Reçete Costi', 'fnb-supplier-perf': 'Tedarikçi Performanceı', 'fnb-special-diet': 'Özel Diyet Report', 'fnb-banquet-rev': 'Ziyafet Revenueleri', 'fnb-outlet-compare': 'Outlet Comparison', 'fnb-happy-hour': 'Happy Hour Performanceı', 'fnb-inventory': 'F&B Envanter Status', 'fnb-treemap': 'F&B Revenue Treemap', 'fnb-cost-gauge': 'Cost Rate Gauge', 'fnb-popularity-bubble': 'Menü Popülerlik Balon', 'fnb-outlet-radar': 'Outlet Performance Radar', 'fnb-flow-sankey': 'F&B Akış Sankey', 'mkt-direct-vs-ota': 'Direkt vs OTA', 'mkt-website-conversion': 'Website Dönüşüm Rate', 'mkt-email-campaign': 'E-posta Campaign Perf.', 'mkt-social-engagement': 'Sosyal Medya Etkileşim', 'mkt-seo-ranking': 'SEO Sıralama Trend', 'mkt-ppc-roi': 'PPC Reklam ROI', 'mkt-review-scores': 'Review Puanları Trend', 'mkt-competitor-rate': 'Rakip Price Analysis', 'mkt-market-share': 'Pazar Payı', 'mkt-brand-awareness': 'Marka Bilinirliği', 'mkt-campaign-summary': 'Campaign Summary', 'mkt-promo-redemption': 'Promosyon Kullanım', 'mkt-referral': 'Referans Kaynak Analysis', 'mkt-review-list': 'Son Reviewlar List', 'mkt-meta-perf': 'Meta Search Performanceı', 'mkt-ota-ranking': 'OTA Sıralama Status', 'mkt-loyalty-stats': 'Sadakat Programı KPI', 'mkt-newsletter': 'Newsletter İstatistik', 'mkt-influencer': 'Influencer İşbirliği', 'mkt-content-perf': 'İçerik Performanceı', 'mkt-channel-funnel': 'Channel Funnel', 'mkt-attribution': 'Atıf Modeli Sankey', 'mkt-competitor-radar': 'Rakip Comparison Radar', 'mkt-roi-scatter': 'Campaign ROI Scatter', 'mkt-journey-flow': 'Guest Yolculuk Akışı', 'staff-schedule-chart': 'Vardiya Çizelgesi', 'staff-overtime-chart': 'Fazla Mesai Trend', 'staff-labor-cost': 'İşçilik Cost Trend', 'staff-productivity': 'Verimlilik Analysis', 'staff-turnover': 'Staff Devir Rate', 'staff-training': 'Eğitim Tamamlama', 'staff-attendance': 'Devam Status', 'staff-department': 'Departman Distribution', 'staff-roster': 'Daily Kadro List', 'staff-leave': 'İzin Takibi', 'staff-performance': 'Performance Değerlendirme', 'staff-certification': 'Sertifika Status', 'staff-onboarding': 'İşe Alım Süreci', 'staff-payroll-summary': 'Maaş Bordrosu Summary', 'staff-tip-report': 'Bahşiş Report', 'staff-uniform': 'Üniforma Takibi', 'staff-org-chart': 'Organizasyon Şeması', 'staff-workload-heatmap': 'İş Yükü Heatmap', 'staff-satisfaction-gauge': 'Staff Satisfaction', 'staff-cost-pie': 'İşçilik Cost Distribution', 'yield-rate-strategy': 'Price Strateji Performanceı', 'yield-demand-forecast': 'Talep Forecast', 'yield-compset': 'CompSet Analysis', 'yield-pickup': 'Pick-Up Report', 'yield-displacement': 'Displacement Analysis', 'yield-los-pattern': 'LOS Kalıbı', 'yield-dow-analysis': 'Gün Bazlı Analiz', 'yield-seasonal': 'Sezonsal Trend', 'yield-rate-shop': 'Rate Shopping Tablosu', 'yield-restrictions': 'Kısıtlama Report', 'yield-overrides': 'Manuel Price Override', 'yield-segment-mix': 'Segment Mix Optimal', 'yield-channel-margin': 'Channel Kar Marjı', 'yield-dynamic-pricing': 'Dinamik Pricelama Log', 'yield-benchmark': 'Benchmark KPI', 'yield-price-elasticity': 'Price Esneklik Chart', 'yield-demand-heatmap': 'Talep Heatmap', 'yield-optimal-rate': 'Optimal Price Gauge', 'yield-revenue-gauge': 'Revenue Potansiyel Gösterge', 'fin-pnl-chart': 'Kâr-Zarar Trend', 'fin-cashflow-chart': 'Nakit Akış Chart', 'fin-ar-aging': 'Alacak Yaşlandırma', 'fin-ap-aging': 'Borç Yaşlandırma', 'fin-expense-chart': 'Expense Kategori Trend', 'fin-payment-method': 'Ödeme Yöntemi Analysis', 'fin-tax-summary': 'Tax Özet Report', 'fin-budget-gauge': 'Bütçe Gerçekleşme Gauge', 'fin-cost-breakdown': 'Cost Kırılım Treemap', 'fin-ratio-radar': 'Finansal Oran Radar' },
+        categoryLabels: { revenue: 'Revenue & Finance', occupancy: 'Occupancy & Rooms', guest: 'Guest & CRM', reservation: 'Reservation & Sales', operations: 'Operations', fnb: 'Food & Beverage', marketing: 'Marketing', staff: 'Staff & HR', yield: 'Yield Management', financial: 'Cost & Accounting' }, typeLabels: { chart: 'Chart', data: 'Data Table', graph: 'Advanced Graph' },
+        reportsPage: {
+            managementReports: 'Management Reports',
+            financeReports: 'Finance Reports',
+            purchasingReports: 'Purchasing Reports',
+            hrReports: 'HR Reports',
+            elektraSubtext: 'Live data with Elektra ERP integration'
+        , next14DaysTotal: 'Next 14 Days Total', operator: 'Operator', operation: 'Operation', score: 'Score', last30Days: 'Last 30 Days', last12Weeks: 'Last 12 Weeks', unknown: 'Unknown', direct: 'Direct', agency: 'Agency', unspecified: 'Unspecified', other: 'Other', pctOfTotalRevenue: '% of Total Revenue', avg: 'Avg', cumulativeRevenuePace: 'Cumulative Revenue Pace', totalStr: 'Total', estimate: 'Estimate', salesByHourEst: 'Sales By Hour (Est)', taxRate: 'Tax Rate', estCommissionDist: 'Est. Commission Dist.'},
+        reportTitle: 'Comprehensive Performance Report',
         totalRevenue: 'Total Revenue',
         totalReservations: 'Total Reservations',
         avgDailyRate: 'Avg. Daily Rate',
@@ -397,6 +571,13 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         variance: 'Variance',
         daily: 'Daily',
         weekly: 'Weekly',
+        grossRevenue: 'Gross Revenue',
+        netRevenue: 'Net Revenue',
+        vatAndAccTax: 'VAT + Accommodation Tax',
+        stayDate: 'Stay Date',
+        reservationDate: 'Res. Date',
+        stay: 'Stay',
+        dailyAverage: 'Daily Avg',
         noData: 'No data found',
         loadingError: 'Error loading data',
 
@@ -538,6 +719,7 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         pending: 'Pending',
         all: 'All',
         widgets: {
+            next14DaysTotal: 'Next 14 Days Total', operator: 'Operator', operation: 'Operation', score: 'Score', last30Days: 'Last 30 Days', last12Weeks: 'Last 12 Weeks', unknown: 'Unknown', direct: 'Direct', agency: 'Agency', unspecified: 'Unspecified', other: 'Other', pctOfTotalRevenue: '% of Total Revenue', avg: 'Avg', cumulativeRevenuePace: 'Cumulative Revenue Pace', totalStr: 'Total', estimate: 'Estimate', salesByHourEst: 'Sales By Hour (Est)', taxRate: 'Tax Rate', estCommissionDist: 'Est. Commission Dist.', 
             cancelCount: 'Cancellations',
             rate: 'rate',
             revenueImpact: 'Revenue Impact',
@@ -557,6 +739,21 @@ const translations: Record<AdminLocale, AdminTranslations> = {
             resSuffix: 'reservations',
             collectionRate: 'collection rate',
             occupancy: 'Occupancy'
+        },
+        bigDataPage: {
+            tabs: { overview: 'Overview', revenue: 'Revenue Analysis', occupancy: 'Occupancy', channels: 'Channels & Agencies', guests: 'Guests & Demographics', booking: 'Booking Patterns', performance: 'Performance', forecast: 'Forecast & Pace', comparative: 'Comparative', rawdata: 'Raw Data' },
+            header: { title: 'Big Data Analytics', reservations: 'reservations', countries: 'countries', lastUpdate: 'Last update:', liveApi: 'Live API', loadingData: 'Loading data...' },
+            overview: { budgetRealization: 'Budget Realization', monthlyRevVsBudget: 'Monthly Revenue vs Budget', channelDist: 'Channel Distribution', adrTrendMonthly: 'ADR Trend (Monthly)', occupancyRate: 'Occupancy Rate', nationalityDist: 'Nationality Distribution', boardType: 'Board Type' },
+            revenue: { title: '💰 Revenue Analytics — 10 Reports & Charts', seasonBudget: '📊 2026 Season Budget', target: 'Target:', actual: 'Actual:', realization: 'Realization', remaining: 'Remaining', excess: 'Excess', r1: 'R1: Daily Revenue Trend', r2: 'R2: Weekly Revenue', r3: 'R3: Monthly Revenue vs Budget (€)', r5: 'R5: Revenue Forecast (7-Day MA)', r6: 'R6: RevPAR Trend', r7: 'R7: ADR Trend', r8: 'R8: Currency Breakdown', r9: 'R9: Total vs Paid Revenue', r10: 'R10: Revenue Heatmap (Day×Month, ₺K)', tableTitle: 'Monthly Revenue & Budget Table' },
+            occupancy: { title: '🛏️ Occupancy & Room Analysis — 8 Reports & Charts', r11: 'R11: Daily Occupancy Rate (%)', r12: 'R12: Occupancy Forecast', r13: 'R13: Room Type Distribution', r14: 'R14: Occupancy vs ADR Correlation', r15: 'R15: Occupancy Heatmap (Day×Month, %)', r16: 'R16: Weekday vs Weekend', r17: 'R17: Seasonal Comparison', r18: 'R18: Vacant Room Loss (₺)', avgNightsSuffix: 'nights avg.', tableTitle: 'Room Type Detail Table' },
+            channels: { title: '📡 Channel & Agency Analysis — 7 Reports & Charts', r19: 'R19: Channel Distribution', r20: 'R20: Revenue Trend by Channel', r21: 'R21: ADR by Channel', r22: 'R22: Channel Performance Trend', r23: 'R23: OTA vs Direct', r25: 'R25: Channel Mix Change (%)', r24: 'R24: Agency Ranking (Top 30)', tableTitle: 'Channel Summary Table' },
+            guests: { title: '🌍 Guest & Demographics Analysis — 7 Reports & Charts', r26: 'R26: Nationality Distribution', r27: 'R27: Revenue by Country (₺)', r28: 'R28: Avg. Stay by Country', r29: 'R29: Nationality Trend (Monthly)', r30: 'R30: Guest Segmentation', r31: 'R31: Nationality-Channel Matrix', r32: 'R32: Avg. Rate by Country', tableTitle: 'Nationality Detail Table' },
+            booking: { title: '📋 Booking Patterns — 8 Reports & Charts', r33: 'R33: Booking Lead Time Distribution', r34: 'R34: Booking Day Analysis', r35: 'R35: Cancellation Rate (Monthly)', r36: 'R36: Avg. Length of Stay Trend', r37: 'R37: Room Count Distribution', r38: 'R38: Board Type Distribution', r39: 'R39: Room Type Preference', r40: 'R40: Length of Stay Distribution', leadTimeTable: 'Lead Time Detail Table', stayLengthTable: 'Length of Stay Detail' },
+            performance: { title: '🎯 Performance Indicators — 8 Reports & Charts', r41: 'R41: GOPPAR (Gross Op. Profit / Room)', r42: 'R42: TRevPAR (Total Rev / Available Room)', r46: 'R46: Check-in Day Distribution', r47: 'R47: Price Segment Trend', r48: 'R48: Monthly Performance & Budget Index', r49: 'R49: Revenue Concentration (Pareto)', r50: 'R50: Rate Type Analysis', tableTitle: 'Rate Type Detail Table' },
+            forecast: { title: '⚡ Forecast & Pace Report — 5 Reports & Charts', r5: 'R5: Revenue Forecast (MA-7)', r43: 'R43: Pace Report (This Year vs Last)', r44: 'R44: Pick-up Analysis (Daily New Res.)', r12: 'R12: Occupancy Forecast', seasonalComp: 'Seasonal Forecast Comparison' },
+            comparative: { title: '📊 Comparative Reports — 5 Reports & Charts', r4: 'R4: Year-over-Year (YoY) Comparison', metric: 'Metric', thisSeason: 'This Season', lastSeason: 'Last Season', change: 'Change', paceComp: 'Pace: This Year vs Last', seasonalRevComp: 'Seasonal Revenue Comparison', channelAdrComp: 'ADR Comparison by Channel', roomTypeRevComp: 'Revenue Comparison by Room Type' },
+            rawdata: { title: '🗄️ Raw Data & Tables', searchPlaceholder: 'Search (agency, country, voucher, room type)...', recordsSuffix: 'records', tableTitle: 'All Reservations' },
+            tableCols: { month: 'Month', resCount: 'Res.', revenueYtl: 'Revenue (₺)', budgetEur: 'Budget (€)', actualEur: 'Actual (€)', remainingEur: 'Remaining (€)', percent: '%', adrYtl: 'ADR (₺)', roomType: 'Room Type', avgRate: 'Avg. Rate', avgNights: 'Avg. Stay', share: 'Share (%)', channel: 'Channel', agency: 'Agency', country: 'Country', avgRateYtl: 'Avg. Rate (₺)', durationRange: 'Duration Range', resCountLong: 'Res. Count', duration: 'Duration', realization: 'Realization', occupancyRate: 'Occupancy (%)', revparYtl: 'RevPAR (₺)', rateType: 'Rate Type', voucher: 'Voucher', boardType: 'Board', checkIn: 'Check In', checkOut: 'Check Out', nights: 'Nights', price: 'Price', currency: 'Currency', status: 'Status' }
         }
     },
     de: {
@@ -589,6 +786,7 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         dining: 'Restaurants',
         meeting: 'Tagung',
         activities: 'Aktivitäten',
+        sportsAndActivities: 'Sport & Aktivitäten',
         aiTraining: 'AI Training',
         users: 'Benutzer',
         viewSite: 'Seite Ansehen',
@@ -611,8 +809,83 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         assignee: 'Zugewiesen',
         priority: 'Priorität',
         dueDate: 'Fälligkeitsdatum',
+        mailIntegrationPage: {
+            title: 'Mail-Integration',
+            subtitle: 'E-Mails mit KI in Aufgaben umwandeln',
+            connected: 'Verbunden',
+            disconnected: 'Nicht verbunden',
+            sync: 'Synchronisieren',
+            syncing: 'Synchronisiere...',
+            settings: 'Einstellungen',
+            serverSettings: 'Mail-Server-Einstellungen',
+            imapTitle: 'IMAP (Eingehend)',
+            smtpTitle: 'SMTP (Ausgehend)',
+            emailAddress: 'E-Mail-Adresse',
+            username: 'Benutzername',
+            password: 'Passwort',
+            port: 'Port',
+            emptySmtpDesc: 'Wenn leer, werden IMAP-Einstellungen verwendet',
+            saveAndConnect: 'Speichern & Verbinden',
+            cancelConnection: 'Verbindung trennen',
+            lastSync: 'Letzte Synchronisation',
+            inbox: 'Posteingang',
+            new: 'neu',
+            selectEmailDesc: 'Klicken Sie links auf eine E-Mail, um sie mit KI in eine Aufgabe umzuwandeln',
+            configFirstDesc: 'Konfigurieren Sie zuerst die Mail-Server-Einstellungen',
+            sender: 'Absender:',
+            noContent: '(Kein Inhalt)',
+            aiAnalyze: 'Mit KI in Aufgabe umwandeln',
+            aiAnalyzing: 'KI analysiert...',
+            aiSuggestion: 'KI-Aufgabenvorschlag',
+            createAsTask: 'Als Aufgabe erstellen',
+            creating: 'Wird erstellt...'
+        },
+        roomPricesPage: {
+            title: 'Zimmerpreise & Verfügbarkeit',
+            subtitle: 'Elektra PMS — Hotelweb & Call Center Kanäle',
+            live: 'Live',
+            pdfExporting: 'PDF...',
+            pdf: 'PDF',
+            bookingEngine: 'Buchungsmaschine',
+            today: 'Heute',
+            days7: '7 Tage',
+            days30: '30 Tage',
+            days60: '60 Tage',
+            days90: '90 Tage',
+            query: 'Abfragen',
+            loading: 'Wird geladen...',
+            roomTypes: 'Zimmertypen',
+            queryRange: 'Abfragezeitraum',
+            avgNightly: 'Ø pro Nacht',
+            stopSale: 'Verkaufsstopp',
+            sortLabel: 'Sortieren nach:',
+            sortName: 'Name',
+            sortPrice: 'Preis',
+            sortAvailable: 'Verfügbarkeit',
+            timelineTitle: 'Preis-Timeline — Nach Zimmertyp',
+            timelineSubtitlePrefix: 'Hotelweb & Call Center Kanäle',
+            dailyPriceTable: 'Tägliche Preistabelle',
+            dateHeader: 'Datum',
+            noPrice: 'Kein Preis',
+            startingPrice: 'ab-Preis',
+            availableLabel: 'Verfügbar',
+            avgPriceLabel: 'Ø Preis',
+            minPriceLabel: 'Min. Preis',
+            occupancy: 'Belegung',
+            bookNow: 'Jetzt buchen',
+            days: 'Tage'
+        },
+        widgetTitles: { 'kpis': 'Total Revenue', 'monthly': 'Monthly Revenue', 'channels': 'Channel Distribution', 'roomTypes': 'Room Tipi Analysis', 'agencies': 'En İyi Agencylar', 'occupancy': 'Occupancy Rate', 'adr': 'ADR', 'nationality': 'Guest Nationalityi', 'velocity': 'Reservation Hızı', 'lengthOfStay': 'Ort. Konaklama', 'revpar': 'RevPAR', 'budget': 'Bütçe Analysis', 'callCenter': 'Call Center Performanceı', 'forecast': 'Gelecek Dönem Forecast', 'operator': 'Operatör Performanceı', 'rev-daily-chart': 'Daily Revenue Chart', 'rev-weekly-chart': 'Weekly Revenue Trend', 'rev-yoy-chart': 'Yearly Comparison', 'rev-roomtype-chart': 'Room by Type Revenue', 'rev-channel-chart': 'Channela Göre Revenue', 'rev-nationality-chart': 'Nationalitye Göre Revenue', 'rev-segment-chart': 'by Segment Revenue', 'rev-mealplan-chart': 'Pansiyon by Type Revenue', 'rev-pace-chart': 'Revenue Hızı (Pace)', 'rev-forecast-chart': 'Revenue Forecast', 'rev-cumulative-chart': 'Cumulative Revenue', 'rev-hourly-chart': 'Hourly Revenue Distribution', 'rev-tax-chart': 'KDV & Tax Distribution', 'rev-commission-chart': 'Commission Analysis', 'rev-refund-chart': 'Refund & Cancellation Revenue Etkisi', 'rev-daily-kpi': 'Daily Revenue KPI', 'rev-weekly-kpi': 'Weekly Revenue Summary', 'rev-monthly-kpi': 'Monthly Revenue Summary', 'rev-quarterly-kpi': 'Quarterly Revenue Analysis', 'rev-upsell': 'Upsell Revenueleri', 'rev-ancillary': 'Ancillary Revenueleri', 'rev-late-checkout': 'Late Checkout Revenuei', 'rev-early-checkin': 'Early Check-in Revenuei', 'rev-minibar': 'Minibar Revenueleri', 'rev-spa': 'Spa & Wellness Revenueleri', 'rev-laundry': 'Laundry Revenueleri', 'rev-parking': 'Otopark Revenueleri', 'rev-transfer': 'Transfer Revenueleri', 'rev-meeting-room': 'Meeting Salonu Revenueleri', 'rev-deposit': 'Deposit Status', 'rev-heatmap': 'Revenue Heatmap', 'rev-treemap': 'Revenue Treemap', 'rev-waterfall': 'Revenue Waterfall Chart', 'rev-scatter': 'Price/Occupancy Scatter', 'rev-gauge': 'Bütçe Gerçekleşme Gauge', 'rev-sparklines': 'Revenue Mini Trendler', 'rev-funnel': 'Revenue Funnel', 'rev-comparison-radar': 'Revenue Comparison Radar', 'occ-daily-chart': 'Daily Occupancy Chart', 'occ-monthly-chart': 'Monthly Occupancy Trend', 'occ-weekday-chart': 'Gün Bazlı Occupancy', 'occ-roomtype-chart': 'Room by Type Occupancy', 'occ-floor-chart': 'Kat Bazlı Occupancy', 'occ-forecast-chart': '14 Gün Occupancy Forecast', 'occ-yoy-chart': 'Occupancy YoY Comparison', 'occ-ooo-chart': 'Out of Order Room Trend', 'occ-upgrade-chart': 'Room Upgrade Analysis', 'occ-status-chart': 'Room Status Distribution', 'occ-category-mix': 'Room Kategori Mix', 'occ-rate-analysis': 'Room Price Analysis', 'occ-today-status': 'Bugünkü Room Status', 'occ-arrivals-today': 'Bugünkü Arrivals', 'occ-departures-today': 'Bugünkü Departures', 'occ-stayovers': 'Stayover Guestler', 'occ-no-shows': 'No-Show Report', 'occ-walkins': 'Walk-in Kayıtları', 'occ-vip-rooms': 'VIP Room Ataması', 'occ-connecting': 'Connecting Room Kullanımı', 'occ-housekeeping': 'Housekeeping Status', 'occ-maintenance': 'Bakım/Maintenance Logu', 'occ-inhouse-list': 'In-House Guest List', 'occ-early-late': 'Early Check-in / Late Checkout', 'occ-heatmap': 'Occupancy Heatmap', 'occ-floor-map': 'Kat Haritası Görünümü', 'occ-bubble': 'Occupancy Balon Chart', 'occ-gauge': 'Occupancy Gauge', 'occ-timeline': 'Room Occupancy Timeline', 'guest-nationality-pie': 'Nationality Distribution Pasta', 'guest-repeat-chart': 'Tekrar Guest Trend', 'guest-satisfaction-chart': 'Satisfaction Trend', 'guest-demographics-chart': 'Yaş & Cinsiyet Distribution', 'guest-spending-chart': 'Guest Spending Kalıbı', 'guest-los-chart': 'Konaklama Duration Distribution', 'guest-source-chart': 'Guest Kaynak Analysis', 'guest-loyalty-chart': 'Sadakat Programı İstatistik', 'guest-complaint-chart': 'Complaint Kategori Distribution', 'guest-review-chart': 'Online Review Trend', 'guest-vip-list': 'VIP Guest List', 'guest-repeat-list': 'Tekrar Gelen Guestler', 'guest-birthday': 'Doğum Günü Takvimi', 'guest-anniversary': 'Yıl Dönümü Report', 'guest-special-req': 'Özel İstek Analysis', 'guest-allergy': 'Alerji & Diyet Report', 'guest-blacklist': 'Kara Liste', 'guest-feedback-summary': 'Geri Bildirim Summary', 'guest-top-spenders': 'En Çok Harcayan Guestler', 'guest-country-revenue': 'Ülke Bazlı Revenue', 'guest-preferences': 'Guest Tercihleri', 'guest-communication': 'İletişim Logları', 'guest-world-map': 'Dünya Haritası Distribution', 'guest-satisfaction-radar': 'Satisfaction Radar', 'guest-journey-sankey': 'Guest Yolculuk Sankey', 'guest-segmentation-bubble': 'Segment Balon Chart', 'guest-retention-funnel': 'Guest Tutma Funnel', 'res-pace-chart': 'Booking Pace Report', 'res-leadtime-chart': 'Lead Time Analysis', 'res-cancel-chart': 'Cancellation Rate Trend', 'res-noshow-chart': 'No-Show Trend', 'res-channel-trend': 'Channel Bazlı Rez. Trend', 'res-daily-pickup': 'Daily Pick-Up', 'res-rate-code': 'Rate Code Performanceı', 'res-promo-chart': 'Promosyon Kodu Analysis', 'res-group-chart': 'Grup Rez. Summary', 'res-overbooking': 'Overbooking Analysis', 'res-modification': 'Rez. Değişiklik Trend', 'res-board-mix': 'Pansiyon Tipi Mix', 'res-today-arrivals': 'Bugünkü Arrivals Detay', 'res-today-departures': 'Bugünkü Departures Detay', 'res-pending': 'Bekleyen Reservationlar', 'res-confirmed': 'Onaylı Reservationlar', 'res-cancelled-list': 'Cancellation Edilen Rez. List', 'res-waitlist': 'Bekleme List', 'res-allotment': 'Allotment Kullanımı', 'res-agency-prod': 'Agency Üretim Report', 'res-source-mix': 'Kaynak Mix Tablosu', 'res-avg-rate': 'Ortalama Price Report', 'res-revenue-by-stay': 'Konaklama Bazlı Revenue', 'res-night-audit': 'Night Audit Summary', 'res-pace-waterfall': 'Booking Pace Waterfall', 'res-channel-sankey': 'Channel Akış Sankey', 'res-heatmap': 'Rez. Yoğunluk Haritası', 'res-funnel': 'Reservation Funnel', 'res-calendar': 'Takvim Görünümü', 'res-comparison-bar': 'Sezon Comparison Bar', 'ops-checkin-volume': 'Check-in Hacmi', 'ops-checkout-volume': 'Check-out Hacmi', 'ops-housekeeping-chart': 'HK Housekeeping Trend', 'ops-maintenance-chart': 'Maintenance Kategorileri', 'ops-request-chart': 'Guest İstek Trend', 'ops-response-time': 'Yanıt Duration Analysis', 'ops-energy-chart': 'Enerji Tüketimi', 'ops-water-chart': 'Su Tüketimi', 'ops-complaint-trend': 'Complaint Trend', 'ops-task-completion': 'Görev Tamamlama Rate', 'ops-mod-report': 'MOD Report', 'ops-night-audit-data': 'Night Audit Detay', 'ops-lost-found': 'Kayıp & Bulunmuş', 'ops-security-log': 'Güvenlik Logu', 'ops-incident': 'Olay Report', 'ops-pool-status': 'Havuz & Plaj Status', 'ops-parking': 'Otopark Occupancy', 'ops-laundry-stats': 'Laundry İstatistik', 'ops-minibar-track': 'Minibar Takibi', 'ops-shuttle-schedule': 'Transfer Programı', 'ops-amenity-usage': 'Amenity Kullanımı', 'ops-key-card': 'Kart Basımı İstatistik', 'ops-floor-heatmap': 'Kat Bazlı Heatmap', 'ops-timeline': 'Operasyon Timeline', 'ops-response-gauge': 'Yanıt Duration Gauge', 'ops-energy-gauge': 'Enerji Tüketim Gauge', 'ops-task-kanban': 'Görev Kanban Görünümü', 'fnb-restaurant-rev': 'Restoran Revenuei', 'fnb-bar-rev': 'Bar Revenuei', 'fnb-roomservice-chart': 'Room Servisi Trend', 'fnb-breakfast-count': 'Kahvaltı Sayacı', 'fnb-allinc-consumption': 'AI Tüketim Analysis', 'fnb-menu-popularity': 'Menü Popülerlik', 'fnb-food-cost': 'Gıda Cost Rate', 'fnb-beverage-cost': 'İçecek Cost Rate', 'fnb-cover-count': 'Cover Sayısı Trend', 'fnb-avg-check': 'Ortalama Hesap', 'fnb-daily-summary': 'F&B Daily Özet', 'fnb-waste-report': 'İsraf Report', 'fnb-stock-alert': 'Stok Uyarıları', 'fnb-recipe-cost': 'Reçete Costi', 'fnb-supplier-perf': 'Tedarikçi Performanceı', 'fnb-special-diet': 'Özel Diyet Report', 'fnb-banquet-rev': 'Ziyafet Revenueleri', 'fnb-outlet-compare': 'Outlet Comparison', 'fnb-happy-hour': 'Happy Hour Performanceı', 'fnb-inventory': 'F&B Envanter Status', 'fnb-treemap': 'F&B Revenue Treemap', 'fnb-cost-gauge': 'Cost Rate Gauge', 'fnb-popularity-bubble': 'Menü Popülerlik Balon', 'fnb-outlet-radar': 'Outlet Performance Radar', 'fnb-flow-sankey': 'F&B Akış Sankey', 'mkt-direct-vs-ota': 'Direkt vs OTA', 'mkt-website-conversion': 'Website Dönüşüm Rate', 'mkt-email-campaign': 'E-posta Campaign Perf.', 'mkt-social-engagement': 'Sosyal Medya Etkileşim', 'mkt-seo-ranking': 'SEO Sıralama Trend', 'mkt-ppc-roi': 'PPC Reklam ROI', 'mkt-review-scores': 'Review Puanları Trend', 'mkt-competitor-rate': 'Rakip Price Analysis', 'mkt-market-share': 'Pazar Payı', 'mkt-brand-awareness': 'Marka Bilinirliği', 'mkt-campaign-summary': 'Campaign Summary', 'mkt-promo-redemption': 'Promosyon Kullanım', 'mkt-referral': 'Referans Kaynak Analysis', 'mkt-review-list': 'Son Reviewlar List', 'mkt-meta-perf': 'Meta Search Performanceı', 'mkt-ota-ranking': 'OTA Sıralama Status', 'mkt-loyalty-stats': 'Sadakat Programı KPI', 'mkt-newsletter': 'Newsletter İstatistik', 'mkt-influencer': 'Influencer İşbirliği', 'mkt-content-perf': 'İçerik Performanceı', 'mkt-channel-funnel': 'Channel Funnel', 'mkt-attribution': 'Atıf Modeli Sankey', 'mkt-competitor-radar': 'Rakip Comparison Radar', 'mkt-roi-scatter': 'Campaign ROI Scatter', 'mkt-journey-flow': 'Guest Yolculuk Akışı', 'staff-schedule-chart': 'Vardiya Çizelgesi', 'staff-overtime-chart': 'Fazla Mesai Trend', 'staff-labor-cost': 'İşçilik Cost Trend', 'staff-productivity': 'Verimlilik Analysis', 'staff-turnover': 'Staff Devir Rate', 'staff-training': 'Eğitim Tamamlama', 'staff-attendance': 'Devam Status', 'staff-department': 'Departman Distribution', 'staff-roster': 'Daily Kadro List', 'staff-leave': 'İzin Takibi', 'staff-performance': 'Performance Değerlendirme', 'staff-certification': 'Sertifika Status', 'staff-onboarding': 'İşe Alım Süreci', 'staff-payroll-summary': 'Maaş Bordrosu Summary', 'staff-tip-report': 'Bahşiş Report', 'staff-uniform': 'Üniforma Takibi', 'staff-org-chart': 'Organizasyon Şeması', 'staff-workload-heatmap': 'İş Yükü Heatmap', 'staff-satisfaction-gauge': 'Staff Satisfaction', 'staff-cost-pie': 'İşçilik Cost Distribution', 'yield-rate-strategy': 'Price Strateji Performanceı', 'yield-demand-forecast': 'Talep Forecast', 'yield-compset': 'CompSet Analysis', 'yield-pickup': 'Pick-Up Report', 'yield-displacement': 'Displacement Analysis', 'yield-los-pattern': 'LOS Kalıbı', 'yield-dow-analysis': 'Gün Bazlı Analiz', 'yield-seasonal': 'Sezonsal Trend', 'yield-rate-shop': 'Rate Shopping Tablosu', 'yield-restrictions': 'Kısıtlama Report', 'yield-overrides': 'Manuel Price Override', 'yield-segment-mix': 'Segment Mix Optimal', 'yield-channel-margin': 'Channel Kar Marjı', 'yield-dynamic-pricing': 'Dinamik Pricelama Log', 'yield-benchmark': 'Benchmark KPI', 'yield-price-elasticity': 'Price Esneklik Chart', 'yield-demand-heatmap': 'Talep Heatmap', 'yield-optimal-rate': 'Optimal Price Gauge', 'yield-revenue-gauge': 'Revenue Potansiyel Gösterge', 'fin-pnl-chart': 'Kâr-Zarar Trend', 'fin-cashflow-chart': 'Nakit Akış Chart', 'fin-ar-aging': 'Alacak Yaşlandırma', 'fin-ap-aging': 'Borç Yaşlandırma', 'fin-expense-chart': 'Expense Kategori Trend', 'fin-payment-method': 'Ödeme Yöntemi Analysis', 'fin-tax-summary': 'Tax Özet Report', 'fin-budget-gauge': 'Bütçe Gerçekleşme Gauge', 'fin-cost-breakdown': 'Cost Kırılım Treemap', 'fin-ratio-radar': 'Finansal Oran Radar' },
+        categoryLabels: { revenue: 'Umsatz & Finanzen', occupancy: 'Belegung & Zimmer', guest: 'Gast & CRM', reservation: 'Reservierung & Verkauf', operations: 'Betrieb', fnb: 'Gastronomie', marketing: 'Marketing', staff: 'Personal & HR', yield: 'Ertragsmanagement', financial: 'Kosten & Buchhaltung' }, typeLabels: { chart: 'Diagramm', data: 'Datentabelle', graph: 'Erweitertes Diagramm' },
+        reportsPage: {
+            managementReports: 'Management-Berichte',
+            financeReports: 'Finanzberichte',
+            purchasingReports: 'Einkaufsberichte',
+            hrReports: 'HR-Berichte',
+            elektraSubtext: 'Aktuelle Daten durch Elektra ERP-Integration'
+        , next14DaysTotal: 'In den nächsten 14 Tagen', operator: 'Operator', operation: 'Betrieb', score: 'Ergebnis', last30Days: 'Letzte 30 Tage', last12Weeks: 'Letzte 12 Wochen', unknown: 'Unbekannt', direct: 'Direkt', agency: 'Agentur', unspecified: 'Nicht angegeben', other: 'Andere', pctOfTotalRevenue: '% vom Gesamtumsatz', avg: 'Durchschnitt', cumulativeRevenuePace: 'Kumuliertes Umsatztempo', totalStr: 'Gesamt', estimate: 'Schätzung', salesByHourEst: 'Umsatz pro Stunde (geschätzt)', taxRate: 'Steuersatz', estCommissionDist: 'Geschätzte Provisionsverteilung'},
 
-        reportTitle: 'Berichte',
+        reportTitle: 'Umfassender Leistungsbericht',
         totalRevenue: 'Gesamtumsatz',
         totalReservations: 'Gesamte Reservierungen',
         avgDailyRate: 'Ø Tagesrate',
@@ -661,6 +934,13 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         variance: 'Abweichung',
         daily: 'Täglich',
         weekly: 'Wöchentlich',
+        grossRevenue: 'Bruttoumsatz',
+        netRevenue: 'Nettoumsatz',
+        vatAndAccTax: 'MwSt. + Übernachtungssteuer',
+        stayDate: 'Aufenthaltsdatum',
+        reservationDate: 'Res.-Datum',
+        stay: 'Aufenthalt',
+        dailyAverage: 'Täglicher Ø',
         noData: 'Keine Daten gefunden',
         loadingError: 'Fehler beim Laden der Daten',
 
@@ -796,13 +1076,13 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         resOffice: 'Reservierung',
         nightAudit: 'Nachtauditor',
         localGuide: 'Reiseführer',
-        localization: 'Lokalisierung',
         approve: 'Genehmigen',
         reject: 'Entfernen',
         approved: 'Genehmigt',
         pending: 'Ausstehend',
         all: 'Alle',
         widgets: {
+            next14DaysTotal: 'Next 14 Days Total', operator: 'Operator', operation: 'Operation', score: 'Score', last30Days: 'Last 30 Days', last12Weeks: 'Last 12 Weeks', unknown: 'Unknown', direct: 'Direct', agency: 'Agency', unspecified: 'Unspecified', other: 'Other', pctOfTotalRevenue: '% of Total Revenue', avg: 'Avg', cumulativeRevenuePace: 'Cumulative Revenue Pace', totalStr: 'Total', estimate: 'Estimate', salesByHourEst: 'Sales By Hour (Est)', taxRate: 'Tax Rate', estCommissionDist: 'Est. Commission Dist.', 
             cancelCount: 'Stornierungen',
             rate: 'Rate',
             revenueImpact: 'Umsatzauswirkung',
@@ -822,6 +1102,21 @@ const translations: Record<AdminLocale, AdminTranslations> = {
             resSuffix: 'Reservierungen',
             collectionRate: 'Einziehungsquote',
             occupancy: 'Belegung'
+        },
+        bigDataPage: {
+            tabs: { overview: 'Overview', revenue: 'Revenue Analysis', occupancy: 'Occupancy', channels: 'Channels & Agencies', guests: 'Guests & Demographics', booking: 'Booking Patterns', performance: 'Performance', forecast: 'Forecast & Pace', comparative: 'Comparative', rawdata: 'Raw Data' },
+            header: { title: 'Big Data Analytics', reservations: 'reservations', countries: 'countries', lastUpdate: 'Last update:', liveApi: 'Live API', loadingData: 'Loading data...' },
+            overview: { budgetRealization: 'Budget Realization', monthlyRevVsBudget: 'Monthly Revenue vs Budget', channelDist: 'Channel Distribution', adrTrendMonthly: 'ADR Trend (Monthly)', occupancyRate: 'Occupancy Rate', nationalityDist: 'Nationality Distribution', boardType: 'Board Type' },
+            revenue: { title: '💰 Revenue Analytics — 10 Reports & Charts', seasonBudget: '📊 2026 Season Budget', target: 'Target:', actual: 'Actual:', realization: 'Realization', remaining: 'Remaining', excess: 'Excess', r1: 'R1: Daily Revenue Trend', r2: 'R2: Weekly Revenue', r3: 'R3: Monthly Revenue vs Budget (€)', r5: 'R5: Revenue Forecast (7-Day MA)', r6: 'R6: RevPAR Trend', r7: 'R7: ADR Trend', r8: 'R8: Currency Breakdown', r9: 'R9: Total vs Paid Revenue', r10: 'R10: Revenue Heatmap (Day×Month, ₺K)', tableTitle: 'Monthly Revenue & Budget Table' },
+            occupancy: { title: '🛏️ Occupancy & Room Analysis — 8 Reports & Charts', r11: 'R11: Daily Occupancy Rate (%)', r12: 'R12: Occupancy Forecast', r13: 'R13: Room Type Distribution', r14: 'R14: Occupancy vs ADR Correlation', r15: 'R15: Occupancy Heatmap (Day×Month, %)', r16: 'R16: Weekday vs Weekend', r17: 'R17: Seasonal Comparison', r18: 'R18: Vacant Room Loss (₺)', avgNightsSuffix: 'nights avg.', tableTitle: 'Room Type Detail Table' },
+            channels: { title: '📡 Channel & Agency Analysis — 7 Reports & Charts', r19: 'R19: Channel Distribution', r20: 'R20: Revenue Trend by Channel', r21: 'R21: ADR by Channel', r22: 'R22: Channel Performance Trend', r23: 'R23: OTA vs Direct', r25: 'R25: Channel Mix Change (%)', r24: 'R24: Agency Ranking (Top 30)', tableTitle: 'Channel Summary Table' },
+            guests: { title: '🌍 Guest & Demographics Analysis — 7 Reports & Charts', r26: 'R26: Nationality Distribution', r27: 'R27: Revenue by Country (₺)', r28: 'R28: Avg. Stay by Country', r29: 'R29: Nationality Trend (Monthly)', r30: 'R30: Guest Segmentation', r31: 'R31: Nationality-Channel Matrix', r32: 'R32: Avg. Rate by Country', tableTitle: 'Nationality Detail Table' },
+            booking: { title: '📋 Booking Patterns — 8 Reports & Charts', r33: 'R33: Booking Lead Time Distribution', r34: 'R34: Booking Day Analysis', r35: 'R35: Cancellation Rate (Monthly)', r36: 'R36: Avg. Length of Stay Trend', r37: 'R37: Room Count Distribution', r38: 'R38: Board Type Distribution', r39: 'R39: Room Type Preference', r40: 'R40: Length of Stay Distribution', leadTimeTable: 'Lead Time Detail Table', stayLengthTable: 'Length of Stay Detail' },
+            performance: { title: '🎯 Performance Indicators — 8 Reports & Charts', r41: 'R41: GOPPAR (Gross Op. Profit / Room)', r42: 'R42: TRevPAR (Total Rev / Available Room)', r46: 'R46: Check-in Day Distribution', r47: 'R47: Price Segment Trend', r48: 'R48: Monthly Performance & Budget Index', r49: 'R49: Revenue Concentration (Pareto)', r50: 'R50: Rate Type Analysis', tableTitle: 'Rate Type Detail Table' },
+            forecast: { title: '⚡ Forecast & Pace Report — 5 Reports & Charts', r5: 'R5: Revenue Forecast (MA-7)', r43: 'R43: Pace Report (This Year vs Last)', r44: 'R44: Pick-up Analysis (Daily New Res.)', r12: 'R12: Occupancy Forecast', seasonalComp: 'Seasonal Forecast Comparison' },
+            comparative: { title: '📊 Comparative Reports — 5 Reports & Charts', r4: 'R4: Year-over-Year (YoY) Comparison', metric: 'Metric', thisSeason: 'This Season', lastSeason: 'Last Season', change: 'Change', paceComp: 'Pace: This Year vs Last', seasonalRevComp: 'Seasonal Revenue Comparison', channelAdrComp: 'ADR Comparison by Channel', roomTypeRevComp: 'Revenue Comparison by Room Type' },
+            rawdata: { title: '🗄️ Raw Data & Tables', searchPlaceholder: 'Search (agency, country, voucher, room type)...', recordsSuffix: 'records', tableTitle: 'All Reservations' },
+            tableCols: { month: 'Month', resCount: 'Res.', revenueYtl: 'Revenue (₺)', budgetEur: 'Budget (€)', actualEur: 'Actual (€)', remainingEur: 'Remaining (€)', percent: '%', adrYtl: 'ADR (₺)', roomType: 'Room Type', avgRate: 'Avg. Rate', avgNights: 'Avg. Stay', share: 'Share (%)', channel: 'Channel', agency: 'Agency', country: 'Country', avgRateYtl: 'Avg. Rate (₺)', durationRange: 'Duration Range', resCountLong: 'Res. Count', duration: 'Duration', realization: 'Realization', occupancyRate: 'Occupancy (%)', revparYtl: 'RevPAR (₺)', rateType: 'Rate Type', voucher: 'Voucher', boardType: 'Board', checkIn: 'Check In', checkOut: 'Check Out', nights: 'Nights', price: 'Price', currency: 'Currency', status: 'Status' }
         }
     },
     ru: {
@@ -854,6 +1149,7 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         dining: 'Рестораны',
         meeting: 'Конференции',
         activities: 'Активности',
+        sportsAndActivities: 'Спорт & Мероприятия',
         aiTraining: 'AI Обучение',
         users: 'Пользователи',
         viewSite: 'Просмотр Сайта',
@@ -876,8 +1172,83 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         assignee: 'Исполнитель',
         priority: 'Приоритет',
         dueDate: 'Срок выполнения',
+        mailIntegrationPage: {
+            title: 'Интеграция почты',
+            subtitle: 'Преобразование писем в задачи с помощью ИИ',
+            connected: 'Подключено',
+            disconnected: 'Не подключено',
+            sync: 'Синхронизировать',
+            syncing: 'Синхронизация...',
+            settings: 'Настройки',
+            serverSettings: 'Настройки почтового сервера',
+            imapTitle: 'IMAP (Входящие)',
+            smtpTitle: 'SMTP (Исходящие)',
+            emailAddress: 'Адрес электронной почты',
+            username: 'Имя пользователя',
+            password: 'Пароль',
+            port: 'Порт',
+            emptySmtpDesc: 'Если пусто, используются настройки IMAP',
+            saveAndConnect: 'Сохранить и подключить',
+            cancelConnection: 'Отключить',
+            lastSync: 'Последняя синхронизация',
+            inbox: 'Входящие',
+            new: '새로운',
+            selectEmailDesc: 'Нажмите на письмо слева, чтобы преобразовать его в задачу с помощью ИИ',
+            configFirstDesc: 'Сначала настройте почтовый сервер',
+            sender: 'Отправитель:',
+            noContent: '(Нет содержимого)',
+            aiAnalyze: 'Преобразовать в задачу с помощью ИИ',
+            aiAnalyzing: 'ИИ анализирует...',
+            aiSuggestion: 'Предложение задачи от ИИ',
+            createAsTask: 'Создать как задачу',
+            creating: 'Создание...'
+        },
+        roomPricesPage: {
+            title: 'Цены на номера и наличие',
+            subtitle: 'Elektra PMS — каналы Hotelweb и Call Center',
+            live: 'Live',
+            pdfExporting: 'PDF...',
+            pdf: 'PDF',
+            bookingEngine: 'Модуль бронирования',
+            today: 'Сегодня',
+            days7: '7 дней',
+            days30: '30 дней',
+            days60: '60 дней',
+            days90: '90 дней',
+            query: 'Запрос',
+            loading: 'Загрузка...',
+            roomTypes: 'Типы номеров',
+            queryRange: 'Диапазон',
+            avgNightly: 'Ср. за ночь',
+            stopSale: 'Остановка продаж',
+            sortLabel: 'Сортировка:',
+            sortName: 'Название',
+            sortPrice: 'Цена',
+            sortAvailable: 'Наличие',
+            timelineTitle: 'Динамика цен — По типам',
+            timelineSubtitlePrefix: 'Каналы Hotelweb и Call Center',
+            dailyPriceTable: 'Таблица цен',
+            dateHeader: 'Дата',
+            noPrice: 'Нет цены',
+            startingPrice: 'начальная цена',
+            availableLabel: 'Доступно',
+            avgPriceLabel: 'Ср. цена',
+            minPriceLabel: 'Мин. цена',
+            occupancy: 'Занятость',
+            bookNow: 'Забронировать',
+            days: 'дней'
+        },
+        widgetTitles: { 'kpis': 'Total Revenue', 'monthly': 'Monthly Revenue', 'channels': 'Channel Distribution', 'roomTypes': 'Room Tipi Analysis', 'agencies': 'En İyi Agencylar', 'occupancy': 'Occupancy Rate', 'adr': 'ADR', 'nationality': 'Guest Nationalityi', 'velocity': 'Reservation Hızı', 'lengthOfStay': 'Ort. Konaklama', 'revpar': 'RevPAR', 'budget': 'Bütçe Analysis', 'callCenter': 'Call Center Performanceı', 'forecast': 'Gelecek Dönem Forecast', 'operator': 'Operatör Performanceı', 'rev-daily-chart': 'Daily Revenue Chart', 'rev-weekly-chart': 'Weekly Revenue Trend', 'rev-yoy-chart': 'Yearly Comparison', 'rev-roomtype-chart': 'Room by Type Revenue', 'rev-channel-chart': 'Channela Göre Revenue', 'rev-nationality-chart': 'Nationalitye Göre Revenue', 'rev-segment-chart': 'by Segment Revenue', 'rev-mealplan-chart': 'Pansiyon by Type Revenue', 'rev-pace-chart': 'Revenue Hızı (Pace)', 'rev-forecast-chart': 'Revenue Forecast', 'rev-cumulative-chart': 'Cumulative Revenue', 'rev-hourly-chart': 'Hourly Revenue Distribution', 'rev-tax-chart': 'KDV & Tax Distribution', 'rev-commission-chart': 'Commission Analysis', 'rev-refund-chart': 'Refund & Cancellation Revenue Etkisi', 'rev-daily-kpi': 'Daily Revenue KPI', 'rev-weekly-kpi': 'Weekly Revenue Summary', 'rev-monthly-kpi': 'Monthly Revenue Summary', 'rev-quarterly-kpi': 'Quarterly Revenue Analysis', 'rev-upsell': 'Upsell Revenueleri', 'rev-ancillary': 'Ancillary Revenueleri', 'rev-late-checkout': 'Late Checkout Revenuei', 'rev-early-checkin': 'Early Check-in Revenuei', 'rev-minibar': 'Minibar Revenueleri', 'rev-spa': 'Spa & Wellness Revenueleri', 'rev-laundry': 'Laundry Revenueleri', 'rev-parking': 'Otopark Revenueleri', 'rev-transfer': 'Transfer Revenueleri', 'rev-meeting-room': 'Meeting Salonu Revenueleri', 'rev-deposit': 'Deposit Status', 'rev-heatmap': 'Revenue Heatmap', 'rev-treemap': 'Revenue Treemap', 'rev-waterfall': 'Revenue Waterfall Chart', 'rev-scatter': 'Price/Occupancy Scatter', 'rev-gauge': 'Bütçe Gerçekleşme Gauge', 'rev-sparklines': 'Revenue Mini Trendler', 'rev-funnel': 'Revenue Funnel', 'rev-comparison-radar': 'Revenue Comparison Radar', 'occ-daily-chart': 'Daily Occupancy Chart', 'occ-monthly-chart': 'Monthly Occupancy Trend', 'occ-weekday-chart': 'Gün Bazlı Occupancy', 'occ-roomtype-chart': 'Room by Type Occupancy', 'occ-floor-chart': 'Kat Bazlı Occupancy', 'occ-forecast-chart': '14 Gün Occupancy Forecast', 'occ-yoy-chart': 'Occupancy YoY Comparison', 'occ-ooo-chart': 'Out of Order Room Trend', 'occ-upgrade-chart': 'Room Upgrade Analysis', 'occ-status-chart': 'Room Status Distribution', 'occ-category-mix': 'Room Kategori Mix', 'occ-rate-analysis': 'Room Price Analysis', 'occ-today-status': 'Bugünkü Room Status', 'occ-arrivals-today': 'Bugünkü Arrivals', 'occ-departures-today': 'Bugünkü Departures', 'occ-stayovers': 'Stayover Guestler', 'occ-no-shows': 'No-Show Report', 'occ-walkins': 'Walk-in Kayıtları', 'occ-vip-rooms': 'VIP Room Ataması', 'occ-connecting': 'Connecting Room Kullanımı', 'occ-housekeeping': 'Housekeeping Status', 'occ-maintenance': 'Bakım/Maintenance Logu', 'occ-inhouse-list': 'In-House Guest List', 'occ-early-late': 'Early Check-in / Late Checkout', 'occ-heatmap': 'Occupancy Heatmap', 'occ-floor-map': 'Kat Haritası Görünümü', 'occ-bubble': 'Occupancy Balon Chart', 'occ-gauge': 'Occupancy Gauge', 'occ-timeline': 'Room Occupancy Timeline', 'guest-nationality-pie': 'Nationality Distribution Pasta', 'guest-repeat-chart': 'Tekrar Guest Trend', 'guest-satisfaction-chart': 'Satisfaction Trend', 'guest-demographics-chart': 'Yaş & Cinsiyet Distribution', 'guest-spending-chart': 'Guest Spending Kalıbı', 'guest-los-chart': 'Konaklama Duration Distribution', 'guest-source-chart': 'Guest Kaynak Analysis', 'guest-loyalty-chart': 'Sadakat Programı İstatistik', 'guest-complaint-chart': 'Complaint Kategori Distribution', 'guest-review-chart': 'Online Review Trend', 'guest-vip-list': 'VIP Guest List', 'guest-repeat-list': 'Tekrar Gelen Guestler', 'guest-birthday': 'Doğum Günü Takvimi', 'guest-anniversary': 'Yıl Dönümü Report', 'guest-special-req': 'Özel İstek Analysis', 'guest-allergy': 'Alerji & Diyet Report', 'guest-blacklist': 'Kara Liste', 'guest-feedback-summary': 'Geri Bildirim Summary', 'guest-top-spenders': 'En Çok Harcayan Guestler', 'guest-country-revenue': 'Ülke Bazlı Revenue', 'guest-preferences': 'Guest Tercihleri', 'guest-communication': 'İletişim Logları', 'guest-world-map': 'Dünya Haritası Distribution', 'guest-satisfaction-radar': 'Satisfaction Radar', 'guest-journey-sankey': 'Guest Yolculuk Sankey', 'guest-segmentation-bubble': 'Segment Balon Chart', 'guest-retention-funnel': 'Guest Tutma Funnel', 'res-pace-chart': 'Booking Pace Report', 'res-leadtime-chart': 'Lead Time Analysis', 'res-cancel-chart': 'Cancellation Rate Trend', 'res-noshow-chart': 'No-Show Trend', 'res-channel-trend': 'Channel Bazlı Rez. Trend', 'res-daily-pickup': 'Daily Pick-Up', 'res-rate-code': 'Rate Code Performanceı', 'res-promo-chart': 'Promosyon Kodu Analysis', 'res-group-chart': 'Grup Rez. Summary', 'res-overbooking': 'Overbooking Analysis', 'res-modification': 'Rez. Değişiklik Trend', 'res-board-mix': 'Pansiyon Tipi Mix', 'res-today-arrivals': 'Bugünkü Arrivals Detay', 'res-today-departures': 'Bugünkü Departures Detay', 'res-pending': 'Bekleyen Reservationlar', 'res-confirmed': 'Onaylı Reservationlar', 'res-cancelled-list': 'Cancellation Edilen Rez. List', 'res-waitlist': 'Bekleme List', 'res-allotment': 'Allotment Kullanımı', 'res-agency-prod': 'Agency Üretim Report', 'res-source-mix': 'Kaynak Mix Tablosu', 'res-avg-rate': 'Ortalama Price Report', 'res-revenue-by-stay': 'Konaklama Bazlı Revenue', 'res-night-audit': 'Night Audit Summary', 'res-pace-waterfall': 'Booking Pace Waterfall', 'res-channel-sankey': 'Channel Akış Sankey', 'res-heatmap': 'Rez. Yoğunluk Haritası', 'res-funnel': 'Reservation Funnel', 'res-calendar': 'Takvim Görünümü', 'res-comparison-bar': 'Sezon Comparison Bar', 'ops-checkin-volume': 'Check-in Hacmi', 'ops-checkout-volume': 'Check-out Hacmi', 'ops-housekeeping-chart': 'HK Housekeeping Trend', 'ops-maintenance-chart': 'Maintenance Kategorileri', 'ops-request-chart': 'Guest İstek Trend', 'ops-response-time': 'Yanıt Duration Analysis', 'ops-energy-chart': 'Enerji Tüketimi', 'ops-water-chart': 'Su Tüketimi', 'ops-complaint-trend': 'Complaint Trend', 'ops-task-completion': 'Görev Tamamlama Rate', 'ops-mod-report': 'MOD Report', 'ops-night-audit-data': 'Night Audit Detay', 'ops-lost-found': 'Kayıp & Bulunmuş', 'ops-security-log': 'Güvenlik Logu', 'ops-incident': 'Olay Report', 'ops-pool-status': 'Havuz & Plaj Status', 'ops-parking': 'Otopark Occupancy', 'ops-laundry-stats': 'Laundry İstatistik', 'ops-minibar-track': 'Minibar Takibi', 'ops-shuttle-schedule': 'Transfer Programı', 'ops-amenity-usage': 'Amenity Kullanımı', 'ops-key-card': 'Kart Basımı İstatistik', 'ops-floor-heatmap': 'Kat Bazlı Heatmap', 'ops-timeline': 'Operasyon Timeline', 'ops-response-gauge': 'Yanıt Duration Gauge', 'ops-energy-gauge': 'Enerji Tüketim Gauge', 'ops-task-kanban': 'Görev Kanban Görünümü', 'fnb-restaurant-rev': 'Restoran Revenuei', 'fnb-bar-rev': 'Bar Revenuei', 'fnb-roomservice-chart': 'Room Servisi Trend', 'fnb-breakfast-count': 'Kahvaltı Sayacı', 'fnb-allinc-consumption': 'AI Tüketim Analysis', 'fnb-menu-popularity': 'Menü Popülerlik', 'fnb-food-cost': 'Gıda Cost Rate', 'fnb-beverage-cost': 'İçecek Cost Rate', 'fnb-cover-count': 'Cover Sayısı Trend', 'fnb-avg-check': 'Ortalama Hesap', 'fnb-daily-summary': 'F&B Daily Özet', 'fnb-waste-report': 'İsraf Report', 'fnb-stock-alert': 'Stok Uyarıları', 'fnb-recipe-cost': 'Reçete Costi', 'fnb-supplier-perf': 'Tedarikçi Performanceı', 'fnb-special-diet': 'Özel Diyet Report', 'fnb-banquet-rev': 'Ziyafet Revenueleri', 'fnb-outlet-compare': 'Outlet Comparison', 'fnb-happy-hour': 'Happy Hour Performanceı', 'fnb-inventory': 'F&B Envanter Status', 'fnb-treemap': 'F&B Revenue Treemap', 'fnb-cost-gauge': 'Cost Rate Gauge', 'fnb-popularity-bubble': 'Menü Popülerlik Balon', 'fnb-outlet-radar': 'Outlet Performance Radar', 'fnb-flow-sankey': 'F&B Akış Sankey', 'mkt-direct-vs-ota': 'Direkt vs OTA', 'mkt-website-conversion': 'Website Dönüşüm Rate', 'mkt-email-campaign': 'E-posta Campaign Perf.', 'mkt-social-engagement': 'Sosyal Medya Etkileşim', 'mkt-seo-ranking': 'SEO Sıralama Trend', 'mkt-ppc-roi': 'PPC Reklam ROI', 'mkt-review-scores': 'Review Puanları Trend', 'mkt-competitor-rate': 'Rakip Price Analysis', 'mkt-market-share': 'Pazar Payı', 'mkt-brand-awareness': 'Marka Bilinirliği', 'mkt-campaign-summary': 'Campaign Summary', 'mkt-promo-redemption': 'Promosyon Kullanım', 'mkt-referral': 'Referans Kaynak Analysis', 'mkt-review-list': 'Son Reviewlar List', 'mkt-meta-perf': 'Meta Search Performanceı', 'mkt-ota-ranking': 'OTA Sıralama Status', 'mkt-loyalty-stats': 'Sadakat Programı KPI', 'mkt-newsletter': 'Newsletter İstatistik', 'mkt-influencer': 'Influencer İşbirliği', 'mkt-content-perf': 'İçerik Performanceı', 'mkt-channel-funnel': 'Channel Funnel', 'mkt-attribution': 'Atıf Modeli Sankey', 'mkt-competitor-radar': 'Rakip Comparison Radar', 'mkt-roi-scatter': 'Campaign ROI Scatter', 'mkt-journey-flow': 'Guest Yolculuk Akışı', 'staff-schedule-chart': 'Vardiya Çizelgesi', 'staff-overtime-chart': 'Fazla Mesai Trend', 'staff-labor-cost': 'İşçilik Cost Trend', 'staff-productivity': 'Verimlilik Analysis', 'staff-turnover': 'Staff Devir Rate', 'staff-training': 'Eğitim Tamamlama', 'staff-attendance': 'Devam Status', 'staff-department': 'Departman Distribution', 'staff-roster': 'Daily Kadro List', 'staff-leave': 'İzin Takibi', 'staff-performance': 'Performance Değerlendirme', 'staff-certification': 'Sertifika Status', 'staff-onboarding': 'İşe Alım Süreci', 'staff-payroll-summary': 'Maaş Bordrosu Summary', 'staff-tip-report': 'Bahşiş Report', 'staff-uniform': 'Üniforma Takibi', 'staff-org-chart': 'Organizasyon Şeması', 'staff-workload-heatmap': 'İş Yükü Heatmap', 'staff-satisfaction-gauge': 'Staff Satisfaction', 'staff-cost-pie': 'İşçilik Cost Distribution', 'yield-rate-strategy': 'Price Strateji Performanceı', 'yield-demand-forecast': 'Talep Forecast', 'yield-compset': 'CompSet Analysis', 'yield-pickup': 'Pick-Up Report', 'yield-displacement': 'Displacement Analysis', 'yield-los-pattern': 'LOS Kalıbı', 'yield-dow-analysis': 'Gün Bazlı Analiz', 'yield-seasonal': 'Sezonsal Trend', 'yield-rate-shop': 'Rate Shopping Tablosu', 'yield-restrictions': 'Kısıtlama Report', 'yield-overrides': 'Manuel Price Override', 'yield-segment-mix': 'Segment Mix Optimal', 'yield-channel-margin': 'Channel Kar Marjı', 'yield-dynamic-pricing': 'Dinamik Pricelama Log', 'yield-benchmark': 'Benchmark KPI', 'yield-price-elasticity': 'Price Esneklik Chart', 'yield-demand-heatmap': 'Talep Heatmap', 'yield-optimal-rate': 'Optimal Price Gauge', 'yield-revenue-gauge': 'Revenue Potansiyel Gösterge', 'fin-pnl-chart': 'Kâr-Zarar Trend', 'fin-cashflow-chart': 'Nakit Akış Chart', 'fin-ar-aging': 'Alacak Yaşlandırma', 'fin-ap-aging': 'Borç Yaşlandırma', 'fin-expense-chart': 'Expense Kategori Trend', 'fin-payment-method': 'Ödeme Yöntemi Analysis', 'fin-tax-summary': 'Tax Özet Report', 'fin-budget-gauge': 'Bütçe Gerçekleşme Gauge', 'fin-cost-breakdown': 'Cost Kırılım Treemap', 'fin-ratio-radar': 'Finansal Oran Radar' },
+        categoryLabels: { revenue: 'Доход и Финансы', occupancy: 'Заполняемость и Номера', guest: 'Гость и CRM', reservation: 'Бронирование и Продажи', operations: 'Операции', fnb: 'Еда и Напитки', marketing: 'Маркетинг', staff: 'Персонал', yield: 'Управление доходами', financial: 'Затраты и Учет' }, typeLabels: { chart: 'График', data: 'Таблица данных', graph: 'Расширенный график' },
+        reportsPage: {
+            managementReports: 'Управленческие Отчеты',
+            financeReports: 'Финансовые Отчеты',
+            purchasingReports: 'Отчеты по Закупкам',
+            hrReports: 'Кадровые Отчеты',
+            elektraSubtext: 'Актуальные данные благодаря интеграции с Elektra ERP'
+        , next14DaysTotal: 'Всего за следующие 14 дней', operator: 'Оператор', operation: 'Операция', score: 'Оценка', last30Days: 'Последние 30 дней', last12Weeks: 'Последние 12 недель', unknown: 'Неизвестно', direct: 'Прямой', agency: 'Агентство', unspecified: 'Не указано', other: 'Другое', pctOfTotalRevenue: '% от общего дохода', avg: 'Среднее', cumulativeRevenuePace: 'Совокупный темп доходов', totalStr: 'Итого', estimate: 'Оценка', salesByHourEst: 'Продажи по часам (оценка)', taxRate: 'Налоговая ставка', estCommissionDist: 'Расчетное распределение комиссий'},
 
-        reportTitle: 'Отчёты',
+        reportTitle: 'Комплексный отчет об эффективности',
         totalRevenue: 'Общий Доход',
         totalReservations: 'Всего Бронирований',
         avgDailyRate: 'Ср. Дневная Ставка',
@@ -926,6 +1297,13 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         variance: 'Отклонение',
         daily: 'Ежедневно',
         weekly: 'Еженедельно',
+        grossRevenue: 'Валовой доход',
+        netRevenue: 'Чистый доход',
+        vatAndAccTax: 'НДС + Налог на проживание',
+        stayDate: 'Дата проживания',
+        reservationDate: 'Дата бронирования',
+        stay: 'Проживание',
+        dailyAverage: 'Среднее за день',
         noData: 'Данные не найдены',
         loadingError: 'Ошибка загрузки данных',
 
@@ -1067,6 +1445,7 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         pending: 'Ожидание',
         all: 'Все',
         widgets: {
+            next14DaysTotal: 'Next 14 Days Total', operator: 'Operator', operation: 'Operation', score: 'Score', last30Days: 'Last 30 Days', last12Weeks: 'Last 12 Weeks', unknown: 'Unknown', direct: 'Direct', agency: 'Agency', unspecified: 'Unspecified', other: 'Other', pctOfTotalRevenue: '% of Total Revenue', avg: 'Avg', cumulativeRevenuePace: 'Cumulative Revenue Pace', totalStr: 'Total', estimate: 'Estimate', salesByHourEst: 'Sales By Hour (Est)', taxRate: 'Tax Rate', estCommissionDist: 'Est. Commission Dist.', 
             cancelCount: 'Отмены',
             rate: 'рейт',
             revenueImpact: 'Влияние на доход',
@@ -1086,11 +1465,27 @@ const translations: Record<AdminLocale, AdminTranslations> = {
             resSuffix: 'бронирования',
             collectionRate: 'коэффициент сбора',
             occupancy: 'Загрузка'
+        },
+        bigDataPage: {
+            tabs: { overview: 'Overview', revenue: 'Revenue Analysis', occupancy: 'Occupancy', channels: 'Channels & Agencies', guests: 'Guests & Demographics', booking: 'Booking Patterns', performance: 'Performance', forecast: 'Forecast & Pace', comparative: 'Comparative', rawdata: 'Raw Data' },
+            header: { title: 'Big Data Analytics', reservations: 'reservations', countries: 'countries', lastUpdate: 'Last update:', liveApi: 'Live API', loadingData: 'Loading data...' },
+            overview: { budgetRealization: 'Budget Realization', monthlyRevVsBudget: 'Monthly Revenue vs Budget', channelDist: 'Channel Distribution', adrTrendMonthly: 'ADR Trend (Monthly)', occupancyRate: 'Occupancy Rate', nationalityDist: 'Nationality Distribution', boardType: 'Board Type' },
+            revenue: { title: '💰 Revenue Analytics — 10 Reports & Charts', seasonBudget: '📊 2026 Season Budget', target: 'Target:', actual: 'Actual:', realization: 'Realization', remaining: 'Remaining', excess: 'Excess', r1: 'R1: Daily Revenue Trend', r2: 'R2: Weekly Revenue', r3: 'R3: Monthly Revenue vs Budget (€)', r5: 'R5: Revenue Forecast (7-Day MA)', r6: 'R6: RevPAR Trend', r7: 'R7: ADR Trend', r8: 'R8: Currency Breakdown', r9: 'R9: Total vs Paid Revenue', r10: 'R10: Revenue Heatmap (Day×Month, ₺K)', tableTitle: 'Monthly Revenue & Budget Table' },
+            occupancy: { title: '🛏️ Occupancy & Room Analysis — 8 Reports & Charts', r11: 'R11: Daily Occupancy Rate (%)', r12: 'R12: Occupancy Forecast', r13: 'R13: Room Type Distribution', r14: 'R14: Occupancy vs ADR Correlation', r15: 'R15: Occupancy Heatmap (Day×Month, %)', r16: 'R16: Weekday vs Weekend', r17: 'R17: Seasonal Comparison', r18: 'R18: Vacant Room Loss (₺)', avgNightsSuffix: 'nights avg.', tableTitle: 'Room Type Detail Table' },
+            channels: { title: '📡 Channel & Agency Analysis — 7 Reports & Charts', r19: 'R19: Channel Distribution', r20: 'R20: Revenue Trend by Channel', r21: 'R21: ADR by Channel', r22: 'R22: Channel Performance Trend', r23: 'R23: OTA vs Direct', r25: 'R25: Channel Mix Change (%)', r24: 'R24: Agency Ranking (Top 30)', tableTitle: 'Channel Summary Table' },
+            guests: { title: '🌍 Guest & Demographics Analysis — 7 Reports & Charts', r26: 'R26: Nationality Distribution', r27: 'R27: Revenue by Country (₺)', r28: 'R28: Avg. Stay by Country', r29: 'R29: Nationality Trend (Monthly)', r30: 'R30: Guest Segmentation', r31: 'R31: Nationality-Channel Matrix', r32: 'R32: Avg. Rate by Country', tableTitle: 'Nationality Detail Table' },
+            booking: { title: '📋 Booking Patterns — 8 Reports & Charts', r33: 'R33: Booking Lead Time Distribution', r34: 'R34: Booking Day Analysis', r35: 'R35: Cancellation Rate (Monthly)', r36: 'R36: Avg. Length of Stay Trend', r37: 'R37: Room Count Distribution', r38: 'R38: Board Type Distribution', r39: 'R39: Room Type Preference', r40: 'R40: Length of Stay Distribution', leadTimeTable: 'Lead Time Detail Table', stayLengthTable: 'Length of Stay Detail' },
+            performance: { title: '🎯 Performance Indicators — 8 Reports & Charts', r41: 'R41: GOPPAR (Gross Op. Profit / Room)', r42: 'R42: TRevPAR (Total Rev / Available Room)', r46: 'R46: Check-in Day Distribution', r47: 'R47: Price Segment Trend', r48: 'R48: Monthly Performance & Budget Index', r49: 'R49: Revenue Concentration (Pareto)', r50: 'R50: Rate Type Analysis', tableTitle: 'Rate Type Detail Table' },
+            forecast: { title: '⚡ Forecast & Pace Report — 5 Reports & Charts', r5: 'R5: Revenue Forecast (MA-7)', r43: 'R43: Pace Report (This Year vs Last)', r44: 'R44: Pick-up Analysis (Daily New Res.)', r12: 'R12: Occupancy Forecast', seasonalComp: 'Seasonal Forecast Comparison' },
+            comparative: { title: '📊 Comparative Reports — 5 Reports & Charts', r4: 'R4: Year-over-Year (YoY) Comparison', metric: 'Metric', thisSeason: 'This Season', lastSeason: 'Last Season', change: 'Change', paceComp: 'Pace: This Year vs Last', seasonalRevComp: 'Seasonal Revenue Comparison', channelAdrComp: 'ADR Comparison by Channel', roomTypeRevComp: 'Revenue Comparison by Room Type' },
+            rawdata: { title: '🗄️ Raw Data & Tables', searchPlaceholder: 'Search (agency, country, voucher, room type)...', recordsSuffix: 'records', tableTitle: 'All Reservations' },
+            tableCols: { month: 'Month', resCount: 'Res.', revenueYtl: 'Revenue (₺)', budgetEur: 'Budget (€)', actualEur: 'Actual (€)', remainingEur: 'Remaining (€)', percent: '%', adrYtl: 'ADR (₺)', roomType: 'Room Type', avgRate: 'Avg. Rate', avgNights: 'Avg. Stay', share: 'Share (%)', channel: 'Channel', agency: 'Agency', country: 'Country', avgRateYtl: 'Avg. Rate (₺)', durationRange: 'Duration Range', resCountLong: 'Res. Count', duration: 'Duration', realization: 'Realization', occupancyRate: 'Occupancy (%)', revparYtl: 'RevPAR (₺)', rateType: 'Rate Type', voucher: 'Voucher', boardType: 'Board', checkIn: 'Check In', checkOut: 'Check Out', nights: 'Nights', price: 'Price', currency: 'Currency', status: 'Status' }
         }
     },
 }
 
 export interface AdminTranslations {
+    _?: (text: string) => string;
     navReports: string
     navSales: string
     navFinance: string
@@ -1118,6 +1513,7 @@ export interface AdminTranslations {
     dining: string
     meeting: string
     activities: string
+    sportsAndActivities: string
     aiTraining: string
     users: string
     viewSite: string
@@ -1141,6 +1537,92 @@ export interface AdminTranslations {
     assignee: string
     priority: string
     dueDate: string
+    mailIntegrationPage: {
+        title: string
+        subtitle: string
+        connected: string
+        disconnected: string
+        sync: string
+        syncing: string
+        settings: string
+        serverSettings: string
+        imapTitle: string
+        smtpTitle: string
+        emailAddress: string
+        username: string
+        password: string
+        port: string
+        emptySmtpDesc: string
+        saveAndConnect: string
+        cancelConnection: string
+        lastSync: string
+        inbox: string
+        new: string
+        selectEmailDesc: string
+        configFirstDesc: string
+        sender: string
+        noContent: string
+        aiAnalyze: string
+        aiAnalyzing: string
+        aiSuggestion: string
+        createAsTask: string
+        creating: string
+    }
+    roomPricesPage: {
+        title: string
+        subtitle: string
+        live: string
+        pdfExporting: string
+        pdf: string
+        bookingEngine: string
+        today: string
+        days7: string
+        days30: string
+        days60: string
+        days90: string
+        query: string
+        loading: string
+        roomTypes: string
+        queryRange: string
+        avgNightly: string
+        stopSale: string
+        sortLabel: string
+        sortName: string
+        sortPrice: string
+        sortAvailable: string
+        timelineTitle: string
+        timelineSubtitlePrefix: string
+        dailyPriceTable: string
+        dateHeader: string
+        noPrice: string
+        startingPrice: string
+        availableLabel: string
+        avgPriceLabel: string
+        minPriceLabel: string
+        occupancy: string
+        bookNow: string
+        days: string
+    }
+    widgetTitles: { 'kpis': string; 'monthly': string; 'channels': string; 'roomTypes': string; 'agencies': string; 'occupancy': string; 'adr': string; 'nationality': string; 'velocity': string; 'lengthOfStay': string; 'revpar': string; 'budget': string; 'callCenter': string; 'forecast': string; 'operator': string; 'rev-daily-chart': string; 'rev-weekly-chart': string; 'rev-yoy-chart': string; 'rev-roomtype-chart': string; 'rev-channel-chart': string; 'rev-nationality-chart': string; 'rev-segment-chart': string; 'rev-mealplan-chart': string; 'rev-pace-chart': string; 'rev-forecast-chart': string; 'rev-cumulative-chart': string; 'rev-hourly-chart': string; 'rev-tax-chart': string; 'rev-commission-chart': string; 'rev-refund-chart': string; 'rev-daily-kpi': string; 'rev-weekly-kpi': string; 'rev-monthly-kpi': string; 'rev-quarterly-kpi': string; 'rev-upsell': string; 'rev-ancillary': string; 'rev-late-checkout': string; 'rev-early-checkin': string; 'rev-minibar': string; 'rev-spa': string; 'rev-laundry': string; 'rev-parking': string; 'rev-transfer': string; 'rev-meeting-room': string; 'rev-deposit': string; 'rev-heatmap': string; 'rev-treemap': string; 'rev-waterfall': string; 'rev-scatter': string; 'rev-gauge': string; 'rev-sparklines': string; 'rev-funnel': string; 'rev-comparison-radar': string; 'occ-daily-chart': string; 'occ-monthly-chart': string; 'occ-weekday-chart': string; 'occ-roomtype-chart': string; 'occ-floor-chart': string; 'occ-forecast-chart': string; 'occ-yoy-chart': string; 'occ-ooo-chart': string; 'occ-upgrade-chart': string; 'occ-status-chart': string; 'occ-category-mix': string; 'occ-rate-analysis': string; 'occ-today-status': string; 'occ-arrivals-today': string; 'occ-departures-today': string; 'occ-stayovers': string; 'occ-no-shows': string; 'occ-walkins': string; 'occ-vip-rooms': string; 'occ-connecting': string; 'occ-housekeeping': string; 'occ-maintenance': string; 'occ-inhouse-list': string; 'occ-early-late': string; 'occ-heatmap': string; 'occ-floor-map': string; 'occ-bubble': string; 'occ-gauge': string; 'occ-timeline': string; 'guest-nationality-pie': string; 'guest-repeat-chart': string; 'guest-satisfaction-chart': string; 'guest-demographics-chart': string; 'guest-spending-chart': string; 'guest-los-chart': string; 'guest-source-chart': string; 'guest-loyalty-chart': string; 'guest-complaint-chart': string; 'guest-review-chart': string; 'guest-vip-list': string; 'guest-repeat-list': string; 'guest-birthday': string; 'guest-anniversary': string; 'guest-special-req': string; 'guest-allergy': string; 'guest-blacklist': string; 'guest-feedback-summary': string; 'guest-top-spenders': string; 'guest-country-revenue': string; 'guest-preferences': string; 'guest-communication': string; 'guest-world-map': string; 'guest-satisfaction-radar': string; 'guest-journey-sankey': string; 'guest-segmentation-bubble': string; 'guest-retention-funnel': string; 'res-pace-chart': string; 'res-leadtime-chart': string; 'res-cancel-chart': string; 'res-noshow-chart': string; 'res-channel-trend': string; 'res-daily-pickup': string; 'res-rate-code': string; 'res-promo-chart': string; 'res-group-chart': string; 'res-overbooking': string; 'res-modification': string; 'res-board-mix': string; 'res-today-arrivals': string; 'res-today-departures': string; 'res-pending': string; 'res-confirmed': string; 'res-cancelled-list': string; 'res-waitlist': string; 'res-allotment': string; 'res-agency-prod': string; 'res-source-mix': string; 'res-avg-rate': string; 'res-revenue-by-stay': string; 'res-night-audit': string; 'res-pace-waterfall': string; 'res-channel-sankey': string; 'res-heatmap': string; 'res-funnel': string; 'res-calendar': string; 'res-comparison-bar': string; 'ops-checkin-volume': string; 'ops-checkout-volume': string; 'ops-housekeeping-chart': string; 'ops-maintenance-chart': string; 'ops-request-chart': string; 'ops-response-time': string; 'ops-energy-chart': string; 'ops-water-chart': string; 'ops-complaint-trend': string; 'ops-task-completion': string; 'ops-mod-report': string; 'ops-night-audit-data': string; 'ops-lost-found': string; 'ops-security-log': string; 'ops-incident': string; 'ops-pool-status': string; 'ops-parking': string; 'ops-laundry-stats': string; 'ops-minibar-track': string; 'ops-shuttle-schedule': string; 'ops-amenity-usage': string; 'ops-key-card': string; 'ops-floor-heatmap': string; 'ops-timeline': string; 'ops-response-gauge': string; 'ops-energy-gauge': string; 'ops-task-kanban': string; 'fnb-restaurant-rev': string; 'fnb-bar-rev': string; 'fnb-roomservice-chart': string; 'fnb-breakfast-count': string; 'fnb-allinc-consumption': string; 'fnb-menu-popularity': string; 'fnb-food-cost': string; 'fnb-beverage-cost': string; 'fnb-cover-count': string; 'fnb-avg-check': string; 'fnb-daily-summary': string; 'fnb-waste-report': string; 'fnb-stock-alert': string; 'fnb-recipe-cost': string; 'fnb-supplier-perf': string; 'fnb-special-diet': string; 'fnb-banquet-rev': string; 'fnb-outlet-compare': string; 'fnb-happy-hour': string; 'fnb-inventory': string; 'fnb-treemap': string; 'fnb-cost-gauge': string; 'fnb-popularity-bubble': string; 'fnb-outlet-radar': string; 'fnb-flow-sankey': string; 'mkt-direct-vs-ota': string; 'mkt-website-conversion': string; 'mkt-email-campaign': string; 'mkt-social-engagement': string; 'mkt-seo-ranking': string; 'mkt-ppc-roi': string; 'mkt-review-scores': string; 'mkt-competitor-rate': string; 'mkt-market-share': string; 'mkt-brand-awareness': string; 'mkt-campaign-summary': string; 'mkt-promo-redemption': string; 'mkt-referral': string; 'mkt-review-list': string; 'mkt-meta-perf': string; 'mkt-ota-ranking': string; 'mkt-loyalty-stats': string; 'mkt-newsletter': string; 'mkt-influencer': string; 'mkt-content-perf': string; 'mkt-channel-funnel': string; 'mkt-attribution': string; 'mkt-competitor-radar': string; 'mkt-roi-scatter': string; 'mkt-journey-flow': string; 'staff-schedule-chart': string; 'staff-overtime-chart': string; 'staff-labor-cost': string; 'staff-productivity': string; 'staff-turnover': string; 'staff-training': string; 'staff-attendance': string; 'staff-department': string; 'staff-roster': string; 'staff-leave': string; 'staff-performance': string; 'staff-certification': string; 'staff-onboarding': string; 'staff-payroll-summary': string; 'staff-tip-report': string; 'staff-uniform': string; 'staff-org-chart': string; 'staff-workload-heatmap': string; 'staff-satisfaction-gauge': string; 'staff-cost-pie': string; 'yield-rate-strategy': string; 'yield-demand-forecast': string; 'yield-compset': string; 'yield-pickup': string; 'yield-displacement': string; 'yield-los-pattern': string; 'yield-dow-analysis': string; 'yield-seasonal': string; 'yield-rate-shop': string; 'yield-restrictions': string; 'yield-overrides': string; 'yield-segment-mix': string; 'yield-channel-margin': string; 'yield-dynamic-pricing': string; 'yield-benchmark': string; 'yield-price-elasticity': string; 'yield-demand-heatmap': string; 'yield-optimal-rate': string; 'yield-revenue-gauge': string; 'fin-pnl-chart': string; 'fin-cashflow-chart': string; 'fin-ar-aging': string; 'fin-ap-aging': string; 'fin-expense-chart': string; 'fin-payment-method': string; 'fin-tax-summary': string; 'fin-budget-gauge': string; 'fin-cost-breakdown': string; 'fin-ratio-radar': string; };
+    categoryLabels: { revenue: string; occupancy: string; guest: string; reservation: string; operations: string; fnb: string; marketing: string; staff: string; yield: string; financial: string; }; typeLabels: { chart: string; data: string; graph: string; };
+    reportsPage: { next14DaysTotal: string; operator: string; operation: string; score: string; last30Days: string; last12Weeks: string; unknown: string; direct: string; agency: string; unspecified: string; other: string; pctOfTotalRevenue: string; avg: string; cumulativeRevenuePace: string; totalStr: string; estimate: string; salesByHourEst: string; taxRate: string; estCommissionDist: string;
+        managementReports: string
+        financeReports: string
+        purchasingReports: string
+        hrReports: string
+        elektraSubtext: string
+    }
+    target: string
+    variance: string
+    daily: string
+    weekly: string
+    grossRevenue: string
+    netRevenue: string
+    vatAndAccTax: string
+    stayDate: string
+    reservationDate: string
+    stay: string
+    dailyAverage: string
 
     reportTitle: string
     totalRevenue: string
@@ -1187,10 +1669,6 @@ export interface AdminTranslations {
     channel: string
     nights: string
     avgStay: string
-    target: string
-    variance: string
-    daily: string
-    weekly: string
     noData: string
     loadingError: string
 
@@ -1338,6 +1816,7 @@ export interface AdminTranslations {
     all: string
 
     widgets: {
+            next14DaysTotal: string; operator: string; operation: string; score: string; last30Days: string; last12Weeks: string; unknown: string; direct: string; agency: string; unspecified: string; other: string; pctOfTotalRevenue: string; avg: string; cumulativeRevenuePace: string; totalStr: string; estimate: string; salesByHourEst: string; taxRate: string; estCommissionDist: string; 
         cancelCount: string
         rate: string
         revenueImpact: string
@@ -1357,5 +1836,32 @@ export interface AdminTranslations {
         resSuffix: string
         collectionRate: string
         occupancy: string
+    }
+    bigDataPage: {
+        tabs: { overview: string; revenue: string; occupancy: string; channels: string; guests: string; booking: string; performance: string; forecast: string; comparative: string; rawdata: string }
+        header: { title: string; reservations: string; countries: string; lastUpdate: string; liveApi: string; loadingData: string }
+        overview: { budgetRealization: string; monthlyRevVsBudget: string; channelDist: string; adrTrendMonthly: string; occupancyRate: string; nationalityDist: string; boardType: string }
+        revenue: { title: string; seasonBudget: string; target: string; actual: string; realization: string; remaining: string; excess: string; r1: string; r2: string; r3: string; r5: string; r6: string; r7: string; r8: string; r9: string; r10: string; tableTitle: string }
+        occupancy: { title: string; r11: string; r12: string; r13: string; r14: string; r15: string; r16: string; r17: string; r18: string; avgNightsSuffix: string; tableTitle: string }
+        channels: { title: string; r19: string; r20: string; r21: string; r22: string; r23: string; r25: string; r24: string; tableTitle: string }
+        guests: { title: string; r26: string; r27: string; r28: string; r29: string; r30: string; r31: string; r32: string; tableTitle: string }
+        booking: { title: string; r33: string; r34: string; r35: string; r36: string; r37: string; r38: string; r39: string; r40: string; leadTimeTable: string; stayLengthTable: string }
+        performance: { title: string; r41: string; r42: string; r46: string; r47: string; r48: string; r49: string; r50: string; tableTitle: string }
+        forecast: { title: string; r5: string; r43: string; r44: string; r12: string; seasonalComp: string }
+        comparative: { title: string; r4: string; metric: string; thisSeason: string; lastSeason: string; change: string; paceComp: string; seasonalRevComp: string; channelAdrComp: string; roomTypeRevComp: string }
+        rawdata: { title: string; searchPlaceholder: string; recordsSuffix: string; tableTitle: string }
+        tableCols: { month: string; resCount: string; revenueYtl: string; budgetEur: string; actualEur: string; remainingEur: string; percent: string; adrYtl: string; roomType: string; avgRate: string; avgNights: string; share: string; channel: string; agency: string; country: string; avgRateYtl: string; durationRange: string; resCountLong: string; duration: string; realization: string; occupancyRate: string; revparYtl: string; rateType: string; voucher: string; boardType: string; checkIn: string; checkOut: string; nights: string; price: string; currency: string; status: string }
+    }
+
+    extrasPage?: {
+        title: string; totalExtras: string; dailyTotalRev: string; noDataSelected: string; pmsWaiting: string; noSpaData: string; noMinibarData: string; noRestData: string; deptComparison: string; revenue: string; relatedModules: string;
+        yieldDesc: string; reportsDesc: string; reservationsDesc: string; purchasingDesc: string;
+    }
+    yieldPage?: {
+        title: string; subtitle: string; overview: string; channelAnalysis: string; agencyAnalysis: string; priceMatrix: string; aiAssessment: string; currentSeasons: string; high: string; shoulder: string; low: string; off: string; refresh: string; refreshing: string; cacheEmpty: string; lastUpdate: string; stale: string; live: string; datePreset: string;
+        charts: { channelResDist: string; channelRevDist: string; agencyCountryAnalysis: string; priceVolMatrix: string; periodAdrComp: string; monthlyAdrRoomNight: string; }
+        tableCols: { amount: string; category: string; count: string; percentage: string; revenue: string; avgAdr: string; roomNights: string; share: string; }
+        aiSection: { title: string; desc: string; button: string; analyzing: string; }
+        labels: { totalRev: string; avgAdr: string; roomNights: string; channelCount: string; avgStay: string; revShare: string; rnShare: string; vsLastYear: string; }
     }
 }

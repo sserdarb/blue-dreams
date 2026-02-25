@@ -3,11 +3,12 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params
         const entry = await prisma.dining.findUnique({
-            where: { id: params.id },
+            where: { id },
             include: { events: true }
         })
 
@@ -24,9 +25,10 @@ export async function GET(
 
 export async function PUT(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params
         const body = await request.json()
         const { title, name, type, description, image, images, order, cuisine, hours, capacity, location, features, isActive } = body
 
@@ -35,7 +37,7 @@ export async function PUT(
         }
 
         const entry = await prisma.dining.update({
-            where: { id: params.id },
+            where: { id },
             data: {
                 title: title || name,
                 type: type || 'restaurant',
@@ -61,11 +63,12 @@ export async function PUT(
 
 export async function DELETE(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params
         await prisma.dining.delete({
-            where: { id: params.id }
+            where: { id }
         })
 
         return new NextResponse(null, { status: 204 })
