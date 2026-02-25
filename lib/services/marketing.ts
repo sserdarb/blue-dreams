@@ -1,4 +1,4 @@
-export type AdPlatform = 'Google' | 'Meta' | 'TikTok'
+export type AdPlatform = 'Google' | 'Meta' | 'TikTok' | 'Google Ads' | 'Meta (Facebook & Instagram)'
 
 export type AdCampaign = {
     id: string

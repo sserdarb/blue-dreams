@@ -7,6 +7,7 @@ import { ElektraService } from '@/lib/services/elektra'
 import { SalesChart } from '@/components/admin/charts/SalesChart'
 import { ChannelPieChart } from '@/components/admin/charts/ChannelPieChart'
 import ModuleOffline from '@/components/admin/ModuleOffline'
+import LiveTrafficSocialWidget from '@/components/admin/LiveTrafficSocialWidget'
 import { getAdminTranslations, type AdminLocale } from '@/lib/admin-translations'
 
 export default async function AdminDashboard({ params }: { params: Promise<{ locale: string }> }) {
@@ -142,6 +143,10 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
             <ChannelPieChart data={channelData} />
           </div>
         </div>
+
+        {/* Live Traffic and Social Media Data */}
+        <LiveTrafficSocialWidget />
+
 
         {/* Two Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
