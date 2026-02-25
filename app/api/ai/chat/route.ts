@@ -158,8 +158,6 @@ export async function POST(request: Request) {
             systemPrompt += `\n\nEKSPERT BİLGİSİ (Factsheet & SSS):\n${context.sheetContext}\n`
         }
 
-        const ai = new GoogleGenAI({ apiKey })
-
         // Transform messages: ensure valid roles and text
         const chatHistory = messages
             .filter((m: any) => m.text && m.text.trim())
@@ -176,16 +174,58 @@ export async function POST(request: Request) {
             })
         }
 
-        // 3. Generate Content
-        console.log('[AI Chat] Calling Gemini with', chatHistory.length, 'messages')
-        const response = await ai.models.generateContent({
-            model: GEMINI_MODEL,
-            contents: chatHistory,
-            config: {
-                systemInstruction: systemPrompt,
-                tools: [{ functionDeclarations: [priceCheckTool, renderUiTool] }],
+        // 3. Generate Content with retry + key rotation on 429
+        const MAX_RETRIES = 3
+        let response: any = null
+        let currentApiKey = apiKey
+        let lastError: any = null
+
+        for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+            try {
+                const ai = new GoogleGenAI({ apiKey: currentApiKey })
+                console.log(`[AI Chat] Attempt ${attempt + 1}/${MAX_RETRIES + 1} with key ${currentApiKey.substring(0, 10)}...`)
+
+                response = await ai.models.generateContent({
+                    model: GEMINI_MODEL,
+                    contents: chatHistory,
+                    config: {
+                        systemInstruction: systemPrompt,
+                        tools: [{ functionDeclarations: [priceCheckTool, renderUiTool] }],
+                    }
+                })
+                break // Success — exit retry loop
+            } catch (err: any) {
+                lastError = err
+                const errMsg = err?.message || ''
+                const is429 = errMsg.includes('429') || errMsg.includes('RESOURCE_EXHAUSTED') || errMsg.includes('quota')
+
+                if (is429 && attempt < MAX_RETRIES) {
+                    console.log(`[AI Chat] Key ${currentApiKey.substring(0, 10)}... quota exhausted, trying rotation...`)
+
+                    // Mark current key as exhausted and try alternative
+                    const { markKeyExhausted, getAlternativeKey } = await import('@/lib/ai-config')
+                    markKeyExhausted(currentApiKey)
+                    const alt = await getAlternativeKey(currentApiKey, locale)
+                    if (alt) {
+                        console.log(`[AI Chat] Rotated to ${alt.source} key: ${alt.key.substring(0, 10)}...`)
+                        currentApiKey = alt.key
+                    }
+
+                    // Exponential backoff: 2s, 4s, 8s
+                    const backoff = Math.pow(2, attempt + 1) * 1000
+                    console.log(`[AI Chat] Waiting ${backoff}ms before retry...`)
+                    await new Promise(r => setTimeout(r, backoff))
+                    continue
+                }
+
+                // Non-429 error or max retries reached — throw to outer catch
+                throw err
             }
-        })
+        }
+
+        if (!response) {
+            throw lastError || new Error('No response after retries')
+        }
 
         // 4. Handle Response & Tools
         const calls = response.functionCalls
