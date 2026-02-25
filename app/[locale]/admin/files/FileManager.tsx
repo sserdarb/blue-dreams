@@ -7,8 +7,11 @@ import {
   Trash2, Copy, Upload, Folder, Image as ImageIcon,
   Search, Grid, List, Download, HardDrive, Globe,
   Sparkles, MoreVertical, X, Server,
-  FileText, Film, Music, Box, File
+  FileText, Film, Music, Box, File, Eye, Scissors
 } from 'lucide-react';
+import ImagePreviewModal from './ImagePreviewModal';
+import ContextMenu from './ContextMenu';
+import ImageEditor from './ImageEditor';
 
 interface MediaFile {
   id: string;
@@ -34,6 +37,37 @@ export default function FileManager({ initialFiles }: { initialFiles: MediaFile[
   const [aiDescribing, setAiDescribing] = useState<string | null>(null);
   const [aiDescription, setAiDescription] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
+
+  // New: Preview, Context Menu, Editor, Rename
+  const [previewFile, setPreviewFile] = useState<MediaFile | null>(null);
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; file: MediaFile } | null>(null);
+  const [editorFile, setEditorFile] = useState<MediaFile | null>(null);
+  const [renameFile, setRenameFile] = useState<MediaFile | null>(null);
+  const [renameValue, setRenameValue] = useState('');
+
+  // Context menu handler
+  const handleContextMenu = (e: React.MouseEvent, file: MediaFile) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setContextMenu({ x: e.clientX, y: e.clientY, file });
+  };
+
+  const downloadFile = (file: MediaFile) => {
+    const a = document.createElement('a');
+    a.href = file.url; a.download = file.filename; a.click();
+  };
+
+  const startRename = (file: MediaFile) => {
+    setRenameFile(file);
+    setRenameValue(file.filename);
+  };
+
+  const handleRename = async () => {
+    if (!renameFile || !renameValue.trim()) return;
+    // Client-side rename: update local state (server rename would need a new API)
+    setFiles(files.map(f => f.id === renameFile.id ? { ...f, filename: renameValue.trim() } : f));
+    setRenameFile(null);
+  };
 
   // --- Local File Handlers ---
 
@@ -292,7 +326,10 @@ export default function FileManager({ initialFiles }: { initialFiles: MediaFile[
                 viewMode === 'grid' ? (
                   <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-4">
                     {filteredFiles.map((file) => (
-                      <div key={file.id} className="group relative bg-white dark:bg-slate-800 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all border dark:border-slate-700">
+                      <div key={file.id} className="group relative bg-white dark:bg-slate-800 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all border dark:border-slate-700"
+                        onContextMenu={(e) => handleContextMenu(e, file)}
+                        onDoubleClick={() => file.type.startsWith('image/') && setPreviewFile(file)}
+                      >
                         <div className="aspect-square relative bg-slate-100 dark:bg-slate-900">
                           {file.type.startsWith('image/') ? (
                             <Image
@@ -313,6 +350,15 @@ export default function FileManager({ initialFiles }: { initialFiles: MediaFile[
 
                           {/* Hover Overlay */}
                           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 backdrop-blur-sm">
+                            {file.type.startsWith('image/') && (
+                              <button
+                                onClick={() => setPreviewFile(file)}
+                                className="p-2 bg-white/20 hover:bg-white text-white hover:text-cyan-600 rounded-full transition-all"
+                                title="Preview"
+                              >
+                                <Eye size={16} />
+                              </button>
+                            )}
                             <button
                               onClick={() => copyToClipboard(file.url)}
                               className="p-2 bg-white/20 hover:bg-white text-white hover:text-cyan-600 rounded-full transition-all"
@@ -320,6 +366,15 @@ export default function FileManager({ initialFiles }: { initialFiles: MediaFile[
                             >
                               <Copy size={16} />
                             </button>
+                            {file.type.startsWith('image/') && (
+                              <button
+                                onClick={() => setEditorFile(file)}
+                                className="p-2 bg-white/20 hover:bg-white text-white hover:text-purple-600 rounded-full transition-all"
+                                title="Edit"
+                              >
+                                <Scissors size={16} />
+                              </button>
+                            )}
                             <button
                               onClick={() => handleDelete(file.id)}
                               className="p-2 bg-white/20 hover:bg-white text-white hover:text-red-600 rounded-full transition-all"
@@ -546,6 +601,64 @@ export default function FileManager({ initialFiles }: { initialFiles: MediaFile[
 
         </div>
       </div>
+
+      {/* Image Preview Modal */}
+      {previewFile && (
+        <ImagePreviewModal
+          file={previewFile}
+          files={files}
+          onClose={() => setPreviewFile(null)}
+          onNavigate={(f) => setPreviewFile(f)}
+        />
+      )}
+
+      {/* Context Menu */}
+      {contextMenu && (
+        <ContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          isImage={contextMenu.file.type.startsWith('image/')}
+          onClose={() => setContextMenu(null)}
+          onPreview={() => setPreviewFile(contextMenu.file)}
+          onCopyUrl={() => copyToClipboard(contextMenu.file.url)}
+          onDownload={() => downloadFile(contextMenu.file)}
+          onRename={() => startRename(contextMenu.file)}
+          onCropFilter={() => setEditorFile(contextMenu.file)}
+          onAiDescribe={() => handleAiDescribe(contextMenu.file)}
+          onAiEdit={() => setEditorFile(contextMenu.file)}
+          onDelete={() => handleDelete(contextMenu.file.id)}
+        />
+      )}
+
+      {/* Image Editor */}
+      {editorFile && (
+        <ImageEditor
+          file={editorFile}
+          onClose={() => setEditorFile(null)}
+          onSaved={() => { setEditorFile(null); window.location.reload(); }}
+        />
+      )}
+
+      {/* Rename Dialog */}
+      {renameFile && (
+        <div className="fixed inset-0 z-[90] bg-black/50 flex items-center justify-center" onClick={() => setRenameFile(null)}>
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-2xl w-96" onClick={(e) => e.stopPropagation()}>
+            <h3 className="font-bold text-slate-800 dark:text-white mb-4">Rename File</h3>
+            <input
+              type="text"
+              value={renameValue}
+              onChange={(e) => setRenameValue(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleRename()}
+              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border dark:border-slate-700 rounded-lg text-sm dark:text-white focus:ring-2 focus:ring-cyan-500"
+              autoFocus
+            />
+            <div className="flex justify-end gap-2 mt-4">
+              <button onClick={() => setRenameFile(null)} className="px-4 py-2 text-sm text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg">Cancel</button>
+              <button onClick={handleRename} className="px-4 py-2 text-sm bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg font-medium">Rename</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
