@@ -95,8 +95,10 @@ function extractResponseText(response: any): string {
 }
 
 export async function POST(request: Request) {
+    console.log('[AI Chat] POST handler called at', new Date().toISOString())
     try {
         const body = await request.json()
+        console.log('[AI Chat] Request body received, locale:', body?.locale, 'messages:', body?.messages?.length)
         const { messages, locale = 'tr' } = body
 
         if (!messages || !Array.isArray(messages) || messages.length === 0) {
