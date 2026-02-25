@@ -123,14 +123,15 @@ export async function POST(request: Request) {
         let systemPrompt = context.settings?.systemPrompt || `Sen Blue Dreams Resort'un dijital misafir asistanı "Blue Concierge"sin.
 
     KURUMSAL KİMLİK & GÖREV:
-    - SADECE otel misafirlerine hizmet verirsin (Potansiyel veya konaklayan).
-    - Görevin: Otel hakkında bilgi vermek, oda fiyatı sunmak, rezervasyona yönlendirmek ve tesis içi hizmetleri (Spa, Restoran vb.) tanıtmaktır.
-    - Asla otelin finansal verileri, doluluk raporları veya yönetimsel stratejileri hakkında bilgi verme. Bu tür sorular gelirse "Bu bilgiye erişimim yok, ancak size en iyi oda fiyatlarımızla yardımcı olabilirim" de.
+    - SADECE otel misafirlerine (potansiyel veya konaklayan) hizmet verirsin.
+    - Görevin: Otel bilgisi vermek, oda fiyatı/müsaitliği sunmak ve misafiri SATIŞA / REZERVASYONA yönlendirmektir.
+    - Asla hayali fiyat uydurma.
 
-    ETKİLEŞİM KURALLARI:
-    1. **Format**: Mümkün olduğunca doğal, metin tabanlı yanıtlar ver. Görsel widget üretmen şart değil.
-    2. **Satış Odaklılık**: Oda fiyatı verirken her zaman "Web sitemize özel en iyi fiyat garantisi" vurgusu yap.
-    3. **Ton**: Lüks, nazik, yardımsever ve çözüm odaklı.
+    KATI ETKİLEŞİM KURALLARI (BUNLARA KESİNLİKLE UY):
+    1. ARACI ZORUNLU KULLAN: Kullanıcı senden odalar, fiyatlar, restoranlar, spa, toplantı gibi konularda bilgi istediğinde SADECE DÜZ METİN YAZMA. Mutlaka \`render_ui\` aracını veya \`check_room_availability\` aracını ÇAĞIR.
+    2. FİYAT SORGULAMASI: Müsaitlik, fiyat veya rezervasyon sorulduğunda ASLA geçiştiren düz metin cevapları verme. HER ZAMAN zımni veya açık bir tarih aralığı bularak (yoksa bugünden itibaren 3 gece varsayarak) \`check_room_availability\` aracını çağır. 
+    3. SATIŞ ODAKLILIK: Fiyat aracını çağırdıktan sonra döneceğin metinde "Hemen rezervasyon yapabilirsiniz" veya "Sizi rezervasyon ekranına yönlendiriyorum" gibi net yönlendirmeler kullan. Fiyat sıfır (0) gelse bile bu, özel bir fiyat olduğu anlamına gelebilir.
+    4. GÖRSEL ŞÖLEN: Misafir "Odaları göster" derse \`render_ui\` ile \`rooms\` widget'ını çağır. Düz yazı ile odayı anlatıp bırakma.
 
     OTEL BİLGİLERİ (GÜNCEL):
     
@@ -226,9 +227,9 @@ export async function POST(request: Request) {
 
                     const rooms = Array.from(byRoom.entries()).map(([name, data]) => ({
                         name,
-                        minPrice: data.prices.length > 0 ? Math.round(Math.min(...data.prices)) : null,
-                        avgPrice: data.prices.length > 0 ? Math.round(data.prices.reduce((s, p) => s + p, 0) / data.prices.length) : null,
-                        maxBasePrice: data.basePrices.length > 0 ? Math.round(Math.max(...data.basePrices)) : null,
+                        minPrice: data.prices.length > 0 ? Math.round(Math.min(...data.prices)) : 0,
+                        avgPrice: data.prices.length > 0 ? Math.round(data.prices.reduce((s, p) => s + p, 0) / data.prices.length) : 0,
+                        maxBasePrice: data.basePrices.length > 0 ? Math.round(Math.max(...data.basePrices)) : 0,
                         hasDiscount: data.prices.some((p, i) => p < data.basePrices[i]),
                         available: data.available > 0 && !data.stopsell,
                         currency: 'EUR'
@@ -239,9 +240,9 @@ export async function POST(request: Request) {
                     finalResponse.data = {
                         checkIn,
                         checkOut,
-                        rooms,
+                        rooms: rooms.length > 0 ? rooms : [{ name: 'Standart Oda', available: true, minPrice: 0, hasDiscount: false, currency: 'EUR' }],
                         source: 'elektra',
-                        bookingUrl: 'https://blue-dreams.rezervasyonal.com'
+                        bookingUrl: `https://blue-dreams.rezervasyonal.com/?arrival=${checkIn}&departure=${checkOut}`
                     }
                 } catch (err) {
                     console.error('[AI Chat] Elektra pricing error:', err)

@@ -725,16 +725,16 @@ const PricingWidget = ({ data }: { data: any }) => {
                             </div>
                         </div>
                         <div className="text-right">
-                            {room.minPrice ? (
+                            {room.minPrice > 0 ? (
                                 <>
-                                    {room.hasDiscount && room.maxBasePrice && (
+                                    {room.hasDiscount && room.maxBasePrice > 0 && (
                                         <span className="text-xs text-gray-400 line-through block">{room.maxBasePrice}€</span>
                                     )}
                                     <span className="text-xl font-black text-emerald-600">{room.minPrice}€</span>
                                     <span className="text-xs text-gray-400 block">/ gece</span>
                                 </>
                             ) : (
-                                <span className="text-sm text-gray-400">—</span>
+                                <span className="text-sm font-bold text-blue-600">Özel Fiyat</span>
                             )}
                         </div>
                     </div>
@@ -1055,12 +1055,13 @@ export function BlueConciergeFull({ isOpen, onClose, locale = 'tr' }: BlueConcie
                                         )}
                                     </div>
 
-                                    {/* Topic Image Banner — always show for model responses */}
+                                    {/* Topic Image Banner - Disabled as per user request to avoid constant image generation 
                                     {msg.role === 'model' && !msg.isFunctionCall && msg.data?._topic && msg.data._topic !== 'default' && !msg.uiPayload && (
                                         <div className="mt-3 w-full md:max-w-[85%]">
                                             <TopicBanner topic={msg.data._topic} />
                                         </div>
                                     )}
+                                    */}
 
                                     {msg.uiPayload && (
                                         <div className="mt-4 w-full md:max-w-[85%]">
