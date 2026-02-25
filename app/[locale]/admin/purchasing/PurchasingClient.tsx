@@ -9,7 +9,7 @@ import {
 } from 'lucide-react'
 import {
     AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-    ResponsiveContainer, RadialBarChart, RadialBar, Legend, Cell, PieChart, Pie
+    ResponsiveContainer, Legend, Cell, PieChart, Pie
 } from 'recharts'
 import type {
     PurchaseOrder, Vendor, InventoryNeed, PriceTrend, PurchasePerformance
