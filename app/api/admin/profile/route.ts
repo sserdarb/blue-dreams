@@ -71,6 +71,9 @@ export async function PUT(request: Request) {
             if (!fullUser) {
                 return NextResponse.json({ error: 'User not found' }, { status: 404 })
             }
+            if (!fullUser.password) {
+                return NextResponse.json({ error: 'Google accounts cannot change password' }, { status: 400 })
+            }
 
             const isValid = await bcrypt.compare(currentPassword, fullUser.password)
             if (!isValid) {

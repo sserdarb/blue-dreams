@@ -49,15 +49,23 @@ import NotificationBell from '@/components/admin/NotificationBell'
 interface AdminSidebarProps {
     locale: string
     t: AdminTranslations
+    userRole?: string
+    userName?: string
+    userAvatar?: string
 }
 
-export default function AdminSidebar({ locale, t }: AdminSidebarProps) {
+export default function AdminSidebar({ locale, t, userRole: propRole = 'admin', userName: propName = '', userAvatar: propAvatar = '' }: AdminSidebarProps) {
     const [isOpen, setIsOpen] = useState(false)
     const [clickedId, setClickedId] = useState<string | null>(null)
     const { theme, toggleTheme } = useTheme()
     const { config } = useModules()
     const { enabledModules } = config
     const pathname = usePathname()
+
+    // Use props from server-side layout (httpOnly cookie can't be read client-side)
+    const userRole = propRole
+    const userName = propName
+    const userAvatar = propAvatar
 
     const handleClick = useCallback((id: string) => {
         setClickedId(id)
@@ -66,6 +74,9 @@ export default function AdminSidebar({ locale, t }: AdminSidebarProps) {
     }, [])
 
     if (!t) return null
+
+    // Viewer role can only see task management + dashboard
+    const viewerAllowedSections = ['section-gorevler']
 
     const navSections = [
         {
@@ -194,59 +205,71 @@ export default function AdminSidebar({ locale, t }: AdminSidebarProps) {
 
                 {/* Navigation */}
                 <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-                    {navSections.map((section, sectionIdx) => {
-                        // Filter items by module state
-                        const visibleItems = section.items.filter(item => {
-                            // Settings always visible
-                            if (item.id === 'nav-settings') return true
-                            return enabledModules.includes(item.id)
-                        })
-                        // Hide empty sections
-                        if (visibleItems.length === 0) return null
-                        return (
-                            <React.Fragment key={section.id}>
-                                <p data-nav-id={section.id} className={`text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-widest px-4 mb-2 ${sectionIdx > 0 ? 'mt-6' : ''}`}>
-                                    {section.label}
-                                </p>
-                                {visibleItems.map((item) => {
-                                    const Icon = item.icon || PieChart
-                                    const itemPath = `/${locale}/admin${item.href}`
-                                    const isActive = item.href === ''
-                                        ? pathname === `/${locale}/admin` || pathname === `/${locale}/admin/`
-                                        : pathname?.startsWith(itemPath)
-                                    const isClicked = clickedId === item.id
-                                    return (
-                                        <Link
-                                            key={item.id}
-                                            data-nav-id={item.id}
-                                            href={itemPath}
-                                            onClick={() => handleClick(item.id)}
-                                            className={`relative flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group overflow-hidden
+                    {/* Viewer role banner */}
+                    {userRole === 'viewer' && (
+                        <div className="mb-4 mx-2 p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-400 text-xs">
+                            <p className="font-semibold mb-1">Sınırlı Erişim</p>
+                            <p className="text-amber-500/80">Görev yönetimi erişiminiz var. Daha fazla yetki için talep oluşturun.</p>
+                            <a href={`/${locale}/admin/tasks`} className="mt-2 inline-block text-amber-400 hover:text-amber-300 font-bold text-[10px] uppercase tracking-wider">
+                                Yetki Talep Et →
+                            </a>
+                        </div>
+                    )}
+                    {navSections
+                        .filter(section => userRole !== 'viewer' || viewerAllowedSections.includes(section.id))
+                        .map((section, sectionIdx) => {
+                            // Filter items by module state
+                            const visibleItems = section.items.filter(item => {
+                                // Settings always visible
+                                if (item.id === 'nav-settings') return true
+                                return enabledModules.includes(item.id)
+                            })
+                            // Hide empty sections
+                            if (visibleItems.length === 0) return null
+                            return (
+                                <React.Fragment key={section.id}>
+                                    <p data-nav-id={section.id} className={`text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-widest px-4 mb-2 ${sectionIdx > 0 ? 'mt-6' : ''}`}>
+                                        {section.label}
+                                    </p>
+                                    {visibleItems.map((item) => {
+                                        const Icon = item.icon || PieChart
+                                        const itemPath = `/${locale}/admin${item.href}`
+                                        const isActive = item.href === ''
+                                            ? pathname === `/${locale}/admin` || pathname === `/${locale}/admin/`
+                                            : pathname?.startsWith(itemPath)
+                                        const isClicked = clickedId === item.id
+                                        return (
+                                            <Link
+                                                key={item.id}
+                                                data-nav-id={item.id}
+                                                href={itemPath}
+                                                onClick={() => handleClick(item.id)}
+                                                className={`relative flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group overflow-hidden
                                                 ${isActive
-                                                    ? 'bg-cyan-50 dark:bg-cyan-900/20 text-cyan-700 dark:text-cyan-300 border-l-3 border-cyan-500 shadow-sm'
-                                                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'
-                                                }
+                                                        ? 'bg-cyan-50 dark:bg-cyan-900/20 text-cyan-700 dark:text-cyan-300 border-l-3 border-cyan-500 shadow-sm'
+                                                        : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'
+                                                    }
                                                 ${isClicked ? 'scale-[0.97] opacity-80' : 'scale-100'}
                                             `}
-                                            style={{ transition: 'transform 150ms ease, opacity 150ms ease, background-color 200ms ease' }}
-                                        >
-                                            {isClicked && (
-                                                <span className="absolute inset-0 bg-cyan-400/20 dark:bg-cyan-400/10 animate-ping rounded-lg" style={{ animationDuration: '300ms', animationIterationCount: 1 }} />
-                                            )}
-                                            <Icon size={18} className={`transition-all duration-200 ${isActive
-                                                ? 'text-cyan-600 dark:text-cyan-400 scale-110'
-                                                : 'text-slate-400 dark:text-slate-500 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 group-hover:scale-110'
-                                                }`} />
-                                            <span className={`font-medium text-sm ${isActive ? 'font-semibold' : ''}`}>{item.label}</span>
-                                            {isActive && (
-                                                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
-                                            )}
-                                        </Link>
-                                    )
-                                })}
-                            </React.Fragment>
-                        )
-                    })}
+                                                style={{ transition: 'transform 150ms ease, opacity 150ms ease, background-color 200ms ease' }}
+                                            >
+                                                {isClicked && (
+                                                    <span className="absolute inset-0 bg-cyan-400/20 dark:bg-cyan-400/10 animate-ping rounded-lg" style={{ animationDuration: '300ms', animationIterationCount: 1 }} />
+                                                )}
+                                                <Icon size={18} className={`transition-all duration-200 ${isActive
+                                                    ? 'text-cyan-600 dark:text-cyan-400 scale-110'
+                                                    : 'text-slate-400 dark:text-slate-500 group-hover:text-cyan-600 dark:group-hover:text-cyan-400 group-hover:scale-110'
+                                                    }`} />
+                                                <span className={`font-medium text-sm ${isActive ? 'font-semibold' : ''}`}>{item.label}</span>
+                                                {isActive && (
+                                                    <span className="ml-auto w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
+                                                )}
+                                            </Link>
+                                        )
+                                    })}
+                                </React.Fragment>
+                            )
+                        })}
                 </nav>
 
                 {/* Theme Toggle & Language */}
@@ -295,8 +318,8 @@ export default function AdminSidebar({ locale, t }: AdminSidebarProps) {
                         href={`/${locale}/admin/profile`}
                         onClick={() => handleClick('nav-profile')}
                         className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${pathname?.includes('/profile')
-                                ? 'bg-cyan-50 dark:bg-cyan-900/20 text-cyan-700 dark:text-cyan-300'
-                                : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5'
+                            ? 'bg-cyan-50 dark:bg-cyan-900/20 text-cyan-700 dark:text-cyan-300'
+                            : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5'
                             }`}
                     >
                         <UserCog size={16} className={pathname?.includes('/profile') ? 'text-cyan-600' : 'text-slate-400'} />

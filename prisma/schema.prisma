@@ -318,16 +318,33 @@ model AnalyticsConfig {
 }
 
 model AdminUser {
-  id          String    @id @default(uuid())
-  email       String    @unique
-  password    String
-  name        String
-  role        String    @default("admin") // superadmin, admin, editor
-  permissions String? // JSON array: ["task_management","workflow_management","mail_management"]
-  isActive    Boolean   @default(true)
-  lastLogin   DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id           String    @id @default(uuid())
+  email        String    @unique
+  password     String? // Optional — Google users don't have a password
+  name         String
+  role         String    @default("admin") // superadmin, admin, editor, viewer
+  permissions  String? // JSON array: ["task_management","workflow_management","mail_management"]
+  isActive     Boolean   @default(true)
+  lastLogin    DateTime?
+  googleId     String?   @unique // Google OAuth subject ID
+  avatar       String? // Profile picture URL
+  authProvider String    @default("local") // "local" or "google"
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model PermissionRequest {
+  id                   String   @id @default(uuid())
+  userId               String // AdminUser requesting
+  userEmail            String
+  userName             String
+  requestedPermissions String // JSON array of requested permissions
+  reason               String // Why they need it
+  status               String   @default("pending") // pending, approved, rejected
+  reviewedBy           String? // AdminUser who reviewed
+  reviewNote           String? // Reviewer's note
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 }
 
 // ===== Elektra Cache Models (Item 16 & 17) =====

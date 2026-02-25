@@ -1,5 +1,6 @@
 import React from 'react'
-import { headers } from 'next/headers'
+import { headers, cookies } from 'next/headers'
+import { redirect } from 'next/navigation'
 import { getAdminTranslations, type AdminLocale } from '@/lib/admin-translations'
 import AdminSidebar from '@/components/admin/AdminSidebar'
 
@@ -28,12 +29,33 @@ export default async function AdminLayout({
     return <>{children}</>
   }
 
+  // Route-based access control for viewer role
+  const cookieStore = await cookies()
+  const sessionCookie = cookieStore.get('admin_session')
+  let sessionRole = 'admin'
+  let sessionName = ''
+  let sessionAvatar = ''
+  if (sessionCookie) {
+    try {
+      const session = JSON.parse(sessionCookie.value)
+      sessionRole = session.role || 'admin'
+      sessionName = session.name || ''
+      sessionAvatar = session.avatar || ''
+      const allowedViewerPaths = ['/admin', '/admin/tasks', '/admin/profile']
+      const isViewerRoute = allowedViewerPaths.some(p => pathname.endsWith(p)) || pathname.includes('/admin/tasks/')
+
+      if (session.role === 'viewer' && !isViewerRoute && pathname.includes('/admin')) {
+        redirect(`/${locale}/admin/tasks`)
+      }
+    } catch { }
+  }
+
   return (
     <ThemeProvider>
       <ModuleProvider>
         <div className="min-h-screen bg-white dark:bg-[#0f172a] text-slate-900 dark:text-slate-100 transition-colors duration-300">
           {/* Client-side Sidebar with Mobile Toggle */}
-          <AdminSidebar locale={locale} t={t} />
+          <AdminSidebar locale={locale} t={t} userRole={sessionRole} userName={sessionName} userAvatar={sessionAvatar} />
 
           {/* Main Content */}
           <main className="transition-all duration-300 md:ml-64 pt-16 md:pt-0">

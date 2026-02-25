@@ -68,6 +68,11 @@ export async function login(formData: FormData) {
       return { success: false, error: 'Hesabınız devre dışı bırakılmış.' };
     }
 
+    // Google-only users can't login with password
+    if (!user.password) {
+      return { success: false, error: 'Bu hesap Google ile giriş yapmaktadır. Lütfen Google butonunu kullanın.' };
+    }
+
     console.log('[Auth] User found, comparing password. Hash starts with:', user.password.substring(0, 7));
     const passwordMatch = await comparePassword(password, user.password);
     console.log('[Auth] Password match result:', passwordMatch);
@@ -88,6 +93,9 @@ export async function login(formData: FormData) {
         email: user.email,
         name: user.name,
         role: user.role,
+        permissions: user.permissions,
+        avatar: user.avatar || null,
+        authProvider: user.authProvider || 'local',
       });
 
       (await cookies()).set(COOKIE_NAME, sessionValue, {
@@ -147,6 +155,7 @@ export async function changePassword(currentPassword: string, newPassword: strin
     });
 
     if (!user) return { success: false, error: 'Kullanıcı bulunamadı.' };
+    if (!user.password) return { success: false, error: 'Google hesapları için şifre değiştirilemez.' };
 
     const isValid = await comparePassword(currentPassword, user.password);
     if (!isValid) return { success: false, error: 'Mevcut şifre yanlış.' };

@@ -8,7 +8,7 @@ interface AdminUser {
     id: string
     name: string
     email: string
-    role: 'superadmin' | 'admin' | 'editor'
+    role: 'superadmin' | 'admin' | 'editor' | 'viewer'
     permissions: string | null
     isActive: boolean
     lastLogin: string | null
@@ -21,6 +21,18 @@ const PERMISSION_OPTIONS = [
     { key: 'mail_management', label: 'Mail Yönetimi', icon: Mail, color: 'text-amber-500' },
 ] as const
 
+interface PermRequest {
+    id: string
+    userId: string
+    userEmail: string
+    userName: string
+    requestedPermissions: string
+    reason: string
+    status: string
+    reviewedBy: string | null
+    createdAt: string
+}
+
 export default function UserManagementPage() {
     const [users, setUsers] = useState<AdminUser[]>([])
     const [loading, setLoading] = useState(true)
@@ -30,16 +42,20 @@ export default function UserManagementPage() {
     const [showForm, setShowForm] = useState(false)
     const [editingId, setEditingId] = useState<string | null>(null)
     const [form, setForm] = useState({
-        name: '', email: '', role: 'editor' as 'superadmin' | 'admin' | 'editor', password: '',
+        name: '', email: '', role: 'editor' as 'superadmin' | 'admin' | 'editor' | 'viewer', password: '',
         permissions: [] as string[],
     })
 
-    const roleLabels = { superadmin: 'Süper Admin', admin: 'Admin', editor: 'Editör' }
-    const roleColors = {
+    const roleLabels: Record<string, string> = { superadmin: 'Süper Admin', admin: 'Admin', editor: 'Editör', viewer: 'İzleyici' }
+    const roleColors: Record<string, string> = {
         superadmin: 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400',
         admin: 'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400',
         editor: 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400',
+        viewer: 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400',
     }
+
+    // Permission requests state
+    const [permRequests, setPermRequests] = useState<PermRequest[]>([])
 
     // Fetch users from API
     const fetchUsers = useCallback(async () => {
@@ -60,7 +76,14 @@ export default function UserManagementPage() {
         }
     }, [])
 
-    useEffect(() => { fetchUsers() }, [fetchUsers])
+    const fetchPermRequests = useCallback(async () => {
+        try {
+            const res = await fetch('/api/admin/permission-requests')
+            if (res.ok) setPermRequests(await res.json())
+        } catch { }
+    }, [])
+
+    useEffect(() => { fetchUsers(); fetchPermRequests() }, [fetchUsers, fetchPermRequests])
 
     // Auto-clear success message
     useEffect(() => {
@@ -145,6 +168,21 @@ export default function UserManagementPage() {
         setError(null)
     }
 
+    const handleReviewRequest = async (requestId: string, status: 'approved' | 'rejected') => {
+        try {
+            await fetch(`/api/admin/permission-requests/${requestId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status, reviewNote: '' }),
+            })
+            await fetchPermRequests()
+            await fetchUsers()
+            setSuccess(`Talep ${status === 'approved' ? 'onaylandı' : 'reddedildi'}`)
+        } catch {
+            setError('Talep güncellenemedi')
+        }
+    }
+
     const handleToggleActive = async (user: AdminUser) => {
         try {
             const res = await fetch('/api/admin/users', {
@@ -227,6 +265,39 @@ export default function UserManagementPage() {
                 ))}
             </div>
 
+            {/* Pending Permission Requests */}
+            {permRequests.filter(r => r.status === 'pending').length > 0 && (
+                <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-500/30 rounded-2xl p-6 mb-6">
+                    <h2 className="text-lg font-bold text-amber-700 dark:text-amber-400 mb-4 flex items-center gap-2">
+                        <ShieldCheck size={20} /> Bekleyen Yetki Talepleri
+                    </h2>
+                    <div className="space-y-3">
+                        {permRequests.filter(r => r.status === 'pending').map(req => {
+                            let perms: string[] = []
+                            try { perms = JSON.parse(req.requestedPermissions) } catch { }
+                            return (
+                                <div key={req.id} className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-amber-200 dark:border-slate-700 flex items-center justify-between gap-4">
+                                    <div>
+                                        <p className="font-semibold text-slate-800 dark:text-white text-sm">{req.userName} <span className="text-slate-400 font-normal">({req.userEmail})</span></p>
+                                        <p className="text-xs text-slate-500 mt-1">{req.reason}</p>
+                                        <div className="flex gap-1 mt-2">
+                                            {perms.map(p => {
+                                                const opt = PERMISSION_OPTIONS.find(o => o.key === p)
+                                                return <span key={p} className="text-[10px] bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded-full">{opt?.label || p}</span>
+                                            })}
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-2 flex-shrink-0">
+                                        <button onClick={() => handleReviewRequest(req.id, 'approved')} className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-lg transition-colors">Onayla</button>
+                                        <button onClick={() => handleReviewRequest(req.id, 'rejected')} className="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs font-bold rounded-lg transition-colors">Reddet</button>
+                                    </div>
+                                </div>
+                            )
+                        })}
+                    </div>
+                </div>
+            )}
+
             {/* Notifications */}
             {error && (
                 <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-500/30 text-red-600 dark:text-red-400 px-4 py-3 rounded-lg mb-4 flex items-center justify-between">
@@ -282,6 +353,7 @@ export default function UserManagementPage() {
                             <label className="text-sm text-slate-500 dark:text-slate-400 block mb-1">Rol</label>
                             <select value={form.role} onChange={e => setForm({ ...form, role: e.target.value as any })}
                                 className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white text-sm focus:border-cyan-500 outline-none">
+                                <option value="viewer">İzleyici (Google)</option>
                                 <option value="editor">Editör</option>
                                 <option value="admin">Admin</option>
                                 <option value="superadmin">Süper Admin</option>
