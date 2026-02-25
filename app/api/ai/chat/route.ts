@@ -181,7 +181,7 @@ export async function POST(request: Request) {
             contents: chatHistory,
             config: {
                 systemInstruction: systemPrompt,
-                tools: [{ functionDeclarations: [priceCheckTool] }],
+                tools: [{ functionDeclarations: [priceCheckTool, renderUiTool] }],
             }
         })
 

@@ -26,8 +26,8 @@ export async function getGeminiApiKey(locale = 'tr'): Promise<{ key: string; sou
         // DB might not be ready yet, fall through
     }
 
-    // 2. Environment variable
-    const envKey = process.env.GEMINI_API_KEY
+    // 2. Environment variable (check both variants)
+    const envKey = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY
     if (envKey) {
         return { key: envKey, source: 'env' }
     }
@@ -37,4 +37,4 @@ export async function getGeminiApiKey(locale = 'tr'): Promise<{ key: string; sou
 }
 
 // Legacy export for backward compat (env var only, synchronous)
-export const GEMINI_API_KEY = process.env.GEMINI_API_KEY || ''
+export const GEMINI_API_KEY = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY || ''

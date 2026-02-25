@@ -100,12 +100,45 @@ export default function BookingWidget() {
         setLoading(false)
     }
 
-    const handleBookDirect = (roomType: string) => {
-        // Open WhatsApp with pre-filled message for direct booking
-        const message = encodeURIComponent(
-            `Merhaba, ${roomType} için ${checkIn} - ${checkOut} tarihleri arasında ${guests} kişilik rezervasyon yapmak istiyorum.`
-        )
-        window.open(`https://wa.me/902523371111?text=${message}`, '_blank')
+    const [selectedRoom, setSelectedRoom] = useState<RoomResult | null>(null)
+    const [bookingForm, setBookingForm] = useState({ name: '', email: '', phone: '', notes: '' })
+    const [bookingLoading, setBookingLoading] = useState(false)
+    const [bookingResult, setBookingResult] = useState<{ success: boolean; message: string; referenceId?: string } | null>(null)
+
+    const handleBookDirect = (room: RoomResult) => {
+        setSelectedRoom(room)
+        setBookingResult(null)
+    }
+
+    const handleBookingSubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
+        if (!selectedRoom) return
+        setBookingLoading(true)
+        try {
+            const res = await fetch('/api/public/book', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    roomTypeId: selectedRoom.roomTypeId,
+                    roomType: selectedRoom.roomType,
+                    checkIn,
+                    checkOut,
+                    adults: parseInt(guests),
+                    children: 0,
+                    guestName: bookingForm.name,
+                    guestEmail: bookingForm.email,
+                    guestPhone: bookingForm.phone,
+                    notes: bookingForm.notes,
+                    totalPrice: selectedRoom.totalPrice,
+                    currency: 'TRY'
+                })
+            })
+            const data = await res.json()
+            setBookingResult(data)
+        } catch {
+            setBookingResult({ success: false, message: 'Bağlantı hatası. Lütfen tekrar deneyin.' })
+        }
+        setBookingLoading(false)
     }
 
     const handleAlternativeSearch = (alt: AlternativeDate) => {
@@ -184,7 +217,7 @@ export default function BookingWidget() {
                                                         <p className="text-xs text-gray-400">{formatPriceEur(room.avgPricePerNightEur)}{texts.perNight} · {texts.total}: {formatPrice(room.totalPrice)}</p>
                                                     </div>
                                                     <button
-                                                        onClick={() => handleBookDirect(room.roomType)}
+                                                        onClick={() => handleBookDirect(room)}
                                                         className="px-4 py-2 bg-brand hover:bg-brand-dark text-white text-xs font-bold rounded-lg transition-all hover:-translate-y-0.5 shadow-md hover:shadow-lg uppercase tracking-wide"
                                                     >
                                                         {texts.book}
@@ -192,6 +225,68 @@ export default function BookingWidget() {
                                                 </div>
                                             </div>
                                         ))}
+                                    </div>
+                                )}
+
+                                {/* Inline Booking Form */}
+                                {selectedRoom && !bookingResult && (
+                                    <div className="border-t border-gray-100 pt-4 mt-4">
+                                        <div className="bg-brand/5 border border-brand/20 rounded-xl p-4">
+                                            <div className="flex items-center justify-between mb-4">
+                                                <h4 className="font-bold text-gray-800 text-sm">{selectedRoom.roomType} — {locale === 'tr' ? 'Rezervasyon Bilgileri' : 'Reservation Details'}</h4>
+                                                <button onClick={() => setSelectedRoom(null)} className="text-gray-400 hover:text-gray-600 text-xs">✕</button>
+                                            </div>
+                                            <form onSubmit={handleBookingSubmit} className="space-y-3">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                    <input
+                                                        type="text" required placeholder={locale === 'tr' ? 'Ad Soyad *' : 'Full Name *'}
+                                                        value={bookingForm.name} onChange={e => setBookingForm({ ...bookingForm, name: e.target.value })}
+                                                        className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand/50 focus:border-brand"
+                                                    />
+                                                    <input
+                                                        type="tel" required placeholder={locale === 'tr' ? 'Telefon *' : 'Phone *'}
+                                                        value={bookingForm.phone} onChange={e => setBookingForm({ ...bookingForm, phone: e.target.value })}
+                                                        className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand/50 focus:border-brand"
+                                                    />
+                                                </div>
+                                                <input
+                                                    type="email" placeholder={locale === 'tr' ? 'E-posta' : 'Email'}
+                                                    value={bookingForm.email} onChange={e => setBookingForm({ ...bookingForm, email: e.target.value })}
+                                                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand/50 focus:border-brand"
+                                                />
+                                                <textarea
+                                                    placeholder={locale === 'tr' ? 'Not / Özel İstek' : 'Notes / Special Request'} rows={2}
+                                                    value={bookingForm.notes} onChange={e => setBookingForm({ ...bookingForm, notes: e.target.value })}
+                                                    className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-brand/50 focus:border-brand resize-none"
+                                                />
+                                                <div className="flex items-center justify-between">
+                                                    <p className="text-xs text-gray-500">{texts.total}: <strong className="text-gray-800">{formatPrice(selectedRoom.totalPrice)}</strong></p>
+                                                    <button
+                                                        type="submit" disabled={bookingLoading}
+                                                        className="px-6 py-2.5 bg-brand hover:bg-brand-dark disabled:bg-gray-400 text-white text-xs font-bold rounded-lg transition-all shadow-md uppercase tracking-wide flex items-center gap-2"
+                                                    >
+                                                        {bookingLoading && <Loader2 size={14} className="animate-spin" />}
+                                                        {locale === 'tr' ? 'Rezervasyonu Tamamla' : 'Complete Reservation'}
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Booking Result */}
+                                {bookingResult && (
+                                    <div className={`border-t border-gray-100 pt-4 mt-4 text-center py-6 ${bookingResult.success ? 'text-emerald-600' : 'text-red-600'}`}>
+                                        <div className={`w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center ${bookingResult.success ? 'bg-emerald-50' : 'bg-red-50'}`}>
+                                            {bookingResult.success ? '✓' : '✗'}
+                                        </div>
+                                        <p className="font-bold text-sm mb-1">{bookingResult.success ? (locale === 'tr' ? 'Talebiniz Alındı!' : 'Request Received!') : (locale === 'tr' ? 'Hata' : 'Error')}</p>
+                                        <p className="text-xs text-gray-500">{bookingResult.message}</p>
+                                        {bookingResult.success && (
+                                            <button onClick={() => { setBookingResult(null); setSelectedRoom(null); setShowResults(false) }} className="mt-3 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs rounded-lg transition-colors">
+                                                {locale === 'tr' ? 'Tamam' : 'OK'}
+                                            </button>
+                                        )}
                                     </div>
                                 )}
 
