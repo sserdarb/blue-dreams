@@ -10,6 +10,8 @@ import { ThemeProvider } from '@/components/admin/ThemeProvider'
 import { ModuleProvider } from '@/lib/modules/module-context'
 import NotificationBell from '@/components/admin/NotificationBell'
 
+import ChunkErrorHandler from '@/components/admin/ChunkErrorHandler'
+
 export default async function AdminLayout({
   children,
   params
@@ -64,7 +66,9 @@ export default async function AdminLayout({
               <NotificationBell />
             </div>
             <div className="p-4 md:p-8">
-              {children}
+              <ChunkErrorHandler>
+                {children}
+              </ChunkErrorHandler>
             </div>
           </main>
         </div>

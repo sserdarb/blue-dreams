@@ -75,7 +75,7 @@ export async function POST(request: Request) {
                 email: email.toLowerCase().trim(),
                 password: hashedPassword,
                 name,
-                role: ['superadmin', 'admin', 'editor'].includes(role) ? role : 'admin',
+                role: ['superadmin', 'admin', 'editor', 'viewer'].includes(role) ? role : 'admin',
                 permissions: permissions ? JSON.stringify(permissions) : null,
                 isActive: true,
             },
@@ -112,7 +112,7 @@ export async function PUT(request: Request) {
 
         const updateData: any = {}
         if (name !== undefined) updateData.name = name
-        if (role !== undefined && ['superadmin', 'admin', 'editor'].includes(role)) updateData.role = role
+        if (role !== undefined && ['superadmin', 'admin', 'editor', 'viewer'].includes(role)) updateData.role = role
         if (isActive !== undefined) updateData.isActive = isActive
         if (permissions !== undefined) updateData.permissions = permissions ? JSON.stringify(permissions) : null
         if (password && password.trim()) {

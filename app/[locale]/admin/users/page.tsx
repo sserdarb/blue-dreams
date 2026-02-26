@@ -2,7 +2,7 @@
 export const dynamic = 'force-dynamic'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Users, Plus, Trash2, Edit, Shield, ShieldCheck, Mail, UserCircle, Check, X, RefreshCw, ToggleLeft, ToggleRight, CheckSquare, GitBranch, KeyRound } from 'lucide-react'
+import { Users, Plus, Trash2, Edit, Shield, ShieldCheck, Mail, UserCircle, Check, X, RefreshCw, ToggleLeft, ToggleRight, CheckSquare, GitBranch, KeyRound, BarChart3, Share2, PieChart, BedDouble, FolderOpen, FileText, UtensilsCrossed, Settings, ShoppingCart, LayoutDashboard } from 'lucide-react'
 
 interface AdminUser {
     id: string
@@ -16,9 +16,19 @@ interface AdminUser {
 }
 
 const PERMISSION_OPTIONS = [
+    { key: 'yield_management', label: 'Yield Yönetimi', icon: BarChart3, color: 'text-emerald-500' },
+    { key: 'social_media', label: 'Sosyal Medya', icon: Share2, color: 'text-pink-500' },
+    { key: 'analytics', label: 'Analitik', icon: PieChart, color: 'text-indigo-500' },
+    { key: 'room_management', label: 'Oda Yönetimi', icon: BedDouble, color: 'text-blue-500' },
+    { key: 'file_management', label: 'Dosya Yönetimi', icon: FolderOpen, color: 'text-orange-500' },
+    { key: 'page_management', label: 'Sayfa Yönetimi', icon: FileText, color: 'text-teal-500' },
+    { key: 'menu_management', label: 'Menü Yönetimi', icon: UtensilsCrossed, color: 'text-rose-500' },
     { key: 'task_management', label: 'Görev Yönetimi', icon: CheckSquare, color: 'text-cyan-500' },
     { key: 'workflow_management', label: 'İş Akışları', icon: GitBranch, color: 'text-violet-500' },
     { key: 'mail_management', label: 'Mail Yönetimi', icon: Mail, color: 'text-amber-500' },
+    { key: 'purchasing', label: 'Satın Alma', icon: ShoppingCart, color: 'text-lime-500' },
+    { key: 'user_management', label: 'Kullanıcı Yönetimi', icon: Users, color: 'text-red-500' },
+    { key: 'settings', label: 'Ayarlar', icon: Settings, color: 'text-slate-500' },
 ] as const
 
 interface PermRequest {
@@ -257,10 +267,10 @@ export default function UserManagementPage() {
             </div>
 
             {/* Permission Legend */}
-            <div className="flex flex-wrap gap-3 mb-6">
+            <div className="flex flex-wrap gap-2 mb-6">
                 {PERMISSION_OPTIONS.map(p => (
-                    <div key={p.key} className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
-                        <p.icon size={12} className={p.color} /> {p.label}
+                    <div key={p.key} className="flex items-center gap-1 text-[10px] text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 px-2 py-0.5 rounded-full">
+                        <p.icon size={10} className={p.color} /> {p.label}
                     </div>
                 ))}
             </div>
