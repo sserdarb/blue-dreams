@@ -101,8 +101,61 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
 
     const { currentYear, currentYearReservations, prevYearReservations, allReservations, exchangeRates, cacheStatus } = data
     const trans = getAdminTranslations((locale || 'tr') as AdminLocale)
-    const t = trans.yieldPage
-    const SEASON_LABELS_I18N: Record<SeasonType, string> = { HIGH: (t as any).seasonHigh, SHOULDER: (t as any).seasonShoulder, LOW: (t as any).seasonLow, OFF: (t as any).seasonOff }
+    // yieldPage doesn't exist in translations yet — use trans directly + inline defaults
+    const t = {
+        seasonHigh: trans.seasonHigh, seasonShoulder: trans.seasonShoulder,
+        seasonLow: trans.seasonLow, seasonOff: trans.seasonOff,
+        title: 'Yield Management', subtitle: 'Revenue & Price Optimization',
+        overview: locale === 'tr' ? 'Genel Bakış' : 'Overview',
+        channels: locale === 'tr' ? 'Kanallar' : 'Channels',
+        agencies: locale === 'tr' ? 'Acentalar' : 'Agencies',
+        pricing: locale === 'tr' ? 'Fiyatlama' : 'Pricing',
+        ai: 'AI Analiz',
+        lastUpdate: locale === 'tr' ? 'Son güncelleme' : 'Last update',
+        cacheEmpty: locale === 'tr' ? 'Veri yok' : 'No data',
+        stale: locale === 'tr' ? 'Eski veri' : 'Stale',
+        refreshing: locale === 'tr' ? 'Yenileniyor...' : 'Refreshing...',
+        refresh: locale === 'tr' ? 'Yenile' : 'Refresh',
+        thisMonth: locale === 'tr' ? 'Bu Ay' : 'This Month',
+        thisSeason: locale === 'tr' ? 'Bu Sezon' : 'Season',
+        thisYear: locale === 'tr' ? 'Bu Yıl' : 'This Year',
+        custom: locale === 'tr' ? 'Özel' : 'Custom',
+        kpiRevenue: locale === 'tr' ? 'Toplam Gelir' : 'Total Revenue',
+        kpiRevpar: 'RevPAR', kpiAdr: 'ADR',
+        kpiOcc: locale === 'tr' ? 'Doluluk' : 'Occupancy',
+        kpiRn: 'Room Night', kpiAlos: 'ALOS',
+        kpiRes: locale === 'tr' ? 'Rez. Sayısı' : 'Reservations',
+        kpiAbv: locale === 'tr' ? 'Ort. Rez. Değeri' : 'Avg Booking Value',
+        kpiAbvSub: locale === 'tr' ? 'Rez başına' : 'Per booking',
+        kpiAdb: 'ADB', kpiAdbSub: locale === 'tr' ? 'Gece başına' : 'Per night',
+        monthlyAdrRoomNight: locale === 'tr' ? 'Aylık ADR & Room Night' : 'Monthly ADR & Room Nights',
+        channelDist: locale === 'tr' ? 'Kanal Dağılımı' : 'Channel Distribution',
+        channelRevenue: locale === 'tr' ? 'Kanala Göre Gelir' : 'Revenue by Channel',
+        channel: locale === 'tr' ? 'Kanal' : 'Channel',
+        count: locale === 'tr' ? 'Adet' : 'Count',
+        agency: locale === 'tr' ? 'Acenta' : 'Agency',
+        country: locale === 'tr' ? 'Ülke' : 'Country',
+        avgPrice: locale === 'tr' ? 'Ort. Fiyat' : 'Avg Price',
+        agencyAnalysis: locale === 'tr' ? 'Acenta Analizi' : 'Agency Analysis',
+        totalRevLabel: locale === 'tr' ? 'Toplam Gelir' : 'Total Revenue',
+        avgStayNights: locale === 'tr' ? 'Ort. Konaklama' : 'Avg Stay',
+        revenueShare: locale === 'tr' ? 'Gelir Payı' : 'Revenue Share',
+        roomNightShare: locale === 'tr' ? 'RN Payı' : 'RN Share',
+        priceVolumeMatrix: locale === 'tr' ? 'Fiyat-Hacim Matrisi' : 'Price-Volume Matrix',
+        matrixDesc: locale === 'tr' ? 'Her nokta bir rezervasyon' : 'Each dot represents a reservation',
+        highPriceAlert: locale === 'tr' ? 'ADR ortalamanın üzerinde!' : 'ADR above average!',
+        lowPriceAlert: locale === 'tr' ? 'ADR ortalamanın altında!' : 'ADR below average!',
+        thisMonthLabel: locale === 'tr' ? 'Bu ay' : 'This month',
+        avgAdrLabel: locale === 'tr' ? 'Genel ort.' : 'Overall avg',
+        allChannels: locale === 'tr' ? 'Tüm Kanallar' : 'All Channels',
+        allAgencies: locale === 'tr' ? 'Tüm Acentalar' : 'All Agencies',
+        excludeDates: locale === 'tr' ? 'Tarih Hariç Tut' : 'Exclude Dates',
+        aiAnalysisTitle: locale === 'tr' ? 'AI Yield Analizi' : 'AI Yield Analysis',
+        aiAnalysisDesc: locale === 'tr' ? 'Yapay zeka ile fiyat ve doluluk optimizasyon önerileri' : 'AI-powered pricing and occupancy optimization',
+        startAnalysis: locale === 'tr' ? 'Analizi Başlat' : 'Start Analysis',
+        analyzing: locale === 'tr' ? 'Analiz ediliyor...' : 'Analyzing...',
+    }
+    const SEASON_LABELS_I18N: Record<SeasonType, string> = { HIGH: t.seasonHigh, SHOULDER: t.seasonShoulder, LOW: t.seasonLow, OFF: t.seasonOff }
 
     const [activeTab, setActiveTab] = useState<'overview' | 'channels' | 'agencies' | 'pricing' | 'ai'>('overview')
     const [currency, setCurrency] = useState<'EUR' | 'TRY'>('EUR')
