@@ -41,7 +41,7 @@ export default function CrmClient() {
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2"><Layers size={24} /> CRM & Pazarlama</h1>
                     <p className="text-sm text-muted-foreground mt-1">Misafir yönetimi, segmentasyon, kampanyalar ve mesajlaşma</p>
@@ -49,10 +49,10 @@ export default function CrmClient() {
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-1 bg-muted/30 p-1 rounded-lg overflow-x-auto">
+            <div className="flex gap-1 bg-slate-100 dark:bg-slate-800/50 p-1 rounded-lg overflow-x-auto">
                 {tabs.map(t => (
                     <button key={t.key} onClick={() => setTab(t.key)}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all whitespace-nowrap ${tab === t.key ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'}`}>
+                        className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all whitespace-nowrap ${tab === t.key ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-slate-100 dark:bg-slate-800/50'}`}>
                         {t.icon} {t.label}
                     </button>
                 ))}
@@ -140,13 +140,13 @@ function GuestsTab() {
             <div className="flex flex-wrap gap-3 items-center">
                 <div className="relative flex-1 min-w-[200px]">
                     <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                    <input className="w-full pl-9 pr-3 py-2 rounded-lg border bg-background text-sm" placeholder="Ad, soyad, email veya telefon ara..." value={search} onChange={e => { setSearch(e.target.value); setPage(1) }} />
+                    <input className="w-full pl-9 pr-3 py-2 rounded-lg border dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm" placeholder="Ad, soyad, email veya telefon ara..." value={search} onChange={e => { setSearch(e.target.value); setPage(1) }} />
                 </div>
-                <select className="border rounded-lg px-3 py-2 text-sm bg-background" value={nationality} onChange={e => { setNationality(e.target.value); setPage(1) }}>
+                <select className="border dark:border-slate-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-white" value={nationality} onChange={e => { setNationality(e.target.value); setPage(1) }}>
                     <option value="">Tüm Uyruklar</option>
                     {nationalities.map(n => <option key={n.nationality} value={n.nationality || ''}>{n.nationality || 'Bilinmiyor'} ({n._count})</option>)}
                 </select>
-                <select className="border rounded-lg px-3 py-2 text-sm bg-background" value={minStays} onChange={e => { setMinStays(e.target.value); setPage(1) }}>
+                <select className="border dark:border-slate-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-white" value={minStays} onChange={e => { setMinStays(e.target.value); setPage(1) }}>
                     <option value="0">Tüm Ziyaretler</option>
                     <option value="2">2+ Konaklama</option>
                     <option value="3">3+ Konaklama</option>
@@ -169,7 +169,7 @@ function GuestsTab() {
                         {showSegmentPicker && (
                             <div className="absolute top-full mt-1 left-0 bg-popover border rounded-lg shadow-lg z-50 min-w-[200px] p-2">
                                 {segments.map(s => (
-                                    <button key={s.id} onClick={() => addToSegment(s.id)} className="w-full text-left px-3 py-2 rounded text-sm hover:bg-muted flex items-center gap-2">
+                                    <button key={s.id} onClick={() => addToSegment(s.id)} className="w-full text-left px-3 py-2 rounded text-sm hover:bg-slate-200 dark:bg-slate-800 flex items-center gap-2">
                                         <div className="w-3 h-3 rounded-full" style={{ backgroundColor: s.color }} /> {s.name}
                                     </button>
                                 ))}
@@ -182,7 +182,7 @@ function GuestsTab() {
             )}
 
             {/* Stats */}
-            <div className="grid grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {[
                     { label: 'Toplam Misafir', value: total, icon: <Users size={16} /> },
                     { label: 'Telefonu Var', value: guests.filter(g => g.phone).length, icon: <Phone size={16} /> },
@@ -200,7 +200,7 @@ function GuestsTab() {
             <Card className="overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm">
-                        <thead className="bg-muted/50 border-b">
+                        <thead className="bg-slate-100 dark:bg-slate-800/50 border-b">
                             <tr>
                                 <th className="p-3 text-left"><input type="checkbox" onChange={selectAll} checked={guests.length > 0 && selected.size === guests.length} /></th>
                                 <th className="p-3 text-left">Misafir</th>
@@ -219,7 +219,7 @@ function GuestsTab() {
                             ) : guests.length === 0 ? (
                                 <tr><td colSpan={9} className="p-8 text-center text-muted-foreground">Misafir bulunamadı. Elektra Senkronize butonuna tıklayarak verileri çekin.</td></tr>
                             ) : guests.map(g => (
-                                <tr key={g.id} className={`border-b hover:bg-muted/30 transition ${selected.has(g.id) ? 'bg-blue-50 dark:bg-blue-950/20' : ''}`}>
+                                <tr key={g.id} className={`border-b hover:bg-slate-100 dark:bg-slate-800/50 transition ${selected.has(g.id) ? 'bg-blue-50 dark:bg-blue-950/20' : ''}`}>
                                     <td className="p-3"><input type="checkbox" checked={selected.has(g.id)} onChange={() => toggleSelect(g.id)} /></td>
                                     <td className="p-3 font-medium">{g.name} {g.surname}</td>
                                     <td className="p-3"><span className="flex items-center gap-1"><Globe size={12} /> {g.nationality || '—'}</span></td>
@@ -239,7 +239,7 @@ function GuestsTab() {
                     </table>
                 </div>
                 {/* Pagination */}
-                <div className="flex items-center justify-between p-3 border-t bg-muted/20">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-0 p-3 border-t bg-slate-200 dark:bg-slate-800/20">
                     <span className="text-xs text-muted-foreground">Toplam {total} misafir</span>
                     <div className="flex gap-2">
                         <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1} className="px-3 py-1 rounded border text-xs disabled:opacity-30">Önceki</button>
@@ -289,8 +289,8 @@ function SegmentsTab() {
 
             {showCreate && (
                 <Card className="p-4 space-y-3 border-primary/30">
-                    <input className="w-full border rounded-lg px-3 py-2 text-sm bg-background" placeholder="Segment adı..." value={name} onChange={e => setName(e.target.value)} />
-                    <input className="w-full border rounded-lg px-3 py-2 text-sm bg-background" placeholder="Açıklama (opsiyonel)..." value={desc} onChange={e => setDesc(e.target.value)} />
+                    <input className="w-full border dark:border-slate-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-white" placeholder="Segment adı..." value={name} onChange={e => setName(e.target.value)} />
+                    <input className="w-full border dark:border-slate-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-white" placeholder="Açıklama (opsiyonel)..." value={desc} onChange={e => setDesc(e.target.value)} />
                     <div className="flex items-center gap-2">
                         <span className="text-sm text-muted-foreground">Renk:</span>
                         {colors.map(c => <button key={c} onClick={() => setColor(c)} className={`w-6 h-6 rounded-full border-2 ${color === c ? 'border-foreground scale-110' : 'border-transparent'}`} style={{ backgroundColor: c }} />)}
@@ -367,18 +367,18 @@ function CampaignsTab() {
 
             {showCreate && (
                 <Card className="p-4 space-y-3 border-primary/30">
-                    <input className="w-full border rounded-lg px-3 py-2 text-sm bg-background" placeholder="Kampanya adı..." value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
-                    <div className="flex gap-3">
-                        <select className="border rounded-lg px-3 py-2 text-sm bg-background flex-1" value={form.type} onChange={e => setForm({ ...form, type: e.target.value })}>
+                    <input className="w-full border dark:border-slate-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-white" placeholder="Kampanya adı..." value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
+                    <div className="flex flex-col sm:flex-row gap-3">
+                        <select className="border dark:border-slate-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-white flex-1" value={form.type} onChange={e => setForm({ ...form, type: e.target.value })}>
                             <option value="whatsapp">WhatsApp</option>
                             <option value="email">E-posta</option>
                         </select>
-                        <select className="border rounded-lg px-3 py-2 text-sm bg-background flex-1" value={form.segmentId} onChange={e => setForm({ ...form, segmentId: e.target.value })}>
+                        <select className="border dark:border-slate-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-white flex-1" value={form.segmentId} onChange={e => setForm({ ...form, segmentId: e.target.value })}>
                             <option value="">Segment Seçin...</option>
                             {segments.map(s => <option key={s.id} value={s.id}>{s.name} ({s._count?.members || 0} kişi)</option>)}
                         </select>
                     </div>
-                    <textarea className="w-full border rounded-lg px-3 py-2 text-sm bg-background min-h-[100px]" placeholder="Mesaj içeriği... ({{name}} değişkeni kullanabilirsiniz)" value={form.content} onChange={e => setForm({ ...form, content: e.target.value })} />
+                    <textarea className="w-full border dark:border-slate-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-white min-h-[100px]" placeholder="Mesaj içeriği... ({{name}} değişkeni kullanabilirsiniz)" value={form.content} onChange={e => setForm({ ...form, content: e.target.value })} />
                     <div className="flex gap-2">
                         <button onClick={create} className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm">Oluştur</button>
                         <button onClick={() => setShowCreate(false)} className="px-4 py-2 border rounded-lg text-sm">İptal</button>
@@ -391,7 +391,7 @@ function CampaignsTab() {
                     campaigns.length === 0 ? <p className="text-center py-8 text-muted-foreground">Henüz kampanya oluşturulmadı</p> :
                         campaigns.map(c => (
                             <Card key={c.id} className="p-4">
-                                <div className="flex items-center justify-between">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-0">
                                     <div className="flex items-center gap-3">
                                         <div className={`w-2 h-2 rounded-full ${statusColors[c.status] || 'bg-gray-400'}`} />
                                         <div>
@@ -462,13 +462,13 @@ function EmailTemplatesTab() {
             {showCreate && (
                 <Card className="p-4 space-y-3 border-primary/30">
                     <div className="grid grid-cols-2 gap-3">
-                        <input className="border rounded-lg px-3 py-2 text-sm bg-background" placeholder="Şablon adı..." value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
-                        <select className="border rounded-lg px-3 py-2 text-sm bg-background" value={form.category} onChange={e => setForm({ ...form, category: e.target.value })}>
+                        <input className="border dark:border-slate-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-white" placeholder="Şablon adı..." value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
+                        <select className="border dark:border-slate-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-white" value={form.category} onChange={e => setForm({ ...form, category: e.target.value })}>
                             {Object.entries(categoryLabels).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                         </select>
                     </div>
-                    <input className="w-full border rounded-lg px-3 py-2 text-sm bg-background" placeholder="E-posta konusu..." value={form.subject} onChange={e => setForm({ ...form, subject: e.target.value })} />
-                    <textarea className="w-full border rounded-lg px-3 py-2 text-sm bg-background min-h-[200px] font-mono" placeholder="HTML içerik (boş bırakırsanız otomatik şablon oluşturulur)..." value={form.htmlContent} onChange={e => setForm({ ...form, htmlContent: e.target.value })} />
+                    <input className="w-full border dark:border-slate-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-white" placeholder="E-posta konusu..." value={form.subject} onChange={e => setForm({ ...form, subject: e.target.value })} />
+                    <textarea className="w-full border dark:border-slate-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-white min-h-[200px] font-mono" placeholder="HTML içerik (boş bırakırsanız otomatik şablon oluşturulur)..." value={form.htmlContent} onChange={e => setForm({ ...form, htmlContent: e.target.value })} />
                     <p className="text-xs text-muted-foreground">Değişkenler: {'{{name}}'}, {'{{surname}}'}, {'{{checkIn}}'}, {'{{checkOut}}'}</p>
                     <div className="flex gap-2">
                         <button onClick={create} className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm">Oluştur</button>
@@ -488,7 +488,7 @@ function EmailTemplatesTab() {
                                         <Badge variant="outline" className="text-xs">{categoryLabels[t.category] || t.category}</Badge>
                                     </div>
                                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition">
-                                        <button onClick={() => setPreviewHtml(t.htmlContent)} className="p-1 rounded hover:bg-muted"><Eye size={14} /></button>
+                                        <button onClick={() => setPreviewHtml(t.htmlContent)} className="p-1 rounded hover:bg-slate-200 dark:bg-slate-800"><Eye size={14} /></button>
                                         <button onClick={() => remove(t.id)} className="p-1 rounded hover:bg-destructive/10 text-destructive"><Trash2 size={14} /></button>
                                     </div>
                                 </div>
@@ -503,7 +503,7 @@ function EmailTemplatesTab() {
             {previewHtml && (
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setPreviewHtml(null)}>
                     <div className="bg-background rounded-xl shadow-2xl max-w-[700px] w-full max-h-[80vh] overflow-auto" onClick={e => e.stopPropagation()}>
-                        <div className="flex items-center justify-between p-4 border-b">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-0 p-4 border-b">
                             <h3 className="font-semibold">Şablon Önizleme</h3>
                             <button onClick={() => setPreviewHtml(null)}><X size={18} /></button>
                         </div>
@@ -579,7 +579,7 @@ function WhatsAppInboxTab() {
     return (
         <div className="space-y-4">
             {/* Sub-tabs */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-0">
                 <div className="flex gap-2">
                     {[
                         { key: 'conversations' as const, label: 'Konuşmalar', icon: <MessageCircle size={14} /> },
@@ -587,7 +587,7 @@ function WhatsAppInboxTab() {
                         { key: 'templates' as const, label: 'Hızlı Yanıtlar', icon: <Reply size={14} /> },
                     ].map(t => (
                         <button key={t.key} onClick={() => { setView(t.key); setSelectedPhone(null) }}
-                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm ${view === t.key ? 'bg-primary text-primary-foreground' : 'bg-muted/50 hover:bg-muted'}`}>
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm ${view === t.key ? 'bg-primary text-primary-foreground' : 'bg-slate-100 dark:bg-slate-800/50 hover:bg-slate-200 dark:bg-slate-800'}`}>
                             {t.icon} {t.label}
                         </button>
                     ))}
@@ -599,15 +599,15 @@ function WhatsAppInboxTab() {
 
             {/* Filters for messages */}
             {view === 'messages' && (
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-3">
                     <div className="relative flex-1">
                         <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                         <input className="w-full pl-8 pr-3 py-2 rounded-lg border bg-background text-sm" placeholder="Mesaj içeriği ara..." value={search} onChange={e => setSearch(e.target.value)} />
                     </div>
-                    <select className="border rounded-lg px-3 py-2 text-sm bg-background" value={direction} onChange={e => setDirection(e.target.value)}>
+                    <select className="border dark:border-slate-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-white" value={direction} onChange={e => setDirection(e.target.value)}>
                         <option value="">Tümü</option><option value="inbound">Gelen</option><option value="outbound">Giden</option>
                     </select>
-                    <select className="border rounded-lg px-3 py-2 text-sm bg-background" value={isFromGuest} onChange={e => setIsFromGuest(e.target.value)}>
+                    <select className="border dark:border-slate-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-white" value={isFromGuest} onChange={e => setIsFromGuest(e.target.value)}>
                         <option value="">Tüm Kişiler</option><option value="true">Eski Misafir</option><option value="false">Yeni Kişi</option>
                     </select>
                 </div>
@@ -621,8 +621,8 @@ function WhatsAppInboxTab() {
                 <div className="space-y-2">
                     {conversations.length === 0 ? <p className="text-center py-8 text-muted-foreground">Henüz WhatsApp mesajı alınmadı</p> :
                         conversations.map(c => (
-                            <Card key={c.phone} className="p-3 hover:bg-muted/30 cursor-pointer transition" onClick={() => openConversation(c.phone)}>
-                                <div className="flex items-center justify-between">
+                            <Card key={c.phone} className="p-3 hover:bg-slate-100 dark:bg-slate-800/50 cursor-pointer transition" onClick={() => openConversation(c.phone)}>
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-0">
                                     <div className="flex items-center gap-3">
                                         <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold ${c.guest ? 'bg-green-600' : 'bg-gray-400'}`}>
                                             {c.guest ? c.guest.name[0] : '?'}
@@ -654,7 +654,7 @@ function WhatsAppInboxTab() {
                         <div className="space-y-3 max-h-[400px] overflow-y-auto">
                             {chatMessages.slice().reverse().map(m => (
                                 <div key={m.id} className={`flex ${m.direction === 'outbound' ? 'justify-end' : 'justify-start'}`}>
-                                    <div className={`max-w-[70%] px-3 py-2 rounded-lg text-sm ${m.direction === 'outbound' ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+                                    <div className={`max-w-[70%] px-3 py-2 rounded-lg text-sm ${m.direction === 'outbound' ? 'bg-primary text-primary-foreground' : 'bg-slate-200 dark:bg-slate-800'}`}>
                                         <p>{m.content}</p>
                                         <p className={`text-xs mt-1 ${m.direction === 'outbound' ? 'text-primary-foreground/60' : 'text-muted-foreground'}`}>
                                             {new Date(m.createdAt).toLocaleString('tr')}
@@ -665,7 +665,7 @@ function WhatsAppInboxTab() {
                             {chatMessages.length === 0 && <p className="text-center text-muted-foreground text-sm">Mesaj bulunamadı</p>}
                         </div>
                         <div className="flex gap-2 mt-4 pt-3 border-t">
-                            <input className="flex-1 border rounded-lg px-3 py-2 text-sm bg-background" placeholder="Yanıt yazın..." value={replyText} onChange={e => setReplyText(e.target.value)} onKeyDown={e => e.key === 'Enter' && sendReply()} />
+                            <input className="flex-1 border dark:border-slate-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-white" placeholder="Yanıt yazın..." value={replyText} onChange={e => setReplyText(e.target.value)} onKeyDown={e => e.key === 'Enter' && sendReply()} />
                             <button onClick={sendReply} disabled={!replyText.trim()} className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 disabled:opacity-50 flex items-center gap-1"><Send size={14} /> Gönder</button>
                         </div>
                     </Card>
@@ -676,14 +676,14 @@ function WhatsAppInboxTab() {
             {!loading && view === 'messages' && (
                 <Card className="overflow-hidden">
                     <table className="w-full text-sm">
-                        <thead className="bg-muted/50 border-b"><tr>
+                        <thead className="bg-slate-100 dark:bg-slate-800/50 border-b"><tr>
                             <th className="p-3 text-left">Yön</th><th className="p-3 text-left">Telefon</th><th className="p-3 text-left">Misafir</th>
                             <th className="p-3 text-left">Mesaj</th><th className="p-3 text-left">Tarih</th>
                         </tr></thead>
                         <tbody>
                             {messages.length === 0 ? <tr><td colSpan={5} className="p-8 text-center text-muted-foreground">Mesaj bulunamadı</td></tr> :
                                 messages.map(m => (
-                                    <tr key={m.id} className="border-b hover:bg-muted/30">
+                                    <tr key={m.id} className="border-b hover:bg-slate-100 dark:bg-slate-800/50">
                                         <td className="p-3">{m.direction === 'inbound' ? <Badge variant="default" className="text-xs bg-blue-600">Gelen</Badge> : <Badge variant="secondary" className="text-xs">Giden</Badge>}</td>
                                         <td className="p-3 font-mono text-xs">{m.phone}</td>
                                         <td className="p-3">{m.guest ? <span className="flex items-center gap-1"><UserCheck size={12} className="text-green-600" /> {m.guest.name} {m.guest.surname}</span> : <span className="text-muted-foreground">Bilinmiyor</span>}</td>
@@ -701,8 +701,8 @@ function WhatsAppInboxTab() {
                 <div className="space-y-3">
                     {showNewTemplate && (
                         <Card className="p-4 space-y-3 border-primary/30">
-                            <input className="w-full border rounded-lg px-3 py-2 text-sm bg-background" placeholder="Şablon adı..." value={newTpl.name} onChange={e => setNewTpl({ ...newTpl, name: e.target.value })} />
-                            <textarea className="w-full border rounded-lg px-3 py-2 text-sm bg-background min-h-[80px]" placeholder="Şablon metni... ({{name}} değişkeni kullanabilirsiniz)" value={newTpl.content} onChange={e => setNewTpl({ ...newTpl, content: e.target.value })} />
+                            <input className="w-full border dark:border-slate-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-white" placeholder="Şablon adı..." value={newTpl.name} onChange={e => setNewTpl({ ...newTpl, name: e.target.value })} />
+                            <textarea className="w-full border dark:border-slate-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-white min-h-[80px]" placeholder="Şablon metni... ({{name}} değişkeni kullanabilirsiniz)" value={newTpl.content} onChange={e => setNewTpl({ ...newTpl, content: e.target.value })} />
                             <div className="flex gap-2">
                                 <button onClick={createTemplate} className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm">Kaydet</button>
                                 <button onClick={() => setShowNewTemplate(false)} className="px-4 py-2 border rounded-lg text-sm">İptal</button>
@@ -711,7 +711,7 @@ function WhatsAppInboxTab() {
                     )}
                     {templates.length === 0 ? <p className="text-center py-8 text-muted-foreground">Henüz şablon oluşturulmadı</p> :
                         templates.map(t => (
-                            <Card key={t.id} className="p-3 flex items-center justify-between group">
+                            <Card key={t.id} className="p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-0 group">
                                 <div>
                                     <div className="flex items-center gap-2"><h4 className="font-medium text-sm">{t.name}</h4><Badge variant="outline" className="text-xs">{t.category}</Badge></div>
                                     <p className="text-xs text-muted-foreground mt-1">{t.content}</p>

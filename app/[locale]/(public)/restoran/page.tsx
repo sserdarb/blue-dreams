@@ -63,7 +63,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
             description,
             type: 'website',
             url: `https://new.bluedreamsresort.com/${locale}/restoran`,
-            images: [{ url: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/ana-restaurant.jpg', width: 1200, height: 630 }],
+            images: [{ url: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80', width: 1200, height: 630 }],
         },
         alternates: {
             canonical: `https://new.bluedreamsresort.com/${locale}/restoran`,
@@ -97,7 +97,7 @@ export default async function RestaurantPage({ params }: { params: Promise<{ loc
             hours: locale === 'tr' ? 'Kahvaltı 07:00-10:00 | Öğle 12:30-14:00 | Akşam 19:00-21:00' : 'Breakfast 07:00-10:00 | Lunch 12:30-14:00 | Dinner 19:00-21:00',
             location: locale === 'tr' ? 'Ana Bina' : 'Main Building',
             capacity: 350,
-            image: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/ana-restaurant.jpg',
+            image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80',
             features: locale === 'tr' ? 'Açık Büfe,Deniz Manzarası,Türk Mutfağı,Dünya Mutfağı,Vejetaryen Seçenekler' : 'Open Buffet,Sea View,Turkish Cuisine,World Cuisine,Vegetarian Options',
             events: [],
         },
@@ -172,7 +172,7 @@ export default async function RestaurantPage({ params }: { params: Promise<{ loc
             <section className="relative h-screen min-h-[700px] flex items-end">
                 <div className="absolute inset-0">
                     <Image
-                        src="https://bluedreamsresort.com/wp-content/uploads/2023/03/ana-restaurant.jpg"
+                        src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80"
                         alt={g('title', locale)}
                         fill
                         className="object-cover"
