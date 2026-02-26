@@ -14,7 +14,11 @@ export async function GET() {
         const igAccountId = process.env.IG_ACCOUNT_ID
 
         if (!accessToken) {
-            return NextResponse.json({ error: 'META_ACCESS_TOKEN is missing in .env' }, { status: 500 })
+            return NextResponse.json({
+                success: true,
+                data: { facebook: null, instagram: null },
+                warning: 'META_ACCESS_TOKEN env değişkeni ayarlanmamış. Coolify ortam değişkenlerinden ayarlayın.'
+            })
         }
 
         const results = {

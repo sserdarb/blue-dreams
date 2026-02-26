@@ -29,8 +29,17 @@ function getClient() {
 export async function GET(request: Request) {
     try {
         const propertyId = process.env.GA_PROPERTY_ID
-        if (!propertyId) {
-            return NextResponse.json({ error: 'GA_PROPERTY_ID is not configured in .env' }, { status: 500 })
+        const clientEmail = process.env.GA_CLIENT_EMAIL
+        const privateKey = process.env.GA_PRIVATE_KEY
+
+        if (!propertyId || !clientEmail || !privateKey) {
+            // Return empty data gracefully instead of 500 error
+            return NextResponse.json({
+                success: true,
+                data: [],
+                totals: { users: 0, pageViews: 0, sessions: 0, averageBounceRate: 0 },
+                warning: 'Google Analytics yapılandırılmamış. GA_PROPERTY_ID, GA_CLIENT_EMAIL ve GA_PRIVATE_KEY env değişkenlerini ayarlayın.'
+            })
         }
 
         // Optional date range from query string, defaults to last 30 days
