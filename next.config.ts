@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 import path from "path";
 
 const nextConfig: NextConfig = {
-  output: 'standalone',
+  // output: 'standalone', // Disabled for Nixpacks compatibility (fixes 400 Bad Request on _next/static)
   images: {
     remotePatterns: [
       {
