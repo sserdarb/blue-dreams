@@ -110,6 +110,7 @@ export default function BookingClient({ locale }: { locale: string }) {
     const [specialRequests, setSpecialRequests] = useState('')
     const [kvkkConsent, setKvkkConsent] = useState(false)
     const [submitting, setSubmitting] = useState(false)
+    const [countries, setCountries] = useState<{ id: number; name: string }[]>([])
 
     // Read URL params on mount
     useEffect(() => {
@@ -124,6 +125,12 @@ export default function BookingClient({ locale }: { locale: string }) {
         if (params.get('arrival') || params.get('checkIn')) {
             setTimeout(() => searchAvailability(), 500)
         }
+
+        // Fetch countries from Elektra
+        fetch('/api/booking/countries')
+            .then(r => r.json())
+            .then(d => { if (d.countries?.length) setCountries(d.countries) })
+            .catch(() => { })
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
@@ -377,13 +384,21 @@ export default function BookingClient({ locale }: { locale: string }) {
                                     <label className="block text-xs font-bold text-blue-200/70 uppercase tracking-wider mb-1 flex items-center gap-1"><Globe size={12} /> {g('nationality', locale)}</label>
                                     <select value={guestNationality} onChange={e => setGuestNationality(e.target.value)}
                                         className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-blue-400/50">
-                                        <option value="TR" className="bg-slate-800">Türkiye</option>
-                                        <option value="DE" className="bg-slate-800">Deutschland</option>
-                                        <option value="RU" className="bg-slate-800">Россия</option>
-                                        <option value="GB" className="bg-slate-800">United Kingdom</option>
-                                        <option value="NL" className="bg-slate-800">Nederland</option>
-                                        <option value="FR" className="bg-slate-800">France</option>
-                                        <option value="OTHER" className="bg-slate-800">Other</option>
+                                        {countries.length > 0 ? (
+                                            countries.map(c => (
+                                                <option key={c.id} value={c.name} className="bg-slate-800">{c.name}</option>
+                                            ))
+                                        ) : (
+                                            <>
+                                                <option value="TR" className="bg-slate-800">Türkiye</option>
+                                                <option value="DE" className="bg-slate-800">Deutschland</option>
+                                                <option value="RU" className="bg-slate-800">Россия</option>
+                                                <option value="GB" className="bg-slate-800">United Kingdom</option>
+                                                <option value="NL" className="bg-slate-800">Nederland</option>
+                                                <option value="FR" className="bg-slate-800">France</option>
+                                                <option value="OTHER" className="bg-slate-800">Other</option>
+                                            </>
+                                        )}
                                     </select>
                                 </div>
                             </div>

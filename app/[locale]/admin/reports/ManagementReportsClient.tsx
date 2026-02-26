@@ -1324,7 +1324,7 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
                             <Store size={16} className="text-orange-500" />
                             <span className="text-orange-700 dark:text-orange-300">
                                 Aktif Filtreler:
-                                {marketFilter !== 'ALL' && <span className="font-bold ml-1">Market: {marketFilter}</span>}
+                                {marketFilter !== 'ALL' && <span className="font-bold ml-1">{t.managementReports.market}: {marketFilter}</span>}
                                 {ytdMode && <span className="font-bold ml-2">• YTD ({new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })} itibarıyla)</span>}
                             </span>
                             <button onClick={() => { setMarketFilter('ALL'); setYtdMode(false) }} className="ml-auto text-xs text-orange-500 hover:text-orange-700 font-bold">Temizle</button>

@@ -976,4 +976,12 @@ export const ElektraService = {
     async getExchangeRates(): Promise<ExchangeRates> {
         return fetchExchangeRates()
     },
+
+    // ─── Countries / Nationalities ───────────────────────────────
+    async getCountries(): Promise<{ id: number; name: string }[]> {
+        const map = await fetchCountries()
+        return Array.from(map.entries())
+            .map(([id, name]) => ({ id, name }))
+            .sort((a, b) => a.name.localeCompare(b.name))
+    },
 }

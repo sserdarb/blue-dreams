@@ -138,7 +138,8 @@ const translations: Record<AdminLocale, AdminTranslations> = {
             purchasingReports: 'Satın Alma Raporları',
             hrReports: 'İnsan Kaynakları Raporları',
             elektraSubtext: 'Elektra ERP entegrasyonu ile güncel veriler'
-        , next14DaysTotal: 'Gelecek 14 Gün Toplamı', operator: 'Operatör', operation: 'Operasyon', score: 'Puan', last30Days: 'Son 30 Gün', last12Weeks: 'Son 12 Hafta', unknown: 'Bilinmeyen', direct: 'Direkt', agency: 'Acente', unspecified: 'Belirtilmemiş', other: 'Diğer', pctOfTotalRevenue: 'Toplam Gelirdeki Payı (%)', avg: 'Ortalama', cumulativeRevenuePace: 'Kümülatif Gelir Hızı', totalStr: 'Toplam', estimate: 'Tahmin', salesByHourEst: 'Saatlik Satış Tahmini', taxRate: 'Vergi Oranı', estCommissionDist: 'Tahmini Komisyon Dağılımı'},
+            , next14DaysTotal: 'Gelecek 14 Gün Toplamı', operator: 'Operatör', operation: 'Operasyon', score: 'Puan', last30Days: 'Son 30 Gün', last12Weeks: 'Son 12 Hafta', unknown: 'Bilinmeyen', direct: 'Direkt', agency: 'Acente', unspecified: 'Belirtilmemiş', other: 'Diğer', pctOfTotalRevenue: 'Toplam Gelirdeki Payı (%)', avg: 'Ortalama', cumulativeRevenuePace: 'Kümülatif Gelir Hızı', totalStr: 'Toplam', estimate: 'Tahmin', salesByHourEst: 'Saatlik Satış Tahmini', taxRate: 'Vergi Oranı', estCommissionDist: 'Tahmini Komisyon Dağılımı'
+        },
 
         // Reports
         reportTitle: 'Kapsamlı Performans Raporu',
@@ -280,8 +281,8 @@ const translations: Record<AdminLocale, AdminTranslations> = {
             netReservations: 'Net Rezervasyonlar',
             paceReport: 'YTD Pace Raporu',
             agencyReport: 'Acente Raporu',
-            market: 'Market',
-            allMarkets: 'Tüm Marketler',
+            market: 'Acenta',
+            allMarkets: 'Tüm Acentalar',
             ytd: 'Bugüne Kadar (YTD)',
             allSeasons: 'Tüm Sezonlar',
             clear: 'Temizle',
@@ -357,7 +358,7 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         all: 'Tümü',
 
         widgets: {
-            next14DaysTotal: 'Gelecek 14 Gün Toplamı', operator: 'Operatör', operation: 'Operasyon', score: 'Puan', last30Days: 'Son 30 Gün', last12Weeks: 'Son 12 Hafta', unknown: 'Bilinmeyen', direct: 'Direkt', agency: 'Acente', unspecified: 'Belirtilmemiş', other: 'Diğer', pctOfTotalRevenue: 'Toplam Gelirdeki Payı (%)', avg: 'Ortalama', cumulativeRevenuePace: 'Kümülatif Gelir Hızı', totalStr: 'Toplam', estimate: 'Tahmin', salesByHourEst: 'Saatlik Satış Tahmini', taxRate: 'Vergi Oranı', estCommissionDist: 'Tahmini Komisyon Dağılımı', 
+            next14DaysTotal: 'Gelecek 14 Gün Toplamı', operator: 'Operatör', operation: 'Operasyon', score: 'Puan', last30Days: 'Son 30 Gün', last12Weeks: 'Son 12 Hafta', unknown: 'Bilinmeyen', direct: 'Direkt', agency: 'Acente', unspecified: 'Belirtilmemiş', other: 'Diğer', pctOfTotalRevenue: 'Toplam Gelirdeki Payı (%)', avg: 'Ortalama', cumulativeRevenuePace: 'Kümülatif Gelir Hızı', totalStr: 'Toplam', estimate: 'Tahmin', salesByHourEst: 'Saatlik Satış Tahmini', taxRate: 'Vergi Oranı', estCommissionDist: 'Tahmini Komisyon Dağılımı',
             cancelCount: 'İptal Sayısı',
             rate: 'oran',
             revenueImpact: 'Gelir Etkisi',
@@ -521,7 +522,8 @@ const translations: Record<AdminLocale, AdminTranslations> = {
             purchasingReports: 'Purchasing Reports',
             hrReports: 'HR Reports',
             elektraSubtext: 'Live data with Elektra ERP integration'
-        , next14DaysTotal: 'Next 14 Days Total', operator: 'Operator', operation: 'Operation', score: 'Score', last30Days: 'Last 30 Days', last12Weeks: 'Last 12 Weeks', unknown: 'Unknown', direct: 'Direct', agency: 'Agency', unspecified: 'Unspecified', other: 'Other', pctOfTotalRevenue: '% of Total Revenue', avg: 'Avg', cumulativeRevenuePace: 'Cumulative Revenue Pace', totalStr: 'Total', estimate: 'Estimate', salesByHourEst: 'Sales By Hour (Est)', taxRate: 'Tax Rate', estCommissionDist: 'Est. Commission Dist.'},
+            , next14DaysTotal: 'Next 14 Days Total', operator: 'Operator', operation: 'Operation', score: 'Score', last30Days: 'Last 30 Days', last12Weeks: 'Last 12 Weeks', unknown: 'Unknown', direct: 'Direct', agency: 'Agency', unspecified: 'Unspecified', other: 'Other', pctOfTotalRevenue: '% of Total Revenue', avg: 'Avg', cumulativeRevenuePace: 'Cumulative Revenue Pace', totalStr: 'Total', estimate: 'Estimate', salesByHourEst: 'Sales By Hour (Est)', taxRate: 'Tax Rate', estCommissionDist: 'Est. Commission Dist.'
+        },
         reportTitle: 'Comprehensive Performance Report',
         totalRevenue: 'Total Revenue',
         totalReservations: 'Total Reservations',
@@ -657,8 +659,8 @@ const translations: Record<AdminLocale, AdminTranslations> = {
             netReservations: 'Net Reservations',
             paceReport: 'YTD Pace Report',
             agencyReport: 'Agency Report',
-            market: 'Market',
-            allMarkets: 'All Markets',
+            market: 'Agency',
+            allMarkets: 'All Agencies',
             ytd: 'Year to Date (YTD)',
             allSeasons: 'All Seasons',
             clear: 'Clear',
@@ -719,7 +721,7 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         pending: 'Pending',
         all: 'All',
         widgets: {
-            next14DaysTotal: 'Next 14 Days Total', operator: 'Operator', operation: 'Operation', score: 'Score', last30Days: 'Last 30 Days', last12Weeks: 'Last 12 Weeks', unknown: 'Unknown', direct: 'Direct', agency: 'Agency', unspecified: 'Unspecified', other: 'Other', pctOfTotalRevenue: '% of Total Revenue', avg: 'Avg', cumulativeRevenuePace: 'Cumulative Revenue Pace', totalStr: 'Total', estimate: 'Estimate', salesByHourEst: 'Sales By Hour (Est)', taxRate: 'Tax Rate', estCommissionDist: 'Est. Commission Dist.', 
+            next14DaysTotal: 'Next 14 Days Total', operator: 'Operator', operation: 'Operation', score: 'Score', last30Days: 'Last 30 Days', last12Weeks: 'Last 12 Weeks', unknown: 'Unknown', direct: 'Direct', agency: 'Agency', unspecified: 'Unspecified', other: 'Other', pctOfTotalRevenue: '% of Total Revenue', avg: 'Avg', cumulativeRevenuePace: 'Cumulative Revenue Pace', totalStr: 'Total', estimate: 'Estimate', salesByHourEst: 'Sales By Hour (Est)', taxRate: 'Tax Rate', estCommissionDist: 'Est. Commission Dist.',
             cancelCount: 'Cancellations',
             rate: 'rate',
             revenueImpact: 'Revenue Impact',
@@ -883,7 +885,8 @@ const translations: Record<AdminLocale, AdminTranslations> = {
             purchasingReports: 'Einkaufsberichte',
             hrReports: 'HR-Berichte',
             elektraSubtext: 'Aktuelle Daten durch Elektra ERP-Integration'
-        , next14DaysTotal: 'In den nächsten 14 Tagen', operator: 'Operator', operation: 'Betrieb', score: 'Ergebnis', last30Days: 'Letzte 30 Tage', last12Weeks: 'Letzte 12 Wochen', unknown: 'Unbekannt', direct: 'Direkt', agency: 'Agentur', unspecified: 'Nicht angegeben', other: 'Andere', pctOfTotalRevenue: '% vom Gesamtumsatz', avg: 'Durchschnitt', cumulativeRevenuePace: 'Kumuliertes Umsatztempo', totalStr: 'Gesamt', estimate: 'Schätzung', salesByHourEst: 'Umsatz pro Stunde (geschätzt)', taxRate: 'Steuersatz', estCommissionDist: 'Geschätzte Provisionsverteilung'},
+            , next14DaysTotal: 'In den nächsten 14 Tagen', operator: 'Operator', operation: 'Betrieb', score: 'Ergebnis', last30Days: 'Letzte 30 Tage', last12Weeks: 'Letzte 12 Wochen', unknown: 'Unbekannt', direct: 'Direkt', agency: 'Agentur', unspecified: 'Nicht angegeben', other: 'Andere', pctOfTotalRevenue: '% vom Gesamtumsatz', avg: 'Durchschnitt', cumulativeRevenuePace: 'Kumuliertes Umsatztempo', totalStr: 'Gesamt', estimate: 'Schätzung', salesByHourEst: 'Umsatz pro Stunde (geschätzt)', taxRate: 'Steuersatz', estCommissionDist: 'Geschätzte Provisionsverteilung'
+        },
 
         reportTitle: 'Umfassender Leistungsbericht',
         totalRevenue: 'Gesamtumsatz',
@@ -1020,8 +1023,8 @@ const translations: Record<AdminLocale, AdminTranslations> = {
             netReservations: 'Netto Reservierungen',
             paceReport: 'YTD Pace Bericht',
             agencyReport: 'Agenturbericht',
-            market: 'Markt',
-            allMarkets: 'Alle Märkte',
+            market: 'Agentur',
+            allMarkets: 'Alle Agenturen',
             ytd: 'Bisher in diesem Jahr (YTD)',
             allSeasons: 'Alle Saisons',
             clear: 'Löschen',
@@ -1082,7 +1085,7 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         pending: 'Ausstehend',
         all: 'Alle',
         widgets: {
-            next14DaysTotal: 'Next 14 Days Total', operator: 'Operator', operation: 'Operation', score: 'Score', last30Days: 'Last 30 Days', last12Weeks: 'Last 12 Weeks', unknown: 'Unknown', direct: 'Direct', agency: 'Agency', unspecified: 'Unspecified', other: 'Other', pctOfTotalRevenue: '% of Total Revenue', avg: 'Avg', cumulativeRevenuePace: 'Cumulative Revenue Pace', totalStr: 'Total', estimate: 'Estimate', salesByHourEst: 'Sales By Hour (Est)', taxRate: 'Tax Rate', estCommissionDist: 'Est. Commission Dist.', 
+            next14DaysTotal: 'Next 14 Days Total', operator: 'Operator', operation: 'Operation', score: 'Score', last30Days: 'Last 30 Days', last12Weeks: 'Last 12 Weeks', unknown: 'Unknown', direct: 'Direct', agency: 'Agency', unspecified: 'Unspecified', other: 'Other', pctOfTotalRevenue: '% of Total Revenue', avg: 'Avg', cumulativeRevenuePace: 'Cumulative Revenue Pace', totalStr: 'Total', estimate: 'Estimate', salesByHourEst: 'Sales By Hour (Est)', taxRate: 'Tax Rate', estCommissionDist: 'Est. Commission Dist.',
             cancelCount: 'Stornierungen',
             rate: 'Rate',
             revenueImpact: 'Umsatzauswirkung',
@@ -1246,7 +1249,8 @@ const translations: Record<AdminLocale, AdminTranslations> = {
             purchasingReports: 'Отчеты по Закупкам',
             hrReports: 'Кадровые Отчеты',
             elektraSubtext: 'Актуальные данные благодаря интеграции с Elektra ERP'
-        , next14DaysTotal: 'Всего за следующие 14 дней', operator: 'Оператор', operation: 'Операция', score: 'Оценка', last30Days: 'Последние 30 дней', last12Weeks: 'Последние 12 недель', unknown: 'Неизвестно', direct: 'Прямой', agency: 'Агентство', unspecified: 'Не указано', other: 'Другое', pctOfTotalRevenue: '% от общего дохода', avg: 'Среднее', cumulativeRevenuePace: 'Совокупный темп доходов', totalStr: 'Итого', estimate: 'Оценка', salesByHourEst: 'Продажи по часам (оценка)', taxRate: 'Налоговая ставка', estCommissionDist: 'Расчетное распределение комиссий'},
+            , next14DaysTotal: 'Всего за следующие 14 дней', operator: 'Оператор', operation: 'Операция', score: 'Оценка', last30Days: 'Последние 30 дней', last12Weeks: 'Последние 12 недель', unknown: 'Неизвестно', direct: 'Прямой', agency: 'Агентство', unspecified: 'Не указано', other: 'Другое', pctOfTotalRevenue: '% от общего дохода', avg: 'Среднее', cumulativeRevenuePace: 'Совокупный темп доходов', totalStr: 'Итого', estimate: 'Оценка', salesByHourEst: 'Продажи по часам (оценка)', taxRate: 'Налоговая ставка', estCommissionDist: 'Расчетное распределение комиссий'
+        },
 
         reportTitle: 'Комплексный отчет об эффективности',
         totalRevenue: 'Общий Доход',
@@ -1383,8 +1387,8 @@ const translations: Record<AdminLocale, AdminTranslations> = {
             netReservations: 'Чистые Бронирования',
             paceReport: 'YTD Pace Отчет',
             agencyReport: 'Отчет по Агентствам',
-            market: 'Рынок',
-            allMarkets: 'Все Рынки',
+            market: 'Агентство',
+            allMarkets: 'Все Агентства',
             ytd: 'С начала года (YTD)',
             allSeasons: 'Все Сезоны',
             clear: 'Очистить',
@@ -1445,7 +1449,7 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         pending: 'Ожидание',
         all: 'Все',
         widgets: {
-            next14DaysTotal: 'Next 14 Days Total', operator: 'Operator', operation: 'Operation', score: 'Score', last30Days: 'Last 30 Days', last12Weeks: 'Last 12 Weeks', unknown: 'Unknown', direct: 'Direct', agency: 'Agency', unspecified: 'Unspecified', other: 'Other', pctOfTotalRevenue: '% of Total Revenue', avg: 'Avg', cumulativeRevenuePace: 'Cumulative Revenue Pace', totalStr: 'Total', estimate: 'Estimate', salesByHourEst: 'Sales By Hour (Est)', taxRate: 'Tax Rate', estCommissionDist: 'Est. Commission Dist.', 
+            next14DaysTotal: 'Next 14 Days Total', operator: 'Operator', operation: 'Operation', score: 'Score', last30Days: 'Last 30 Days', last12Weeks: 'Last 12 Weeks', unknown: 'Unknown', direct: 'Direct', agency: 'Agency', unspecified: 'Unspecified', other: 'Other', pctOfTotalRevenue: '% of Total Revenue', avg: 'Avg', cumulativeRevenuePace: 'Cumulative Revenue Pace', totalStr: 'Total', estimate: 'Estimate', salesByHourEst: 'Sales By Hour (Est)', taxRate: 'Tax Rate', estCommissionDist: 'Est. Commission Dist.',
             cancelCount: 'Отмены',
             rate: 'рейт',
             revenueImpact: 'Влияние на доход',
@@ -1605,7 +1609,8 @@ export interface AdminTranslations {
     }
     widgetTitles: { 'kpis': string; 'monthly': string; 'channels': string; 'roomTypes': string; 'agencies': string; 'occupancy': string; 'adr': string; 'nationality': string; 'velocity': string; 'lengthOfStay': string; 'revpar': string; 'budget': string; 'callCenter': string; 'forecast': string; 'operator': string; 'rev-daily-chart': string; 'rev-weekly-chart': string; 'rev-yoy-chart': string; 'rev-roomtype-chart': string; 'rev-channel-chart': string; 'rev-nationality-chart': string; 'rev-segment-chart': string; 'rev-mealplan-chart': string; 'rev-pace-chart': string; 'rev-forecast-chart': string; 'rev-cumulative-chart': string; 'rev-hourly-chart': string; 'rev-tax-chart': string; 'rev-commission-chart': string; 'rev-refund-chart': string; 'rev-daily-kpi': string; 'rev-weekly-kpi': string; 'rev-monthly-kpi': string; 'rev-quarterly-kpi': string; 'rev-upsell': string; 'rev-ancillary': string; 'rev-late-checkout': string; 'rev-early-checkin': string; 'rev-minibar': string; 'rev-spa': string; 'rev-laundry': string; 'rev-parking': string; 'rev-transfer': string; 'rev-meeting-room': string; 'rev-deposit': string; 'rev-heatmap': string; 'rev-treemap': string; 'rev-waterfall': string; 'rev-scatter': string; 'rev-gauge': string; 'rev-sparklines': string; 'rev-funnel': string; 'rev-comparison-radar': string; 'occ-daily-chart': string; 'occ-monthly-chart': string; 'occ-weekday-chart': string; 'occ-roomtype-chart': string; 'occ-floor-chart': string; 'occ-forecast-chart': string; 'occ-yoy-chart': string; 'occ-ooo-chart': string; 'occ-upgrade-chart': string; 'occ-status-chart': string; 'occ-category-mix': string; 'occ-rate-analysis': string; 'occ-today-status': string; 'occ-arrivals-today': string; 'occ-departures-today': string; 'occ-stayovers': string; 'occ-no-shows': string; 'occ-walkins': string; 'occ-vip-rooms': string; 'occ-connecting': string; 'occ-housekeeping': string; 'occ-maintenance': string; 'occ-inhouse-list': string; 'occ-early-late': string; 'occ-heatmap': string; 'occ-floor-map': string; 'occ-bubble': string; 'occ-gauge': string; 'occ-timeline': string; 'guest-nationality-pie': string; 'guest-repeat-chart': string; 'guest-satisfaction-chart': string; 'guest-demographics-chart': string; 'guest-spending-chart': string; 'guest-los-chart': string; 'guest-source-chart': string; 'guest-loyalty-chart': string; 'guest-complaint-chart': string; 'guest-review-chart': string; 'guest-vip-list': string; 'guest-repeat-list': string; 'guest-birthday': string; 'guest-anniversary': string; 'guest-special-req': string; 'guest-allergy': string; 'guest-blacklist': string; 'guest-feedback-summary': string; 'guest-top-spenders': string; 'guest-country-revenue': string; 'guest-preferences': string; 'guest-communication': string; 'guest-world-map': string; 'guest-satisfaction-radar': string; 'guest-journey-sankey': string; 'guest-segmentation-bubble': string; 'guest-retention-funnel': string; 'res-pace-chart': string; 'res-leadtime-chart': string; 'res-cancel-chart': string; 'res-noshow-chart': string; 'res-channel-trend': string; 'res-daily-pickup': string; 'res-rate-code': string; 'res-promo-chart': string; 'res-group-chart': string; 'res-overbooking': string; 'res-modification': string; 'res-board-mix': string; 'res-today-arrivals': string; 'res-today-departures': string; 'res-pending': string; 'res-confirmed': string; 'res-cancelled-list': string; 'res-waitlist': string; 'res-allotment': string; 'res-agency-prod': string; 'res-source-mix': string; 'res-avg-rate': string; 'res-revenue-by-stay': string; 'res-night-audit': string; 'res-pace-waterfall': string; 'res-channel-sankey': string; 'res-heatmap': string; 'res-funnel': string; 'res-calendar': string; 'res-comparison-bar': string; 'ops-checkin-volume': string; 'ops-checkout-volume': string; 'ops-housekeeping-chart': string; 'ops-maintenance-chart': string; 'ops-request-chart': string; 'ops-response-time': string; 'ops-energy-chart': string; 'ops-water-chart': string; 'ops-complaint-trend': string; 'ops-task-completion': string; 'ops-mod-report': string; 'ops-night-audit-data': string; 'ops-lost-found': string; 'ops-security-log': string; 'ops-incident': string; 'ops-pool-status': string; 'ops-parking': string; 'ops-laundry-stats': string; 'ops-minibar-track': string; 'ops-shuttle-schedule': string; 'ops-amenity-usage': string; 'ops-key-card': string; 'ops-floor-heatmap': string; 'ops-timeline': string; 'ops-response-gauge': string; 'ops-energy-gauge': string; 'ops-task-kanban': string; 'fnb-restaurant-rev': string; 'fnb-bar-rev': string; 'fnb-roomservice-chart': string; 'fnb-breakfast-count': string; 'fnb-allinc-consumption': string; 'fnb-menu-popularity': string; 'fnb-food-cost': string; 'fnb-beverage-cost': string; 'fnb-cover-count': string; 'fnb-avg-check': string; 'fnb-daily-summary': string; 'fnb-waste-report': string; 'fnb-stock-alert': string; 'fnb-recipe-cost': string; 'fnb-supplier-perf': string; 'fnb-special-diet': string; 'fnb-banquet-rev': string; 'fnb-outlet-compare': string; 'fnb-happy-hour': string; 'fnb-inventory': string; 'fnb-treemap': string; 'fnb-cost-gauge': string; 'fnb-popularity-bubble': string; 'fnb-outlet-radar': string; 'fnb-flow-sankey': string; 'mkt-direct-vs-ota': string; 'mkt-website-conversion': string; 'mkt-email-campaign': string; 'mkt-social-engagement': string; 'mkt-seo-ranking': string; 'mkt-ppc-roi': string; 'mkt-review-scores': string; 'mkt-competitor-rate': string; 'mkt-market-share': string; 'mkt-brand-awareness': string; 'mkt-campaign-summary': string; 'mkt-promo-redemption': string; 'mkt-referral': string; 'mkt-review-list': string; 'mkt-meta-perf': string; 'mkt-ota-ranking': string; 'mkt-loyalty-stats': string; 'mkt-newsletter': string; 'mkt-influencer': string; 'mkt-content-perf': string; 'mkt-channel-funnel': string; 'mkt-attribution': string; 'mkt-competitor-radar': string; 'mkt-roi-scatter': string; 'mkt-journey-flow': string; 'staff-schedule-chart': string; 'staff-overtime-chart': string; 'staff-labor-cost': string; 'staff-productivity': string; 'staff-turnover': string; 'staff-training': string; 'staff-attendance': string; 'staff-department': string; 'staff-roster': string; 'staff-leave': string; 'staff-performance': string; 'staff-certification': string; 'staff-onboarding': string; 'staff-payroll-summary': string; 'staff-tip-report': string; 'staff-uniform': string; 'staff-org-chart': string; 'staff-workload-heatmap': string; 'staff-satisfaction-gauge': string; 'staff-cost-pie': string; 'yield-rate-strategy': string; 'yield-demand-forecast': string; 'yield-compset': string; 'yield-pickup': string; 'yield-displacement': string; 'yield-los-pattern': string; 'yield-dow-analysis': string; 'yield-seasonal': string; 'yield-rate-shop': string; 'yield-restrictions': string; 'yield-overrides': string; 'yield-segment-mix': string; 'yield-channel-margin': string; 'yield-dynamic-pricing': string; 'yield-benchmark': string; 'yield-price-elasticity': string; 'yield-demand-heatmap': string; 'yield-optimal-rate': string; 'yield-revenue-gauge': string; 'fin-pnl-chart': string; 'fin-cashflow-chart': string; 'fin-ar-aging': string; 'fin-ap-aging': string; 'fin-expense-chart': string; 'fin-payment-method': string; 'fin-tax-summary': string; 'fin-budget-gauge': string; 'fin-cost-breakdown': string; 'fin-ratio-radar': string; };
     categoryLabels: { revenue: string; occupancy: string; guest: string; reservation: string; operations: string; fnb: string; marketing: string; staff: string; yield: string; financial: string; }; typeLabels: { chart: string; data: string; graph: string; };
-    reportsPage: { next14DaysTotal: string; operator: string; operation: string; score: string; last30Days: string; last12Weeks: string; unknown: string; direct: string; agency: string; unspecified: string; other: string; pctOfTotalRevenue: string; avg: string; cumulativeRevenuePace: string; totalStr: string; estimate: string; salesByHourEst: string; taxRate: string; estCommissionDist: string;
+    reportsPage: {
+        next14DaysTotal: string; operator: string; operation: string; score: string; last30Days: string; last12Weeks: string; unknown: string; direct: string; agency: string; unspecified: string; other: string; pctOfTotalRevenue: string; avg: string; cumulativeRevenuePace: string; totalStr: string; estimate: string; salesByHourEst: string; taxRate: string; estCommissionDist: string;
         managementReports: string
         financeReports: string
         purchasingReports: string
@@ -1816,7 +1821,7 @@ export interface AdminTranslations {
     all: string
 
     widgets: {
-            next14DaysTotal: string; operator: string; operation: string; score: string; last30Days: string; last12Weeks: string; unknown: string; direct: string; agency: string; unspecified: string; other: string; pctOfTotalRevenue: string; avg: string; cumulativeRevenuePace: string; totalStr: string; estimate: string; salesByHourEst: string; taxRate: string; estCommissionDist: string; 
+        next14DaysTotal: string; operator: string; operation: string; score: string; last30Days: string; last12Weeks: string; unknown: string; direct: string; agency: string; unspecified: string; other: string; pctOfTotalRevenue: string; avg: string; cumulativeRevenuePace: string; totalStr: string; estimate: string; salesByHourEst: string; taxRate: string; estCommissionDist: string;
         cancelCount: string
         rate: string
         revenueImpact: string
