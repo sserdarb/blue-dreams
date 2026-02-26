@@ -56,15 +56,17 @@ model ChatMessage {
 // ===== AI Concierge Models =====
 
 model AiSettings {
-  id            String   @id @default(uuid())
-  systemPrompt  String // AI training text / system instruction
-  language      String   @default("tr") // tr, en, de, ru
-  tone          String   @default("friendly") // formal, friendly, casual
-  isActive      Boolean  @default(true)
-  apiKey        String? // Gemini API Key
-  googleSheetId String? // Google Sheet ID for knowledge base
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id                   String   @id @default(uuid())
+  systemPrompt         String // AI training text / system instruction
+  language             String   @default("tr") // tr, en, de, ru
+  tone                 String   @default("friendly") // formal, friendly, casual
+  isActive             Boolean  @default(true)
+  apiKey               String? // Gemini API Key
+  googleSheetId        String? // Google Sheet ID for knowledge base
+  whatsappAutoReply    Boolean  @default(false) // WhatsApp chatbot auto-reply toggle
+  whatsappSystemPrompt String? // Custom system prompt for WhatsApp bot
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 }
 
 model AiTrainingDocument {
@@ -539,4 +541,127 @@ model ReservationRequest {
 
   @@index([status])
   @@index([createdAt])
+}
+
+// ===== CRM Marketing Models =====
+
+model GuestProfile {
+  id               String               @id @default(uuid())
+  elektraId        Int?                 @unique
+  name             String
+  surname          String
+  email            String?
+  phone            String?
+  nationality      String?
+  language         String               @default("tr")
+  totalStays       Int                  @default(0)
+  totalRevenue     Float                @default(0)
+  lastCheckIn      DateTime?
+  lastCheckOut     DateTime?
+  firstCheckIn     DateTime?
+  tags             String? // JSON: ["VIP","Repeat"]
+  source           String               @default("elektra") // elektra, website, whatsapp, manual
+  notes            String?
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  segments         GuestSegmentMember[]
+  whatsappMessages WhatsAppMessage[]
+
+  @@index([phone])
+  @@index([nationality])
+  @@index([email])
+}
+
+model MarketingSegment {
+  id          String               @id @default(uuid())
+  name        String
+  description String?
+  color       String               @default("#3b82f6")
+  icon        String               @default("users")
+  filterJson  String? // JSON: auto filter rules
+  isAutomatic Boolean              @default(false)
+  guestCount  Int                  @default(0)
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  members     GuestSegmentMember[]
+  campaigns   Campaign[]
+}
+
+model GuestSegmentMember {
+  id        String           @id @default(uuid())
+  guestId   String
+  guest     GuestProfile     @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  segmentId String
+  segment   MarketingSegment @relation(fields: [segmentId], references: [id], onDelete: Cascade)
+  addedAt   DateTime         @default(now())
+
+  @@unique([guestId, segmentId])
+}
+
+model WhatsAppMessage {
+  id          String        @id @default(uuid())
+  waMessageId String?       @unique
+  guestId     String?
+  guest       GuestProfile? @relation(fields: [guestId], references: [id])
+  phone       String
+  direction   String // inbound, outbound
+  type        String        @default("text") // text, image, template, campaign
+  content     String
+  templateId  String?
+  campaignId  String?
+  status      String        @default("received") // received, sent, delivered, read, failed
+  metadata    String? // JSON
+  isFromGuest Boolean       @default(false)
+  createdAt   DateTime      @default(now())
+
+  @@index([phone])
+  @@index([guestId])
+  @@index([createdAt])
+  @@index([direction])
+}
+
+model Campaign {
+  id             String            @id @default(uuid())
+  name           String
+  type           String // whatsapp, email
+  segmentId      String?
+  segment        MarketingSegment? @relation(fields: [segmentId], references: [id])
+  templateId     String?
+  subject        String? // Email subject
+  content        String? // Message content
+  status         String            @default("draft") // draft, scheduled, sending, sent, cancelled
+  scheduledAt    DateTime?
+  sentAt         DateTime?
+  totalSent      Int               @default(0)
+  totalDelivered Int               @default(0)
+  totalOpened    Int               @default(0)
+  totalClicked   Int               @default(0)
+  totalFailed    Int               @default(0)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+}
+
+model EmailTemplate {
+  id          String   @id @default(uuid())
+  name        String
+  subject     String
+  htmlContent String
+  jsonContent String? // Editor state JSON
+  category    String   @default("general") // welcome, promo, seasonal, event, feedback
+  thumbnail   String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model WhatsAppTemplate {
+  id        String   @id @default(uuid())
+  name      String
+  content   String // Template text with {{name}} style variables
+  category  String   @default("general") // greeting, info, promo, feedback
+  language  String   @default("tr")
+  isActive  Boolean  @default(true)
+  useCount  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
