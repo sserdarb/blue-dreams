@@ -879,59 +879,61 @@ export default function DesignTool() {
                             </div>
 
                             {/* Template Grid */}
-                            <div className="flex-1 overflow-y-auto p-3 grid grid-cols-2 gap-3 content-start">
-                                {filteredTemplates.map(tpl => {
-                                    const preview = templatePreviews[tpl.id]
-                                    const catColorMap: Record<string, string> = {
-                                        'Sales': 'bg-orange-100 text-orange-700',
-                                        'Events': 'bg-purple-100 text-purple-700',
-                                        'F&B': 'bg-pink-100 text-pink-700',
-                                        'Rooms': 'bg-blue-100 text-blue-700',
-                                        'Reviews': 'bg-green-100 text-green-700',
-                                    }
-                                    const catColor = catColorMap[tpl.category] || 'bg-slate-100 text-slate-600'
+                            <div className="flex-1 overflow-y-auto p-3">
+                                <div className="grid grid-cols-2 gap-3 auto-rows-min">
+                                    {filteredTemplates.map(tpl => {
+                                        const preview = templatePreviews[tpl.id]
+                                        const catColorMap: Record<string, string> = {
+                                            'Sales': 'bg-orange-100 text-orange-700',
+                                            'Events': 'bg-purple-100 text-purple-700',
+                                            'F&B': 'bg-pink-100 text-pink-700',
+                                            'Rooms': 'bg-blue-100 text-blue-700',
+                                            'Reviews': 'bg-green-100 text-green-700',
+                                        }
+                                        const catColor = catColorMap[tpl.category] || 'bg-slate-100 text-slate-600'
 
-                                    return (
-                                        <button
-                                            key={tpl.id}
-                                            onClick={() => loadTemplate(tpl.id)}
-                                            className="group relative aspect-square bg-slate-50 dark:bg-slate-900 rounded-xl overflow-hidden border-2 border-slate-200 dark:border-slate-700 hover:border-cyan-500 hover:shadow-lg hover:shadow-cyan-500/10 transition-all text-left"
-                                        >
-                                            {/* Canvas-Rendered Preview */}
-                                            {preview ? (
-                                                <img
-                                                    src={preview}
-                                                    alt={tpl.name}
-                                                    className="w-full h-full object-cover"
-                                                    loading="lazy"
-                                                />
-                                            ) : (
-                                                <div className="absolute inset-0 flex items-center justify-center bg-slate-100 dark:bg-slate-800">
-                                                    <Loader2 size={20} className="animate-spin text-slate-300" />
+                                        return (
+                                            <button
+                                                key={tpl.id}
+                                                onClick={() => loadTemplate(tpl.id)}
+                                                className="group relative aspect-square bg-slate-50 dark:bg-slate-900 rounded-xl overflow-hidden border-2 border-slate-200 dark:border-slate-700 hover:border-cyan-500 hover:shadow-lg hover:shadow-cyan-500/10 transition-all text-left"
+                                            >
+                                                {/* Canvas-Rendered Preview */}
+                                                {preview ? (
+                                                    <img
+                                                        src={preview}
+                                                        alt={tpl.name}
+                                                        className="w-full h-full object-cover"
+                                                        loading="lazy"
+                                                    />
+                                                ) : (
+                                                    <div className="absolute inset-0 flex items-center justify-center bg-slate-100 dark:bg-slate-800">
+                                                        <Loader2 size={20} className="animate-spin text-slate-300" />
+                                                    </div>
+                                                )}
+
+                                                {/* Hover Overlay */}
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-200 flex items-end justify-center pb-12">
+                                                    <span className="px-4 py-1.5 bg-cyan-500 text-white text-xs font-bold rounded-full shadow-lg transform translate-y-2 group-hover:translate-y-0 transition-transform duration-200">
+                                                        Kullan
+                                                    </span>
                                                 </div>
-                                            )}
 
-                                            {/* Hover Overlay */}
-                                            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-200 flex items-end justify-center pb-12">
-                                                <span className="px-4 py-1.5 bg-cyan-500 text-white text-xs font-bold rounded-full shadow-lg transform translate-y-2 group-hover:translate-y-0 transition-transform duration-200">
-                                                    Kullan
-                                                </span>
-                                            </div>
-
-                                            {/* Bottom Info Bar */}
-                                            <div className="absolute inset-x-0 bottom-0 bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm p-2 border-t border-slate-100 dark:border-slate-700">
-                                                <div className="text-[10px] font-bold text-slate-800 dark:text-white truncate">{tpl.name}</div>
-                                                <span className={`inline-block mt-0.5 px-1.5 py-0 rounded text-[8px] font-bold ${catColor}`}>{tpl.category}</span>
-                                            </div>
-                                        </button>
-                                    )
-                                })}
-                                {filteredTemplates.length === 0 && (
-                                    <div className="col-span-2 text-center py-8 text-slate-400 text-xs">
-                                        <LayoutTemplate size={24} className="mx-auto mb-2 opacity-50" />
-                                        Aramanıza uygun şablon bulunamadı.
-                                    </div>
-                                )}
+                                                {/* Bottom Info Bar */}
+                                                <div className="absolute inset-x-0 bottom-0 bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm p-2 border-t border-slate-100 dark:border-slate-700">
+                                                    <div className="text-[10px] font-bold text-slate-800 dark:text-white truncate">{tpl.name}</div>
+                                                    <span className={`inline-block mt-0.5 px-1.5 py-0 rounded text-[8px] font-bold ${catColor}`}>{tpl.category}</span>
+                                                </div>
+                                            </button>
+                                        )
+                                    })}
+                                    {filteredTemplates.length === 0 && (
+                                        <div className="col-span-2 text-center py-8 text-slate-400 text-xs">
+                                            <LayoutTemplate size={24} className="mx-auto mb-2 opacity-50" />
+                                            Aramanıza uygun şablon bulunamadı.
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     )}
