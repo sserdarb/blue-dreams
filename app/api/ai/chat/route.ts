@@ -313,7 +313,11 @@ export async function POST(request: Request) {
                         || (rooms.length > 0 ? rooms[0] : null)
                 }
 
-                finalResponse.uiPayload = { type: componentType }
+                finalResponse.uiPayload = {
+                    type: componentType,
+                    ...(componentType === 'room_detail' && detailId ? { detailId } : {}),
+                    ...(args.message ? { message: args.message } : {})
+                }
                 finalResponse.data = payloadData
             }
         }

@@ -903,12 +903,18 @@ export function BlueConciergeFull({ isOpen, onClose, locale = 'tr' }: BlueConcie
 
             if (data.uiPayload) {
                 // Handle UI widget response
-                let payloadData = null
-                if (data.uiPayload.type === 'room_detail' && data.uiPayload.detailId) {
-                    const roomKey = Object.keys(ROOM_DETAILS).find(k =>
-                        data.uiPayload.detailId.includes(k) || k.includes(data.uiPayload.detailId)
-                    ) || 'Club Odalar'
-                    payloadData = ROOM_DETAILS[roomKey]
+                let payloadData = data.data || null
+                if (data.uiPayload.type === 'room_detail') {
+                    // Priority: 1) server DB data, 2) local ROOM_DETAILS, 3) first room
+                    if (!payloadData && data.uiPayload.detailId) {
+                        const roomKey = Object.keys(ROOM_DETAILS).find(k =>
+                            data.uiPayload.detailId.includes(k) || k.includes(data.uiPayload.detailId)
+                        ) || 'Club Odalar'
+                        payloadData = ROOM_DETAILS[roomKey]
+                    }
+                    if (!payloadData) {
+                        payloadData = ROOM_DETAILS['Club Odalar']
+                    }
                 }
 
                 setMessages(prev => [...prev, {

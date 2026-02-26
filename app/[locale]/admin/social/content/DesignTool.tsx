@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useRef, useEffect, useCallback } from 'react'
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import {
     MousePointer2, Pencil, Type, Square, Circle, Eraser, Paintbrush,
     ImageIcon, Download, Upload, Undo2, Redo2, ZoomIn, ZoomOut,
@@ -8,7 +8,7 @@ import {
     Plus, Minus, Sparkles, Wand2, Scissors, Layers, RotateCw,
     Palette, Pipette, Move, X, Save, FileDown, FileUp, Maximize2,
     Grid3x3, Settings2, SlidersHorizontal, Loader2, LayoutTemplate, ShieldCheck,
-    ImagePlus, Search, Calendar // Added Calendar
+    ImagePlus, Search, Calendar, Menu, PanelRightClose, Filter
 } from 'lucide-react'
 
 // ─── Import Templates ───
@@ -93,6 +93,29 @@ export default function DesignTool() {
     // UI Panels
     const [activePanel, setActivePanel] = useState<'layers' | 'ai' | 'templates' | 'images'>('layers')
     const [isCorporateMode, setIsCorporateMode] = useState(false) // Enforce brand colors/fonts
+
+    // Mobile responsive state
+    const [showMobilePanel, setShowMobilePanel] = useState(false)
+
+    // Template preview & filter state
+    const [templatePreviews, setTemplatePreviews] = useState<Record<string, string>>({})
+    const [templateSearch, setTemplateSearch] = useState('')
+    const [templateCategory, setTemplateCategory] = useState<string>('all')
+
+    // Derive unique categories
+    const templateCategories = useMemo(() => {
+        const cats = new Set(TEMPLATES.map(t => t.category))
+        return ['all', ...Array.from(cats)]
+    }, [])
+
+    // Filter templates
+    const filteredTemplates = useMemo(() => {
+        return TEMPLATES.filter(t => {
+            const matchCat = templateCategory === 'all' || t.category === templateCategory
+            const matchSearch = !templateSearch.trim() || t.name.toLowerCase().includes(templateSearch.toLowerCase()) || t.category.toLowerCase().includes(templateSearch.toLowerCase())
+            return matchCat && matchSearch
+        })
+    }, [templateCategory, templateSearch])
 
     // Pexels State
     const [pexelsQuery, setPexelsQuery] = useState('')
@@ -200,7 +223,61 @@ export default function DesignTool() {
 
         setLayers(newLayers)
         setActiveLayerId(newLayers[newLayers.length - 1]?.id)
+        setShowMobilePanel(false) // Close mobile panel after selection
     }
+
+    // ─── Template Thumbnail Generator ───
+    useEffect(() => {
+        const THUMB_SIZE = 200
+        const generated: Record<string, string> = {}
+        for (const tpl of TEMPLATES) {
+            try {
+                const offscreen = document.createElement('canvas')
+                offscreen.width = THUMB_SIZE
+                offscreen.height = THUMB_SIZE
+                const ctx = offscreen.getContext('2d')
+                if (!ctx) continue
+
+                const scale = THUMB_SIZE / 1080 // templates are 1080x1080
+                ctx.scale(scale, scale)
+
+                for (const l of tpl.layers) {
+                    ctx.save()
+                    ctx.globalAlpha = (l.opacity || 100) / 100
+
+                    if (l.type === 'shape' && (l.data as any)?.fill && (l.data as any).fill !== 'transparent') {
+                        ctx.fillStyle = (l.data as any).fill
+                        if ((l.data as any).shape === 'circle') {
+                            ctx.beginPath()
+                            ctx.ellipse((l.x || 0) + (l.width || 0) / 2, (l.y || 0) + (l.height || 0) / 2, (l.width || 0) / 2, (l.height || 0) / 2, 0, 0, Math.PI * 2)
+                            ctx.fill()
+                        } else {
+                            ctx.fillRect(l.x || 0, l.y || 0, l.width || 0, l.height || 0)
+                        }
+                    }
+
+                    if (l.type === 'shape' && (l.data as any)?.stroke) {
+                        ctx.strokeStyle = (l.data as any).stroke
+                        ctx.lineWidth = 3
+                        ctx.strokeRect(l.x || 0, l.y || 0, l.width || 0, l.height || 0)
+                    }
+
+                    if (l.type === 'text' && (l.data as any)?.text) {
+                        const fs = (l.data as any).fontSize || 24
+                        ctx.font = `${(l.data as any).fontWeight || 'normal'} ${fs}px ${(l.data as any).fontFamily || 'Inter'}`
+                        ctx.fillStyle = (l.data as any).color || '#000000'
+                        ctx.textBaseline = 'top'
+                        ctx.fillText((l.data as any).text, l.x || 0, l.y || 0)
+                    }
+
+                    ctx.restore()
+                }
+
+                generated[tpl.id] = offscreen.toDataURL('image/png', 0.7)
+            } catch { /* skip problematic templates */ }
+        }
+        setTemplatePreviews(generated)
+    }, [])
 
     // ─── Canvas Rendering ───
     const redrawCanvas = useCallback(() => {
@@ -592,29 +669,29 @@ export default function DesignTool() {
 
     // ─── Render ───
     return (
-        <div className="flex flex-col h-[calc(100vh-200px)] min-h-[600px] bg-slate-100 dark:bg-slate-900 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700">
+        <div className="flex flex-col h-[calc(100vh-200px)] min-h-[400px] lg:min-h-[600px] bg-slate-100 dark:bg-slate-900 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700 relative">
             {/* Top Bar */}
-            <div className="flex items-center justify-between px-4 py-2 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+            <div className="flex items-center justify-between px-3 lg:px-4 py-2 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
                 <div className="flex items-center gap-2">
                     <span className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                        <Palette size={18} className="text-cyan-500" /> Tasarım Aracı v2.0
+                        <Palette size={18} className="text-cyan-500" /> <span className="hidden sm:inline">Tasarım Aracı v2.0</span><span className="sm:hidden">Tasarım</span>
                     </span>
-                    <span className="text-xs text-slate-400 ml-2">{canvasWidth} × {canvasHeight}px</span>
+                    <span className="text-xs text-slate-400 ml-2 hidden md:inline">{canvasWidth} × {canvasHeight}px</span>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 lg:gap-2">
                     {/* Mode Toggle */}
                     <button
                         onClick={() => setIsCorporateMode(!isCorporateMode)}
-                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${isCorporateMode ? 'bg-blue-900 text-white border-blue-700' : 'bg-slate-100 text-slate-500 border-transparent'}`}
+                        className={`hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${isCorporateMode ? 'bg-blue-900 text-white border-blue-700' : 'bg-slate-100 text-slate-500 border-transparent'}`}
                         title="Kurumsal Mod: Logo ve renkleri kilitler"
                     >
                         <ShieldCheck size={14} /> {isCorporateMode ? 'Kurumsal Mod' : 'Serbest Mod'}
                     </button>
 
-                    <div className="h-6 w-px bg-slate-200 dark:bg-slate-700 mx-2" />
+                    <div className="h-6 w-px bg-slate-200 dark:bg-slate-700 mx-1 hidden md:block" />
 
                     {/* Canvas Size */}
-                    <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-700 rounded-lg px-2 py-1">
+                    <div className="hidden lg:flex items-center gap-1 bg-slate-100 dark:bg-slate-700 rounded-lg px-2 py-1">
                         <input type="number" value={canvasWidth} onChange={e => setCanvasWidth(Number(e.target.value))} className="w-12 text-xs bg-transparent text-center text-slate-700 dark:text-slate-300 outline-none" />
                         <span className="text-xs text-slate-400">×</span>
                         <input type="number" value={canvasHeight} onChange={e => setCanvasHeight(Number(e.target.value))} className="w-12 text-xs bg-transparent text-center text-slate-700 dark:text-slate-300 outline-none" />
@@ -625,12 +702,21 @@ export default function DesignTool() {
                         <span className="text-xs text-slate-600 dark:text-slate-300 w-10 text-center font-mono">{Math.round(zoom * 100)}%</span>
                         <button onClick={() => setZoom(z => Math.min(4, z + 0.25))} className="p-1 text-slate-400 hover:text-slate-600"><ZoomIn size={14} /></button>
                     </div>
+
+                    {/* Mobile Panel Toggle */}
+                    <button
+                        onClick={() => setShowMobilePanel(!showMobilePanel)}
+                        className="lg:hidden p-2 rounded-lg bg-cyan-50 text-cyan-600 hover:bg-cyan-100 transition-colors"
+                        title="Panel aç/kapat"
+                    >
+                        <Menu size={18} />
+                    </button>
                 </div>
             </div>
 
             <div className="flex flex-1 overflow-hidden">
-                {/* Left Toolbar */}
-                <div className="w-12 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex flex-col items-center py-2 gap-0.5">
+                {/* Left Toolbar — vertical on desktop, horizontal on mobile */}
+                <div className="hidden lg:flex w-12 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex-col items-center py-2 gap-0.5">
                     {TOOLS.map(tool => {
                         const Icon = tool.icon
                         return (
@@ -713,7 +799,19 @@ export default function DesignTool() {
                 </div>
 
                 {/* Right Panel — Layers + Properties + Templates */}
-                <div className="w-72 bg-white dark:bg-slate-800 border-l border-slate-200 dark:border-slate-700 flex flex-col overflow-hidden">
+                {/* Desktop: always visible sidebar. Mobile: slide-over drawer */}
+                {showMobilePanel && <div className="lg:hidden fixed inset-0 bg-black/40 z-40" onClick={() => setShowMobilePanel(false)} />}
+                <div className={`
+                    bg-white dark:bg-slate-800 border-l border-slate-200 dark:border-slate-700 flex flex-col overflow-hidden
+                    fixed lg:static inset-y-0 right-0 z-50 w-[85vw] sm:w-80 lg:w-72
+                    transition-transform duration-300 ease-in-out
+                    ${showMobilePanel ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}
+                `}>
+                    {/* Mobile close button */}
+                    <div className="lg:hidden flex items-center justify-between px-3 py-2 border-b border-slate-200 dark:border-slate-700">
+                        <span className="text-sm font-bold text-slate-700 dark:text-white">Panel</span>
+                        <button onClick={() => setShowMobilePanel(false)} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500"><X size={18} /></button>
+                    </div>
                     {/* Panel Tabs */}
                     <div className="flex border-b border-slate-200 dark:border-slate-700">
                         <button onClick={() => setActivePanel('layers')} className={`flex-1 py-2 text-xs font-bold ${activePanel === 'layers' ? 'text-cyan-600 border-b-2 border-cyan-500' : 'text-slate-500 hover:text-slate-700'}`}>Katmanlar</button>
@@ -750,36 +848,91 @@ export default function DesignTool() {
 
                     {/* TEMPLATES PANEL */}
                     {activePanel === 'templates' && (
-                        <div className="flex-1 overflow-y-auto p-3 grid grid-cols-2 gap-3 content-start">
-                            {TEMPLATES.map(tpl => {
-                                // Default background image per category to fix overlapping blank templates issue
-                                const bgMap: Record<string, string> = {
-                                    'Sales': 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&w=300&q=80',
-                                    'Events': 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?auto=format&fit=crop&w=300&q=80',
-                                    'F&B': 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=300&q=80',
-                                    'Rooms': 'https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=300&q=80',
-                                    'Reviews': 'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=300&q=80'
-                                }
-                                const bgImg = tpl.preview || bgMap[tpl.category] || bgMap['Rooms']
+                        <div className="flex-1 flex flex-col overflow-hidden">
+                            {/* Search & Filter Bar */}
+                            <div className="p-3 border-b border-slate-200 dark:border-slate-700 space-y-2">
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        value={templateSearch}
+                                        onChange={e => setTemplateSearch(e.target.value)}
+                                        placeholder="Şablon ara..."
+                                        className="w-full pl-8 pr-2 py-1.5 text-xs border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:border-cyan-500 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200"
+                                    />
+                                    <Search size={14} className="absolute left-2.5 top-2 text-slate-400" />
+                                </div>
+                                <div className="flex gap-1 flex-wrap">
+                                    {templateCategories.map(cat => (
+                                        <button
+                                            key={cat}
+                                            onClick={() => setTemplateCategory(cat)}
+                                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold transition-all border ${templateCategory === cat
+                                                ? 'bg-cyan-600 text-white border-cyan-600'
+                                                : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-600 hover:border-cyan-400'
+                                                }`}
+                                        >
+                                            {cat === 'all' ? 'Tümü' : cat}
+                                        </button>
+                                    ))}
+                                </div>
+                                <div className="text-[10px] text-slate-400">{filteredTemplates.length} şablon</div>
+                            </div>
 
-                                return (
-                                    <button
-                                        key={tpl.id}
-                                        onClick={() => loadTemplate(tpl.id)}
-                                        className="group relative aspect-square bg-slate-100 rounded-lg overflow-hidden border border-slate-200 hover:border-cyan-500 hover:shadow-md transition-all text-left"
-                                    >
-                                        {/* Placeholder Preview */}
-                                        <div className="absolute inset-0 flex items-center justify-center bg-slate-50 bg-cover bg-center" style={{ backgroundImage: `url(${bgImg})` }}>
-                                            <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors"></div>
-                                            <LayoutTemplate className="text-white/50 relative z-10" size={32} />
-                                        </div>
-                                        <div className="absolute inset-x-0 bottom-0 bg-white/95 p-2 border-t border-slate-100 backdrop-blur-sm">
-                                            <div className="text-[10px] font-bold text-slate-800 truncate">{tpl.name}</div>
-                                            <div className="text-[9px] text-slate-500">{tpl.category}</div>
-                                        </div>
-                                    </button>
-                                )
-                            })}
+                            {/* Template Grid */}
+                            <div className="flex-1 overflow-y-auto p-3 grid grid-cols-2 gap-3 content-start">
+                                {filteredTemplates.map(tpl => {
+                                    const preview = templatePreviews[tpl.id]
+                                    const catColorMap: Record<string, string> = {
+                                        'Sales': 'bg-orange-100 text-orange-700',
+                                        'Events': 'bg-purple-100 text-purple-700',
+                                        'F&B': 'bg-pink-100 text-pink-700',
+                                        'Rooms': 'bg-blue-100 text-blue-700',
+                                        'Reviews': 'bg-green-100 text-green-700',
+                                    }
+                                    const catColor = catColorMap[tpl.category] || 'bg-slate-100 text-slate-600'
+
+                                    return (
+                                        <button
+                                            key={tpl.id}
+                                            onClick={() => loadTemplate(tpl.id)}
+                                            className="group relative aspect-square bg-slate-50 dark:bg-slate-900 rounded-xl overflow-hidden border-2 border-slate-200 dark:border-slate-700 hover:border-cyan-500 hover:shadow-lg hover:shadow-cyan-500/10 transition-all text-left"
+                                        >
+                                            {/* Canvas-Rendered Preview */}
+                                            {preview ? (
+                                                <img
+                                                    src={preview}
+                                                    alt={tpl.name}
+                                                    className="w-full h-full object-cover"
+                                                    loading="lazy"
+                                                />
+                                            ) : (
+                                                <div className="absolute inset-0 flex items-center justify-center bg-slate-100 dark:bg-slate-800">
+                                                    <Loader2 size={20} className="animate-spin text-slate-300" />
+                                                </div>
+                                            )}
+
+                                            {/* Hover Overlay */}
+                                            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-200 flex items-end justify-center pb-12">
+                                                <span className="px-4 py-1.5 bg-cyan-500 text-white text-xs font-bold rounded-full shadow-lg transform translate-y-2 group-hover:translate-y-0 transition-transform duration-200">
+                                                    Kullan
+                                                </span>
+                                            </div>
+
+                                            {/* Bottom Info Bar */}
+                                            <div className="absolute inset-x-0 bottom-0 bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm p-2 border-t border-slate-100 dark:border-slate-700">
+                                                <div className="text-[10px] font-bold text-slate-800 dark:text-white truncate">{tpl.name}</div>
+                                                <span className={`inline-block mt-0.5 px-1.5 py-0 rounded text-[8px] font-bold ${catColor}`}>{tpl.category}</span>
+                                            </div>
+                                        </button>
+                                    )
+                                })}
+                                {filteredTemplates.length === 0 && (
+                                    <div className="col-span-2 text-center py-8 text-slate-400 text-xs">
+                                        <LayoutTemplate size={24} className="mx-auto mb-2 opacity-50" />
+                                        Aramanıza uygun şablon bulunamadı.
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     )}
 
