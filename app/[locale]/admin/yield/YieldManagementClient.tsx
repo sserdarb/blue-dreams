@@ -168,6 +168,8 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
     const [pricingAgencyFilter, setPricingAgencyFilter] = useState<string>('ALL')
     const [excludeStart, setExcludeStart] = useState('')
     const [excludeEnd, setExcludeEnd] = useState('')
+    const [priceBandMin, setPriceBandMin] = useState('')
+    const [priceBandMax, setPriceBandMax] = useState('')
     const contentRef = useRef<HTMLDivElement>(null)
 
     // ─── Date Range State ─────────────────────────────────────
@@ -376,7 +378,7 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
         if (excludeStart && excludeEnd) {
             data = data.filter(r => !(r.checkIn >= excludeStart && r.checkIn <= excludeEnd))
         }
-        return data.map(r => ({
+        const mapped = data.map(r => ({
             x: convert(r.dailyAverage, r.currency), // price (ADR per reservation)
             y: r.nights * r.roomCount, // room nights
             z: convert(r.totalPrice, r.currency), // total revenue (bubble size)
@@ -384,7 +386,15 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
             agency: r.agency,
             color: CHANNEL_COLORS[r.channel] || '#64748b',
         }))
-    }, [filteredReservations, pricingChannelFilter, pricingAgencyFilter, excludeStart, excludeEnd, currency]) // eslint-disable-line react-hooks/exhaustive-deps
+        // Price band filtering — narrow the ADR range to exclude extreme outliers
+        const minVal = priceBandMin ? parseFloat(priceBandMin) : null
+        const maxVal = priceBandMax ? parseFloat(priceBandMax) : null
+        return mapped.filter(d => {
+            if (minVal !== null && d.x < minVal) return false
+            if (maxVal !== null && d.x > maxVal) return false
+            return true
+        })
+    }, [filteredReservations, pricingChannelFilter, pricingAgencyFilter, excludeStart, excludeEnd, currency, priceBandMin, priceBandMax]) // eslint-disable-line react-hooks/exhaustive-deps
 
     // Unique channels and agencies for filters
     const uniqueChannels = useMemo(() => Array.from(new Set(filteredReservations.map(r => r.channel))).sort(), [filteredReservations])
@@ -864,9 +874,29 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
                                 </select>
                             </div>
                         </div>
-                        <div className="flex items-center gap-3 mb-4">
+                        <div className="flex flex-wrap items-center gap-3 mb-4">
                             <p className="text-[10px] text-gray-400">{scatterData.length} {(t as any).showingRes}</p>
                             <div className="flex-1" />
+                            {/* Price Band Filter */}
+                            <div className="flex items-center gap-1.5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 rounded-lg px-2.5 py-1">
+                                <span className="text-[10px] text-amber-700 dark:text-amber-400 font-bold whitespace-nowrap">ADR {currency === 'EUR' ? '€' : '₺'}:</span>
+                                <input
+                                    type="number" placeholder="Min" value={priceBandMin}
+                                    onChange={e => setPriceBandMin(e.target.value)}
+                                    className="w-16 text-[11px] bg-white dark:bg-gray-800 border border-amber-200 dark:border-amber-700 rounded px-1.5 py-0.5 text-gray-700 dark:text-gray-300 font-medium [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                />
+                                <span className="text-amber-400 text-[10px] font-bold">–</span>
+                                <input
+                                    type="number" placeholder="Max" value={priceBandMax}
+                                    onChange={e => setPriceBandMax(e.target.value)}
+                                    className="w-16 text-[11px] bg-white dark:bg-gray-800 border border-amber-200 dark:border-amber-700 rounded px-1.5 py-0.5 text-gray-700 dark:text-gray-300 font-medium [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                />
+                                {(priceBandMin || priceBandMax) && (
+                                    <button onClick={() => { setPriceBandMin(''); setPriceBandMax('') }}
+                                        className="text-[10px] text-red-500 hover:text-red-400 font-bold ml-0.5">✕</button>
+                                )}
+                            </div>
+                            {/* Date Exclusion */}
                             <span className="text-[10px] text-gray-500 font-medium">{(t as any).exclude}</span>
                             <input type="date" value={excludeStart} onChange={e => setExcludeStart(e.target.value)}
                                 className="text-[10px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded px-1.5 py-1 text-gray-700 dark:text-gray-300" />
