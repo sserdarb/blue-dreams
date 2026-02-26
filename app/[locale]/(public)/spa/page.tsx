@@ -74,7 +74,7 @@ export default async function SpaPage({ params }: { params: Promise<{ locale: st
                 <div className="relative z-10 w-full px-6 md:px-16 pb-20 md:pb-28">
                     <div className="max-w-5xl">
                         {customLogo ? (
-                            <div className="relative w-48 h-24 mb-8">
+                            <div className="relative w-80 h-40 md:w-[28rem] md:h-52 mb-8">
                                 <Image src={customLogo} alt={title} fill className="object-contain filter invert" />
                             </div>
                         ) : (
@@ -82,7 +82,7 @@ export default async function SpaPage({ params }: { params: Promise<{ locale: st
                                 <span className="text-xs font-bold uppercase tracking-[0.4em] text-[#c5a47e] block mb-4">
                                     Blue Dreams Resort
                                 </span>
-                                <h1 className="text-6xl md:text-8xl lg:text-9xl font-serif font-light text-white tracking-[0.15em] leading-[0.9]">
+                                <h1 className="text-7xl md:text-[10rem] lg:text-[13rem] font-serif font-light text-white tracking-[0.15em] leading-[0.85]">
                                     THE NAYA
                                 </h1>
                                 <div className="w-24 h-[1px] bg-gradient-to-r from-[#c5a47e] to-transparent mt-6 mb-4" />

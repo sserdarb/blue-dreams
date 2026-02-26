@@ -82,8 +82,88 @@ export default async function RestaurantPage({ params }: { params: Promise<{ loc
         orderBy: { order: 'asc' }
     })
 
+    /* ─── Hardcoded fallback restaurant data from WordPress ─── */
+    const fallbackRestaurants = [
+        {
+            id: 'begonville',
+            title: 'Begonvılle',
+            type: locale === 'tr' ? 'Ana Restoran' : 'Main Restaurant',
+            description: locale === 'tr'
+                ? 'Dünya mutfaklarını içinde barındıran restoranımızda her damak zevkine uygun yiyecekler bulacaksınız. Ferah ve eşsiz deniz manzarasının eşliğinde sabah kahvaltısı, geç kahvaltı, öğle, akşam ve gece yemeklerinin uluslararası ve Türk mutfağı ile birlikte açık büfe olarak misafirlerimizin hizmetine sunulduğu ana restoranımızdır.'
+                : locale === 'en' ? 'Our main restaurant offers a wide selection of world cuisines for every palate. Enjoy breakfast, late breakfast, lunch, dinner and late night meals served as an international and Turkish cuisine open buffet, accompanied by a refreshing sea view.'
+                    : locale === 'de' ? 'Unser Hauptrestaurant bietet eine große Auswahl an Weltküchen für jeden Geschmack. Genießen Sie Frühstück, spätes Frühstück, Mittag- und Abendessen als internationales und türkisches Küche-Buffet mit herrlichem Meerblick.'
+                        : 'Наш главный ресторан предлагает широкий выбор блюд мировой кухни. Наслаждайтесь завтраком, поздним завтраком, обедом и ужином в формате шведского стола с видом на море.',
+            cuisine: locale === 'tr' ? 'Uluslararası & Türk Mutfağı' : locale === 'en' ? 'International & Turkish' : locale === 'de' ? 'International & Türkisch' : 'Международная и турецкая',
+            hours: locale === 'tr' ? 'Kahvaltı 07:00-10:00 | Öğle 12:30-14:00 | Akşam 19:00-21:00' : 'Breakfast 07:00-10:00 | Lunch 12:30-14:00 | Dinner 19:00-21:00',
+            location: locale === 'tr' ? 'Ana Bina' : 'Main Building',
+            capacity: 350,
+            image: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/ana-restaurant.jpg',
+            features: locale === 'tr' ? 'Açık Büfe,Deniz Manzarası,Türk Mutfağı,Dünya Mutfağı,Vejetaryen Seçenekler' : 'Open Buffet,Sea View,Turkish Cuisine,World Cuisine,Vegetarian Options',
+            events: [],
+        },
+        {
+            id: 'halicarnassus',
+            title: 'Halicarnassus',
+            type: locale === 'tr' ? 'Balık Restoranı' : 'Seafood Restaurant',
+            description: locale === 'tr'
+                ? 'Deniz mahsulleri ve Akdeniz mutfağının en güzel lezzetleri müthiş gün batımı manzarası ile sizi farklı diyarlara götürecek. Halicarnassus restoran, deniz üstünde ve dalgaların ritmik müziği eşliğinde, Ege\'ye has yaşam ritmini hissettiren ambiyansı ile misafirlerini özel hissettiriyor. Bu restoranımızın kullanımı için misafir ilişkileri ofisinden rezervasyon yapılması gereklidir.'
+                : locale === 'en' ? 'The finest flavors of seafood and Mediterranean cuisine will transport you to different worlds with a stunning sunset view. Halicarnassus restaurant, positioned over the sea with the rhythmic music of the waves, makes its guests feel special with an ambiance that captures the Aegean way of life. Reservation through our guest relations office is required.'
+                    : locale === 'de' ? 'Die besten Aromen von Meeresfrüchten und mediterraner Küche werden Sie mit einem atemberaubenden Sonnenuntergangsblick in andere Welten entführen. Das Restaurant Halicarnassus liegt direkt am Meer und bietet eine einzigartige Atmosphäre. Reservierung über unser Gästeservice-Büro erforderlich.'
+                        : 'Лучшие ароматы морепродуктов и средиземноморской кухни перенесут вас в другие миры с потрясающим видом на закат. Ресторан Halicarnassus расположен над морем. Требуется бронирование через службу гостевых отношений.',
+            cuisine: locale === 'tr' ? 'Deniz Mahsulleri & Akdeniz' : locale === 'en' ? 'Seafood & Mediterranean' : locale === 'de' ? 'Meeresfrüchte & Mediterran' : 'Морепродукты и Средиземноморская',
+            hours: '19:30 – 22:00',
+            location: locale === 'tr' ? 'Deniz Üstü Platform' : 'Seaside Platform',
+            capacity: 80,
+            image: 'https://bluedreamsresort.com/wp-content/uploads/2025/07/MER02188.jpg',
+            features: locale === 'tr' ? 'Deniz Mahsulleri,Gün Batımı Manzarası,Rezervasyon Gerekli,A La Carte,Romantik' : 'Seafood,Sunset View,Reservation Required,A La Carte,Romantic',
+            events: [],
+        },
+        {
+            id: 'lalocanda',
+            title: 'La Locanda',
+            type: locale === 'tr' ? 'İtalyan Restoranı' : 'Italian Restaurant',
+            description: locale === 'tr'
+                ? 'İtalyan mutfağının dünyaca tanınan ve beğenilen lezzetlerinin özgün sunumlarla servis edilen yemekler ve stil sahibi lezzetlere eşlik eden zengin şarap seçenekleriyle akşam yemekleri La Locanda\'nın şık ambiyansında keyfe dönüşüyor. Bu restoranımızın kullanımı için misafir ilişkileri ofisinden rezervasyon yapılması gereklidir.'
+                : locale === 'en' ? 'Dinner turns into a pleasure at La Locanda\'s elegant ambiance with world-famous Italian cuisine served in original presentations and rich wine selections accompanying stylish flavors. Reservation through our guest relations office is required.'
+                    : locale === 'de' ? 'Das Abendessen wird in La Locandas elegantem Ambiente mit weltberühmter italienischer Küche in originellen Präsentationen und einer reichen Weinauswahl zum Vergnügen. Reservierung über unser Gästeservice-Büro erforderlich.'
+                        : 'Ужин превращается в удовольствие в элегантной атмосфере La Locanda с всемирно известной итальянской кухней и богатым выбором вин. Требуется бронирование через службу гостевых отношений.',
+            cuisine: locale === 'tr' ? 'İtalyan Mutfağı' : locale === 'en' ? 'Italian Cuisine' : locale === 'de' ? 'Italienische Küche' : 'Итальянская кухня',
+            hours: '19:30 – 22:00',
+            location: locale === 'tr' ? 'Bahçe' : 'Garden',
+            capacity: 60,
+            image: 'https://bluedreamsresort.com/wp-content/uploads/2025/07/MER02146.jpg',
+            features: locale === 'tr' ? 'İtalyan Mutfağı,Şarap Seçenekleri,Rezervasyon Gerekli,A La Carte,Şık Ambiyans' : 'Italian Cuisine,Wine Selection,Reservation Required,A La Carte,Elegant Ambiance',
+            events: [],
+        },
+    ]
+
+    const fallbackBars = [
+        {
+            id: 'bar1', title: locale === 'tr' ? 'Havuz Başı Bar' : 'Pool Bar',
+            type: 'Bar', description: locale === 'tr' ? 'Havuz başında ferahlatıcı kokteyller ve soğuk içecekler.' : 'Refreshing cocktails and cold drinks by the pool.',
+            hours: '10:00 – 24:00', image: 'https://bluedreamsresort.com/wp-content/uploads/2025/08/MER00757.jpg',
+            location: locale === 'tr' ? 'Havuz Başı' : 'Poolside', capacity: null, cuisine: null, features: null, events: [],
+        },
+        {
+            id: 'bar2', title: locale === 'tr' ? 'Sahil Bar' : 'Beach Bar',
+            type: 'Bar', description: locale === 'tr' ? 'Deniz kenarında tropik kokteyller ve müzik eşliğinde keyifli anlar.' : 'Tropical cocktails and music by the sea.',
+            hours: '10:00 – 01:00', image: 'https://bluedreamsresort.com/wp-content/uploads/2025/07/MER02109.jpg',
+            location: locale === 'tr' ? 'Sahil' : 'Beachfront', capacity: null, cuisine: null, features: null, events: [],
+        },
+        {
+            id: 'bar3', title: 'Lobby Lounge',
+            type: 'Bar & Lounge', description: locale === 'tr' ? 'Gün boyu çeşitli sıcak ve soğuk içecekler.' : 'A variety of hot and cold beverages throughout the day.',
+            hours: '24 ' + (locale === 'tr' ? 'Saat' : 'Hours'), image: 'https://bluedreamsresort.com/wp-content/uploads/2025/08/MER02491.jpg',
+            location: 'Lobby', capacity: null, cuisine: null, features: null, events: [],
+        },
+    ]
+
     const restaurants = allVenues.filter(v => v.type?.toLowerCase() !== 'bar')
     const bars = allVenues.filter(v => v.type?.toLowerCase() === 'bar')
+
+    // Use fallback data when database is empty
+    const displayRestaurants = restaurants.length > 0 ? restaurants : fallbackRestaurants
+    const displayBars = bars.length > 0 ? bars : fallbackBars
 
     return (
         <main className="min-h-screen bg-[#0a0a0a] text-white">
@@ -123,7 +203,7 @@ export default async function RestaurantPage({ params }: { params: Promise<{ loc
                         </h2>
                     </div>
 
-                    {restaurants.length === 0 ? (
+                    {displayRestaurants.length === 0 ? (
                         <div className="text-center py-20">
                             <UtensilsCrossed className="w-16 h-16 text-white/20 mx-auto mb-4" />
                             <h3 className="text-2xl font-serif mb-2">{g('comingSoon', locale)}</h3>
@@ -131,7 +211,7 @@ export default async function RestaurantPage({ params }: { params: Promise<{ loc
                         </div>
                     ) : (
                         <div className="space-y-32">
-                            {restaurants.map((venue, index) => {
+                            {displayRestaurants.map((venue, index) => {
                                 const isEven = index % 2 === 0
                                 return (
                                     <div key={venue.id} className={`flex flex-col lg:flex-row gap-12 lg:gap-20 items-center ${!isEven ? 'lg:flex-row-reverse' : ''}`}>
@@ -271,7 +351,7 @@ export default async function RestaurantPage({ params }: { params: Promise<{ loc
             </section>
 
             {/* ═══ BARS & LOUNGES ═══ */}
-            {bars.length > 0 && (
+            {displayBars.length > 0 && (
                 <section className="py-24 px-6 bg-[#111]">
                     <div className="max-w-7xl mx-auto">
                         <div className="text-center mb-16">
@@ -286,7 +366,7 @@ export default async function RestaurantPage({ params }: { params: Promise<{ loc
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {bars.map((bar) => (
+                            {displayBars.map((bar) => (
                                 <div key={bar.id} className="group relative overflow-hidden rounded-xl aspect-[3/4] cursor-pointer">
                                     <Image
                                         src={bar.image}
