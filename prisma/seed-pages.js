@@ -25,7 +25,7 @@ function aboutWidgets(locale) {
         { type: 'text-image', data: { label: c.storyLabel, heading: c.storyH, headingAccent: c.storyHA, paragraphs: [c.p1, c.p2, c.p3], image: "https://bluedreamsresort.com/wp-content/uploads/2023/03/INFINITY-POOL-1.jpg", imageAlt: "Blue Dreams Resort", badge: { value: "25+", label: c.yrs } } },
         { type: 'stats', data: { items: [{ icon: 'award', value: '5★', label: c.star }, { icon: 'users', value: '340+', label: c.rooms }, { icon: 'calendar', value: '1998', label: c.year }, { icon: 'mappin', value: '55K', label: c.area }] } },
         { type: 'icon-grid', data: { label: c.valLabel, heading: c.valH, items: [{ icon: '🌊', title: c.v1t, description: c.v1d }, { icon: '✨', title: c.v2t, description: c.v2d }, { icon: '🌿', title: c.v3t, description: c.v3d }] } },
-        { type: 'cta', data: { heading: c.ctaH, subtitle: c.ctaS, backgroundColor: 'white', buttons: [{ text: c.ctaB1, url: `/${locale}/iletisim`, variant: 'primary' }, { text: c.ctaB2, url: "https://blue-dreams.rezervasyonal.com/", variant: 'outline' }] } },
+        { type: 'cta', data: { heading: c.ctaH, subtitle: c.ctaS, backgroundColor: 'white', buttons: [{ text: c.ctaB1, url: `/${locale}/iletisim`, variant: 'primary' }, { text: c.ctaB2, url: "https://new.bluedreamsresort.com/tr/booking", variant: 'outline' }] } },
     ]
 }
 
@@ -41,7 +41,7 @@ function roomsWidgets(locale) {
         { type: 'page-header', data: { title: c.title, subtitle: c.sub, backgroundImage: "https://bluedreamsresort.com/wp-content/uploads/2023/03/Deluxe-Room-5.jpg", breadcrumbs: [{ label: c.bc, href: `/${locale}/odalar` }] } },
         { type: 'text-block', data: { label: c.badge, heading: c.h, headingAccent: c.ha, content: c.intro, backgroundColor: 'white' } },
         { type: 'room-list', data: {} },
-        { type: 'cta', data: { heading: c.ctaT, subtitle: c.ctaS, backgroundColor: 'dark', buttons: [{ text: c.ctaB, url: "https://blue-dreams.rezervasyonal.com/", variant: 'white' }] } },
+        { type: 'cta', data: { heading: c.ctaT, subtitle: c.ctaS, backgroundColor: 'dark', buttons: [{ text: c.ctaB, url: "https://new.bluedreamsresort.com/tr/booking", variant: 'white' }] } },
     ]
 }
 

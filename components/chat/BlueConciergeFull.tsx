@@ -299,7 +299,7 @@ const RoomDetailWidget = ({ data, locale = 'tr' }: { data: any; locale?: string 
                     <a href="tel:+902523371111" className="bg-gray-100 hover:bg-gray-200 text-gray-800 py-3 rounded-lg text-xs font-bold flex items-center justify-center gap-2">
                         <Phone size={14} /> Call Center
                     </a>
-                    <a href="https://blue-dreams.rezervasyonal.com" target="_blank" rel="noreferrer" className="bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg text-xs font-bold flex items-center justify-center gap-2">
+                    <a href="/tr/booking" className="bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg text-xs font-bold flex items-center justify-center gap-2">
                         Rezervasyon
                     </a>
                 </div>
@@ -693,7 +693,7 @@ const BookingWidget = () => {
                         ))}
                     </div>
                 )}
-                <a href={`https://blue-dreams.rezervasyonal.com/?arrival=${arrival}&departure=${departure}`} target="_blank" rel="noreferrer"
+                <a href={`/tr/booking?arrival=${arrival}&departure=${departure}`}
                     className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 shadow-lg transition-all">
                     <CalendarDays size={16} /> Rezervasyon Tamamla
                 </a>

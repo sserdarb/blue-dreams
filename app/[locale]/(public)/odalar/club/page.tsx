@@ -61,7 +61,7 @@ export default function ClubRoomsPage() {
 
                             {/* CTA */}
                             <a
-                                href="https://blue-dreams.rezervasyonal.com/"
+                                href="/tr/booking"
                                 className="inline-block bg-brand text-white px-8 py-4 font-bold uppercase tracking-widest text-sm hover:bg-brand-dark transition-colors"
                             >
                                 Rezervasyon Yap

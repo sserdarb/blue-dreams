@@ -30,7 +30,7 @@ interface BookingConfig {
 
 const DEFAULT_CONFIG: BookingConfig = {
     provider: 'elektra',
-    externalUrl: 'https://blue-dreams.rezervasyonal.com/',
+    externalUrl: '/tr/booking',
     elektraHotelId: '9734',
     defaultCurrency: 'TRY',
     defaultNationality: 'TR',

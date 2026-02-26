@@ -139,7 +139,7 @@ const fetchRoomPrices = async (checkInDate: string, adults: number) => {
       { name: "Deluxe Oda (Deniz Manzaralı)", price: 380, specialOffer: true, oldPrice: 420 },
       { name: "Aile Suiti", price: 550, specialOffer: false }
     ],
-    note: "Fiyatlar rezervasyonal.com üzerinden anlık çekilmiştir."
+    note: "Fiyatlar Elektra PMS üzerinden anlık çekilmiştir."
   };
 };
 
@@ -531,7 +531,7 @@ const PriceResultWidget = ({ data }: { data: any }) => (
         </div>
       ))}
     </div>
-    <a href="https://blue-dreams.rezervasyonal.com/" className="block w-full bg-gray-900 hover:bg-black text-white text-center py-4 text-sm font-bold uppercase transition-colors">
+    <a href="/tr/booking" className="block w-full bg-gray-900 hover:bg-black text-white text-center py-4 text-sm font-bold uppercase transition-colors">
       Rezervasyona Git
     </a>
   </div>

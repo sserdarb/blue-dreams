@@ -284,7 +284,7 @@ export async function POST(request: Request) {
                         checkOut,
                         rooms: rooms.length > 0 ? rooms : [{ name: 'Standart Oda', available: true, minPrice: 0, hasDiscount: false, currency: 'EUR' }],
                         source: 'elektra',
-                        bookingUrl: `https://blue-dreams.rezervasyonal.com/?arrival=${checkIn}&departure=${checkOut}`
+                        bookingUrl: `/tr/booking?arrival=${checkIn}&departure=${checkOut}`
                     }
                 } catch (err) {
                     console.error('[AI Chat] Elektra pricing error:', err)

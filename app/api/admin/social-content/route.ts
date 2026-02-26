@@ -10,7 +10,7 @@ Blue Dreams Resort & Spa — Torba Bay, Bodrum, Turkey
 - Meeting & Events: 6 conference halls, MICE capabilities
 - Social: @clubbluedreamsresort (Instagram), Blue Dreams Resort (Facebook/LinkedIn)
 - Brand voice: Luxury, warm hospitality, Aegean lifestyle, serenity
-- Booking: blue-dreams.rezervasyonal.com
+- Booking: new.bluedreamsresort.com/tr/booking
 `.trim()
 
 const PLATFORM_GUIDES: Record<string, string> = {

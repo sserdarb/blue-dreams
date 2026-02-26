@@ -42,7 +42,7 @@ const ROOM_COLORS: Record<string, string> = {
     'Beach Side Room': '#10b981',
 }
 
-const BOOKING_ENGINE_URL = 'https://blue-dreams.rezervasyonal.com'
+const BOOKING_ENGINE_URL = '/tr/booking'
 
 // Channels: Hotelweb & Call Center only
 const AGENCY_CHANNELS = [

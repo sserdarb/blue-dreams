@@ -514,3 +514,29 @@ model Notification {
 
   @@index([userId, isRead])
 }
+
+model ReservationRequest {
+  id               String   @id @default(uuid())
+  checkIn          DateTime
+  checkOut         DateTime
+  roomType         String
+  roomTypeId       Int      @default(0)
+  adults           Int      @default(2)
+  children         Int      @default(0)
+  currency         String   @default("EUR")
+  totalPrice       Float    @default(0)
+  guestName        String
+  guestSurname     String   @default("")
+  guestEmail       String
+  guestPhone       String
+  guestNationality String   @default("TR")
+  specialRequests  String   @default("")
+  status           String   @default("pending") // pending, confirmed, cancelled
+  source           String   @default("website") // website, concierge, whatsapp
+  notes            String   @default("")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+}

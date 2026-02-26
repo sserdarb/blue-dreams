@@ -72,9 +72,9 @@ export default function LivePricing({ roomFilter }: { roomFilter?: string }) {
     }
 
     const handleReservationSubmit = () => {
-        // Open in rezervasyonal with pre-filled params, or could POST to an API
-        const url = `https://blue-dreams.rezervasyonal.com/?arrival=${checkIn}&departure=${checkOut}&adults=${adults}`
-        window.open(url, '_blank')
+        // Redirect to internal booking page
+        const url = `/tr/booking?arrival=${checkIn}&departure=${checkOut}&adults=${adults}`
+        window.location.href = url
         setSubmitted(true)
         setTimeout(() => setSubmitted(false), 3000)
     }
@@ -219,8 +219,7 @@ export default function LivePricing({ roomFilter }: { roomFilter?: string }) {
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
                             Rezervasyon Yap
                         </button>
-                        <a href={`https://blue-dreams.rezervasyonal.com/?arrival=${checkIn}&departure=${checkOut}`}
-                            target="_blank" rel="noreferrer"
+                        <a href={`/tr/booking?arrival=${checkIn}&departure=${checkOut}`}
                             className="bg-white dark:bg-gray-700 border-2 border-blue-600 text-blue-700 dark:text-blue-300 font-bold py-3 rounded-xl text-sm flex items-center justify-center gap-2 hover:bg-blue-50 dark:hover:bg-gray-600 transition-all">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
                             Fiyat Karşılaştır
