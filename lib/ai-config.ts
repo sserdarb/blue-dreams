@@ -1,10 +1,10 @@
 import { prisma } from '@/lib/prisma'
 
-// Default model — gemini-2.0-flash (current production model)
-export const GEMINI_MODEL = 'gemini-2.0-flash'
+// Default model — gemini-2.5-flash (latest, fastest, most available)
+export const GEMINI_MODEL = 'gemini-2.5-flash'
 
 // REST API model path (for routes using raw fetch instead of SDK)
-export const GEMINI_REST_MODEL = 'gemini-2.0-flash'
+export const GEMINI_REST_MODEL = 'gemini-2.5-flash'
 
 /**
  * Pool of backup API keys for automatic failover.
