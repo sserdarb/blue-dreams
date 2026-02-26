@@ -905,16 +905,16 @@ export function BlueConciergeFull({ isOpen, onClose, locale = 'tr' }: BlueConcie
                 // Handle UI widget response
                 let payloadData = data.data || null
                 if (data.uiPayload.type === 'room_detail') {
-                    // Priority: 1) server DB data, 2) local ROOM_DETAILS, 3) first room
-                    if (!payloadData && data.uiPayload.detailId) {
+                    // Always use local ROOM_DETAILS for room_detail (widget-compatible structure)
+                    // Server DB data has incompatible field types (e.g. features as string vs array)
+                    let localData = null
+                    if (data.uiPayload.detailId) {
                         const roomKey = Object.keys(ROOM_DETAILS).find(k =>
-                            data.uiPayload.detailId.includes(k) || k.includes(data.uiPayload.detailId)
+                            data.uiPayload.detailId.toLowerCase().includes(k.toLowerCase()) || k.toLowerCase().includes(data.uiPayload.detailId.toLowerCase())
                         ) || 'Club Odalar'
-                        payloadData = ROOM_DETAILS[roomKey]
+                        localData = ROOM_DETAILS[roomKey]
                     }
-                    if (!payloadData) {
-                        payloadData = ROOM_DETAILS['Club Odalar']
-                    }
+                    payloadData = localData || ROOM_DETAILS['Club Odalar']
                 }
 
                 setMessages(prev => [...prev, {
