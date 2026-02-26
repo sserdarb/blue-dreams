@@ -308,8 +308,9 @@ export async function POST(request: Request) {
                 } else if (componentType === 'meeting') {
                     payloadData = context.meeting
                 } else if (componentType === 'room_detail' && detailId) {
-                    payloadData = context.rooms.find((r: any) => r.title.toLowerCase().includes(detailId.toLowerCase()))
-                        || (context.rooms.length > 0 ? context.rooms[0] : null)
+                    const rooms = context.rooms || []
+                    payloadData = rooms.find((r: any) => r?.title?.toLowerCase()?.includes(detailId.toLowerCase()))
+                        || (rooms.length > 0 ? rooms[0] : null)
                 }
 
                 finalResponse.uiPayload = { type: componentType }

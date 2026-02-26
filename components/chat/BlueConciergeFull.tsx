@@ -176,8 +176,8 @@ const categoryImages: Record<string, string> = {
 // Room data
 const ROOMS = [
     { id: 'club', title: 'Club Odalar', size: '20-22 m²', description: 'Modern tasarım ve deniz manzarası ile konforlu konaklama.', image: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/Club-Room-Sea-View-2.jpg' },
-    { id: 'deluxe', title: 'Deluxe Odalar', size: '25-28 m²', description: 'Geniş yaşam alanı ve premium konfor.', image: 'https://bluedreamsresort.com/wp-content/uploads/2025/07/MER00132.jpg' },
-    { id: 'family', title: 'Club Aile Odaları', size: '35 m²', description: 'Aileler için ideal, geniş yaşam alanı ve ayrı yatak bölümü.', image: 'https://bluedreamsresort.com/wp-content/uploads/2025/07/MER00299.jpg' }
+    { id: 'deluxe', title: 'Deluxe Odalar', size: '25-28 m²', description: 'Geniş yaşam alanı ve premium konfor.', image: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/Club-Room-Sea-View-2.jpg' },
+    { id: 'family', title: 'Club Aile Odaları', size: '35 m²', description: 'Aileler için ideal, geniş yaşam alanı ve ayrı yatak bölümü.', image: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/Club-Room-Sea-View-2.jpg' }
 ]
 
 // Room details
@@ -193,7 +193,7 @@ const ROOM_DETAILS: Record<string, any> = {
     },
     'Deluxe Odalar': {
         title: 'Deluxe Odalar',
-        image: 'https://bluedreamsresort.com/wp-content/uploads/2025/07/MER00132.jpg',
+        image: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/Club-Room-Sea-View-2.jpg',
         size: '25-28 m²',
         view: 'Deniz Manzarası',
         capacity: '2+2',
@@ -202,7 +202,7 @@ const ROOM_DETAILS: Record<string, any> = {
     },
     'Club Aile Odaları': {
         title: 'Club Aile Odaları',
-        image: 'https://bluedreamsresort.com/wp-content/uploads/2025/07/MER00299.jpg',
+        image: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/Club-Room-Sea-View-2.jpg',
         size: '35 m²',
         view: 'Bahçe ve Kısmi Deniz',
         capacity: '4 Yetişkin',
@@ -242,7 +242,14 @@ const RoomsWidget = ({ onInteract, locale = 'tr' }: { onInteract: (text: string)
 )
 
 const RoomDetailWidget = ({ data, locale = 'tr' }: { data: any; locale?: string }) => {
-    const speakContent = `${data.title}. ${data.whyChoose || ''}. ${data.view} manzaralı. ${data.size} büyüklüğünde.`
+    if (!data) {
+        return (
+            <div className="bg-white rounded-2xl p-6 mt-4 shadow-xl text-center">
+                <p className="text-gray-500">Oda bilgisi yüklenemedi.</p>
+            </div>
+        )
+    }
+    const speakContent = `${data.title || ''}. ${data.whyChoose || ''}. ${data.view || ''} manzaralı. ${data.size || ''} büyüklüğünde.`
     return (
         <div className="bg-white rounded-2xl overflow-hidden mt-4 shadow-xl">
             <div className="h-56 relative">
@@ -366,7 +373,7 @@ const DINING_DATA = [
     { id: 'main', title: 'Ana Restoran', type: 'Açık Büfe', desc: 'Uluslararası mutfak, kahvaltı-öğle-akşam açık büfe', image: 'https://bluedreamsresort.com/wp-content/uploads/2025/07/MUR2661.jpg', hours: '07:00-22:00' },
     { id: 'ala', title: 'A La Carte', type: 'Rezervasyonlu', desc: 'Özel menü seçenekleri ile à la carte deneyim', image: 'https://bluedreamsresort.com/wp-content/uploads/2025/07/MER00210.jpg', hours: '19:00-22:00' },
     { id: 'beach', title: 'Beach Bar & Restoran', type: 'Snack & İçecek', desc: 'Havuz ve deniz başında hafif atıştırmalıklar', image: 'https://bluedreamsresort.com/wp-content/uploads/2025/07/DJI_0233.jpg', hours: '10:00-18:00' },
-    { id: 'lobby', title: 'Lobby Bar', type: 'Bar', desc: 'Kokteyl ve canlı müzik eşliğinde keyif', image: 'https://bluedreamsresort.com/wp-content/uploads/2025/07/MER00132.jpg', hours: '16:00-01:00' },
+    { id: 'lobby', title: 'Lobby Bar', type: 'Bar', desc: 'Kokteyl ve canlı müzik eşliğinde keyif', image: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/ana-restaurant.jpg', hours: '16:00-01:00' },
 ]
 
 const DiningWidget = ({ onInteract, locale = 'tr' }: { onInteract: (text: string) => void; locale?: string }) => (
