@@ -114,7 +114,7 @@ const Navbar: React.FC<NavbarProps> = ({ locale = 'tr', menuItems = [] }) => {
                 <Search size={18} />
               </button>
               <a
-                href="https://wa.me/902523371111"
+                href="https://wa.me/905495167803"
                 target="_blank"
                 rel="noreferrer"
                 className="text-white hover:text-[#25D366] transition-colors"
@@ -165,7 +165,7 @@ const Navbar: React.FC<NavbarProps> = ({ locale = 'tr', menuItems = [] }) => {
 
             {/* Mobile Contact Icons */}
             <a
-              href="https://wa.me/902523371111"
+              href="https://wa.me/905495167803"
               target="_blank"
               rel="noreferrer"
               className="p-2 text-white hover:text-[#25D366] transition-colors"
@@ -246,7 +246,7 @@ const Navbar: React.FC<NavbarProps> = ({ locale = 'tr', menuItems = [] }) => {
 
             {/* Secondary Actions: Call & WhatsApp */}
             <a
-              href="https://wa.me/902523371111"
+              href="https://wa.me/905495167803"
               className="border border-white/20 hover:border-[#25D366] hover:bg-[#25D366] hover:text-white text-white px-6 py-4 rounded text-xs font-bold tracking-widest uppercase flex items-center justify-center gap-2 transition-all flex-1 md:flex-none"
             >
               <WhatsAppIcon size={18} />

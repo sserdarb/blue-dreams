@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { sendWhatsAppMessage } from '@/lib/whatsapp';
+import { sendSocialMessage } from '@/lib/whatsapp';
 import { GoogleGenAI } from '@google/genai';
 import { getGeminiApiKey, GEMINI_MODEL } from '@/lib/ai-config';
 import { prisma } from '@/lib/prisma';
@@ -12,7 +12,7 @@ async function saveMessage(phone: string, content: string, direction: 'inbound' 
             where: { phone: { contains: phone.replace(/^\+/, '') } },
         });
 
-        await prisma.whatsAppMessage.create({
+        await prisma.socialMessage.create({
             data: {
                 waMessageId: waMessageId || null,
                 phone,
@@ -45,7 +45,7 @@ async function isAutoReplyEnabled(): Promise<{ enabled: boolean; systemPrompt: s
     }
 }
 
-const processWhatsAppMessage = async (message: any, phoneNumberId: string) => {
+const processSocialMessage = async (message: any, phoneNumberId: string) => {
     const sender = message.from;
     console.log(`[WhatsApp] Received message from ${sender}`, message);
 
@@ -81,7 +81,7 @@ const processWhatsAppMessage = async (message: any, phoneNumberId: string) => {
                 else if (response.candidates?.[0]?.content?.parts?.[0]?.text) replyText = response.candidates[0].content.parts[0].text;
 
                 if (replyText) {
-                    await sendWhatsAppMessage(sender, replyText);
+                    await sendSocialMessage(sender, replyText);
                     await saveMessage(sender, replyText, 'outbound', undefined, 'text');
                 }
             }
@@ -121,7 +121,7 @@ export async function POST(req: NextRequest) {
                     if (change.value && change.value.messages) {
                         const phoneNumberId = change.value.metadata.phone_number_id;
                         for (const message of change.value.messages) {
-                            await processWhatsAppMessage(message, phoneNumberId);
+                            await processSocialMessage(message, phoneNumberId);
                         }
                     }
                 }

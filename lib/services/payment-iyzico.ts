@@ -1,13 +1,7 @@
 import Iyzipay from 'iyzipay'
 import { v4 as uuidv4 } from 'uuid'
 import { prisma } from '@/lib/prisma'
-
-// Configuration for iyzico
-const iyzipay = new Iyzipay({
-    apiKey: process.env.IYZICO_API_KEY || 'sandbox-api-key',
-    secretKey: process.env.IYZICO_SECRET_KEY || 'sandbox-secret-key',
-    uri: process.env.IYZICO_BASE_URL || 'https://sandbox-api.iyzipay.com'
-})
+import { EncryptionUtils } from '@/lib/utils/encryption'
 
 export interface PaymentRequestData {
     bookingId: string
@@ -21,6 +15,23 @@ export interface PaymentRequestData {
 }
 
 export class IyzicoService {
+
+    private static async getProviderSettings() {
+        const settings = await prisma.paymentSettings.findUnique({
+            where: { provider: 'iyzico' }
+        })
+
+        if (!settings || !settings.isActive) {
+            throw new Error("iyzico ödeme altyapısı aktif değil veya ayarları eksik.")
+        }
+
+        const apiKey = settings.apiKey ? EncryptionUtils.decrypt(settings.apiKey) : ''
+        const secretKey = settings.secretKey ? EncryptionUtils.decrypt(settings.secretKey) : ''
+        const uri = settings.mode === 'live' ? 'https://api.iyzipay.com' : 'https://sandbox-api.iyzipay.com'
+
+        return new Iyzipay({ apiKey, secretKey, uri })
+    }
+
     /**
      * Initializes 3D Secure checkout form and returns the payment HTML.
      */
@@ -84,43 +95,13 @@ export class IyzicoService {
             ]
         }
 
-        return new Promise((resolve, reject) => {
-            iyzipay.checkoutFormInitialize.create(request as any, async function (err: any, result: any) {
-                if (err) {
-                    console.error('[Iyzico] Init Error:', err)
-                    // Log failed attempt
-                    await prisma.paymentLog.create({
-                        data: {
-                            bookingId: data.bookingId,
-                            provider: 'iyzico',
-                            action: 'init',
-                            status: 'failed',
-                            amount: data.price,
-                            currency: 'TRY',
-                            errorMessage: err.message,
-                            ipAddress: data.clientIp
-                        }
-                    })
-                    resolve({ success: false, errorMessage: err.message })
-                } else {
-                    if (result.status === 'success') {
-                        // Log pending attempt
-                        await prisma.paymentLog.create({
-                            data: {
-                                bookingId: data.bookingId,
-                                provider: 'iyzico',
-                                action: 'init',
-                                status: 'pending',
-                                amount: data.price,
-                                currency: 'TRY',
-                                requestData: JSON.stringify(request),
-                                responseData: JSON.stringify(result),
-                                ipAddress: data.clientIp
-                            }
-                        })
-                        resolve({ success: true, htmlContent: result.checkoutFormContent, paymentId: result.token })
-                    } else {
-                        // Log failed response from API
+        try {
+            const iyzipay = await this.getProviderSettings()
+            return new Promise((resolve, reject) => {
+                iyzipay.checkoutFormInitialize.create(request as any, async function (err: any, result: any) {
+                    if (err) {
+                        console.error('[Iyzico] Init Error:', err)
+                        // Log failed attempt
                         await prisma.paymentLog.create({
                             data: {
                                 bookingId: data.bookingId,
@@ -129,17 +110,53 @@ export class IyzicoService {
                                 status: 'failed',
                                 amount: data.price,
                                 currency: 'TRY',
-                                requestData: JSON.stringify(request),
-                                responseData: JSON.stringify(result),
-                                errorMessage: result.errorMessage,
+                                errorMessage: err.message,
                                 ipAddress: data.clientIp
                             }
                         })
-                        resolve({ success: false, errorMessage: result.errorMessage })
+                        resolve({ success: false, errorMessage: err.message })
+                    } else {
+                        if (result.status === 'success') {
+                            // Log pending attempt
+                            await prisma.paymentLog.create({
+                                data: {
+                                    bookingId: data.bookingId,
+                                    provider: 'iyzico',
+                                    action: 'init',
+                                    status: 'pending',
+                                    amount: data.price,
+                                    currency: 'TRY',
+                                    requestData: JSON.stringify(request),
+                                    responseData: JSON.stringify(result),
+                                    ipAddress: data.clientIp
+                                }
+                            })
+                            resolve({ success: true, htmlContent: result.checkoutFormContent, paymentId: result.token })
+                        } else {
+                            // Log failed response from API
+                            await prisma.paymentLog.create({
+                                data: {
+                                    bookingId: data.bookingId,
+                                    provider: 'iyzico',
+                                    action: 'init',
+                                    status: 'failed',
+                                    amount: data.price,
+                                    currency: 'TRY',
+                                    requestData: JSON.stringify(request),
+                                    responseData: JSON.stringify(result),
+                                    errorMessage: result.errorMessage,
+                                    ipAddress: data.clientIp
+                                }
+                            })
+                            resolve({ success: false, errorMessage: result.errorMessage })
+                        }
                     }
-                }
+                })
             })
-        })
+        } catch (error: any) {
+            console.error('[Iyzico] Setup Error:', error)
+            return { success: false, errorMessage: error.message }
+        }
     }
 
     /**
@@ -151,18 +168,23 @@ export class IyzicoService {
             token: token
         }
 
-        return new Promise((resolve, reject) => {
-            iyzipay.checkoutForm.retrieve(request, function (err: any, result: any) {
-                if (err) {
-                    resolve({ success: false, errorMessage: err.message })
-                } else {
-                    if (result.status === 'success' && result.paymentStatus === 'SUCCESS') {
-                        resolve({ success: true, result: result })
+        try {
+            const iyzipay = await this.getProviderSettings()
+            return new Promise((resolve, reject) => {
+                iyzipay.checkoutForm.retrieve(request, function (err: any, result: any) {
+                    if (err) {
+                        resolve({ success: false, errorMessage: err.message })
                     } else {
-                        resolve({ success: false, errorMessage: result.errorMessage || 'Ödeme reddedildi.', result })
+                        if (result.status === 'success' && result.paymentStatus === 'SUCCESS') {
+                            resolve({ success: true, result: result })
+                        } else {
+                            resolve({ success: false, errorMessage: result.errorMessage || 'Ödeme reddedildi.', result })
+                        }
                     }
-                }
+                })
             })
-        })
+        } catch (error: any) {
+            return { success: false, errorMessage: error.message }
+        }
     }
 }

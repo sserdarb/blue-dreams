@@ -34,7 +34,7 @@ export async function syncGuestsFromElektra(
     const guestMap = new Map<string, {
         name: string;
         surname: string;
-        nationality: string;
+        country: string;
         email: string | null;
         phone: string | null;
         reservations: typeof allReservations;
@@ -44,7 +44,7 @@ export async function syncGuestsFromElektra(
         const guestList = res.guests || [];
         const firstName = guestList[0]?.name || (res.contactName as string)?.split(' ')[0] || '';
         const lastName = guestList[0]?.surname || (res.contactName as string)?.split(' ').slice(1).join(' ') || '';
-        const guestNationality = guestList[0]?.nationality || res.nationality || '';
+        const guestNationality = guestList[0]?.country || res.country || '';
 
         const key = `${firstName.toLowerCase().trim()}_${lastName.toLowerCase().trim()}`;
 
@@ -54,7 +54,7 @@ export async function syncGuestsFromElektra(
             guestMap.set(key, {
                 name: firstName,
                 surname: lastName,
-                nationality: guestNationality || 'Unknown',
+                country: guestNationality || 'Unknown',
                 email: (res.contactEmail as string) || null,
                 phone: (res.contactPhone as string) || null,
                 reservations: [res],
@@ -64,7 +64,7 @@ export async function syncGuestsFromElektra(
             existing.reservations.push(res);
             if (!existing.email && res.contactEmail) existing.email = res.contactEmail as string;
             if (!existing.phone && res.contactPhone) existing.phone = res.contactPhone as string;
-            if (existing.nationality === 'Unknown' && res.nationality) existing.nationality = res.nationality;
+            if (existing.country === 'Unknown' && res.country) existing.country = res.country;
         }
     }
 
@@ -105,7 +105,7 @@ export async function syncGuestsFromElektra(
                 await prisma.guestProfile.update({
                     where: { id: existing.id },
                     data: {
-                        nationality: guest.nationality !== 'Unknown' ? guest.nationality : existing.nationality,
+                        country: guest.country !== 'Unknown' ? guest.country : existing.country,
                         email: guest.email || existing.email,
                         phone: guest.phone || existing.phone,
                         totalStays,
@@ -122,7 +122,7 @@ export async function syncGuestsFromElektra(
                     data: {
                         name: guest.name,
                         surname: guest.surname,
-                        nationality: guest.nationality,
+                        country: guest.country,
                         email: guest.email,
                         phone: guest.phone,
                         totalStays,

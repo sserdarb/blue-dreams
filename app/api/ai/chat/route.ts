@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { fetchSheetData, extractSheetId } from '@/lib/services/google-sheets'
 import { getGeminiApiKey, GEMINI_MODEL } from '@/lib/ai-config'
 import { ElektraService } from '@/lib/services/elektra'
+import { FACTSHEET_TR } from '@/lib/factsheet'
 
 // Tool Definitions
 const priceCheckTool: FunctionDeclaration = {
@@ -155,8 +156,11 @@ export async function POST(request: Request) {
 
         // Append Google Sheets knowledge if available
         if (context.sheetContext) {
-            systemPrompt += `\n\nEKSPERT BİLGİSİ (Factsheet & SSS):\n${context.sheetContext}\n`
+            systemPrompt += `\n\nEKSPERT BİLGİSİ (Google Sheets SSS):\n${context.sheetContext}\n`
         }
+
+        // Append Factsheet knowledge
+        systemPrompt += `\n\nRESMİ FACTSHEET BİLGİLERİ:\n${FACTSHEET_TR}\n`
 
         // Transform messages: ensure valid roles and text
         const chatHistory = messages

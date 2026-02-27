@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
         const page = parseInt(sp.get('page') || '1');
         const limit = parseInt(sp.get('limit') || '50');
         const search = sp.get('search') || '';
-        const nationality = sp.get('nationality') || '';
+        const country = sp.get('country') || '';
         const minStays = parseInt(sp.get('minStays') || '0');
         const maxStays = parseInt(sp.get('maxStays') || '999');
         const fromDate = sp.get('fromDate') || '';
@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
             ];
         }
 
-        if (nationality) where.nationality = { equals: nationality, mode: 'insensitive' };
+        if (country) where.country = { equals: country, mode: 'insensitive' };
         if (minStays > 0) where.totalStays = { gte: minStays };
         if (maxStays < 999) where.totalStays = { ...where.totalStays, lte: maxStays };
         if (hasPhone) where.phone = { not: null };
@@ -51,7 +51,7 @@ export async function GET(req: NextRequest) {
                 where,
                 include: {
                     segments: { include: { segment: { select: { id: true, name: true, color: true } } } },
-                    _count: { select: { whatsappMessages: true } },
+                    _count: { select: { socialMessages: true } },
                 },
                 orderBy: { [sortBy]: sortDir },
                 skip: (page - 1) * limit,
@@ -60,15 +60,15 @@ export async function GET(req: NextRequest) {
             prisma.guestProfile.count({ where }),
         ]);
 
-        // Get nationality stats
-        const nationalities = await prisma.guestProfile.groupBy({
-            by: ['nationality'],
+        // Get country stats
+        const countries = await prisma.guestProfile.groupBy({
+            by: ['country'],
             _count: true,
-            orderBy: { _count: { nationality: 'desc' } },
+            orderBy: { _count: { country: 'desc' } },
             take: 30,
         });
 
-        return NextResponse.json({ guests, total, page, limit, nationalities });
+        return NextResponse.json({ guests, total, page, limit, countries });
     } catch (error) {
         console.error('[CRM Guests]', error);
         return NextResponse.json({ error: 'Failed to fetch guests' }, { status: 500 });

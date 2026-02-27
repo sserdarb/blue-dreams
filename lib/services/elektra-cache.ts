@@ -66,9 +66,9 @@ export const ElektraCache = {
                 contactPhone: null,
                 lastUpdate: r.bookedAt.toISOString(),
                 reservationDate: r.bookedAt.toISOString(),
-                guests: r.nationality ? [{ name: 'Guest', surname: '1', nationality: r.nationality }] : [],
+                guests: r.country ? [{ name: 'Guest', surname: '1', country: r.country }] : [],
                 status: r.status,
-                nationality: r.nationality || 'Unknown',
+                country: r.country || 'Unknown',
                 dailyAverage: r.totalPrice / Math.max(1, Math.ceil((r.checkOut.getTime() - r.checkIn.getTime()) / 86400000)),
                 nights: Math.max(1, Math.ceil((r.checkOut.getTime() - r.checkIn.getTime()) / 86400000))
             }))
@@ -144,7 +144,7 @@ export const ElektraCache = {
                         currency: res.currency,
                         status: res.status,
                         roomCount: res.roomCount,
-                        nationality: res.nationality,
+                        country: res.country,
                         bookedAt: new Date(res.lastUpdate),
                     },
                     create: {
@@ -163,7 +163,7 @@ export const ElektraCache = {
                         roomCount: res.roomCount,
                         adults: 2, // Default
                         children: 0,
-                        nationality: res.nationality,
+                        country: res.country,
                         bookedAt: new Date(res.lastUpdate),
                     }
                 })

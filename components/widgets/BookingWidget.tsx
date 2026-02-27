@@ -57,6 +57,7 @@ export default function BookingWidget() {
     const [checkIn, setCheckIn] = useState(getToday())
     const [checkOut, setCheckOut] = useState(getNextDay(getToday()))
     const [guests, setGuests] = useState('2')
+    const [kids, setKids] = useState('0')
 
     const handleCheckInChange = (newCheckIn: string) => {
         setCheckIn(newCheckIn)
@@ -82,7 +83,7 @@ export default function BookingWidget() {
         setShowResults(true)
 
         try {
-            const params = new URLSearchParams({ checkIn, checkOut, adults: guests })
+            const params = new URLSearchParams({ checkIn, checkOut, adults: guests, children: kids })
             const res = await fetch(`/api/public/availability?${params}`)
             const data = await res.json()
 
@@ -124,7 +125,7 @@ export default function BookingWidget() {
                     checkIn,
                     checkOut,
                     adults: parseInt(guests),
-                    children: 0,
+                    children: parseInt(kids),
                     guestName: bookingForm.name,
                     guestEmail: bookingForm.email,
                     guestPhone: bookingForm.phone,
@@ -160,15 +161,15 @@ export default function BookingWidget() {
     const formatPriceEur = (price: number) => new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(price)
 
     const t = {
-        tr: { checkin: 'Giriş', checkout: 'Çıkış', guest: 'Misafir', search: 'Müsaitlik Ara', book: 'Rezervasyon Yap', adults: 'Yetişkin', perNight: '/gece', total: 'Toplam', noRooms: 'Seçilen tarihlerde müsait oda bulunamadı.', altTitle: 'Alternatif Tarihler', save: 'tasarruf', bestPrice: 'En İyi Fiyat' },
-        en: { checkin: 'Check-in', checkout: 'Check-out', guest: 'Guests', search: 'Check Availability', book: 'Book Now', adults: 'Adults', perNight: '/night', total: 'Total', noRooms: 'No rooms available for selected dates.', altTitle: 'Alternative Dates', save: 'save', bestPrice: 'Best Price' },
-        de: { checkin: 'Anreise', checkout: 'Abreise', guest: 'Gäste', search: 'Verfügbarkeit', book: 'Jetzt Buchen', adults: 'Erwachsene', perNight: '/Nacht', total: 'Gesamt', noRooms: 'Keine Zimmer verfügbar.', altTitle: 'Alternative Termine', save: 'sparen', bestPrice: 'Bester Preis' },
-        ru: { checkin: 'Заезд', checkout: 'Выезд', guest: 'Гости', search: 'Проверить', book: 'Забронировать', adults: 'Взрослых', perNight: '/ночь', total: 'Итого', noRooms: 'Нет свободных номеров.', altTitle: 'Альтернативные даты', save: 'экономия', bestPrice: 'Лучшая цена' },
+        tr: { checkin: 'Giriş', checkout: 'Çıkış', guest: 'Misafir', search: 'Müsaitlik Ara', book: 'Rezervasyon Yap', adults: 'Yetişkin', children: 'Çocuk', perNight: '/gece', total: 'Toplam', noRooms: 'Seçilen tarihlerde müsait oda bulunamadı.', altTitle: 'Alternatif Tarihler', save: 'tasarruf', bestPrice: 'En İyi Fiyat' },
+        en: { checkin: 'Check-in', checkout: 'Check-out', guest: 'Guests', search: 'Check Availability', book: 'Book Now', adults: 'Adults', children: 'Children', perNight: '/night', total: 'Total', noRooms: 'No rooms available for selected dates.', altTitle: 'Alternative Dates', save: 'save', bestPrice: 'Best Price' },
+        de: { checkin: 'Anreise', checkout: 'Abreise', guest: 'Gäste', search: 'Verfügbarkeit', book: 'Jetzt Buchen', adults: 'Erwachsene', children: 'Kinder', perNight: '/Nacht', total: 'Gesamt', noRooms: 'Keine Zimmer verfügbar.', altTitle: 'Alternative Termine', save: 'sparen', bestPrice: 'Bester Preis' },
+        ru: { checkin: 'Заезд', checkout: 'Выезд', guest: 'Гости', search: 'Проверить', book: 'Забронировать', adults: 'Взрослых', children: 'дети', perNight: '/ночь', total: 'Итого', noRooms: 'Нет свободных номеров.', altTitle: 'Альтернативные даты', save: 'экономия', bestPrice: 'Лучшая цена' },
     }
     const texts = t[locale as keyof typeof t] || t.tr
 
-    const socialIconClass = "text-gray-400 hover:text-brand transition-colors p-1.5 border border-transparent hover:border-gray-200 rounded-sm"
-    const contactIconClass = "text-gray-500 hover:text-brand transition-colors p-1.5 bg-gray-50 hover:bg-white border border-gray-200 rounded-sm"
+    const socialIconClass = "transition-all p-1.5 border border-transparent hover:border-gray-200 hover:bg-gray-50 rounded-lg hover:-translate-y-0.5"
+    const contactIconClass = "transition-all p-1.5 bg-gray-50 hover:bg-white border border-gray-200 rounded-lg hover:-translate-y-0.5 hover:shadow-sm"
 
     return (
         <>
@@ -179,7 +180,7 @@ export default function BookingWidget() {
                         <div className="flex items-center justify-between mb-3">
                             <h3 className="font-bold text-gray-800 text-sm flex items-center gap-2">
                                 <Calendar size={16} className="text-brand" />
-                                {formatDate(checkIn)} — {formatDate(checkOut)} · {guests} {texts.adults}
+                                {formatDate(checkIn)} — {formatDate(checkOut)} · {guests} {texts.adults}{kids !== '0' ? `, ${kids} ${texts.children}` : ''}
                             </h3>
                             <button onClick={() => setShowResults(false)} className="p-1 text-gray-400 hover:text-gray-600"><X size={18} /></button>
                         </div>
@@ -345,6 +346,28 @@ export default function BookingWidget() {
                                     <input type="date" value={checkOut} min={getNextDay(checkIn)} onChange={(e) => handleCheckOutChange(e.target.value)} className="bg-transparent text-xs font-bold text-gray-900 w-full outline-none p-0" />
                                 </div>
                             </div>
+                            <div className="flex gap-2">
+                                <div className="flex-1 bg-gray-50 rounded-lg p-2 flex flex-col justify-center border border-gray-200 relative">
+                                    <span className="text-[9px] text-gray-500 font-bold uppercase tracking-wide">{texts.adults}</span>
+                                    <select value={guests} onChange={(e) => setGuests(e.target.value)} className="bg-transparent text-xs font-bold text-gray-900 w-full outline-none p-0 appearance-none pt-0.5">
+                                        <option value="1">1</option>
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                        <option value="4">4</option>
+                                    </select>
+                                    <ChevronDown size={12} className="absolute right-2 bottom-2 pointer-events-none text-gray-400" />
+                                </div>
+                                <div className="flex-1 bg-gray-50 rounded-lg p-2 flex flex-col justify-center border border-gray-200 relative">
+                                    <span className="text-[9px] text-gray-500 font-bold uppercase tracking-wide">{texts.children}</span>
+                                    <select value={kids} onChange={(e) => setKids(e.target.value)} className="bg-transparent text-xs font-bold text-gray-900 w-full outline-none p-0 appearance-none pt-0.5">
+                                        <option value="0">0</option>
+                                        <option value="1">1</option>
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                    </select>
+                                    <ChevronDown size={12} className="absolute right-2 bottom-2 pointer-events-none text-gray-400" />
+                                </div>
+                            </div>
                             <button type="submit" disabled={loading} className="bg-brand text-white h-[40px] w-full text-xs font-bold tracking-widest uppercase rounded-lg shadow-lg flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-70">
                                 {loading ? <Loader2 size={14} className="animate-spin" /> : null}
                                 {loading ? '...' : texts.search}
@@ -374,21 +397,38 @@ export default function BookingWidget() {
                                 </div>
                             </div>
 
-                            <div className="w-32 bg-gray-50 hover:bg-white border border-transparent hover:border-gray-200 rounded-sm p-2 cursor-pointer transition-all group">
+                            <div className="w-24 bg-gray-50 hover:bg-white border border-transparent hover:border-gray-200 rounded-sm p-2 cursor-pointer transition-all group">
                                 <div className="flex items-center justify-between relative">
                                     <div className="flex items-center w-full">
-                                        <Users className="text-gray-400 group-hover:text-brand w-4 h-4 mr-3 transition-colors absolute left-2 pointer-events-none" />
-                                        <div className="flex flex-col text-left pl-8 w-full">
-                                            <label htmlFor="guests" className="text-[9px] text-gray-400 font-bold uppercase tracking-wider cursor-pointer">{texts.guest}</label>
-                                            <select id="guests" value={guests} onChange={(e) => setGuests(e.target.value)} className="bg-transparent border-none outline-none text-xs font-semibold text-gray-800 w-full p-0 cursor-pointer appearance-none">
-                                                <option value="1">1 {texts.adults}</option>
-                                                <option value="2">2 {texts.adults}</option>
-                                                <option value="3">3 {texts.adults}</option>
-                                                <option value="4">4 {texts.adults}</option>
+                                        <Users className="text-gray-400 group-hover:text-brand w-4 h-4 mr-2 transition-colors absolute left-2 pointer-events-none" />
+                                        <div className="flex flex-col text-left pl-7 w-full">
+                                            <label htmlFor="adults" className="text-[9px] text-gray-400 font-bold uppercase tracking-wider cursor-pointer">{texts.adults}</label>
+                                            <select id="adults" value={guests} onChange={(e) => setGuests(e.target.value)} className="bg-transparent border-none outline-none text-xs font-semibold text-gray-800 w-full p-0 cursor-pointer appearance-none">
+                                                <option value="1">1</option>
+                                                <option value="2">2</option>
+                                                <option value="3">3</option>
+                                                <option value="4">4</option>
                                             </select>
                                         </div>
                                     </div>
-                                    <ChevronDown className="w-3 h-3 text-gray-400 absolute right-2 pointer-events-none" />
+                                    <ChevronDown className="w-3 h-3 text-gray-400 absolute right-1 pointer-events-none" />
+                                </div>
+                            </div>
+
+                            <div className="w-24 bg-gray-50 hover:bg-white border border-transparent hover:border-gray-200 rounded-sm p-2 cursor-pointer transition-all group">
+                                <div className="flex items-center justify-between relative">
+                                    <div className="flex items-center w-full">
+                                        <div className="flex flex-col text-left pl-2 w-full">
+                                            <label htmlFor="childrenCount" className="text-[9px] text-gray-400 font-bold uppercase tracking-wider cursor-pointer">{texts.children}</label>
+                                            <select id="childrenCount" value={kids} onChange={(e) => setKids(e.target.value)} className="bg-transparent border-none outline-none text-xs font-semibold text-gray-800 w-full p-0 cursor-pointer appearance-none">
+                                                <option value="0">0</option>
+                                                <option value="1">1</option>
+                                                <option value="2">2</option>
+                                                <option value="3">3</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <ChevronDown className="w-3 h-3 text-gray-400 absolute right-1 pointer-events-none" />
                                 </div>
                             </div>
 
@@ -399,13 +439,13 @@ export default function BookingWidget() {
                             </button>
 
                             <div className="h-8 w-px bg-gray-200 mx-2" />
-                            <div className="flex items-center gap-2">
-                                <a href="https://wa.me/902523371111" target="_blank" rel="noreferrer" className={`${contactIconClass} hover:text-[#25D366]`} title="WhatsApp"><WhatsAppIcon size={16} /></a>
-                                <a href="tel:+902523371111" className={contactIconClass} title="Telefon"><Phone size={16} /></a>
+                            <div className="flex items-center gap-3">
+                                <a href="https://wa.me/905495167803" target="_blank" rel="noreferrer" className={`${contactIconClass} text-[#25D366]`} title="WhatsApp"><WhatsAppIcon size={24} /></a>
+                                <a href="tel:+902523371111" className={`${contactIconClass} text-gray-600`} title="Telefon"><Phone size={24} /></a>
                                 <div className="w-px h-6 bg-gray-200 mx-1" />
-                                <a href="https://www.facebook.com/BlueDreamsResortBodrum" target="_blank" rel="noreferrer" className={socialIconClass}><Facebook size={16} /></a>
-                                <a href="https://www.instagram.com/bluedreamsresort/" target="_blank" rel="noreferrer" className={socialIconClass}><Instagram size={16} /></a>
-                                <a href="https://www.youtube.com/@BlueDreamsResort" target="_blank" rel="noreferrer" className={socialIconClass}><Youtube size={16} /></a>
+                                <a href="https://www.facebook.com/BlueDreamsResortBodrum" target="_blank" rel="noreferrer" className={`${socialIconClass} text-[#1877F2]`}><Facebook size={24} /></a>
+                                <a href="https://www.instagram.com/bluedreamsresort/" target="_blank" rel="noreferrer" className={`${socialIconClass} text-[#E1306C]`}><Instagram size={24} /></a>
+                                <a href="https://www.youtube.com/@BlueDreamsResort" target="_blank" rel="noreferrer" className={`${socialIconClass} text-[#FF0000]`}><Youtube size={24} /></a>
                             </div>
                         </div>
                     </form>

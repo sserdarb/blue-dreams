@@ -26,7 +26,7 @@ interface ReservationSlim {
     currency: string
     channel: string
     agency: string
-    nationality: string
+    country: string
     dailyAverage: number
     roomType: string
     status: string
@@ -296,7 +296,7 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
             if (!map.has(key)) {
                 map.set(key, {
                     agency: r.agency,
-                    country: r.nationality || 'Unknown',
+                    country: r.country || 'Unknown',
                     count: 0, revenue: 0, roomNights: 0, prices: [],
                     channel: r.channel
                 })

@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -352,25 +352,25 @@ model PermissionRequest {
 // ===== Elektra Cache Models (Item 16 & 17) =====
 
 model ElektraReservation {
-  id          Int      @id // Elektra Reservation ID
-  voucherNo   String?
-  agency      String?
-  channel     String? // OTA, Website, Call Center, etc.
-  boardType   String?
-  roomType    String?
-  checkIn     DateTime
-  checkOut    DateTime
-  totalPrice  Float
-  paidPrice   Float // Often 0 if payment at hotel
-  currency    String // TRY, EUR, USD, GBP, etc.
-  status      String // Reservation, Cancelled, InHouse, CheckOut, Waiting
-  roomCount   Int      @default(1)
-  adults      Int      @default(2)
-  children    Int      @default(0)
-  nationality String? // Derived from guests[0].nationality
-  bookedAt    DateTime // Elektra's 'lastUpdate' used as booking time
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         Int      @id // Elektra Reservation ID
+  voucherNo  String?
+  agency     String?
+  channel    String? // OTA, Website, Call Center, etc.
+  boardType  String?
+  roomType   String?
+  checkIn    DateTime
+  checkOut   DateTime
+  totalPrice Float
+  paidPrice  Float // Often 0 if payment at hotel
+  currency   String // TRY, EUR, USD, GBP, etc.
+  status     String // Reservation, Cancelled, InHouse, CheckOut, Waiting
+  roomCount  Int      @default(1)
+  adults     Int      @default(2)
+  children   Int      @default(0)
+  country    String? // Derived from guests[0].country
+  bookedAt   DateTime // Elektra's 'lastUpdate' used as booking time
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@index([checkIn])
   @@index([bookedAt])
@@ -546,29 +546,29 @@ model ReservationRequest {
 // ===== CRM Marketing Models =====
 
 model GuestProfile {
-  id               String               @id @default(uuid())
-  elektraId        Int?                 @unique
-  name             String
-  surname          String
-  email            String?
-  phone            String?
-  nationality      String?
-  language         String               @default("tr")
-  totalStays       Int                  @default(0)
-  totalRevenue     Float                @default(0)
-  lastCheckIn      DateTime?
-  lastCheckOut     DateTime?
-  firstCheckIn     DateTime?
-  tags             String? // JSON: ["VIP","Repeat"]
-  source           String               @default("elektra") // elektra, website, whatsapp, manual
-  notes            String?
-  createdAt        DateTime             @default(now())
-  updatedAt        DateTime             @updatedAt
-  segments         GuestSegmentMember[]
-  whatsappMessages WhatsAppMessage[]
+  id             String               @id @default(uuid())
+  elektraId      Int?                 @unique
+  name           String
+  surname        String
+  email          String?
+  phone          String?
+  country        String?
+  language       String               @default("tr")
+  totalStays     Int                  @default(0)
+  totalRevenue   Float                @default(0)
+  lastCheckIn    DateTime?
+  lastCheckOut   DateTime?
+  firstCheckIn   DateTime?
+  tags           String? // JSON: ["VIP","Repeat"]
+  source         String               @default("elektra") // elektra, website, whatsapp, manual
+  notes          String?
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  segments       GuestSegmentMember[]
+  socialMessages SocialMessage[]
 
   @@index([phone])
-  @@index([nationality])
+  @@index([country])
   @@index([email])
 }
 
@@ -598,12 +598,14 @@ model GuestSegmentMember {
   @@unique([guestId, segmentId])
 }
 
-model WhatsAppMessage {
+model SocialMessage {
   id          String        @id @default(uuid())
-  waMessageId String?       @unique
+  platform    String        @default("whatsapp") // whatsapp, facebook, instagram
+  waMessageId String?       @unique // can act as a general external message ID
   guestId     String?
   guest       GuestProfile? @relation(fields: [guestId], references: [id])
-  phone       String
+  phone       String? // Make optional since FB/IG might not have a phone number initially
+  socialId    String? // FB/IG user ID
   direction   String // inbound, outbound
   type        String        @default("text") // text, image, template, campaign
   content     String
@@ -615,6 +617,8 @@ model WhatsAppMessage {
   createdAt   DateTime      @default(now())
 
   @@index([phone])
+  @@index([socialId])
+  @@index([platform])
   @@index([guestId])
   @@index([createdAt])
   @@index([direction])
@@ -727,4 +731,48 @@ model PaymentLog {
   ipAddress String?
 
   createdAt DateTime @default(now())
+}
+
+model PaymentSettings {
+  id       String @id @default(cuid())
+  provider String @unique // 'iyzico' veya 'paytr'
+
+  // API Credentials (Encrypted)
+  apiKey       String?
+  secretKey    String?
+  merchantId   String? // PayTR / VPOS Müşteri No
+  merchantSalt String? // PayTR için
+
+  // VPOS / EST fields for banks
+  apiUsername String? // Hesap Adı
+  apiPassword String? // Parola
+  terminalId  String? // Terminal No
+  storeKey    String? // Parola (3D)
+  entId       String? // Ent.Id
+
+  // Routing rules
+  isForeign            Boolean @default(false)
+  supportSinglePayment Boolean @default(true)
+
+  mode     String  @default("sandbox") // 'sandbox' veya 'live'
+  isActive Boolean @default(false)
+
+  // Komisyon (Peşin ödeme için veya temel oran)
+  baseCommissionRate Float @default(0) // Yüzdelik, örn 2.5
+
+  installments PaymentInstallmentRate[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PaymentInstallmentRate {
+  id                String          @id @default(cuid())
+  paymentSettingsId String
+  paymentSettings   PaymentSettings @relation(fields: [paymentSettingsId], references: [id], onDelete: Cascade)
+
+  installments   Int // örn: 2, 3, 6, 9, 12
+  commissionRate Float // Yüzdelik, örn 4.5
+
+  @@unique([paymentSettingsId, installments])
 }

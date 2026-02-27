@@ -155,7 +155,7 @@ export default async function MeetingRoomPage({ params }: { params: Promise<{ lo
                             <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
                         </a>
                         <a
-                            href="https://wa.me/902523371111"
+                            href="https://wa.me/905495167803"
                             target="_blank"
                             rel="noreferrer"
                             className="inline-flex items-center justify-center gap-3 bg-white/10 backdrop-blur-sm text-white border border-white/20 px-10 py-5 rounded-full text-sm font-bold uppercase tracking-wider hover:bg-white/20 transition-all duration-300"
@@ -361,7 +361,7 @@ export default async function MeetingRoomPage({ params }: { params: Promise<{ lo
                             {t.ctaBtn}
                         </a>
                         <a
-                            href="https://wa.me/902523371111"
+                            href="https://wa.me/905495167803"
                             target="_blank"
                             rel="noreferrer"
                             className="inline-flex items-center justify-center gap-3 bg-[#25D366] text-white px-10 py-5 rounded-full text-sm font-bold uppercase tracking-wider hover:bg-[#20BD5A] transition-all duration-300 shadow-lg"

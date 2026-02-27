@@ -35,7 +35,7 @@ async function syncYear(year: number) {
                     roomCount: res.roomCount,
                     adults: 2, // Default or fetch if available (ElektraService doesn't expose adults clearly in Reservation type, checking guests length might be better but let's stick to default for now or parse guests)
                     children: 0,
-                    nationality: res.nationality,
+                    country: res.country,
                     bookedAt: new Date(res.lastUpdate), // Using lastUpdate as proxy for bookedAt
                 },
                 create: {
@@ -54,7 +54,7 @@ async function syncYear(year: number) {
                     roomCount: res.roomCount,
                     adults: 2,
                     children: 0,
-                    nationality: res.nationality,
+                    country: res.country,
                     bookedAt: new Date(res.lastUpdate),
                 }
             })

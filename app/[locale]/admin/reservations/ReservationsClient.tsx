@@ -28,7 +28,7 @@ interface ReservationRow {
     status: string
     saleDate: string
     lastUpdate: string
-    nationality: string
+    country: string
     dailyAverage: number
 }
 
@@ -333,7 +333,7 @@ export default function ReservationsClient({ initialData, comparisonData, compar
         if (!filtered.length) return
         const headers = ['Voucher No', 'Misafir', 'Uyruk', 'Acente', 'Kanal', 'Oda Tipi', 'Pansiyon', 'Giriş', 'Çıkış', 'Gece', 'Tutar', 'Günlük Ort.', 'Döviz', 'Durum', 'Rezervasyon Tarihi']
         const rows = filtered.map(r => [
-            r.voucherNo, r.guestName, r.nationality, r.agency, r.channel, r.roomType, r.boardType,
+            r.voucherNo, r.guestName, r.country, r.agency, r.channel, r.roomType, r.boardType,
             r.checkIn, r.checkOut, r.nights, r.totalPrice, r.dailyAverage, r.currency, r.status, r.saleDate
         ])
         const csv = [headers.join(';'), ...rows.map(r => r.join(';'))].join('\n')
@@ -791,7 +791,7 @@ export default function ReservationsClient({ initialData, comparisonData, compar
                                         </td>
                                         <td className="py-3 px-4">
                                             <p className="text-slate-900 dark:text-white text-sm">{res.guestName}</p>
-                                            <p className="text-slate-500 text-xs">{res.nationality} · {res.roomCount} oda · {res.nights} gece</p>
+                                            <p className="text-slate-500 text-xs">{res.country} · {res.roomCount} oda · {res.nights} gece</p>
                                         </td>
                                         <td className="py-3 px-4">
                                             <p className="text-slate-900 dark:text-white text-sm">{res.agency}</p>
@@ -898,7 +898,7 @@ export default function ReservationsClient({ initialData, comparisonData, compar
                                 <div>
                                     <p className="text-slate-500 text-xs uppercase mb-1">Misafir</p>
                                     <p className="text-slate-900 dark:text-white">{selectedRes.guestName}</p>
-                                    <p className="text-slate-500 dark:text-slate-400 text-xs">{selectedRes.nationality}</p>
+                                    <p className="text-slate-500 dark:text-slate-400 text-xs">{selectedRes.country}</p>
                                 </div>
                                 <div>
                                     <p className="text-slate-500 text-xs uppercase mb-1">Durum</p>

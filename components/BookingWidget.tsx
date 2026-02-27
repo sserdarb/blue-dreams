@@ -59,7 +59,7 @@ const BookingWidget: React.FC = () => {
       <button className={contactIconClass} title="Ara">
         <Search size={16} />
       </button>
-      <a href="https://wa.me/902523371111" target="_blank" rel="noreferrer" className={`${contactIconClass} hover:text-[#25D366]`} title="WhatsApp">
+      <a href="https://wa.me/905495167803" target="_blank" rel="noreferrer" className={`${contactIconClass} hover:text-[#25D366]`} title="WhatsApp">
         <WhatsAppIcon size={16} />
       </a>
       <a href="tel:+902523371111" className={contactIconClass} title="Telefon">

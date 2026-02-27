@@ -34,6 +34,7 @@ export function getNavItems(locale: string): NavItem[] {
             gallery: 'Galeri',
             contact: 'İletişim',
             bodrum: 'Bodrum Rehberi',
+            kidsClub: 'Çocuk Kulübü',
         },
         en: {
             about: 'About Us',
@@ -45,6 +46,7 @@ export function getNavItems(locale: string): NavItem[] {
             gallery: 'Gallery',
             contact: 'Contact',
             bodrum: 'Bodrum Guide',
+            kidsClub: 'Kids Club',
         },
         de: {
             about: 'Über Uns',
@@ -56,6 +58,7 @@ export function getNavItems(locale: string): NavItem[] {
             gallery: 'Galerie',
             contact: 'Kontakt',
             bodrum: 'Bodrum Reiseführer',
+            kidsClub: 'Kinderclub',
         },
         ru: {
             about: 'О нас',
@@ -67,6 +70,7 @@ export function getNavItems(locale: string): NavItem[] {
             gallery: 'Галерея',
             contact: 'Контакт',
             bodrum: 'Гид по Бодруму',
+            kidsClub: 'Детский клуб',
         },
     }
 
@@ -82,6 +86,7 @@ export function getNavItems(locale: string): NavItem[] {
         { label: t.gallery, href: `/${l}/galeri` },
         { label: t.contact, href: `/${l}/iletisim` },
         { label: t.bodrum, href: `/${l}/bodrum` },
+        { label: t.kidsClub, href: `/${l}/cocuk-kulubu` },
     ]
 }
 
@@ -95,6 +100,7 @@ export const NAV_ITEMS: NavItem[] = [
     { label: 'Düğün & Davet', href: '/tr/dugun-davet' },
     { label: 'Galeri', href: '/tr/galeri' },
     { label: 'İletişim', href: '/tr/iletisim' },
+    { label: 'Çocuk Kulübü', href: '/tr/cocuk-kulubu' },
 ]
 
 export const ROOMS: Room[] = [

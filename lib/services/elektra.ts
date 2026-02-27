@@ -59,10 +59,10 @@ export type Reservation = {
     contactPhone: string | null
     lastUpdate: string
     reservationDate: string
-    guests: { name: string; surname: string; nationality: string }[]
+    guests: { name: string; surname: string; country: string }[]
     status: string
     // Enhanced Fields
-    nationality: string // derived from first guest or contact
+    country: string // derived from first guest or contact
     dailyAverage: number // totalPrice / nights
     nights: number
 }
@@ -221,8 +221,8 @@ function resolveCountry(guest: Record<string, unknown>, countryMap: Map<number, 
         const name = countryMap.get(Number(countryId))
         if (name) return name
     }
-    // 2. Try direct nationality string
-    const nat = guest['nationality'] as string
+    // 2. Try direct country string
+    const nat = guest['country'] as string
     if (nat && nat !== 'Unknown' && nat.length > 1) return nat
     // 3. Try country string
     const country = guest['country'] as string
@@ -405,16 +405,16 @@ async function fetchReservations(fromDate: string, toDate: string, status: strin
         const nights = Math.max(1, Math.ceil((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24)))
         const dailyAverage = totalPrice / nights
 
-        // Guests & Nationality — resolve via country-id map
+        // Guests & Country — resolve via country-id map
         const guests = ((item['guest-list'] as Array<Record<string, unknown>>) || []).map(g => ({
             name: (g['name'] as string) || '',
             surname: (g['surname'] as string) || '',
-            nationality: resolveCountry(g, countryMap)
+            country: resolveCountry(g, countryMap)
         }))
 
-        // Also try reservation-level nationality fields
-        const firstGuestNationality = guests.length > 0 && guests[0].nationality !== 'Unknown'
-            ? guests[0].nationality
+        // Also try reservation-level country fields
+        const firstGuestNationality = guests.length > 0 && guests[0].country !== 'Unknown'
+            ? guests[0].country
             : resolveCountry(item as Record<string, unknown>, countryMap)
 
         return {
@@ -439,7 +439,7 @@ async function fetchReservations(fromDate: string, toDate: string, status: strin
             guests,
             status,
             // Enhanced
-            nationality: firstGuestNationality,
+            country: firstGuestNationality,
             nights,
             dailyAverage
         }
@@ -977,7 +977,7 @@ export const ElektraService = {
         return fetchExchangeRates()
     },
 
-    // ─── Countries / Nationalities ───────────────────────────────
+    // ─── Countries / Countries ───────────────────────────────
     async getCountries(): Promise<{ id: number; name: string }[]> {
         const map = await fetchCountries()
         return Array.from(map.entries())

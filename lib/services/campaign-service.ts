@@ -1,5 +1,5 @@
 // Campaign Service — WhatsApp and Email campaign sending
-import { sendWhatsAppMessage } from '@/lib/whatsapp';
+import { sendSocialMessage } from '@/lib/whatsapp';
 import { prisma } from '@/lib/prisma';
 
 // Rate-limited WhatsApp campaign sender
@@ -25,10 +25,10 @@ export async function sendWhatsAppCampaign(
                 personalizedMsg = personalizedMsg.replace(/\{\{name\}\}/g, guestNames.get(phone) || '');
             }
 
-            await sendWhatsAppMessage(phone, personalizedMsg);
+            await sendSocialMessage(phone, personalizedMsg);
 
             // Record sent message
-            await prisma.whatsAppMessage.create({
+            await prisma.socialMessage.create({
                 data: {
                     phone,
                     direction: 'outbound',
@@ -71,7 +71,7 @@ export async function getCampaignStats(campaignId: string) {
 
     if (!campaign) return null;
 
-    const messages = await prisma.whatsAppMessage.groupBy({
+    const messages = await prisma.socialMessage.groupBy({
         by: ['status'],
         where: { campaignId },
         _count: true,

@@ -97,7 +97,7 @@ export default async function RestaurantPage({ params }: { params: Promise<{ loc
             hours: locale === 'tr' ? 'Kahvaltı 07:00-10:00 | Öğle 12:30-14:00 | Akşam 19:00-21:00' : 'Breakfast 07:00-10:00 | Lunch 12:30-14:00 | Dinner 19:00-21:00',
             location: locale === 'tr' ? 'Ana Bina' : 'Main Building',
             capacity: 350,
-            image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80',
+            image: '/images/dining/begonville.jpg',
             features: locale === 'tr' ? 'Açık Büfe,Deniz Manzarası,Türk Mutfağı,Dünya Mutfağı,Vejetaryen Seçenekler' : 'Open Buffet,Sea View,Turkish Cuisine,World Cuisine,Vegetarian Options',
             events: [],
         },
@@ -114,7 +114,7 @@ export default async function RestaurantPage({ params }: { params: Promise<{ loc
             hours: '19:30 – 22:00',
             location: locale === 'tr' ? 'Deniz Üstü Platform' : 'Seaside Platform',
             capacity: 80,
-            image: 'https://bluedreamsresort.com/wp-content/uploads/2025/07/MER02188.jpg',
+            image: '/images/dining/halicarnassus.jpg',
             features: locale === 'tr' ? 'Deniz Mahsulleri,Gün Batımı Manzarası,Rezervasyon Gerekli,A La Carte,Romantik' : 'Seafood,Sunset View,Reservation Required,A La Carte,Romantic',
             events: [],
         },
@@ -131,8 +131,21 @@ export default async function RestaurantPage({ params }: { params: Promise<{ loc
             hours: '19:30 – 22:00',
             location: locale === 'tr' ? 'Bahçe' : 'Garden',
             capacity: 60,
-            image: 'https://bluedreamsresort.com/wp-content/uploads/2025/07/MER02146.jpg',
+            image: '/images/dining/lalocanda.jpg',
             features: locale === 'tr' ? 'İtalyan Mutfağı,Şarap Seçenekleri,Rezervasyon Gerekli,A La Carte,Şık Ambiyans' : 'Italian Cuisine,Wine Selection,Reservation Required,A La Carte,Elegant Ambiance',
+            events: [],
+        },
+        {
+            id: 'snackrestaurant',
+            title: 'Snack Restaurant',
+            type: locale === 'tr' ? 'Aperatif Restoranı' : 'Snack Restaurant',
+            description: locale === 'tr' ? 'Gün boyu havuz ve deniz keyfinize eşlik edecek lezzetli atıştırmalıklar, salatalar, burgerler ve hafif tatlar.' : 'Delicious snacks, salads, burgers, and light flavors to accompany your pool and sea enjoyment throughout the day.',
+            cuisine: locale === 'tr' ? 'Atıştırmalıklar & Uluslararası' : 'Snacks & International',
+            hours: '12:30 – 17:00',
+            location: locale === 'tr' ? 'Havuz & Sahil Bölgesi' : 'Pool & Beach Area',
+            capacity: 150,
+            image: '/images/dining/snackrestaurant.jpg',
+            features: locale === 'tr' ? 'Hızlı Servis,Geniş Seçenekler,Açık Alan' : 'Fast Service,Wide Selection,Outdoor Seating',
             events: [],
         },
     ]
@@ -145,16 +158,28 @@ export default async function RestaurantPage({ params }: { params: Promise<{ loc
             location: locale === 'tr' ? 'Havuz Başı' : 'Poolside', capacity: null, cuisine: null, features: null, events: [],
         },
         {
-            id: 'bar2', title: locale === 'tr' ? 'Sahil Bar' : 'Beach Bar',
-            type: 'Bar', description: locale === 'tr' ? 'Deniz kenarında tropik kokteyller ve müzik eşliğinde keyifli anlar.' : 'Tropical cocktails and music by the sea.',
-            hours: '10:00 – 01:00', image: 'https://bluedreamsresort.com/wp-content/uploads/2025/07/MER02109.jpg',
+            id: 'bar2', title: locale === 'tr' ? 'Tea Garden' : 'Tea Garden',
+            type: 'Cafe / Bar', description: locale === 'tr' ? 'Deniz kenarında çay saatleri, tropik kokteyller ve keyifli anlar.' : 'Tea times, tropical cocktails and pleasant moments by the sea.',
+            hours: '10:00 – 24:00', image: '/images/dining/teagarden.jpg',
             location: locale === 'tr' ? 'Sahil' : 'Beachfront', capacity: null, cuisine: null, features: null, events: [],
         },
         {
             id: 'bar3', title: 'Lobby Lounge',
             type: 'Bar & Lounge', description: locale === 'tr' ? 'Gün boyu çeşitli sıcak ve soğuk içecekler.' : 'A variety of hot and cold beverages throughout the day.',
-            hours: '24 ' + (locale === 'tr' ? 'Saat' : 'Hours'), image: 'https://bluedreamsresort.com/wp-content/uploads/2025/08/MER02491.jpg',
+            hours: '24 ' + (locale === 'tr' ? 'Saat' : 'Hours'), image: '/images/dining/lobbybar.jpg',
             location: 'Lobby', capacity: null, cuisine: null, features: null, events: [],
+        },
+        {
+            id: 'bar4', title: 'Sunset Bar',
+            type: 'Bar', description: locale === 'tr' ? 'Özel kokteyller eşliğinde unutulmaz gün batımı manzarası.' : 'Unforgettable sunset views accompanied by signature cocktails.',
+            hours: '18:00 – 24:00', image: '/images/dining/sunsetbar.jpg',
+            location: locale === 'tr' ? 'Teras' : 'Terrace', capacity: null, cuisine: null, features: null, events: [],
+        },
+        {
+            id: 'bar5', title: locale === 'tr' ? 'Pastane' : 'Patisserie',
+            type: 'Cafe', description: locale === 'tr' ? 'Günlük hazırlanan taze pasta, kek ve tatlı çeşitleri yanında sıcak içecekler.' : 'Freshly prepared cakes, pastries and dessert varieties alongside hot beverages.',
+            hours: '11:00 – 18:00', image: '/images/dining/pastane.jpg',
+            location: locale === 'tr' ? 'Ana Bina' : 'Main Building', capacity: null, cuisine: null, features: null, events: [],
         },
     ]
 
@@ -172,7 +197,7 @@ export default async function RestaurantPage({ params }: { params: Promise<{ loc
             <section className="relative h-screen min-h-[700px] flex items-end">
                 <div className="absolute inset-0">
                     <Image
-                        src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80"
+                        src="/images/dining/hero.jpg"
                         alt={g('title', locale)}
                         fill
                         className="object-cover"

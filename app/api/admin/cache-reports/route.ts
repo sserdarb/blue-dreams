@@ -58,7 +58,7 @@ async function fetchAndCache(): Promise<CacheEntry> {
         roomCount: r.roomCount,
         status: r.status,
         saleDate: (r.reservationDate || r.lastUpdate || '').slice(0, 10),
-        nationality: r.nationality,
+        country: r.country,
     }))
 
     cache = { data: reservations, fetchedAt: Date.now() }

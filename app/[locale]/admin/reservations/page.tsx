@@ -57,7 +57,7 @@ export default async function ReservationsPage({ searchParams }: { searchParams:
                 status: r.status,
                 saleDate: r.reservationDate.slice(0, 10),
                 lastUpdate: r.lastUpdate,
-                nationality: r.nationality,
+                country: r.country,
                 dailyAverage: r.dailyAverage,
             }))
 

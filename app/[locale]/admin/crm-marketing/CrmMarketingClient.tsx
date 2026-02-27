@@ -13,15 +13,15 @@ import {
 // ——— Types ———
 interface GuestProfile {
     id: string; name: string; surname: string; email: string | null; phone: string | null;
-    nationality: string | null; totalStays: number; totalRevenue: number;
+    country: string | null; totalStays: number; totalRevenue: number;
     lastCheckIn: string | null; firstCheckIn: string | null; tags: string | null;
     source: string; segments: { segment: { id: string; name: string; color: string } }[];
-    _count: { whatsappMessages: number };
+    _count: { socialMessages: number };
 }
 interface Segment { id: string; name: string; description: string | null; color: string; icon: string; guestCount: number; isAutomatic: boolean; _count: { members: number; campaigns: number } }
 interface Campaign { id: string; name: string; type: string; status: string; content: string | null; totalSent: number; totalDelivered: number; totalFailed: number; sentAt: string | null; createdAt: string; segment: { id: string; name: string; color: string; guestCount: number } | null }
-interface WaMessage { id: string; phone: string; direction: string; type: string; content: string; status: string; isFromGuest: boolean; createdAt: string; guest: { id: string; name: string; surname: string; nationality: string | null; totalStays: number } | null }
-interface WaConversation { phone: string; messageCount: number; lastMessageAt: string; guest: { id: string; name: string; surname: string; nationality: string | null; totalStays: number } | null; lastMessage: { content: string; direction: string; createdAt: string } | null }
+interface WaMessage { id: string; phone: string; direction: string; type: string; content: string; status: string; isFromGuest: boolean; createdAt: string; guest: { id: string; name: string; surname: string; country: string | null; totalStays: number } | null }
+interface WaConversation { phone: string; messageCount: number; lastMessageAt: string; guest: { id: string; name: string; surname: string; country: string | null; totalStays: number } | null; lastMessage: { content: string; direction: string; createdAt: string } | null }
 interface WaTemplate { id: string; name: string; content: string; category: string; language: string; useCount: number }
 interface EmailTpl { id: string; name: string; subject: string; htmlContent: string; category: string; isActive: boolean; createdAt: string }
 
@@ -77,8 +77,8 @@ function GuestsTab() {
     const [loading, setLoading] = useState(true)
     const [syncing, setSyncing] = useState(false)
     const [search, setSearch] = useState('')
-    const [nationality, setNationality] = useState('')
-    const [nationalities, setNationalities] = useState<{ nationality: string | null; _count: number }[]>([])
+    const [country, setNationality] = useState('')
+    const [countries, setNationalities] = useState<{ country: string | null; _count: number }[]>([])
     const [minStays, setMinStays] = useState('0')
     const [page, setPage] = useState(1)
     const [selected, setSelected] = useState<Set<string>>(new Set())
@@ -88,15 +88,15 @@ function GuestsTab() {
     const fetchGuests = useCallback(async () => {
         setLoading(true)
         try {
-            const params = new URLSearchParams({ page: String(page), limit: '30', search, nationality, minStays, sortBy: 'lastCheckIn', sortDir: 'desc' })
+            const params = new URLSearchParams({ page: String(page), limit: '30', search, country, minStays, sortBy: 'lastCheckIn', sortDir: 'desc' })
             const res = await fetch(`/api/admin/crm/guests?${params}`)
             const data = await res.json()
             setGuests(data.guests || [])
             setTotal(data.total || 0)
-            setNationalities(data.nationalities || [])
+            setNationalities(data.countries || [])
         } catch { /* ignore */ }
         setLoading(false)
-    }, [page, search, nationality, minStays])
+    }, [page, search, country, minStays])
 
     useEffect(() => { fetchGuests() }, [fetchGuests])
     useEffect(() => { fetch('/api/admin/crm/segments').then(r => r.json()).then(setSegments).catch(() => { }) }, [])
@@ -142,9 +142,9 @@ function GuestsTab() {
                     <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                     <input className="w-full pl-9 pr-3 py-2 rounded-lg border dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm" placeholder="Ad, soyad, email veya telefon ara..." value={search} onChange={e => { setSearch(e.target.value); setPage(1) }} />
                 </div>
-                <select className="border dark:border-slate-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-white" value={nationality} onChange={e => { setNationality(e.target.value); setPage(1) }}>
+                <select className="border dark:border-slate-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-white" value={country} onChange={e => { setNationality(e.target.value); setPage(1) }}>
                     <option value="">Tüm Uyruklar</option>
-                    {nationalities.map(n => <option key={n.nationality} value={n.nationality || ''}>{n.nationality || 'Bilinmiyor'} ({n._count})</option>)}
+                    {countries.map(n => <option key={n.country} value={n.country || ''}>{n.country || 'Bilinmiyor'} ({n._count})</option>)}
                 </select>
                 <select className="border dark:border-slate-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-white" value={minStays} onChange={e => { setMinStays(e.target.value); setPage(1) }}>
                     <option value="0">Tüm Ziyaretler</option>
@@ -222,7 +222,7 @@ function GuestsTab() {
                                 <tr key={g.id} className={`border-b hover:bg-slate-100 dark:bg-slate-800/50 transition ${selected.has(g.id) ? 'bg-blue-50 dark:bg-blue-950/20' : ''}`}>
                                     <td className="p-3"><input type="checkbox" checked={selected.has(g.id)} onChange={() => toggleSelect(g.id)} /></td>
                                     <td className="p-3 font-medium">{g.name} {g.surname}</td>
-                                    <td className="p-3"><span className="flex items-center gap-1"><Globe size={12} /> {g.nationality || '—'}</span></td>
+                                    <td className="p-3"><span className="flex items-center gap-1"><Globe size={12} /> {g.country || '—'}</span></td>
                                     <td className="p-3 text-xs">
                                         {g.email && <div className="truncate max-w-[150px]">{g.email}</div>}
                                         {g.phone && <div className="text-muted-foreground">{g.phone}</div>}
@@ -631,7 +631,7 @@ function WhatsAppInboxTab() {
                                             <div className="font-medium">{c.guest ? `${c.guest.name} ${c.guest.surname}` : c.phone}</div>
                                             <div className="text-xs text-muted-foreground flex items-center gap-2">
                                                 {c.guest && <Badge variant="outline" className="text-xs"><UserCheck size={10} className="mr-1" /> Eski Misafir ({c.guest.totalStays}x)</Badge>}
-                                                {c.guest?.nationality && <span><Globe size={10} className="inline mr-1" />{c.guest.nationality}</span>}
+                                                {c.guest?.country && <span><Globe size={10} className="inline mr-1" />{c.guest.country}</span>}
                                             </div>
                                         </div>
                                     </div>

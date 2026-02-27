@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { ElektraService } from '@/lib/services/elektra'
 
-// GET: Fetch countries/nationalities from Elektra PMS
+// GET: Fetch countries/countries from Elektra PMS
 export async function GET() {
     try {
         const countries = await ElektraService.getCountries()

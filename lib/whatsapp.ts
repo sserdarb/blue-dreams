@@ -1,4 +1,4 @@
-export const sendWhatsAppMessage = async (to: string, text: string) => {
+export const sendSocialMessage = async (to: string, text: string) => {
     const token = process.env.META_ACCESS_TOKEN;
     const phoneId = process.env.WHATSAPP_PHONE_ID;
 

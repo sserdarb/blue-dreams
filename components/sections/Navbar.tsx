@@ -125,7 +125,7 @@ export default function Navbar({ locale = 'tr', menuItems }: { locale?: string; 
                         {/* Quick Contact Icons */}
                         <div className="flex items-center space-x-4">
                             <a
-                                href="https://wa.me/902523371111"
+                                href="https://wa.me/905495167803"
                                 target="_blank"
                                 rel="noreferrer"
                                 className="text-white hover:text-[#25D366] transition-colors"
@@ -184,7 +184,7 @@ export default function Navbar({ locale = 'tr', menuItems }: { locale?: string; 
                     <div className="flex xl:hidden items-center gap-1">
                         {/* Mobile Contact Icons */}
                         <a
-                            href="https://wa.me/902523371111"
+                            href="https://wa.me/905495167803"
                             target="_blank"
                             rel="noreferrer"
                             className="p-2 text-white hover:text-[#25D366] transition-colors"
@@ -234,9 +234,9 @@ export default function Navbar({ locale = 'tr', menuItems }: { locale?: string; 
                 <div className="w-full h-full overflow-y-auto flex flex-col items-center">
 
                     {/* Menu Items */}
-                    <div className="flex flex-col items-center space-y-6 md:space-y-4 mb-12 md:mb-8 text-center animate-fade-in-up">
+                    <div className="flex flex-col items-center space-y-2 md:space-y-1 mb-12 md:mb-8 text-center animate-fade-in-up">
                         {navItems.map((item) => (
-                            <div key={item.label} className="flex flex-col items-center space-y-2 mt-4">
+                            <div key={item.label} className="flex flex-col items-center space-y-1 mt-2">
                                 <a
                                     href={item.href}
                                     target={item.target || '_self'}
@@ -246,7 +246,7 @@ export default function Navbar({ locale = 'tr', menuItems }: { locale?: string; 
                                     {item.label}
                                 </a>
                                 {item.children && item.children.length > 0 && (
-                                    <div className="flex flex-col items-center space-y-3 py-2 border-t border-white/10 mt-3 w-48 mx-auto">
+                                    <div className="flex flex-col items-center space-y-1 py-1 border-t border-white/10 mt-2 w-48 mx-auto">
                                         {item.children.map((child: any) => (
                                             <a
                                                 key={child.label}
@@ -291,7 +291,7 @@ export default function Navbar({ locale = 'tr', menuItems }: { locale?: string; 
                         </a>
 
                         <a
-                            href="https://wa.me/902523371111"
+                            href="https://wa.me/905495167803"
                             target="_blank"
                             rel="noreferrer"
                             className="border border-white/20 hover:border-[#25D366] hover:bg-[#25D366] hover:text-white text-white px-6 py-4 rounded text-xs font-bold tracking-widest uppercase flex items-center justify-center gap-2 transition-all flex-1 md:flex-none"

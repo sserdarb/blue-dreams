@@ -19,7 +19,7 @@ interface ReservationSlim {
     currency: string
     channel: string
     agency: string
-    nationality: string
+    country: string
     dailyAverage: number
     status: string
     reservationDate: string
@@ -199,7 +199,7 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
     const { currentYear, currentYearReservations, prevYearReservations, exchangeRates } = data
     const prevYear = currentYear - 1
 
-    const [activeReport, setActiveReport] = useState<'s26' | 'pace' | 'dashboard' | 'channels' | 'agencies' | 'nationality' | 'market'>('s26')
+    const [activeReport, setActiveReport] = useState<'s26' | 'pace' | 'dashboard' | 'channels' | 'agencies' | 'country' | 'market'>('s26')
     const [showCurrency, setShowCurrency] = useState<'EUR' | 'TRY'>('EUR')
     const [chartView, setChartView] = useState<'revenue' | 'occupancy' | 'adr'>('revenue')
     const [seasonFilter, setSeasonFilter] = useState<SeasonType | 'ALL'>('ALL')
@@ -337,11 +337,11 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
             })
     }, [filteredCY, exchangeRates])
 
-    // ─── Nationality Aggregation ──────────────────────────────
+    // ─── Country Aggregation ──────────────────────────────
     const nationalityData = useMemo(() => {
         const map = new Map<string, { rn: number; revenue: number; revenueEur: number; count: number }>()
         for (const r of filteredCY) {
-            const nat = r.nationality || 'Bilinmeyen'
+            const nat = r.country || 'Bilinmeyen'
             const prev = map.get(nat) || { rn: 0, revenue: 0, revenueEur: 0, count: 0 }
             const rn = r.nights * (r.roomCount || 1)
             const revTry = toTRY(r.totalPrice, r.currency, exchangeRates, priceMode, totalTaxRate)
@@ -668,7 +668,7 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
                         { key: 'dashboard' as const, icon: LayoutDashboard, label: t.dashboard },
                         { key: 'channels' as const, icon: Share2, label: t.channelDistribution },
                         { key: 'agencies' as const, icon: Users, label: t.managementReports.agencyReport },
-                        { key: 'nationality' as const, icon: Globe, label: t.guestNationality },
+                        { key: 'country' as const, icon: Globe, label: t.guestNationality },
                         { key: 'market' as const, icon: Store, label: t.managementReports.market },
                     ].map(tab => (
                         <button key={tab.key} onClick={() => setActiveReport(tab.key)} className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${activeReport === tab.key ? 'bg-cyan-600 text-white shadow-lg shadow-cyan-600/20' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5'}`}>
@@ -1231,7 +1231,7 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
             )}
 
             {/* ═══════════════════════ NATIONALITY ═══════════════════════ */}
-            {activeReport === 'nationality' && (
+            {activeReport === 'country' && (
                 <>
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Pie Chart */}
@@ -1268,7 +1268,7 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
                             ))}
                         </div>
                     </div>
-                    {/* Full Nationality Table */}
+                    {/* Full Country Table */}
                     <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-200 dark:border-white/10 overflow-hidden shadow-sm">
                         <div className="p-4 border-b border-slate-200 dark:border-white/10">
                             <h3 className="text-lg font-bold text-slate-900 dark:text-white">{t.guestNationality} {t.managementReports.details} — {currentYear}</h3>

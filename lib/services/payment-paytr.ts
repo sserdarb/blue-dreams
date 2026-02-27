@@ -1,5 +1,6 @@
 import crypto from 'crypto'
 import { prisma } from '@/lib/prisma'
+import { EncryptionUtils } from '@/lib/utils/encryption'
 
 export interface PayTRRequestData {
     bookingId: string
@@ -12,15 +13,35 @@ export interface PayTRRequestData {
 }
 
 export class PayTRService {
-    private static merchantId = process.env.PAYTR_MERCHANT_ID || 'sandbox_merchant_id'
-    private static merchantKey = process.env.PAYTR_MERCHANT_KEY || 'sandbox_merchant_key'
-    private static merchantSalt = process.env.PAYTR_MERCHANT_SALT || 'sandbox_merchant_salt'
+
+    private static async getProviderSettings() {
+        const settings = await prisma.paymentSettings.findUnique({
+            where: { provider: 'paytr' }
+        })
+
+        if (!settings || !settings.isActive) {
+            throw new Error("PayTR ödeme altyapısı aktif değil veya ayarları eksik.")
+        }
+
+        const merchantId = settings.merchantId ? EncryptionUtils.decrypt(settings.merchantId) : ''
+        const merchantKey = settings.secretKey ? EncryptionUtils.decrypt(settings.secretKey) : ''
+        const merchantSalt = settings.merchantSalt ? EncryptionUtils.decrypt(settings.merchantSalt) : ''
+
+        return {
+            merchantId,
+            merchantKey,
+            merchantSalt,
+            mode: settings.mode
+        }
+    }
 
     /**
      * Get a token for the PayTR iframe
      */
     static async getIframeToken(data: PayTRRequestData): Promise<{ success: boolean; token?: string; errorMessage?: string }> {
         try {
+            const settings = await this.getProviderSettings()
+
             const user_ip = data.clientIp
             const merchant_oid = data.bookingId // Must be unique
             const email = data.guestEmail
@@ -29,7 +50,7 @@ export class PayTRService {
             const no_installment = 0 // Taksit yapılabilsin
             const max_installment = 12
             const currency = "TL"
-            const test_mode = process.env.PAYMENT_MODE === 'sandbox' ? 1 : 0
+            const test_mode = settings.mode === 'sandbox' ? 1 : 0
             const user_name = data.guestName
             const user_address = "Blue Dreams Resort, Torba, Bodrum, Muğla"
             const user_phone = data.guestPhone.startsWith('+') ? data.guestPhone : `+90${data.guestPhone}`
@@ -40,12 +61,12 @@ export class PayTRService {
             const debug_on = 0
 
             // Generate PayTR Hash
-            const hash_str = `${this.merchantId}${user_ip}${merchant_oid}${email}${payment_amount}${user_basket}${no_installment}${max_installment}${currency}${test_mode}`
-            const target_str = `${hash_str}${this.merchantSalt}`
-            const paytr_token = crypto.createHmac('sha256', this.merchantKey).update(target_str).digest('base64')
+            const hash_str = `${settings.merchantId}${user_ip}${merchant_oid}${email}${payment_amount}${user_basket}${no_installment}${max_installment}${currency}${test_mode}`
+            const target_str = `${hash_str}${settings.merchantSalt}`
+            const paytr_token = crypto.createHmac('sha256', settings.merchantKey).update(target_str).digest('base64')
 
             const postData = new URLSearchParams()
-            postData.append('merchant_id', this.merchantId)
+            postData.append('merchant_id', settings.merchantId)
             postData.append('user_ip', user_ip)
             postData.append('merchant_oid', merchant_oid)
             postData.append('email', email)
@@ -120,10 +141,11 @@ export class PayTRService {
     /**
      * Validate the webhook callback received from PayTR
      */
-    static validateCallback(postData: any): boolean {
+    static async validateCallback(postData: any): Promise<boolean> {
         try {
-            const hash_str = `${postData.merchant_oid}${this.merchantSalt}${postData.status}${postData.total_amount}`
-            const hash = crypto.createHmac('sha256', this.merchantKey).update(hash_str).digest('base64')
+            const settings = await this.getProviderSettings()
+            const hash_str = `${postData.merchant_oid}${settings.merchantSalt}${postData.status}${postData.total_amount}`
+            const hash = crypto.createHmac('sha256', settings.merchantKey).update(hash_str).digest('base64')
             return hash === postData.hash
         } catch (error) {
             return false

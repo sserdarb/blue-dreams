@@ -20,7 +20,7 @@ export const WIDGET_DESCRIPTIONS: Record<string, WidgetDescription> = {
     'agencies': D(PMS, 'En çok üretim yapan acentaları sıralar.', 'İlk 5 acentanın toplam gelir içindeki payını izleyin; %50\'yi aşarsa bağımlılık riski var.'),
     'occupancy': D(PMS, 'Günlük ve dönemsel doluluk oranını izler.', '%85 üstü doluluk mükemmel; %60 altında kalırsa fiyat indirimi veya kampanya düşünün.'),
     'adr': D(PMS, 'Average Daily Rate — günlük ortalama oda fiyatı.', 'ADR yükselirken doluluk düşmüyorsa optimal fiyatlandırma yapılıyor demektir.'),
-    'nationality': D(PMS, 'Misafir milliyetlerinin dağılımını gösterir.', 'Hakim pazarları ve büyüyen ülkeleri izleyin; pazarlama bütçesini buna göre dağıtın.'),
+    'country': D(PMS, 'Misafir milliyetlerinin dağılımını gösterir.', 'Hakim pazarları ve büyüyen ülkeleri izleyin; pazarlama bütçesini buna göre dağıtın.'),
     'velocity': D(PMS, 'Rezervasyonların ne hızla geldiğini ölçer.', 'Hız düşüyorsa erken uyarı; kampanya veya fiyat ayarlaması gerekebilir.'),
     'lengthOfStay': D(PMS, 'Ortalama konaklama süresini gösterir.', 'LOS artışı daha az check-in/out operasyonu ve daha istikrarlı gelir demektir. Min Stay kısıtlamaları ile optimize edin.'),
     'revpar': D(PMS, 'Revenue Per Available Room — oda başı gelir.', 'RevPAR hem doluluk hem ADR\'yi yansıtır. Rakiplerle kıyaslayarak pazar konumunuzu değerlendirin.'),
@@ -35,7 +35,7 @@ export const WIDGET_DESCRIPTIONS: Record<string, WidgetDescription> = {
     'rev-yoy-chart': D(PMS, 'Bu yıl ile geçen yılın gelirini kıyaslar.', 'YoY büyüme %10+ ise sağlıklı; negatifse acil aksiyon gerekir.'),
     'rev-roomtype-chart': D(PMS, 'Oda tiplerinin gelire katkısını gösterir.', 'En çok gelir getiren oda tipine yatırım yapın; düşük getirilileri yeniden konumlandırın.'),
     'rev-channel-chart': D(PMS, 'Kanalların gelir katkısını karşılaştırır.', 'Direkt kanal gelirini artırmak komisyon maliyetini düşürür.'),
-    'rev-nationality-chart': D(PMS, 'Milliyete göre gelir dağılımını gösterir.', 'Yüksek harcama yapan milliyetlere odaklanın.'),
+    'rev-country-chart': D(PMS, 'Milliyete göre gelir dağılımını gösterir.', 'Yüksek harcama yapan milliyetlere odaklanın.'),
     'rev-segment-chart': D(PMS, 'İş segmentlerine göre gelir dağılımı.', 'Corporate vs Leisure dengesini izleyin.'),
     'rev-mealplan-chart': D(PMS, 'Pansiyon tiplerinin gelir katkısını gösterir.', 'AI ve FB pansiyonlar daha yüksek gelir sağlıyorsa teşvik edin.'),
     'rev-pace-chart': D(PMS, 'Gelir hızını geçen yılla karşılaştırır.', 'Pace geride kalıyorsa fiyat veya pazarlama aksiyonu alın.'),
@@ -105,7 +105,7 @@ export const WIDGET_DESCRIPTIONS: Record<string, WidgetDescription> = {
     'occ-timeline': D(PMS, 'Oda dolulukunu zaman çizelgesinde gösterir.', 'Boşluklar satış fırsatlarını temsil eder.'),
 
     // Guest & CRM
-    'guest-nationality-pie': D(PMS, 'Milliyet dağılımını pasta grafiğiyle gösterir.', 'Hakim pazarlara yönelik dil ve kültür uyumunu sağlayın.'),
+    'guest-country-pie': D(PMS, 'Milliyet dağılımını pasta grafiğiyle gösterir.', 'Hakim pazarlara yönelik dil ve kültür uyumunu sağlayın.'),
     'guest-repeat-chart': D(PMS, 'Tekrar gelen misafir trendini izler.', 'Tekrar oranı %30+ ise sadakat programı etkili demektir.'),
     'guest-satisfaction-chart': D(PMS, 'Misafir memnuniyet puanı trendini gösterir.', 'Düşüş trendi varsa hizmet kalitesini acil inceleyin.'),
     'guest-demographics-chart': D(PMS, 'Yaş ve cinsiyet dağılımını analiz eder.', 'Hedef kitleye uygun hizmet ve pazarlama stratejisi geliştirin.'),

@@ -44,7 +44,7 @@ export const ALL_WIDGETS: WidgetDefinition[] = [
     w('agencies', 'En İyi Acentalar', 'marketing', 'data', '2x1', true, 'topAgencies'),
     w('occupancy', 'Doluluk Oranı', 'occupancy', 'chart', '2x1', true, 'occupancyRate'),
     w('adr', 'ADR', 'revenue', 'data', '1x1', true, 'adr'),
-    w('nationality', 'Misafir Milliyeti', 'guest', 'chart', '1x1', true, 'guestNationality'),
+    w('country', 'Misafir Milliyeti', 'guest', 'chart', '1x1', true, 'guestNationality'),
     w('velocity', 'Rezervasyon Hızı', 'reservation', 'chart', '2x1', true, 'bookingVelocity'),
     w('lengthOfStay', 'Ort. Konaklama', 'reservation', 'data', '1x1', true, 'avgNights'),
     w('revpar', 'RevPAR', 'revenue', 'data', '1x1', true, 'revpar'),
@@ -62,7 +62,7 @@ export const ALL_WIDGETS: WidgetDefinition[] = [
     w('rev-yoy-chart', 'Yıllık Karşılaştırma', 'revenue', 'chart', '2x1'),
     w('rev-roomtype-chart', 'Oda Tipine Göre Gelir', 'revenue', 'chart', '1x1'),
     w('rev-channel-chart', 'Kanala Göre Gelir', 'revenue', 'chart', '1x1'),
-    w('rev-nationality-chart', 'Milliyete Göre Gelir', 'revenue', 'chart', '1x1'),
+    w('rev-country-chart', 'Milliyete Göre Gelir', 'revenue', 'chart', '1x1'),
     w('rev-segment-chart', 'Segmente Göre Gelir', 'revenue', 'chart', '1x1'),
     w('rev-mealplan-chart', 'Pansiyon Tipine Göre Gelir', 'revenue', 'chart', '1x1'),
     w('rev-pace-chart', 'Gelir Hızı (Pace)', 'revenue', 'chart', '2x1'),
@@ -138,7 +138,7 @@ export const ALL_WIDGETS: WidgetDefinition[] = [
     // GUEST & CRM (Misafir & CRM)  — 27 widgets
     // ═══════════════════════════════════════════════════════════════
     // Charts (10)
-    w('guest-nationality-pie', 'Milliyet Dağılımı Pasta', 'guest', 'chart', '1x1'),
+    w('guest-country-pie', 'Milliyet Dağılımı Pasta', 'guest', 'chart', '1x1'),
     w('guest-repeat-chart', 'Tekrar Misafir Trendi', 'guest', 'chart', '2x1'),
     w('guest-satisfaction-chart', 'Memnuniyet Trendi', 'guest', 'chart', '2x1'),
     w('guest-demographics-chart', 'Yaş & Cinsiyet Dağılımı', 'guest', 'chart', '1x1'),

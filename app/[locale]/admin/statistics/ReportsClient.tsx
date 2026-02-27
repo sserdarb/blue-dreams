@@ -22,7 +22,7 @@ interface Reservation {
     roomType: string; boardType: string; checkIn: string; checkOut: string
     nights: number; totalPrice: number; paidPrice: number; currency: string
     roomCount: number; status: string; saleDate: string
-    nationality?: string
+    country?: string
 }
 
 interface WidgetConfig {
@@ -640,7 +640,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
     const renderNationality = (data: Reservation[]) => {
         const nations: Record<string, number> = {}
         data.forEach(r => {
-            const nat = r.nationality || 'Bilinmiyor'
+            const nat = r.country || 'Bilinmiyor'
             if (nat) nations[nat] = (nations[nat] || 0) + 1
         })
         const nData = Object.entries(nations).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count).slice(0, 10)
@@ -1326,7 +1326,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
 
     const renderRevNationalityChart = (data: Reservation[]) => {
         const nat: Record<string, number> = {}
-        data.forEach(r => { const n = r.nationality || t.widgets.unknown; nat[n] = (nat[n] || 0) + dp(r.totalPrice, r.currency) })
+        data.forEach(r => { const n = r.country || t.widgets.unknown; nat[n] = (nat[n] || 0) + dp(r.totalPrice, r.currency) })
         const sorted = Object.entries(nat).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value).slice(0, 10)
         const max = Math.max(...sorted.map(s => s.value), 1)
         return (
@@ -3552,13 +3552,13 @@ export default function ReportsClient({ reservations, comparisonReservations = [
         const renderers: Record<string, (d: Reservation[]) => React.ReactNode> = {
             kpis: renderKPIs, monthly: renderMonthlyChart, channels: renderChannelChart,
             agencies: renderAgencies, roomTypes: renderRoomTypes, occupancy: renderOccupancy,
-            adr: renderADR, nationality: renderNationality, velocity: renderVelocity,
+            adr: renderADR, country: renderNationality, velocity: renderVelocity,
             lengthOfStay: renderLengthOfStay, revpar: renderRevPAR, budget: renderBudget,
             callCenter: renderCallCenter, forecast: renderForecast, operator: renderOperator,
             // Revenue Charts (15)
             'rev-daily-chart': renderRevDailyChart, 'rev-weekly-chart': renderRevWeeklyChart,
             'rev-yoy-chart': renderRevYoyChart, 'rev-roomtype-chart': renderRevRoomtypeChart,
-            'rev-channel-chart': renderRevChannelChart, 'rev-nationality-chart': renderRevNationalityChart,
+            'rev-channel-chart': renderRevChannelChart, 'rev-country-chart': renderRevNationalityChart,
             'rev-segment-chart': renderRevSegmentChart, 'rev-mealplan-chart': renderRevMealplanChart,
             'rev-pace-chart': renderRevPaceChart, 'rev-forecast-chart': renderRevForecastChart,
             'rev-cumulative-chart': renderRevCumulativeChart, 'rev-hourly-chart': renderRevHourlyChart,

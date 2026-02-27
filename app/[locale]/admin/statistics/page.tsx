@@ -88,7 +88,7 @@ export default async function StatisticsPage({ params }: { params: Promise<{ loc
             roomCount: r.roomCount,
             status: r.status,
             saleDate: r.lastUpdate.slice(0, 10),
-            nationality: r.nationality,
+            country: r.country,
         }))
 
         // Use minute-level timestamp to avoid hydration mismatch
@@ -118,7 +118,7 @@ export default async function StatisticsPage({ params }: { params: Promise<{ loc
                 (new Date(r.checkOut).getTime() - new Date(r.checkIn).getTime()) / 86400000
             )),
             roomCount: r.roomCount,
-            nationality: r.nationality,
+            country: r.country,
         }))
     } catch (err) {
         console.error('[Reports] Error fetching comparison:', err)

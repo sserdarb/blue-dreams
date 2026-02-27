@@ -100,7 +100,7 @@ export function Header({ settings, menuItems, languages, locale }: HeaderProps) 
 
                     {/* WhatsApp */}
                     <a
-                        href="https://wa.me/902523371111"
+                        href="https://wa.me/905495167803"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="p-2.5 rounded-full bg-white/10 hover:bg-green-500/20 text-current hover:text-green-500 transition-all"
@@ -190,7 +190,7 @@ export function Header({ settings, menuItems, languages, locale }: HeaderProps) 
                         {/* Action Buttons - Mobile */}
                         <div className="grid grid-cols-3 gap-2 pt-4">
                             <a
-                                href="https://wa.me/902523371111"
+                                href="https://wa.me/905495167803"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="flex flex-col items-center justify-center p-3 bg-green-50 text-green-600 rounded-xl"

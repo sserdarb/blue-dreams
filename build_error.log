@@ -1,0 +1,227 @@
+
+> temp_app@0.1.0 build
+> prisma generate && next build
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+
+Ô£ö Generated Prisma Client (v5.22.0) to .\node_modules\@prisma\client in 1.44s
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Curious about the SQL queries Prisma ORM generates? Optimize helps you enhance your visibility: https://pris.ly/tip-2-optimize
+
+   Ôû▓ Next.js 15.1.0
+   - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+Found 1 warning while optimizing generated CSS:
+
+Ôöé     -webkit-overflow-scrolling: touch;
+Ôöé   }
+Ôöé   .grid-cols-1.md\\:grid-cols-4 {
+Ôöå                     ^-- 'grid-cols-4' is not recognized as a valid pseudo-class. Did you mean '::grid-cols-4' (pseudo-element) or is this a typo?
+Ôöå
+Ôöé     gap: 0.75rem;
+Ôöé   }
+
+ Ô£ô Compiled successfully
+   Skipping validation of types
+   Skipping linting
+   Collecting page data ...
+ÔÜá´©Å Build-time detected: using no-op Prisma proxy
+ÔÜá´©Å Build-time detected: using no-op Prisma proxy
+ÔÜá´©Å Build-time detected: using no-op Prisma proxy
+ÔÜá´©Å Build-time detected: using no-op Prisma proxy
+ÔÜá´©Å Build-time detected: using no-op Prisma proxy
+ÔÜá´©Å Build-time detected: using no-op Prisma proxy
+ÔÜá´©Å Build-time detected: using no-op Prisma proxy
+ÔÜá´©Å Build-time detected: using no-op Prisma proxy
+ÔÜá´©Å Build-time detected: using no-op Prisma proxy
+ÔÜá´©Å Build-time detected: using no-op Prisma proxy
+ÔÜá´©Å Build-time detected: using no-op Prisma proxy
+ÔÜá´©Å Build-time detected: using no-op Prisma proxy
+ÔÜá´©Å Build-time detected: using no-op Prisma proxy
+ÔÜá´©Å Build-time detected: using no-op Prisma proxy
+ÔÜá´©Å Build-time detected: using no-op Prisma proxy
+ÔÜá´©Å Build-time detected: using no-op Prisma proxy
+ÔÜá´©Å Build-time detected: using no-op Prisma proxy
+ÔÜá´©Å Build-time detected: using no-op Prisma proxy
+   Generating static pages (0/70) ...
+ÔÜá´©Å Build-time detected: using no-op Prisma proxy
+ÔÜá´©Å Build-time detected: using no-op Prisma proxy
+ÔÜá´©Å Build-time detected: using no-op Prisma proxy
+   Generating static pages (17/70) 
+   Generating static pages (34/70) 
+   Generating static pages (52/70) 
+ Ô£ô Generating static pages (70/70)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                   Size     First Load JS
+Ôöî Ôùï /                                         356 B           106 kB
+Ôö£ Ôùï /_not-found                               990 B           107 kB
+Ôö£ ãÆ /[locale]                                 1.13 kB         140 kB
+Ôö£ ãÆ /[locale]/[...slug]                       207 B           139 kB
+Ôö£ ãÆ /[locale]/admin                           9.69 kB         228 kB
+Ôö£ ãÆ /[locale]/admin/accounting                11.9 kB         244 kB
+Ôö£ ãÆ /[locale]/admin/activities                4.65 kB         111 kB
+Ôö£ ãÆ /[locale]/admin/ai                        3.07 kB         109 kB
+Ôö£ ãÆ /[locale]/admin/ai-training               6.63 kB         113 kB
+Ôö£ ãÆ /[locale]/admin/analytics                 18.1 kB         238 kB
+Ôö£ ãÆ /[locale]/admin/bigdata                   19.9 kB         285 kB
+Ôö£ ãÆ /[locale]/admin/bookings                  3.04 kB         109 kB
+Ôö£ ãÆ /[locale]/admin/bookings/payments         3.1 kB          109 kB
+Ôö£ ãÆ /[locale]/admin/bookings/settings         3.67 kB         110 kB
+Ôö£ ãÆ /[locale]/admin/chat                      966 B           107 kB
+Ôö£ ãÆ /[locale]/admin/content/dining            10.2 kB         116 kB
+Ôö£ ãÆ /[locale]/admin/content/meeting           5.29 kB         111 kB
+Ôö£ ãÆ /[locale]/admin/content/rooms             3.85 kB         110 kB
+Ôö£ ãÆ /[locale]/admin/content/spa               4.17 kB         110 kB
+Ôö£ ãÆ /[locale]/admin/content/sports            3.72 kB         110 kB
+Ôö£ ãÆ /[locale]/admin/crm                       10.3 kB         304 kB
+Ôö£ ãÆ /[locale]/admin/crm-marketing             10.2 kB         125 kB
+Ôö£ ãÆ /[locale]/admin/dining                    4.81 kB         111 kB
+Ôö£ ãÆ /[locale]/admin/extras                    6.17 kB         232 kB
+Ôö£ ãÆ /[locale]/admin/files                     13.7 kB         125 kB
+Ôö£ ãÆ /[locale]/admin/integrations/booking      5.31 kB         111 kB
+Ôö£ ãÆ /[locale]/admin/integrations/restaurants  6.7 kB          113 kB
+Ôö£ ãÆ /[locale]/admin/local-guide               4.37 kB         110 kB
+Ôö£ ãÆ /[locale]/admin/localization              4.23 kB         110 kB
+Ôö£ ãÆ /[locale]/admin/login                     8.76 kB         115 kB
+Ôö£ ãÆ /[locale]/admin/marketing                 3.6 kB          294 kB
+Ôö£ ãÆ /[locale]/admin/menu                      3.89 kB         110 kB
+Ôö£ ãÆ /[locale]/admin/pages                     183 B           110 kB
+Ôö£ ãÆ /[locale]/admin/pages/[id]/editor         12.1 kB         118 kB
+Ôö£ ãÆ /[locale]/admin/pages/new                 356 B           106 kB
+Ôö£ ãÆ /[locale]/admin/profile                   4.66 kB         111 kB
+Ôö£ ãÆ /[locale]/admin/purchasing                11.9 kB         236 kB
+Ôö£ ãÆ /[locale]/admin/reports                   27.7 kB         285 kB
+Ôö£ ãÆ /[locale]/admin/reservations              14.7 kB         421 kB
+Ôö£ ãÆ /[locale]/admin/rooms                     8 kB            293 kB
+Ôö£ ãÆ /[locale]/admin/settings                  11.2 kB         117 kB
+Ôö£ ãÆ /[locale]/admin/social                    8.83 kB         235 kB
+Ôö£ ãÆ /[locale]/admin/social/content            8.71 kB         115 kB
+Ôö£ ãÆ /[locale]/admin/statistics                55.9 kB         366 kB
+Ôö£ ãÆ /[locale]/admin/tasks                     7.37 kB         136 kB
+Ôö£ ãÆ /[locale]/admin/tasks/mail                6.25 kB         135 kB
+Ôö£ ãÆ /[locale]/admin/tasks/workflows           8.04 kB         137 kB
+Ôö£ ãÆ /[locale]/admin/users                     7.46 kB         114 kB
+Ôö£ ãÆ /[locale]/admin/yield                     12.3 kB         447 kB
+Ôö£ ãÆ /[locale]/bodrum                          207 B           139 kB
+Ôö£ ãÆ /[locale]/booking                         9.99 kB         120 kB
+Ôö£ ãÆ /[locale]/booking/failed                  183 B           110 kB
+Ôö£ ãÆ /[locale]/booking/success                 183 B           110 kB
+Ôö£ ãÆ /[locale]/cocuk-kulubu                    500 B           112 kB
+Ôö£ ãÆ /[locale]/dugun-davet                     207 B           139 kB
+Ôö£ ãÆ /[locale]/galeri                          207 B           139 kB
+Ôö£ ãÆ /[locale]/hakkimizda                      207 B           139 kB
+Ôö£ ãÆ /[locale]/iletisim                        207 B           139 kB
+Ôö£ ãÆ /[locale]/kvkk                            356 B           106 kB
+Ôö£ ãÆ /[locale]/menu/[id]                       5.76 kB         112 kB
+Ôö£ ãÆ /[locale]/odalar                          6.34 kB         145 kB
+Ôö£ ãÆ /[locale]/odalar/aile                     137 B           110 kB
+Ôö£ ãÆ /[locale]/odalar/club                     137 B           110 kB
+Ôö£ ãÆ /[locale]/odalar/deluxe                   137 B           110 kB
+Ôö£ ãÆ /[locale]/restoran                        500 B           112 kB
+Ôö£ ãÆ /[locale]/rezervasyon                     2.32 kB         120 kB
+Ôö£ ãÆ /[locale]/spa                             500 B           112 kB
+Ôö£ ãÆ /[locale]/spor                            500 B           112 kB
+Ôö£ ãÆ /[locale]/surdurulebilirlik               356 B           106 kB
+Ôö£ ãÆ /[locale]/toplanti-salonu                 500 B           112 kB
+Ôö£ ãÆ /api/admin/ai-interpret                   356 B           106 kB
+Ôö£ ãÆ /api/admin/analytics/ads                  356 B           106 kB
+Ôö£ ãÆ /api/admin/analytics/internal             356 B           106 kB
+Ôö£ ãÆ /api/admin/analytics/social               356 B           106 kB
+Ôö£ ãÆ /api/admin/analytics/traffic              356 B           106 kB
+Ôö£ ãÆ /api/admin/availability                   356 B           106 kB
+Ôö£ ãÆ /api/admin/booking-test                   356 B           106 kB
+Ôö£ ãÆ /api/admin/bookings                       356 B           106 kB
+Ôö£ ãÆ /api/admin/cache-reports                  356 B           106 kB
+Ôö£ ãÆ /api/admin/crm/campaigns                  356 B           106 kB
+Ôö£ ãÆ /api/admin/crm/guests                     356 B           106 kB
+Ôö£ ãÆ /api/admin/crm/messages                   356 B           106 kB
+Ôö£ ãÆ /api/admin/crm/segments                   356 B           106 kB
+Ôö£ ãÆ /api/admin/crm/templates                  356 B           106 kB
+Ôö£ ãÆ /api/admin/cta-bar                        356 B           106 kB
+Ôö£ ãÆ /api/admin/departments                    356 B           106 kB
+Ôö£ ãÆ /api/admin/dining                         356 B           106 kB
+Ôö£ ãÆ /api/admin/dining-events                  356 B           106 kB
+Ôö£ ãÆ /api/admin/dining-events/[id]             356 B           106 kB
+Ôö£ ãÆ /api/admin/dining/[id]                    356 B           106 kB
+Ôö£ ãÆ /api/admin/elektra-cache                  356 B           106 kB
+Ôö£ ãÆ /api/admin/local-guide                    356 B           106 kB
+Ôö£ ãÆ /api/admin/mail-integration               356 B           106 kB
+Ôö£ ãÆ /api/admin/mail-integration/convert       356 B           106 kB
+Ôö£ ãÆ /api/admin/mail-integration/sync          356 B           106 kB
+Ôö£ ãÆ /api/admin/meeting-rooms                  356 B           106 kB
+Ôö£ ãÆ /api/admin/meeting-rooms/[id]             356 B           106 kB
+Ôö£ ãÆ /api/admin/menu-items                     356 B           106 kB
+Ôö£ ãÆ /api/admin/menu-items/[id]                356 B           106 kB
+Ôö£ ãÆ /api/admin/menu-qr                        356 B           106 kB
+Ôö£ ãÆ /api/admin/notifications                  356 B           106 kB
+Ôö£ ãÆ /api/admin/payment-logs                   356 B           106 kB
+Ôö£ ãÆ /api/admin/payment-settings               356 B           106 kB
+Ôö£ ãÆ /api/admin/permission-requests            356 B           106 kB
+Ôö£ ãÆ /api/admin/permission-requests/[id]       356 B           106 kB
+Ôö£ ãÆ /api/admin/profile                        356 B           106 kB
+Ôö£ ãÆ /api/admin/register                       356 B           106 kB
+Ôö£ ãÆ /api/admin/reservations                   356 B           106 kB
+Ôö£ ãÆ /api/admin/social-content                 356 B           106 kB
+Ôö£ ãÆ /api/admin/social/schedule                356 B           106 kB
+Ôö£ ãÆ /api/admin/spa                            356 B           106 kB
+Ôö£ ãÆ /api/admin/spa-services                   356 B           106 kB
+Ôö£ ãÆ /api/admin/spa-services/[id]              356 B           106 kB
+Ôö£ ãÆ /api/admin/sports                         356 B           106 kB
+Ôö£ ãÆ /api/admin/sports/[id]                    356 B           106 kB
+Ôö£ ãÆ /api/admin/stock-images                   356 B           106 kB
+Ôö£ ãÆ /api/admin/tasks                          356 B           106 kB
+Ôö£ ãÆ /api/admin/tasks/[id]                     356 B           106 kB
+Ôö£ ãÆ /api/admin/tasks/[id]/comments            356 B           106 kB
+Ôö£ ãÆ /api/admin/translations                   356 B           106 kB
+Ôö£ ãÆ /api/admin/translations/ai-translate      356 B           106 kB
+Ôö£ ãÆ /api/admin/users                          356 B           106 kB
+Ôö£ ãÆ /api/admin/users/assignable               356 B           106 kB
+Ôö£ ãÆ /api/admin/workflows                      356 B           106 kB
+Ôö£ ãÆ /api/admin/yield-analysis                 356 B           106 kB
+Ôö£ ãÆ /api/ai/chat                              356 B           106 kB
+Ôö£ ãÆ /api/ai/settings                          356 B           106 kB
+Ôö£ ãÆ /api/ai/sheets                            356 B           106 kB
+Ôö£ ãÆ /api/ai/training                          356 B           106 kB
+Ôö£ ãÆ /api/analytics/data                       356 B           106 kB
+Ôö£ ãÆ /api/analytics/track                      356 B           106 kB
+Ôö£ ãÆ /api/auth/google                          356 B           106 kB
+Ôö£ ãÆ /api/booking                              356 B           106 kB
+Ôö£ ãÆ /api/booking/availability                 356 B           106 kB
+Ôö£ ãÆ /api/booking/calendar                     356 B           106 kB
+Ôö£ ãÆ /api/booking/callback/iyzico              356 B           106 kB
+Ôö£ ãÆ /api/booking/callback/paytr               356 B           106 kB
+Ôö£ ãÆ /api/booking/checkout                     356 B           106 kB
+Ôö£ ãÆ /api/booking/checkout/direct              356 B           106 kB
+Ôö£ ãÆ /api/booking/countries                    356 B           106 kB
+Ôö£ ãÆ /api/booking/sync-elektra                 356 B           106 kB
+Ôö£ ãÆ /api/booking/vpos-callback/[provider]     356 B           106 kB
+Ôö£ ãÆ /api/content/meeting-rooms                356 B           106 kB
+Ôö£ ãÆ /api/content/rooms                        356 B           106 kB
+Ôö£ ãÆ /api/cta-bar                              356 B           106 kB
+Ôö£ ãÆ /api/cta-bar/click                        356 B           106 kB
+Ôö£ ãÆ /api/events                               356 B           106 kB
+Ôö£ ãÆ /api/health                               356 B           106 kB
+Ôö£ ãÆ /api/public/availability                  356 B           106 kB
+Ôö£ ãÆ /api/public/book                          356 B           106 kB
+Ôö£ ãÆ /api/rooms/pricing                        356 B           106 kB
+Ôö£ ãÆ /api/settings/analytics                   356 B           106 kB
+Ôö£ ãÆ /api/webhooks/whatsapp                    356 B           106 kB
+Ôö£ Ôùï /robots.txt                               0 B                0 B
+Ôöö Ôùï /sitemap.xml                              0 B                0 B
++ First Load JS shared by all                 106 kB
+  Ôö£ chunks/1517-2de974b68ff9876c.js           50.7 kB
+  Ôö£ chunks/4bd1b696-b3bdf1ba968661bf.js       53 kB
+  Ôöö other shared chunks (total)               2.37 kB
+
+
+ãÆ Middleware                                  32.7 kB
+
+Ôùï  (Static)   prerendered as static content
+ãÆ  (Dynamic)  server-rendered on demand
+

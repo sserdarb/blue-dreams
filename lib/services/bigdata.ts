@@ -507,9 +507,9 @@ export const BigDataService = {
     // 4. GUEST & DEMOGRAPHICS (Reports 26-32)
     // ═══════════════════════════════════════════════════════════
 
-    // R26: Nationality Distribution
+    // R26: Country Distribution
     nationalityDistribution(reservations: Reservation[]): NationalityMetric[] {
-        const byCountry = groupBy(reservations, r => r.nationality || 'Unknown')
+        const byCountry = groupBy(reservations, r => r.country || 'Unknown')
         const total = reservations.length || 1
         return Array.from(byCountry.entries()).map(([country, rsvs]) => ({
             country,
@@ -531,14 +531,14 @@ export const BigDataService = {
         return this.nationalityDistribution(reservations).sort((a, b) => b.avgNights - a.avgNights)
     },
 
-    // R29: Nationality Trend (monthly)
+    // R29: Country Trend (monthly)
     nationalityTrend(reservations: Reservation[]): { month: string;[country: string]: string | number }[] {
         const topCountries = this.nationalityDistribution(reservations).slice(0, 6).map(n => n.country)
         const byMonth = groupBy(reservations, r => r.checkIn.slice(0, 7))
         return Array.from(byMonth.entries()).map(([month, rsvs]) => {
             const row: { month: string;[c: string]: string | number } = { month }
             for (const country of topCountries) {
-                row[country] = rsvs.filter(r => r.nationality === country).length
+                row[country] = rsvs.filter(r => r.country === country).length
             }
             return row
         }).sort((a, b) => (a.month as string).localeCompare(b.month as string))
@@ -568,14 +568,14 @@ export const BigDataService = {
         })
     },
 
-    // R31: Nationality-Channel Matrix
+    // R31: Country-Channel Matrix
     nationalityChannelMatrix(reservations: Reservation[]): HeatmapCell[] {
         const top10 = this.nationalityDistribution(reservations).slice(0, 10).map(n => n.country)
         const channels = [...new Set(reservations.map(r => r.channel))]
         const cells: HeatmapCell[] = []
         for (const country of top10) {
             for (const channel of channels) {
-                const count = reservations.filter(r => r.nationality === country && r.channel === channel).length
+                const count = reservations.filter(r => r.country === country && r.channel === channel).length
                 if (count > 0) cells.push({ x: channel, y: country, value: count })
             }
         }
@@ -786,7 +786,7 @@ export const BigDataService = {
             { label: 'Ort. Doluluk', value: `%${Math.round(avgOcc)}`, icon: 'occupancy' },
             { label: 'Ort. Kalış', value: `${(reservations.length > 0 ? reservations.reduce((s, r) => s + r.nights, 0) / reservations.length : 0).toFixed(1)} gece`, icon: 'stay' },
             { label: 'Tahsilat Oranı', value: `%${Math.round(collectionRate)}`, icon: 'collection' },
-            { label: 'Ülke Sayısı', value: String(new Set(reservations.map(r => r.nationality)).size), icon: 'countries' },
+            { label: 'Ülke Sayısı', value: String(new Set(reservations.map(r => r.country)).size), icon: 'countries' },
             { label: 'Kanal Sayısı', value: String(new Set(reservations.map(r => r.channel)).size), icon: 'channels' },
         ]
     },

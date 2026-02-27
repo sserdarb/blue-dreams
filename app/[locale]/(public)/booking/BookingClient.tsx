@@ -61,7 +61,7 @@ const t: Record<string, Record<string, string>> = {
     surname: { tr: 'Soyad', en: 'Last Name', de: 'Nachname', ru: 'Фамилия' },
     email: { tr: 'E-posta', en: 'Email', de: 'E-Mail', ru: 'Электронная почта' },
     phone: { tr: 'Telefon', en: 'Phone', de: 'Telefon', ru: 'Телефон' },
-    nationality: { tr: 'Uyruk', en: 'Nationality', de: 'Nationalität', ru: 'Гражданство' },
+    country: { tr: 'Uyruk', en: 'Country', de: 'Nationalität', ru: 'Гражданство' },
     specialReqs: { tr: 'Özel İstekler', en: 'Special Requests', de: 'Sonderwünsche', ru: 'Особые пожелания' },
     submit: { tr: 'Rezervasyonu Gönder', en: 'Submit Reservation', de: 'Reservierung absenden', ru: 'Отправить бронирование' },
     submitting: { tr: 'Gönderiliyor...', en: 'Submitting...', de: 'Wird gesendet...', ru: 'Отправка...' },
@@ -99,7 +99,7 @@ export default function BookingClient({ locale }: { locale: string }) {
     const [loading, setLoading] = useState(false)
     const [results, setResults] = useState<AvailabilityResponse | null>(null)
     const [selectedRoom, setSelectedRoom] = useState<RoomResult | null>(null)
-    const [step, setStep] = useState<'search' | 'results' | 'form' | 'success'>('search')
+    const [step, setStep] = useState<'search' | 'results' | 'form' | 'payment' | 'success'>('search')
 
     // Form state
     const [guestName, setGuestName] = useState('')
@@ -111,6 +111,18 @@ export default function BookingClient({ locale }: { locale: string }) {
     const [kvkkConsent, setKvkkConsent] = useState(false)
     const [submitting, setSubmitting] = useState(false)
     const [countries, setCountries] = useState<{ id: number; name: string }[]>([])
+
+    // Payment state
+    const [cardNumber, setCardNumber] = useState('')
+    const [cardName, setCardName] = useState('')
+    const [expMonth, setExpMonth] = useState('01')
+    const [expYear, setExpYear] = useState('25')
+    const [cvv, setCvv] = useState('')
+    const [installment, setInstallment] = useState(1)
+    const [cardProgram, setCardProgram] = useState('none') // 'none' | 'maximum' | 'bonus' | 'world'
+
+    // Form action target for 3D Secure
+    const [formHtml, setFormHtml] = useState('')
 
     // Read URL params on mount
     useEffect(() => {
@@ -155,9 +167,15 @@ export default function BookingClient({ locale }: { locale: string }) {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         if (!selectedRoom || !kvkkConsent) return
+        setStep('payment')
+    }
+
+    const handlePaymentSubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
+        if (!selectedRoom) return
         setSubmitting(true)
         try {
-            const res = await fetch('/api/booking', {
+            const res = await fetch('/api/booking/checkout/direct', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -167,11 +185,22 @@ export default function BookingClient({ locale }: { locale: string }) {
                     adults, children,
                     currency: selectedRoom.currency,
                     totalPrice: selectedRoom.totalPrice,
-                    guestName, guestSurname, guestEmail, guestPhone, guestNationality, specialRequests
+                    guestName, guestSurname, guestEmail, guestPhone, guestNationality, specialRequests,
+                    cardInfo: { cardNumber: cardNumber.replace(/\s/g, ''), cardName, expMonth, expYear, cvv, installment, cardProgram }
                 })
             })
             if (res.ok) {
-                setStep('success')
+                const data = await res.json()
+                if (data.success && data.htmlContent) {
+                    setFormHtml(data.htmlContent) // Trigger 3D Secure form render which auto-submits
+                } else if (data.success && data.reservationId) {
+                    setStep('success') // Non-3D success fallback
+                } else {
+                    alert(data.error || 'Payment initialization failed')
+                }
+            } else {
+                const data = await res.json()
+                alert(data.error || 'Payment initialization failed')
             }
         } catch (err) {
             console.error('Submit error:', err)
@@ -179,6 +208,18 @@ export default function BookingClient({ locale }: { locale: string }) {
             setSubmitting(false)
         }
     }
+
+    // Effect to run the 3D secure form script when HTML is received
+    useEffect(() => {
+        if (formHtml) {
+            const scriptMatch = formHtml.match(/<script>(.*?)<\/script>/s)
+            if (scriptMatch && scriptMatch[1]) {
+                setTimeout(() => {
+                    eval(scriptMatch[1])
+                }, 100)
+            }
+        }
+    }, [formHtml])
 
     const currencySymbol = (c: string) => c === 'EUR' ? '€' : c === 'USD' ? '$' : '₺'
 
@@ -381,7 +422,7 @@ export default function BookingClient({ locale }: { locale: string }) {
                                         placeholder="+90 5XX XXX XX XX" />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-blue-200/70 uppercase tracking-wider mb-1 flex items-center gap-1"><Globe size={12} /> {g('nationality', locale)}</label>
+                                    <label className="block text-xs font-bold text-blue-200/70 uppercase tracking-wider mb-1 flex items-center gap-1"><Globe size={12} /> {g('country', locale)}</label>
                                     <select value={guestNationality} onChange={e => setGuestNationality(e.target.value)}
                                         className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm appearance-none focus:outline-none focus:ring-2 focus:ring-blue-400/50">
                                         {countries.length > 0 ? (
@@ -416,14 +457,107 @@ export default function BookingClient({ locale }: { locale: string }) {
                                 <span className="text-xs text-blue-200/50 group-hover:text-blue-200/70 transition-colors">{g('kvkkConsent', locale)}</span>
                             </label>
 
-                            <button type="submit" disabled={submitting || !kvkkConsent}
+                            <button type="submit" disabled={!kvkkConsent}
                                 className="w-full py-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold rounded-lg flex items-center justify-center gap-2 transition-all shadow-lg shadow-blue-500/25 disabled:opacity-50 text-lg">
-                                {submitting ? <Loader2 size={20} className="animate-spin" /> : <CreditCard size={20} />}
-                                {submitting ? g('submitting', locale) : g('submit', locale)}
+                                <ChevronRight size={20} />
+                                {g('submit', locale)} (Adım 1/2)
                             </button>
                         </form>
                     </div>
                 )}
+
+                {/* Payment Form */}
+                {step === 'payment' && selectedRoom && (
+                    <div className="max-w-2xl mx-auto">
+                        <button onClick={() => setStep('form')} className="flex items-center gap-2 text-blue-400 hover:text-blue-300 text-sm mb-6 transition-colors">
+                            <ArrowLeft size={16} /> Geri Dön
+                        </button>
+
+                        <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-5 mb-6">
+                            <div className="flex justify-between items-center text-white">
+                                <div><h3 className="font-bold">Ödeme Toplamı</h3></div>
+                                <div className="text-2xl font-bold">{currencySymbol(selectedRoom.currency)}{selectedRoom.totalPrice.toFixed(0)}</div>
+                            </div>
+                        </div>
+
+                        <form onSubmit={handlePaymentSubmit} className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-6 space-y-5">
+                            <h2 className="text-xl font-bold text-white flex items-center gap-2"><CreditCard size={20} /> Kart Bilgileri</h2>
+
+                            <div>
+                                <label className="block text-xs font-bold text-blue-200/70 uppercase tracking-wider mb-1">Kart Üzerindeki İsim</label>
+                                <input type="text" required value={cardName} onChange={e => setCardName(e.target.value)}
+                                    className="w-full px-4 py-3 bg-slate-900/50 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-400/50" />
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-blue-200/70 uppercase tracking-wider mb-1">Kart Numarası</label>
+                                <input type="text" required value={cardNumber} onChange={e => setCardNumber(e.target.value)} maxLength={19} placeholder="XXXX XXXX XXXX XXXX"
+                                    className="w-full px-4 py-3 bg-slate-900/50 border border-white/20 rounded-lg text-white font-mono focus:outline-none focus:ring-2 focus:ring-blue-400/50" />
+                            </div>
+
+                            <div className="grid grid-cols-3 gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-blue-200/70 uppercase tracking-wider mb-1">Ay</label>
+                                    <select value={expMonth} onChange={e => setExpMonth(e.target.value)} className="w-full px-4 py-3 bg-slate-900/50 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-400/50">
+                                        {[...Array(12)].map((_, i) => { const v = (i + 1).toString().padStart(2, '0'); return <option key={v} value={v} className="bg-slate-800">{v}</option> })}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-blue-200/70 uppercase tracking-wider mb-1">Yıl</label>
+                                    <select value={expYear} onChange={e => setExpYear(e.target.value)} className="w-full px-4 py-3 bg-slate-900/50 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-400/50">
+                                        {[...Array(15)].map((_, i) => { const v = (new Date().getFullYear() % 100 + i).toString(); return <option key={v} value={v} className="bg-slate-800">20{v}</option> })}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-blue-200/70 uppercase tracking-wider mb-1">CVV</label>
+                                    <input type="text" required value={cvv} onChange={e => setCvv(e.target.value)} maxLength={4}
+                                        className="w-full px-4 py-3 bg-slate-900/50 border border-white/20 rounded-lg text-white font-mono focus:outline-none focus:ring-2 focus:ring-blue-400/50" />
+                                </div>
+                            </div>
+
+                            <hr className="border-white/10 my-4" />
+
+                            <div>
+                                <label className="block text-xs font-bold text-blue-200/70 uppercase tracking-wider mb-2">Taksit ve Kart Programı</label>
+                                <div className="space-y-3">
+                                    <label className="flex items-center gap-3 p-3 rounded-lg border border-white/20 bg-white/5 cursor-pointer hover:bg-white/10 transition-colors">
+                                        <input type="radio" name="installment" checked={installment === 1} onChange={() => { setInstallment(1); setCardProgram('none') }} className="text-blue-500 w-4 h-4 focus:ring-blue-500" />
+                                        <span className="text-white flex-1">Tek Çekim (Yurtiçi / Yurtdışı)</span>
+                                    </label>
+                                    <label className="flex items-center gap-3 p-3 rounded-lg border border-white/20 bg-white/5 cursor-pointer hover:bg-white/10 transition-colors">
+                                        <input type="radio" name="installment" checked={installment === 3 && cardProgram === 'maximum'} onChange={() => { setInstallment(3); setCardProgram('maximum') }} className="text-blue-500 w-4 h-4 focus:ring-blue-500" />
+                                        <span className="text-white flex-1">3 Taksit (Maximum / İş Bankası)</span>
+                                    </label>
+                                    <label className="flex items-center gap-3 p-3 rounded-lg border border-white/20 bg-white/5 cursor-pointer hover:bg-white/10 transition-colors">
+                                        <input type="radio" name="installment" checked={installment === 6 && cardProgram === 'maximum'} onChange={() => { setInstallment(6); setCardProgram('maximum') }} className="text-blue-500 w-4 h-4 focus:ring-blue-500" />
+                                        <span className="text-white flex-1">6 Taksit (Maximum / İş Bankası)</span>
+                                    </label>
+                                    <label className="flex items-center gap-3 p-3 rounded-lg border border-white/20 bg-white/5 cursor-pointer hover:bg-white/10 transition-colors">
+                                        <input type="radio" name="installment" checked={installment === 3 && cardProgram === 'bonus'} onChange={() => { setInstallment(3); setCardProgram('bonus') }} className="text-blue-500 w-4 h-4 focus:ring-blue-500" />
+                                        <span className="text-white flex-1">3 Taksit (Bonus / Denizbank)</span>
+                                    </label>
+                                    <label className="flex items-center gap-3 p-3 rounded-lg border border-white/20 bg-white/5 cursor-pointer hover:bg-white/10 transition-colors">
+                                        <input type="radio" name="installment" checked={installment === 6 && cardProgram === 'bonus'} onChange={() => { setInstallment(6); setCardProgram('bonus') }} className="text-blue-500 w-4 h-4 focus:ring-blue-500" />
+                                        <span className="text-white flex-1">6 Taksit (Bonus / Denizbank)</span>
+                                    </label>
+                                    <label className="flex items-center gap-3 p-3 rounded-lg border border-white/20 bg-white/5 cursor-pointer hover:bg-white/10 transition-colors">
+                                        <input type="radio" name="installment" checked={installment === 3 && cardProgram === 'world'} onChange={() => { setInstallment(3); setCardProgram('world') }} className="text-blue-500 w-4 h-4 focus:ring-blue-500" />
+                                        <span className="text-white flex-1">3 Taksit (World / Yapı Kredi)</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <button type="submit" disabled={submitting}
+                                className="w-full py-4 mt-6 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-bold rounded-lg flex items-center justify-center gap-2 transition-all shadow-lg shadow-emerald-500/25 disabled:opacity-50 text-lg">
+                                {submitting ? <Loader2 size={20} className="animate-spin" /> : <Shield size={20} />}
+                                {submitting ? 'Ödeme Başlatılıyor...' : 'Güvenli Ödeme Yap (3D Secure)'}
+                            </button>
+                        </form>
+                    </div>
+                )}
+
+                {/* 3D Secure Hidden Form Container */}
+                <div id="3d-secure-container" dangerouslySetInnerHTML={{ __html: formHtml }} className="hidden"></div>
 
                 {/* Success */}
                 {step === 'success' && (

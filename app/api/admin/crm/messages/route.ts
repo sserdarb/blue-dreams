@@ -1,7 +1,7 @@
 // CRM WhatsApp Inbox API — Messages and templates
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { sendWhatsAppMessage } from '@/lib/whatsapp';
+import { sendSocialMessage } from '@/lib/whatsapp';
 
 // GET — WhatsApp inbox with filters
 export async function GET(req: NextRequest) {
@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
 
         // Conversations view — group by phone number
         if (view === 'conversations') {
-            const conversations = await prisma.whatsAppMessage.groupBy({
+            const conversations = await prisma.socialMessage.groupBy({
                 by: ['phone'],
                 _count: true,
                 _max: { createdAt: true },
@@ -42,9 +42,9 @@ export async function GET(req: NextRequest) {
                 conversations.map(async conv => {
                     const guest = await prisma.guestProfile.findFirst({
                         where: { phone: conv.phone },
-                        select: { id: true, name: true, surname: true, nationality: true, totalStays: true },
+                        select: { id: true, name: true, surname: true, country: true, totalStays: true },
                     });
-                    const lastMessage = await prisma.whatsAppMessage.findFirst({
+                    const lastMessage = await prisma.socialMessage.findFirst({
                         where: { phone: conv.phone },
                         orderBy: { createdAt: 'desc' },
                         select: { content: true, direction: true, createdAt: true },
@@ -59,7 +59,7 @@ export async function GET(req: NextRequest) {
                 })
             );
 
-            const total = await prisma.whatsAppMessage.groupBy({
+            const total = await prisma.socialMessage.groupBy({
                 by: ['phone'],
                 _count: true,
             });
@@ -79,16 +79,16 @@ export async function GET(req: NextRequest) {
         if (toDate) where.createdAt = { ...where.createdAt, lte: new Date(toDate) };
 
         const [messages, total] = await Promise.all([
-            prisma.whatsAppMessage.findMany({
+            prisma.socialMessage.findMany({
                 where,
                 include: {
-                    guest: { select: { id: true, name: true, surname: true, nationality: true, totalStays: true } },
+                    guest: { select: { id: true, name: true, surname: true, country: true, totalStays: true } },
                 },
                 orderBy: { createdAt: 'desc' },
                 skip: (page - 1) * limit,
                 take: limit,
             }),
-            prisma.whatsAppMessage.count({ where }),
+            prisma.socialMessage.count({ where }),
         ]);
 
         return NextResponse.json({ messages, total, page, limit });
@@ -128,11 +128,11 @@ export async function POST(req: NextRequest) {
                 }
             }
 
-            await sendWhatsAppMessage(phone, messageContent);
+            await sendSocialMessage(phone, messageContent);
 
             // Record sent message
             const guest = await prisma.guestProfile.findFirst({ where: { phone } });
-            await prisma.whatsAppMessage.create({
+            await prisma.socialMessage.create({
                 data: {
                     phone,
                     direction: 'outbound',

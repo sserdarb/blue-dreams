@@ -154,6 +154,7 @@ export default function AdminSidebar({ locale, t, userRole: propRole = 'admin', 
             items: [
                 { id: 'nav-concierge', href: '/chat', label: t.blueConcierge, icon: MessageSquare },
                 { id: 'nav-booking', href: '/integrations/booking', label: t.bookingEngine, icon: CreditCard },
+                { id: 'nav-payment-settings', href: '/bookings/settings', label: 'Ödeme Ayarları', icon: Settings },
             ]
         }
     ]

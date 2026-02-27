@@ -72,7 +72,7 @@ export default function BigDataClient({ data, error, locale }: { data: any; erro
             channelMix: S.channelMixTrend(reservations),
             channelADR: S.channelADR(reservations),
             // Guests
-            nationalities: S.nationalityDistribution(reservations),
+            countries: S.nationalityDistribution(reservations),
             revByCountry: S.revenueByCountry(reservations),
             stayByCountry: S.avgStayByCountry(reservations),
             natTrend: S.nationalityTrend(reservations),
@@ -116,7 +116,7 @@ export default function BigDataClient({ data, error, locale }: { data: any; erro
                     <div className="flex items-center justify-between mb-4">
                         <div>
                             <h1 className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">{t.header.title}</h1>
-                            <p className="text-xs text-slate-400 mt-1">{reservations.length} {t.header.reservations} • {new Set(reservations.map((r: any) => r.nationality)).size} {t.header.countries} • {t.header.lastUpdate} {data?.lastUpdated ? new Date(data.lastUpdated).toLocaleString('tr-TR') : '-'}</p>
+                            <p className="text-xs text-slate-400 mt-1">{reservations.length} {t.header.reservations} • {new Set(reservations.map((r: any) => r.country)).size} {t.header.countries} • {t.header.lastUpdate} {data?.lastUpdated ? new Date(data.lastUpdated).toLocaleString('tr-TR') : '-'}</p>
                         </div>
                         <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/30 rounded-full">
                             <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
@@ -188,7 +188,7 @@ function OverviewTab({ a, t }: { a: any, t: any }) {
             <ChartCard title="{t.overview.channelDist}"><DonutChart data={a.channels} nameKey="channel" valueKey="share" /></ChartCard>
             <ChartCard title="{t.overview.adrTrendMonthly}"><MiniLine data={a.adrTrend} xKey="date" yKey="revenue" color="#8b5cf6" /></ChartCard>
             <ChartCard title="{t.overview.occupancyRate}"><MiniLine data={a.dailyOccupancy.slice(-60)} xKey="date" yKey="rate" color="#10b981" /></ChartCard>
-            <ChartCard title="{t.overview.nationalityDist}"><MiniPie data={a.nationalities.slice(0, 8)} nameKey="country" valueKey="count" /></ChartCard>
+            <ChartCard title="{t.overview.nationalityDist}"><MiniPie data={a.countries.slice(0, 8)} nameKey="country" valueKey="count" /></ChartCard>
             <ChartCard title="{t.overview.boardType}"><DonutChart data={a.boardTypeDist} nameKey="boardType" valueKey="count" /></ChartCard>
         </div>
     </div>
@@ -344,11 +344,11 @@ function ChannelsTab({ a, t }: { a: any, t: any }) {
 
 // ═══ TAB 5: GUESTS ═══
 function GuestsTab({ a, t }: { a: any, t: any }) {
-    const topCountries = a.nationalities.slice(0, 6).map((n: any) => n.country)
+    const topCountries = a.countries.slice(0, 6).map((n: any) => n.country)
     return <div className="space-y-6">
         <h2 className="text-lg font-bold text-cyan-400">{t.guests.title}</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <ChartCard title="R26: {t.overview.nationalityDist}"><DonutChart data={a.nationalities.slice(0, 10)} nameKey="country" valueKey="count" /></ChartCard>
+            <ChartCard title="R26: {t.overview.nationalityDist}"><DonutChart data={a.countries.slice(0, 10)} nameKey="country" valueKey="count" /></ChartCard>
             <ChartCard title="{t.guests.r27}"><MiniBar data={a.revByCountry.slice(0, 10)} xKey="country" yKey="revenue" color="#f59e0b" /></ChartCard>
             <ChartCard title="{t.guests.r28}"><MiniBar data={a.stayByCountry.slice(0, 10)} xKey="country" yKey="avgNights" color="#10b981" /></ChartCard>
             <ChartCard title="{t.guests.r29}"><MiniArea data={a.natTrend} xKey="month" keys={topCountries} /></ChartCard>
@@ -357,7 +357,7 @@ function GuestsTab({ a, t }: { a: any, t: any }) {
             <ChartCard title="{t.guests.r32}"><MiniBar data={a.rateByCountry.slice(0, 10)} xKey="country" yKey="avgRate" color="#ec4899" /></ChartCard>
         </div>
         <ChartCard title="{t.guests.tableTitle}">
-            <DataTable data={a.nationalities} columns={[
+            <DataTable data={a.countries} columns={[
                 { key: 'country', label: t.tableCols.country },
                 { key: 'count', label: t.tableCols.resCount, format: (v: number) => fmt(v) },
                 { key: 'revenue', label: t.tableCols.revenueYtl, format: (v: number) => `₺${fmt(v)}` },
@@ -493,7 +493,7 @@ function RawDataTab({ reservations, a, t }: { reservations: any[]; a: any, t: an
     const [search, setSearch] = useState('')
     const filtered = reservations.filter((r: any) =>
         !search || r.agency?.toLowerCase().includes(search.toLowerCase()) ||
-        r.nationality?.toLowerCase().includes(search.toLowerCase()) ||
+        r.country?.toLowerCase().includes(search.toLowerCase()) ||
         r.voucherNo?.toLowerCase().includes(search.toLowerCase()) ||
         r.roomType?.toLowerCase().includes(search.toLowerCase())
     )
@@ -515,7 +515,7 @@ function RawDataTab({ reservations, a, t }: { reservations: any[]; a: any, t: an
                 { key: 'nights', label: t.tableCols.nights },
                 { key: 'totalPrice', label: t.tableCols.price, format: (v: number) => fmt(v) },
                 { key: 'currency', label: t.tableCols.currency },
-                { key: 'nationality', label: t.tableCols.country },
+                { key: 'country', label: t.tableCols.country },
                 { key: 'status', label: t.tableCols.status },
             ]} height={600} />
         </ChartCard>
