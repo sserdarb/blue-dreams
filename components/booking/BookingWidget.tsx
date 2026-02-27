@@ -1,7 +1,8 @@
 'use client'
 
 import React, { useState, useCallback } from 'react'
-import { Calendar, Users, Baby, Search, Loader2, Check, ChevronRight, Star, Maximize, Eye, Phone, Mail, User, MessageSquare } from 'lucide-react'
+import Script from 'next/script'
+import { Calendar, Users, Baby, Search, Loader2, Check, ChevronRight, Star, Maximize, Phone, Mail, User, MessageSquare } from 'lucide-react'
 
 interface RoomTypeAvailability {
     roomType: string
@@ -30,33 +31,40 @@ interface AvailabilityResponse {
 
 // Room type display data
 const ROOM_DISPLAY: Record<string, { title: string; subtitle: string; image: string; size: string; capacity: string; features: string[] }> = {
-    'CLUB': {
-        title: 'Club Oda', subtitle: 'Konforlu Konaklama',
-        image: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/Club-Room-Sea-View-3.jpg',
+    'CLUB ODA': {
+        title: 'Club Oda', subtitle: 'Club Odalar',
+        image: '/images/rooms/Club-Room-Sea-View-3.jpg',
         size: '20-22 m²', capacity: '2 Kişi',
         features: ['Split Klima', 'LCD TV', 'Minibar', 'Duşlu Banyo']
     },
-    'CLUB DENİZ': {
-        title: 'Club Oda (Deniz Manzaralı)', subtitle: 'Deniz Manzaralı',
-        image: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/Club-Room-Sea-View-1.jpg',
+    'CLUB DENIZ': {
+        title: 'Club Deniz Manzaralı Oda', subtitle: 'Club Odalar',
+        image: '/images/rooms/Club-Room-Sea-View-1.jpg',
         size: '20-22 m²', capacity: '2 Kişi',
         features: ['Deniz Manzarası', 'Split Klima', 'LCD TV', 'Minibar']
     },
+    'CLUB AILE': {
+        title: 'Club Aile Odası', subtitle: 'Club Odalar',
+        image: '/images/rooms/Family-Room-Sea-View-1.jpg',
+        size: '55-60 m²', capacity: '4-5 Kişi',
+        features: ['2 Yatak Odası', 'Geniş Balkon', 'Bebek Karyolası']
+    },
     'DELUXE': {
-        title: 'Deluxe Oda', subtitle: 'Lüks Konaklama',
-        image: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/Deluxe-Room-5.jpg',
+        title: 'Deluxe Deniz Manzaralı Oda', subtitle: 'Deluxe Odalar',
+        image: '/images/rooms/Deluxe-Room-5.jpg',
         size: '40-45 m²', capacity: '2-3 Kişi',
         features: ['Özel Balkon', 'Nespresso', 'Merkezi Klima', 'Giysi Odası']
     },
-    'AİLE': {
-        title: 'Aile Suiti', subtitle: 'Geniş Aile Odaları',
-        image: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/Family-Room-Sea-View-6.jpg',
-        size: '55-60 m²', capacity: '4-5 Kişi',
-        features: ['2 Yatak Odası', '2 Banyo', 'Geniş Balkon', 'Bebek Karyolası']
+    // Fallbacks and exact Elektra matches
+    'CLUB': {
+        title: 'Club Oda', subtitle: 'Club Odalar',
+        image: '/images/rooms/Club-Room-Sea-View-3.jpg',
+        size: '20-22 m²', capacity: '2 Kişi',
+        features: ['Split Klima', 'LCD TV', 'Minibar', 'Duşlu Banyo']
     },
     'FAMILY': {
-        title: 'Aile Suiti', subtitle: 'Geniş Aile Odaları',
-        image: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/Family-Room-Sea-View-6.jpg',
+        title: 'Club Aile Odası', subtitle: 'Club Odalar',
+        image: '/images/rooms/Family-Room-Sea-View-1.jpg',
         size: '55-60 m²', capacity: '4-5 Kişi',
         features: ['2 Yatak Odası', '2 Banyo', 'Geniş Balkon', 'Bebek Karyolası']
     },
@@ -110,6 +118,7 @@ export default function BookingWidget() {
     const [notes, setNotes] = useState('')
     const [bookingSubmitting, setBookingSubmitting] = useState(false)
     const [bookingResult, setBookingResult] = useState<{ success: boolean; message: string; referenceId?: string } | null>(null)
+    const [paytrToken, setPaytrToken] = useState<string | null>(null)
 
     const searchAvailability = useCallback(async () => {
         setLoading(true)
@@ -138,8 +147,13 @@ export default function BookingWidget() {
         if (!selectedRoom || !guestName || !guestEmail || !guestPhone) return
 
         setBookingSubmitting(true)
+        setBookingResult(null)
         try {
-            const res = await fetch('/api/booking/availability', {
+            const d1 = new Date(checkIn)
+            const d2 = new Date(checkOut)
+            const nights = Math.max(1, Math.ceil((d2.getTime() - d1.getTime()) / 86400000))
+
+            const res = await fetch('/api/booking/checkout', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -147,6 +161,7 @@ export default function BookingWidget() {
                     roomType: selectedRoom.roomType,
                     checkIn,
                     checkOut,
+                    nights,
                     adults,
                     children,
                     guestName,
@@ -158,10 +173,27 @@ export default function BookingWidget() {
                 })
             })
             const data = await res.json()
-            setBookingResult(data)
+
+            if (data.success) {
+                if (data.provider === 'iyzico' && data.htmlContent) {
+                    // Iyzico returns a div + script. We inject it.
+                    const div = document.createElement('div')
+                    div.innerHTML = data.htmlContent
+                    document.body.appendChild(div)
+                    const script = div.querySelector('script')
+                    if (script) {
+                        // eslint-disable-next-line no-eval
+                        window.eval(script.innerHTML)
+                    }
+                } else if (data.provider === 'paytr' && data.token) {
+                    setPaytrToken(data.token)
+                }
+            } else {
+                setBookingResult({ success: false, message: data.error || 'Ödeme başlatılamadı.' })
+                setBookingSubmitting(false)
+            }
         } catch (err: any) {
             setBookingResult({ success: false, message: 'Rezervasyon talebi gönderilemedi. Lütfen tekrar deneyiniz.' })
-        } finally {
             setBookingSubmitting(false)
         }
     }, [selectedRoom, guestName, guestEmail, guestPhone, notes, checkIn, checkOut, adults, children])
@@ -283,7 +315,7 @@ export default function BookingWidget() {
                                     <div
                                         key={room.roomTypeId}
                                         className={`bg-white rounded-2xl shadow-lg border-2 overflow-hidden transition-all duration-300 ${isSelected ? 'border-brand shadow-brand/20' :
-                                                room.isAvailable ? 'border-gray-100 hover:border-brand/30 hover:shadow-xl' : 'border-gray-100 opacity-60'
+                                            room.isAvailable ? 'border-gray-100 hover:border-brand/30 hover:shadow-xl' : 'border-gray-100 opacity-60'
                                             }`}
                                     >
                                         <div className="flex flex-col md:flex-row">
@@ -347,8 +379,8 @@ export default function BookingWidget() {
                                                         <button
                                                             onClick={() => setSelectedRoom(isSelected ? null : room)}
                                                             className={`px-6 py-3 rounded-xl font-bold text-sm uppercase tracking-widest transition-all ${isSelected
-                                                                    ? 'bg-brand text-white shadow-lg shadow-brand/25'
-                                                                    : 'bg-brand/10 text-brand hover:bg-brand hover:text-white'
+                                                                ? 'bg-brand text-white shadow-lg shadow-brand/25'
+                                                                : 'bg-brand/10 text-brand hover:bg-brand hover:text-white'
                                                                 }`}
                                                         >
                                                             {isSelected ? '✓ Seçildi' : 'Seç'}
@@ -484,6 +516,28 @@ export default function BookingWidget() {
                         >
                             Yeni Arama Yap
                         </button>
+                    </div>
+                </div>
+            )}
+
+            {/* PayTR iframe */}
+            {paytrToken && (
+                <div className="fixed inset-0 z-[100] bg-black/80 flex items-center justify-center p-4">
+                    <div className="bg-white w-full max-w-4xl rounded-2xl overflow-hidden relative shadow-2xl flex flex-col items-center">
+                        <button
+                            onClick={() => setPaytrToken(null)}
+                            className="absolute top-4 right-4 z-10 w-10 h-10 bg-gray-100 text-gray-600 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
+                        >
+                            ✕
+                        </button>
+                        <Script src="https://www.paytr.com/js/iframeResizer.min.js" strategy="lazyOnload" />
+                        <iframe
+                            src={`https://www.paytr.com/odeme/guvenli/${paytrToken}`}
+                            id="paytriframe"
+                            frameBorder="0"
+                            scrolling="yes"
+                            className="w-full h-[80vh]"
+                        ></iframe>
                     </div>
                 </div>
             )}

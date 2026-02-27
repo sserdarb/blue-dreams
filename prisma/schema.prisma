@@ -665,3 +665,66 @@ model WhatsAppTemplate {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+// ===== Booking Engine & Payment Models =====
+
+model Booking {
+  id          String @id @default(cuid())
+  referenceId String @unique // BDR-XXXX format
+  status      String @default("pending") // pending, paid, confirmed, cancelled, refunded
+
+  // Misafir
+  guestName  String
+  guestEmail String
+  guestPhone String
+  guestNotes String?
+
+  // Rezervasyon
+  roomTypeId Int
+  roomType   String
+  checkIn    DateTime
+  checkOut   DateTime
+  nights     Int
+  adults     Int
+  children   Int      @default(0)
+  childAges  String? // JSON string e.g. "[3, 7]"
+
+  // Fiyat
+  totalPrice Float
+  currency   String @default("TRY")
+
+  // Ödeme
+  paymentMethod String? // iyzico, paytr
+  paymentId     String? // Sağlayıcı ödeme ID
+  installments  Int       @default(1)
+  paidAt        DateTime?
+
+  // Elektra
+  elektraResId  String? // Elektra rezervasyon numarası
+  elektraStatus String? // synced, failed, pending
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  paymentLogs PaymentLog[]
+}
+
+model PaymentLog {
+  id        String  @id @default(cuid())
+  bookingId String
+  booking   Booking @relation(fields: [bookingId], references: [id])
+
+  provider String // iyzico, paytr
+  action   String // init, callback, refund
+  status   String // success, failed, pending, 3d_redirect
+  amount   Float
+  currency String
+
+  requestData  String? // JSON string
+  responseData String? // JSON string
+  errorMessage String?
+
+  ipAddress String?
+
+  createdAt DateTime @default(now())
+}

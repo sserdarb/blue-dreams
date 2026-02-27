@@ -984,4 +984,88 @@ export const ElektraService = {
             .map(([id, name]) => ({ id, name }))
             .sort((a, b) => a.name.localeCompare(b.name))
     },
+
+    // ─── Create Reservation ──────────────────────────────────────
+    async createReservation(bookingData: {
+        referenceId: string;
+        checkIn: Date;
+        checkOut: Date;
+        roomType: string;
+        roomTypeId: number;
+        nights: number;
+        adults: number;
+        children: number;
+        childAges: string | null;
+        guestName: string;
+        guestEmail: string;
+        guestPhone: string;
+        guestNotes: string | null;
+        totalPrice: number;
+        currency: string;
+        paidAmount: number;
+    }): Promise<{ success: boolean; pmsId?: string; errorMessage?: string }> {
+        try {
+            const jwt = await getJwt()
+
+            // Format dates simply
+            const checkInStr = bookingData.checkIn.toISOString().split('T')[0]
+            const checkOutStr = bookingData.checkOut.toISOString().split('T')[0]
+
+            const [firstName, ...lastNames] = bookingData.guestName.split(' ')
+            const lastName = lastNames.join(' ') || 'Misafir'
+
+            const payload = {
+                "check-in-date": checkInStr,
+                "check-out-date": checkOutStr,
+                "room-type-id": bookingData.roomTypeId,
+                "adult": bookingData.adults,
+                "child": bookingData.children,
+                "reservation-total-price": bookingData.totalPrice,
+                "reservation-currency": bookingData.currency,
+                "reservation-paid-price": bookingData.paidAmount,
+                "contact-name": bookingData.guestName,
+                "contact-email": bookingData.guestEmail,
+                "contact-phone": bookingData.guestPhone,
+                "agency": "WEB",
+                "voucher-no": bookingData.referenceId,
+                "note": bookingData.guestNotes || "Online Web Rezervasyonu",
+                "guest-list": [
+                    {
+                        "name": firstName,
+                        "surname": lastName,
+                        "is-main-guest": true
+                    }
+                ]
+            }
+
+            // Using Elektra API endpoint for reservation creation
+            const res = await fetch(`${API_BASE}/hotel/${HOTEL_ID}/reservation`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${jwt}`
+                },
+                body: JSON.stringify(payload)
+            })
+
+            if (!res.ok) {
+                const text = await res.text()
+                console.error('[Elektra] Create Reservation Failed:', res.status, text)
+                return { success: false, errorMessage: `HTTP ${res.status}: ${text}` }
+            }
+
+            const data = await res.json()
+            if (data && data["reservation-id"]) {
+                console.log(`[Elektra] Reservation created successfully: ${data["reservation-id"]}`)
+                return { success: true, pmsId: data["reservation-id"].toString() }
+            } else {
+                console.error('[Elektra] Create Reservation unexpected response:', data)
+                return { success: false, errorMessage: 'Başarısız format veya rezervasyon ID bulunamadı.' }
+            }
+
+        } catch (error: any) {
+            console.error('[Elektra] Create Reservation Error:', error)
+            return { success: false, errorMessage: error.message }
+        }
+    }
 }
