@@ -1,15 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { BookingService } from '@/lib/services/booking-service'
+import { ElektraService } from '@/lib/services/elektra'
+
+export const dynamic = 'force-dynamic'
 
 /**
- * GET /api/booking/calendar?month=2026-06&adults=2&children=0
- * Returns daily pricing and availability for a 42-day window (6 calendar weeks)
+ * GET /api/booking/calendar?month=2026-06&currency=TRY
+ * Returns daily pricing and availability using HotelWeb contract for a month
  */
 export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url)
     const month = searchParams.get('month') // YYYY-MM
-    const adults = parseInt(searchParams.get('adults') || '2', 10)
-    const children = parseInt(searchParams.get('children') || '0', 10)
+    const currency = searchParams.get('currency') || 'TRY'
 
     if (!month || !/^\d{4}-\d{2}$/.test(month)) {
         return NextResponse.json({ error: 'month is required (YYYY-MM format)' }, { status: 400 })
@@ -17,78 +18,72 @@ export async function GET(req: NextRequest) {
 
     try {
         const [year, mo] = month.split('-').map(Number)
+
+        // Fetch from 1st of the month to the last day of the month (+1 day to get full coverage)
         const firstDay = new Date(year, mo - 1, 1)
-        const lastDay = new Date(year, mo, 0)
+        const lastDay = new Date(year, mo, 1) // First day of next month is effectively the bounds
 
-        // Fetch availability for each day of the month (check single-night stays)
-        const days: Array<{
-            date: string
-            available: boolean
-            roomTypes: Array<{
-                roomType: string
-                roomTypeId: number
-                price: number
-                priceEur: number
-                isAvailable: boolean
-            }>
-            minPrice: number
-            minPriceEur: number
-            totalAvailable: number
-            hasDiscount: boolean
-        }> = []
+        // Fetch availability for the entire month in one call
+        const availability = await ElektraService.getAvailability(firstDay, lastDay, currency)
 
-        // We query availability for every day of the month — 1-night stays
-        const promises = []
-        for (let d = 1; d <= lastDay.getDate(); d++) {
-            const dateStr = `${year}-${String(mo).padStart(2, '0')}-${String(d).padStart(2, '0')}`
-            const nextDate = new Date(year, mo - 1, d + 1)
-            const nextDateStr = nextDate.toISOString().split('T')[0]
-            promises.push(
-                BookingService.getAvailability(dateStr, nextDateStr, adults, children, 'TRY')
-                    .then(rooms => ({ date: dateStr, rooms }))
-                    .catch(() => ({ date: dateStr, rooms: [] as any[] }))
-            )
+        const dailyData = new Map<string, { minPrice: number, available: boolean, roomType: string }>()
+
+        for (const item of availability) {
+            const currentPrice = item.discountedPrice || item.basePrice || 0
+            if (item.stopsell || item.availableCount <= 0 || currentPrice === 0) continue
+
+            const existing = dailyData.get(item.date)
+            if (!existing || currentPrice < existing.minPrice) {
+                dailyData.set(item.date, {
+                    minPrice: currentPrice,
+                    available: true,
+                    roomType: item.roomType
+                })
+            }
         }
 
-        const results = await Promise.all(promises)
+        // Prepare response days
+        const days = []
+        let sumPrice = 0
+        let count = 0
 
-        // Find average price to determine discount threshold
-        const allPrices = results.flatMap(r =>
-            (r.rooms || []).filter((rm: any) => rm.isAvailable).map((rm: any) => rm.avgPricePerNight || rm.minPrice || 0)
-        ).filter(p => p > 0)
-        const avgPrice = allPrices.length > 0 ? allPrices.reduce((a: number, b: number) => a + b, 0) / allPrices.length : 0
-        const discountThreshold = avgPrice * 0.85 // 15% below average = discount
+        const daysInMonth = new Date(year, mo, 0).getDate()
 
-        for (const result of results) {
-            const rooms = (result.rooms || []).map((rm: any) => ({
-                roomType: rm.roomType,
-                roomTypeId: rm.roomTypeId,
-                price: rm.avgPricePerNight || rm.minPrice || 0,
-                priceEur: rm.avgPricePerNightEur || rm.minPriceEur || 0,
-                isAvailable: rm.isAvailable,
-            }))
+        for (let d = 1; d <= daysInMonth; d++) {
+            const dateStr = `${year}-${String(mo).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+            const dayInfo = dailyData.get(dateStr)
 
-            const availableRooms = rooms.filter((r: any) => r.isAvailable)
-            const minPrice = availableRooms.length > 0 ? Math.min(...availableRooms.map((r: any) => r.price)) : 0
-            const minPriceEur = availableRooms.length > 0 ? Math.min(...availableRooms.map((r: any) => r.priceEur)) : 0
+            if (dayInfo) {
+                sumPrice += dayInfo.minPrice
+                count++
+                days.push({
+                    date: dateStr,
+                    available: true,
+                    minPrice: dayInfo.minPrice,
+                    cheapestRoom: dayInfo.roomType
+                })
+            } else {
+                days.push({
+                    date: dateStr,
+                    available: false,
+                    minPrice: 0,
+                    cheapestRoom: ''
+                })
+            }
+        }
 
-            days.push({
-                date: result.date,
-                available: availableRooms.length > 0,
-                roomTypes: rooms,
-                minPrice,
-                minPriceEur,
-                totalAvailable: availableRooms.length,
-                hasDiscount: minPrice > 0 && minPrice < discountThreshold,
-            })
+        const avgPrice = count > 0 ? sumPrice / count : 0
+        const discountThreshold = avgPrice * 0.90 // 10% below average is considered a discount
+
+        for (const day of days) {
+            (day as any).hasDiscount = day.minPrice > 0 && day.minPrice < discountThreshold
         }
 
         return NextResponse.json({
             month,
-            adults,
-            children,
             days,
             avgPrice: Math.round(avgPrice),
+            currency
         })
     } catch (error) {
         console.error('[API] Calendar error:', error)

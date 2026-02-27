@@ -44,7 +44,7 @@ export const ALL_WIDGETS: WidgetDefinition[] = [
     w('agencies', 'En İyi Acentalar', 'marketing', 'data', '2x1', true, 'topAgencies'),
     w('occupancy', 'Doluluk Oranı', 'occupancy', 'chart', '2x1', true, 'occupancyRate'),
     w('adr', 'ADR', 'revenue', 'data', '1x1', true, 'adr'),
-    w('country', 'Misafir Milliyeti', 'guest', 'chart', '1x1', true, 'guestNationality'),
+    w('country', 'Misafir Milliyeti', 'guest', 'chart', '1x1', true, 'guestCountry'),
     w('velocity', 'Rezervasyon Hızı', 'reservation', 'chart', '2x1', true, 'bookingVelocity'),
     w('lengthOfStay', 'Ort. Konaklama', 'reservation', 'data', '1x1', true, 'avgNights'),
     w('revpar', 'RevPAR', 'revenue', 'data', '1x1', true, 'revpar'),

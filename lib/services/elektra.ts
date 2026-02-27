@@ -344,6 +344,8 @@ async function fetchAvailability(fromDate: string, toDate: string, currency: str
     url.searchParams.set('todate', toDate)
     url.searchParams.set('adult', '2')
     url.searchParams.set('child', '0')
+    const agency = currency === 'TRY' ? 'HOTELWEB TL' : 'HOTELWEB EUR'
+    url.searchParams.set('agency', agency)
 
     const res = await fetch(url.toString(), {
         headers: {

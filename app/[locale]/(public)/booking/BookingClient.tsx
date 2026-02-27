@@ -1,8 +1,9 @@
 'use client'
 
 import React, { useState, useEffect, useCallback } from 'react'
-import { Calendar, Users, Search, Loader2, ChevronRight, Star, Check, Phone, Mail, User, Globe, MessageSquare, ArrowLeft, BedDouble, Maximize, Baby, CreditCard, Shield, Clock } from 'lucide-react'
+import { Calendar, Users, Search, Loader2, ChevronRight, Star, Check, Phone, Mail, User, Globe, MessageSquare, ArrowLeft, BedDouble, Maximize, Baby, CreditCard, Shield, Clock, CalendarDays } from 'lucide-react'
 import Link from 'next/link'
+import AdvancedBookingCalendar from './AdvancedBookingCalendar'
 
 type RoomResult = {
     roomType: string
@@ -118,6 +119,7 @@ export default function BookingClient({ locale }: { locale: string }) {
     const [expMonth, setExpMonth] = useState('01')
     const [expYear, setExpYear] = useState('25')
     const [cvv, setCvv] = useState('')
+    const [showCalendar, setShowCalendar] = useState(false)
     const [installment, setInstallment] = useState(1)
     const [cardProgram, setCardProgram] = useState('none') // 'none' | 'maximum' | 'bonus' | 'world'
 
@@ -212,7 +214,7 @@ export default function BookingClient({ locale }: { locale: string }) {
     // Effect to run the 3D secure form script when HTML is received
     useEffect(() => {
         if (formHtml) {
-            const scriptMatch = formHtml.match(/<script>(.*?)<\/script>/s)
+            const scriptMatch = formHtml.match(/<script>([\s\S]*?)<\/script>/)
             if (scriptMatch && scriptMatch[1]) {
                 setTimeout(() => {
                     eval(scriptMatch[1])
@@ -264,6 +266,14 @@ export default function BookingClient({ locale }: { locale: string }) {
                                 <input type="date" value={checkOut} onChange={e => setCheckOut(e.target.value)}
                                     className="w-full pl-10 pr-3 py-3 bg-white/10 border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-400/50" />
                             </div>
+                        </div>
+                        <div className="md:col-span-3 lg:col-span-5 pt-2 flex justify-start">
+                            <button
+                                onClick={() => setShowCalendar(true)}
+                                className="inline-flex items-center gap-2 text-blue-300 hover:text-white transition-colors text-sm font-medium px-4 py-2 border border-blue-400/30 rounded-full hover:bg-blue-500/20"
+                            >
+                                <CalendarDays size={16} /> Gelişmiş Takvimi Görüntüle (İndirimler)
+                            </button>
                         </div>
                         <div>
                             <label className="block text-xs font-bold text-blue-200/70 uppercase tracking-wider mb-2">{g('adults', locale)}</label>
@@ -574,6 +584,20 @@ export default function BookingClient({ locale }: { locale: string }) {
                     </div>
                 )}
             </div>
+            {/* Advanced Calendar Modal */}
+            {showCalendar && (
+                <AdvancedBookingCalendar
+                    currency="EUR" // Fallback or dynamic based on active state
+                    onClose={() => setShowCalendar(false)}
+                    onSelectDate={(newCheckIn, newCheckOut) => {
+                        setCheckIn(newCheckIn)
+                        setCheckOut(newCheckOut)
+                        setShowCalendar(false)
+                        // Trigger search automatically
+                        setTimeout(() => searchAvailability(), 100)
+                    }}
+                />
+            )}
         </div>
     )
 }

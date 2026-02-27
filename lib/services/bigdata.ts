@@ -14,7 +14,7 @@ export type TimeGranularity = 'daily' | 'weekly' | 'monthly'
 export type RevenuePoint = { date: string; revenue: number; revenueEUR: number; count: number }
 export type OccupancyPoint = { date: string; rate: number; available: number; occupied: number; total: number }
 export type ChannelMetric = { channel: string; revenue: number; count: number; adr: number; avgNights: number; share: number; color: string }
-export type NationalityMetric = { country: string; count: number; revenue: number; avgNights: number; avgRate: number; share: number }
+export type CountryMetric = { country: string; count: number; revenue: number; avgNights: number; avgRate: number; share: number }
 export type RoomTypeMetric = { roomType: string; count: number; revenue: number; avgRate: number; avgNights: number; share: number }
 export type BoardTypeMetric = { boardType: string; count: number; revenue: number; share: number }
 export type AgencyMetric = { agency: string; channel: string; count: number; revenue: number; adr: number }
@@ -508,7 +508,7 @@ export const BigDataService = {
     // ═══════════════════════════════════════════════════════════
 
     // R26: Country Distribution
-    nationalityDistribution(reservations: Reservation[]): NationalityMetric[] {
+    countryDistribution(reservations: Reservation[]): CountryMetric[] {
         const byCountry = groupBy(reservations, r => r.country || 'Unknown')
         const total = reservations.length || 1
         return Array.from(byCountry.entries()).map(([country, rsvs]) => ({
@@ -522,18 +522,18 @@ export const BigDataService = {
     },
 
     // R27: Revenue by Country
-    revenueByCountry(reservations: Reservation[]): NationalityMetric[] {
-        return this.nationalityDistribution(reservations).sort((a, b) => b.revenue - a.revenue)
+    revenueByCountry(reservations: Reservation[]): CountryMetric[] {
+        return this.countryDistribution(reservations).sort((a, b) => b.revenue - a.revenue)
     },
 
     // R28: Average Stay by Country
-    avgStayByCountry(reservations: Reservation[]): NationalityMetric[] {
-        return this.nationalityDistribution(reservations).sort((a, b) => b.avgNights - a.avgNights)
+    avgStayByCountry(reservations: Reservation[]): CountryMetric[] {
+        return this.countryDistribution(reservations).sort((a, b) => b.avgNights - a.avgNights)
     },
 
     // R29: Country Trend (monthly)
-    nationalityTrend(reservations: Reservation[]): { month: string;[country: string]: string | number }[] {
-        const topCountries = this.nationalityDistribution(reservations).slice(0, 6).map(n => n.country)
+    countryTrend(reservations: Reservation[]): { month: string;[country: string]: string | number }[] {
+        const topCountries = this.countryDistribution(reservations).slice(0, 6).map(n => n.country)
         const byMonth = groupBy(reservations, r => r.checkIn.slice(0, 7))
         return Array.from(byMonth.entries()).map(([month, rsvs]) => {
             const row: { month: string;[c: string]: string | number } = { month }
@@ -569,8 +569,8 @@ export const BigDataService = {
     },
 
     // R31: Country-Channel Matrix
-    nationalityChannelMatrix(reservations: Reservation[]): HeatmapCell[] {
-        const top10 = this.nationalityDistribution(reservations).slice(0, 10).map(n => n.country)
+    countryChannelMatrix(reservations: Reservation[]): HeatmapCell[] {
+        const top10 = this.countryDistribution(reservations).slice(0, 10).map(n => n.country)
         const channels = [...new Set(reservations.map(r => r.channel))]
         const cells: HeatmapCell[] = []
         for (const country of top10) {
@@ -583,8 +583,8 @@ export const BigDataService = {
     },
 
     // R32: Average Rate by Country
-    avgRateByCountry(reservations: Reservation[]): NationalityMetric[] {
-        return this.nationalityDistribution(reservations).sort((a, b) => b.avgRate - a.avgRate)
+    avgRateByCountry(reservations: Reservation[]): CountryMetric[] {
+        return this.countryDistribution(reservations).sort((a, b) => b.avgRate - a.avgRate)
     },
 
     // ═══════════════════════════════════════════════════════════
