@@ -369,8 +369,8 @@ const INITIAL_MENUS: Record<string, MenuCategoryData[]> = {
 }
 
 function MenuEditorTab({ venues, locale, qrData, setQrData, qrLoading, setQrLoading }: MenuEditorTabProps) {
-    const [selectedVenue, setSelectedVenue] = useState<string>(venues[0]?.id || '1')
-    const [menus, setMenus] = useState<Record<string, MenuCategoryData[]>>(INITIAL_MENUS)
+    const [selectedVenue, setSelectedVenue] = useState<string>(venues[0]?.id || '')
+    const [menus, setMenus] = useState<Record<string, MenuCategoryData[]>>({})
     const [editingItem, setEditingItem] = useState<{ catId: string; item: MenuItemData } | null>(null)
     const [editingCat, setEditingCat] = useState<MenuCategoryData | null>(null)
     const [newCatName, setNewCatName] = useState('')
@@ -381,12 +381,37 @@ function MenuEditorTab({ venues, locale, qrData, setQrData, qrLoading, setQrLoad
     const [qrLightColor, setQrLightColor] = useState('#ffffff')
     const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
 
-    // QR scan stats (mock — will come from API)
-    const scanStats: Record<string, { today: number; week: number; month: number; total: number }> = {
-        '1': { today: 34, week: 218, month: 892, total: 4521 },
-        '2': { today: 12, week: 87, month: 345, total: 1820 },
-        '3': { today: 45, week: 312, month: 1203, total: 5672 },
-    }
+    // Default empty scan stats until connected to a real analytics backend
+    const [scanStats, setScanStats] = useState<Record<string, { today: number; week: number; month: number; total: number }>>({})
+
+    useEffect(() => {
+        // Set selected venue if venues load and none is selected
+        if (venues.length > 0 && !selectedVenue) {
+            setSelectedVenue(venues[0].id)
+        }
+
+        // Populate default menus for each venue if empty
+        setMenus(prev => {
+            const next = { ...prev }
+            venues.forEach(v => {
+                if (!next[v.id]) {
+                    next[v.id] = []
+                }
+            })
+            return next
+        })
+
+        // Populate default scan stats for each venue
+        setScanStats(prev => {
+            const next = { ...prev }
+            venues.forEach(v => {
+                if (!next[v.id]) {
+                    next[v.id] = { today: 0, week: 0, month: 0, total: 0 }
+                }
+            })
+            return next
+        })
+    }, [venues])
 
     const currentMenus = menus[selectedVenue] || []
     const currentVenue = venues.find(v => v.id === selectedVenue)

@@ -33,38 +33,38 @@ interface AvailabilityResponse {
 const ROOM_DISPLAY: Record<string, { title: string; subtitle: string; image: string; size: string; capacity: string; features: string[] }> = {
     'CLUB ODA': {
         title: 'Club Oda', subtitle: 'Club Odalar',
-        image: '/images/rooms/Club-Room-Sea-View-3.jpg',
+        image: '/images/rooms/club-room/clubroom.jpg',
         size: '20-22 m²', capacity: '2 Kişi',
         features: ['Split Klima', 'LCD TV', 'Minibar', 'Duşlu Banyo']
     },
     'CLUB DENIZ': {
         title: 'Club Deniz Manzaralı Oda', subtitle: 'Club Odalar',
-        image: '/images/rooms/Club-Room-Sea-View-1.jpg',
+        image: '/images/rooms/club-sea-view/ClubSeaViewRoom.jpg',
         size: '20-22 m²', capacity: '2 Kişi',
         features: ['Deniz Manzarası', 'Split Klima', 'LCD TV', 'Minibar']
     },
     'CLUB AILE': {
         title: 'Club Aile Odası', subtitle: 'Club Odalar',
-        image: '/images/rooms/Family-Room-Sea-View-1.jpg',
+        image: '/images/rooms/club-family-room/ClubFamilyRoom1.jpg',
         size: '55-60 m²', capacity: '4-5 Kişi',
         features: ['2 Yatak Odası', 'Geniş Balkon', 'Bebek Karyolası']
     },
     'DELUXE': {
         title: 'Deluxe Deniz Manzaralı Oda', subtitle: 'Deluxe Odalar',
-        image: '/images/rooms/Deluxe-Room-5.jpg',
+        image: '/images/rooms/deluxe-sea-view/MER01334.jpg',
         size: '40-45 m²', capacity: '2-3 Kişi',
         features: ['Özel Balkon', 'Nespresso', 'Merkezi Klima', 'Giysi Odası']
     },
     // Fallbacks and exact Elektra matches
     'CLUB': {
         title: 'Club Oda', subtitle: 'Club Odalar',
-        image: '/images/rooms/Club-Room-Sea-View-3.jpg',
+        image: '/images/rooms/club-room/clubroom.jpg',
         size: '20-22 m²', capacity: '2 Kişi',
         features: ['Split Klima', 'LCD TV', 'Minibar', 'Duşlu Banyo']
     },
     'FAMILY': {
         title: 'Club Aile Odası', subtitle: 'Club Odalar',
-        image: '/images/rooms/Family-Room-Sea-View-1.jpg',
+        image: '/images/rooms/club-family-room/ClubFamilyRoom1.jpg',
         size: '55-60 m²', capacity: '4-5 Kişi',
         features: ['2 Yatak Odası', '2 Banyo', 'Geniş Balkon', 'Bebek Karyolası']
     },

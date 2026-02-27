@@ -46,7 +46,7 @@ const ROOM_DISPLAY: Record<string, {
     'CLUB': {
         title: 'Club Oda', titleEn: 'Club Room',
         subtitle: 'Konforlu Konaklama', subtitleEn: 'Comfortable Stay',
-        image: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/Club-Room-Sea-View-3.jpg',
+        image: '/images/rooms/club-room/clubroom.jpg',
         size: '20-22 m²', capacity: '2 Kişi', view: 'Kara / Deniz Manzaralı',
         features: ['Split Klima', 'LCD TV', 'Minibar', 'Duşlu Banyo'],
         featuresEn: ['Split AC', 'LCD TV', 'Minibar', 'Shower'],
@@ -55,7 +55,7 @@ const ROOM_DISPLAY: Record<string, {
     'CLUB DENİZ': {
         title: 'Club Oda (Deniz)', titleEn: 'Club Room (Sea View)',
         subtitle: 'Deniz Manzaralı', subtitleEn: 'Sea View',
-        image: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/Club-Room-Sea-View-1.jpg',
+        image: '/images/rooms/club-sea-view/ClubSeaViewRoom.jpg',
         size: '20-22 m²', capacity: '2 Kişi', view: 'Deniz Manzaralı',
         features: ['Deniz Manzarası', 'Split Klima', 'LCD TV', 'Minibar'],
         featuresEn: ['Sea View', 'Split AC', 'LCD TV', 'Minibar'],
@@ -64,7 +64,7 @@ const ROOM_DISPLAY: Record<string, {
     'DELUXE': {
         title: 'Deluxe Oda', titleEn: 'Deluxe Room',
         subtitle: 'Lüks ve Konfor', subtitleEn: 'Luxury & Comfort',
-        image: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/Deluxe-Room-5.jpg',
+        image: '/images/rooms/deluxe-sea-view/MER01334.jpg',
         size: '40-45 m²', capacity: '2-3 Kişi', view: 'Panoramik Deniz & Havuz',
         features: ['Özel Balkon', 'Nespresso', 'Merkezi Klima', 'Giysi Odası'],
         featuresEn: ['Private Balcony', 'Nespresso', 'Central AC', 'Dressing Room'],
@@ -73,7 +73,7 @@ const ROOM_DISPLAY: Record<string, {
     'AİLE': {
         title: 'Aile Suiti', titleEn: 'Family Suite',
         subtitle: 'Geniş Aile Odaları', subtitleEn: 'Spacious Family Rooms',
-        image: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/Family-Room-Sea-View-6.jpg',
+        image: '/images/rooms/club-family-room/ClubFamilyRoom1.jpg',
         size: '55-60 m²', capacity: '4-5 Kişi', view: 'Bahçe & Deniz',
         features: ['2 Yatak Odası', '2 Banyo', 'Geniş Balkon', 'Bebek Karyolası'],
         featuresEn: ['2 Bedrooms', '2 Bathrooms', 'Large Balcony', 'Baby Crib'],
@@ -82,7 +82,7 @@ const ROOM_DISPLAY: Record<string, {
     'FAMILY': {
         title: 'Aile Suiti', titleEn: 'Family Suite',
         subtitle: 'Geniş Aile Odaları', subtitleEn: 'Spacious Family Rooms',
-        image: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/Family-Room-Sea-View-6.jpg',
+        image: '/images/rooms/club-family-room/ClubFamilyRoom1.jpg',
         size: '55-60 m²', capacity: '4-5 Kişi', view: 'Bahçe & Deniz',
         features: ['2 Yatak Odası', '2 Banyo', 'Geniş Balkon', 'Bebek Karyolası'],
         featuresEn: ['2 Bedrooms', '2 Bathrooms', 'Large Balcony', 'Baby Crib'],
@@ -99,7 +99,7 @@ function getDisplayInfo(roomType: string) {
     return {
         title: roomType, titleEn: roomType,
         subtitle: 'Oda', subtitleEn: 'Room',
-        image: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/Club-Room-Sea-View-3.jpg',
+        image: '/images/rooms/club-room/clubroom.jpg',
         size: '—', capacity: '2 Kişi', view: '—',
         features: ['Klima', 'TV', 'Minibar'],
         featuresEn: ['AC', 'TV', 'Minibar'],

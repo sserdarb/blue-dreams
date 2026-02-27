@@ -21,15 +21,15 @@ interface SocialAccount {
     reach: number
 }
 
-// ─── Mock Data ─────────────────────────────────────────────────
-const ACCOUNTS: SocialAccount[] = [
+// ─── Constants ─────────────────────────────────────────────────
+const BASE_ACCOUNTS: SocialAccount[] = [
     {
         platform: 'Instagram', icon: <Instagram size={18} />, color: '#E4405F', bgColor: 'from-pink-600 to-purple-600',
-        connected: true, handle: '@bluedreamsresort', followers: 24500, followersChange: 3.2, posts: 456, engagement: 4.8, engagementChange: 0.5, reach: 85000
+        connected: false, handle: '', followers: 0, followersChange: 0, posts: 0, engagement: 0, engagementChange: 0, reach: 0
     },
     {
         platform: 'Facebook', icon: <Facebook size={18} />, color: '#1877F2', bgColor: 'from-blue-600 to-blue-700',
-        connected: true, handle: 'Blue Dreams Resort', followers: 18200, followersChange: 1.1, posts: 312, engagement: 2.3, engagementChange: -0.2, reach: 62000
+        connected: false, handle: '', followers: 0, followersChange: 0, posts: 0, engagement: 0, engagementChange: 0, reach: 0
     },
     {
         platform: 'Twitter', icon: <Twitter size={18} />, color: '#1DA1F2', bgColor: 'from-sky-500 to-sky-600',
@@ -96,12 +96,52 @@ export default function SocialMediaPage() {
         instagram: true, facebook: true, twitter: false
     })
 
-    // Load saved posts from localStorage on mount
+    const [accounts, setAccounts] = useState<SocialAccount[]>(BASE_ACCOUNTS)
+    const [loading, setLoading] = useState(true)
+
+    // Load saved posts from localStorage on mount and fetch real API data
     React.useEffect(() => {
         try {
             const stored = localStorage.getItem('bdr-social-posts')
             if (stored) setSavedPosts(JSON.parse(stored))
         } catch { }
+
+        const loadSocialData = async () => {
+            try {
+                const res = await fetch('/api/admin/analytics/social')
+                const result = await res.json()
+
+                if (result.success && result.data) {
+                    setAccounts(prev => prev.map(acc => {
+                        if (acc.platform === 'Facebook' && result.data.facebook) {
+                            return {
+                                ...acc,
+                                connected: true,
+                                handle: result.data.facebook?.name || 'Facebook Page',
+                                followers: result.data.facebook.followers || 0,
+                                engagement: result.data.facebook.engagement || 0
+                            }
+                        }
+                        if (acc.platform === 'Instagram' && result.data.instagram) {
+                            return {
+                                ...acc,
+                                connected: true,
+                                handle: result.data.instagram.username || '@instagram',
+                                followers: result.data.instagram.followers || 0,
+                                posts: result.data.instagram.posts || 0,
+                            }
+                        }
+                        return acc
+                    }))
+                }
+            } catch (err) {
+                console.error('Failed to fetch social media data', err)
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        loadSocialData()
     }, [])
 
     const fmt = (n: number) => n >= 1000 ? `${(n / 1000).toFixed(1)}K` : n.toString()
@@ -129,7 +169,7 @@ export default function SocialMediaPage() {
 
             {/* Connected Accounts Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {ACCOUNTS.map(account => (
+                {accounts.map(account => (
                     <div key={account.platform}
                         className={`rounded-2xl border overflow-hidden shadow-sm transition-all ${account.connected
                             ? 'bg-white dark:bg-[#1e293b] border-slate-200 dark:border-white/10'
@@ -163,18 +203,22 @@ export default function SocialMediaPage() {
                                             <div className="text-lg font-bold text-slate-900 dark:text-white">{fmt(account.followers)}</div>
                                             <div className="text-[10px] text-slate-500 flex items-center justify-center gap-1">
                                                 <Users size={10} /> Takipçi
-                                                <span className={account.followersChange >= 0 ? 'text-emerald-500' : 'text-red-500'}>
-                                                    {account.followersChange >= 0 ? '+' : ''}{account.followersChange}%
-                                                </span>
+                                                {account.followersChange !== 0 && (
+                                                    <span className={account.followersChange > 0 ? 'text-emerald-500' : 'text-red-500'}>
+                                                        {account.followersChange > 0 ? '+' : ''}{account.followersChange}%
+                                                    </span>
+                                                )}
                                             </div>
                                         </div>
                                         <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-2 text-center">
                                             <div className="text-lg font-bold text-slate-900 dark:text-white">{account.engagement}%</div>
                                             <div className="text-[10px] text-slate-500 flex items-center justify-center gap-1">
                                                 <Heart size={10} /> Etkileşim
-                                                <span className={account.engagementChange >= 0 ? 'text-emerald-500' : 'text-red-500'}>
-                                                    {account.engagementChange >= 0 ? '+' : ''}{account.engagementChange}%
-                                                </span>
+                                                {account.engagementChange !== 0 && (
+                                                    <span className={account.engagementChange > 0 ? 'text-emerald-500' : 'text-red-500'}>
+                                                        {account.engagementChange > 0 ? '+' : ''}{account.engagementChange}%
+                                                    </span>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -326,7 +370,7 @@ export default function SocialMediaPage() {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-200 dark:divide-white/5">
-                                    {ACCOUNTS.map(a => (
+                                    {accounts.map(a => (
                                         <tr key={a.platform} className="hover:bg-slate-50 dark:hover:bg-white/5">
                                             <td className="p-4">
                                                 <div className="flex items-center gap-2">
@@ -336,9 +380,13 @@ export default function SocialMediaPage() {
                                             </td>
                                             <td className="p-4 font-bold text-slate-900 dark:text-white">{fmt(a.followers)}</td>
                                             <td className="p-4">
-                                                <span className={`text-sm font-bold ${a.followersChange >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
-                                                    {a.followersChange >= 0 ? '+' : ''}{a.followersChange}%
-                                                </span>
+                                                {a.followersChange !== 0 ? (
+                                                    <span className={`text-sm font-bold ${a.followersChange > 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                                                        {a.followersChange > 0 ? '+' : ''}{a.followersChange}%
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-slate-400">-</span>
+                                                )}
                                             </td>
                                             <td className="p-4 text-sm text-slate-600 dark:text-slate-300">{a.posts}</td>
                                             <td className="p-4 font-bold text-slate-900 dark:text-white">{a.engagement}%</td>

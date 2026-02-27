@@ -49,67 +49,104 @@ export async function GET(request: Request) {
 
         const client = getClient()
 
-        // Make the API call to GA4
-        const [response] = await client.runReport({
-            property: `properties/${propertyId}`,
-            dateRanges: [
-                {
-                    startDate,
-                    endDate,
-                },
-            ],
-            dimensions: [
-                { name: 'date' },
-            ],
-            metrics: [
-                { name: 'activeUsers' },
-                { name: 'screenPageViews' },
-                { name: 'sessions' },
-                { name: 'bounceRate' }
-            ],
-            // Order by date ascending
-            orderBys: [
-                {
-                    dimension: { dimensionName: 'date' },
-                    desc: false,
-                }
-            ]
-        })
+        // Make the API calls to GA4 concurrently
+        const [
+            [trafficResponse],
+            [channelsResponse],
+            [countriesResponse]
+        ] = await Promise.all([
+            // 1. Daily Traffic
+            client.runReport({
+                property: `properties/${propertyId}`,
+                dateRanges: [{ startDate, endDate }],
+                dimensions: [{ name: 'date' }],
+                metrics: [
+                    { name: 'activeUsers' },
+                    { name: 'screenPageViews' },
+                    { name: 'sessions' },
+                    { name: 'bounceRate' }
+                ],
+                orderBys: [{ dimension: { dimensionName: 'date' }, desc: false }]
+            }),
+            // 2. Channels
+            client.runReport({
+                property: `properties/${propertyId}`,
+                dateRanges: [{ startDate, endDate }],
+                dimensions: [{ name: 'sessionDefaultChannelGroup' }],
+                metrics: [{ name: 'activeUsers' }],
+                orderBys: [{ metric: { metricName: 'activeUsers' }, desc: true }],
+                limit: 5 // Top 5
+            }),
+            // 3. Countries
+            client.runReport({
+                property: `properties/${propertyId}`,
+                dateRanges: [{ startDate, endDate }],
+                dimensions: [{ name: 'country' }],
+                metrics: [{ name: 'activeUsers' }],
+                orderBys: [{ metric: { metricName: 'activeUsers' }, desc: true }],
+                limit: 5 // Top 5
+            })
+        ])
 
-        if (!response.rows) {
-            return NextResponse.json({ data: [] })
+        // Format Daily Traffic
+        let formattedTraffic: any[] = []
+        if (trafficResponse && trafficResponse.rows) {
+            formattedTraffic = trafficResponse.rows.map(row => {
+                const dateStr = row.dimensionValues?.[0]?.value || ''
+                const formattedDate = dateStr.length === 8
+                    ? `${dateStr.substring(0, 4)}-${dateStr.substring(4, 6)}-${dateStr.substring(6, 8)}`
+                    : dateStr
+
+                return {
+                    date: formattedDate,
+                    users: parseInt(row.metricValues?.[0]?.value || '0', 10),
+                    pageViews: parseInt(row.metricValues?.[1]?.value || '0', 10),
+                    sessions: parseInt(row.metricValues?.[2]?.value || '0', 10),
+                    bounceRate: parseFloat(row.metricValues?.[3]?.value || '0').toFixed(2)
+                }
+            })
         }
 
-        // Format the response for our frontend charts
-        const formattedData = response.rows.map(row => {
-            const dateStr = row.dimensionValues?.[0]?.value || ''
-            // GA4 returns date as YYYYMMDD, format to YYYY-MM-DD
-            const formattedDate = dateStr.length === 8
-                ? `${dateStr.substring(0, 4)}-${dateStr.substring(4, 6)}-${dateStr.substring(6, 8)}`
-                : dateStr
+        // Format Channels
+        let formattedChannels: any[] = []
+        if (channelsResponse && channelsResponse.rows) {
+            formattedChannels = channelsResponse.rows.map(row => ({
+                name: row.dimensionValues?.[0]?.value || 'Unknown',
+                value: parseInt(row.metricValues?.[0]?.value || '0', 10)
+            }))
+        }
 
-            return {
-                date: formattedDate,
-                users: parseInt(row.metricValues?.[0]?.value || '0', 10),
-                pageViews: parseInt(row.metricValues?.[1]?.value || '0', 10),
-                sessions: parseInt(row.metricValues?.[2]?.value || '0', 10),
-                bounceRate: parseFloat(row.metricValues?.[3]?.value || '0').toFixed(2)
-            }
-        })
+        // Format Countries
+        let formattedCountries: any[] = []
+        if (countriesResponse && countriesResponse.rows) {
+            const totalUsersAllCountries = countriesResponse.rows.reduce((sum, row) => sum + parseInt(row.metricValues?.[0]?.value || '0', 10), 0)
+            formattedCountries = countriesResponse.rows.map(row => {
+                const users = parseInt(row.metricValues?.[0]?.value || '0', 10)
+                const percentage = totalUsersAllCountries > 0 ? Math.round((users / totalUsersAllCountries) * 100) : 0
+                return {
+                    name: row.dimensionValues?.[0]?.value || 'Unknown',
+                    users: users,
+                    percentage: percentage
+                }
+            })
+        }
 
-        // Also calculate totals
+        // Calculate totals across traffic
         const totals = {
-            users: formattedData.reduce((acc, curr) => acc + curr.users, 0),
-            pageViews: formattedData.reduce((acc, curr) => acc + curr.pageViews, 0),
-            sessions: formattedData.reduce((acc, curr) => acc + curr.sessions, 0),
-            averageBounceRate: formattedData.length > 0
-                ? (formattedData.reduce((acc, curr) => acc + parseFloat(curr.bounceRate), 0) / formattedData.length).toFixed(2)
+            users: formattedTraffic.reduce((acc, curr) => acc + curr.users, 0),
+            pageViews: formattedTraffic.reduce((acc, curr) => acc + curr.pageViews, 0),
+            sessions: formattedTraffic.reduce((acc, curr) => acc + curr.sessions, 0),
+            averageBounceRate: formattedTraffic.length > 0
+                ? (formattedTraffic.reduce((acc, curr) => acc + parseFloat(curr.bounceRate as any), 0) / formattedTraffic.length).toFixed(2)
                 : 0
         }
 
         return NextResponse.json({
             success: true,
-            data: formattedData,
+            data: formattedTraffic, // legacy support 
+            traffic: formattedTraffic,
+            channels: formattedChannels,
+            countries: formattedCountries,
             totals
         })
 

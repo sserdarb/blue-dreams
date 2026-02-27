@@ -606,18 +606,21 @@ model SocialMessage {
   guest       GuestProfile? @relation(fields: [guestId], references: [id])
   phone       String? // Make optional since FB/IG might not have a phone number initially
   socialId    String? // FB/IG user ID
+  threadId    String? // Group messages by thread/conversation
   direction   String // inbound, outbound
-  type        String        @default("text") // text, image, template, campaign
+  type        String        @default("text") // text, image, template, campaign, audio, video
   content     String
   templateId  String?
   campaignId  String?
   status      String        @default("received") // received, sent, delivered, read, failed
-  metadata    String? // JSON
+  metadata    String? // JSON for additional payload (like IG media URLs)
   isFromGuest Boolean       @default(false)
+  translated  String? // Store translated version of the message
   createdAt   DateTime      @default(now())
 
   @@index([phone])
   @@index([socialId])
+  @@index([threadId])
   @@index([platform])
   @@index([guestId])
   @@index([createdAt])

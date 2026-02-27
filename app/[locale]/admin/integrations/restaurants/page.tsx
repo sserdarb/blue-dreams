@@ -38,7 +38,7 @@ interface Restaurant {
 // ─── Mock Data ─────────────────────────────────────────────────
 const ALLERGEN_LIST = ['Gluten', 'Süt', 'Yumurta', 'Fıstık', 'Balık', 'Soya', 'Kereviz', 'Susam']
 
-const INITIAL_RESTAURANTS: Restaurant[] = [
+const BASE_RESTAURANTS: Restaurant[] = [
     {
         id: '1',
         name: 'Aqua Restaurant',
@@ -49,45 +49,6 @@ const INITIAL_RESTAURANTS: Restaurant[] = [
                 id: 'c1', name: 'Başlangıçlar', icon: 'appetizer', order: 1,
                 items: [
                     { id: 'i1', name: 'Mevsim Salatası', description: 'Taze mevsim yeşillikleri, cherry domates, salatalık', price: 'A/I', image: '', allergens: [], isVegetarian: true, isVegan: true, isGlutenFree: true, order: 1 },
-                    { id: 'i2', name: 'Hummus', description: 'Geleneksel nohut ezmesi, zeytinyağı ve baharatlar', price: 'A/I', image: '', allergens: ['Susam'], isVegetarian: true, isVegan: true, isGlutenFree: true, order: 2 },
-                    { id: 'i3', name: 'Deniz Mahsulleri Kokteyl', description: 'Karides, kalamar, midye ile özel sos', price: 'A/I', image: '', allergens: ['Balık'], isVegetarian: false, isVegan: false, isGlutenFree: true, order: 3 },
-                ]
-            },
-            {
-                id: 'c2', name: 'Ana Yemekler', icon: 'main', order: 2,
-                items: [
-                    { id: 'i4', name: 'Izgara Levrek', description: 'Taze Ege levreği, sebze garnitürü ile', price: 'A/I', image: '', allergens: ['Balık'], isVegetarian: false, isVegan: false, isGlutenFree: true, order: 1 },
-                    { id: 'i5', name: 'Kuzu Tandır', description: 'Yavaş pişirilmiş kuzu, pilav ve yoğurt', price: 'A/I', image: '', allergens: ['Süt'], isVegetarian: false, isVegan: false, isGlutenFree: false, order: 2 },
-                    { id: 'i6', name: 'Mantarlı Risotto', description: 'Porcini ve kuzu kulağı mantarı ile kremalı risotto', price: 'A/I', image: '', allergens: ['Süt'], isVegetarian: true, isVegan: false, isGlutenFree: true, order: 3 },
-                ]
-            },
-            {
-                id: 'c3', name: 'Tatlılar', icon: 'dessert', order: 3,
-                items: [
-                    { id: 'i7', name: 'Künefe', description: 'Geleneksel Antep künefesi, kaymak ile', price: 'A/I', image: '', allergens: ['Süt', 'Gluten', 'Fıstık'], isVegetarian: true, isVegan: false, isGlutenFree: false, order: 1 },
-                    { id: 'i8', name: 'Çikolatalı Sufle', description: 'Sıcak çikolatalı sufle, vanilya dondurma', price: 'A/I', image: '', allergens: ['Süt', 'Yumurta', 'Gluten'], isVegetarian: true, isVegan: false, isGlutenFree: false, order: 2 },
-                ]
-            },
-            {
-                id: 'c4', name: 'İçecekler', icon: 'drink', order: 4,
-                items: [
-                    { id: 'i9', name: 'Türk Çayı', description: 'Geleneksel demli çay', price: 'A/I', image: '', allergens: [], isVegetarian: true, isVegan: true, isGlutenFree: true, order: 1 },
-                    { id: 'i10', name: 'Türk Kahvesi', description: 'Geleneksel Türk kahvesi', price: 'A/I', image: '', allergens: [], isVegetarian: true, isVegan: true, isGlutenFree: true, order: 2 },
-                    { id: 'i11', name: 'Taze Sıkılmış Portakal Suyu', description: 'Günlük taze sıkım', price: 'A/I', image: '', allergens: [], isVegetarian: true, isVegan: true, isGlutenFree: true, order: 3 },
-                ]
-            }
-        ]
-    },
-    {
-        id: '2',
-        name: 'Blue A La Carte',
-        description: 'Akdeniz mutfağı — à la carte restoran',
-        image: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/alacarte.jpg',
-        categories: [
-            {
-                id: 'c5', name: 'Meze', icon: 'appetizer', order: 1,
-                items: [
-                    { id: 'i12', name: 'Ahtapot Izgara', description: 'Acılı zeytinyağı ve limonlu ızgara ahtapot', price: '€18', image: '', allergens: ['Balık'], isVegetarian: false, isVegan: false, isGlutenFree: true, order: 1 },
                 ]
             }
         ]
@@ -99,8 +60,9 @@ export default function RestaurantMenuPage() {
     const params = useParams()
     const locale = params.locale as string
 
-    const [restaurants, setRestaurants] = useState<Restaurant[]>(INITIAL_RESTAURANTS)
-    const [selectedRestaurant, setSelectedRestaurant] = useState<string>(INITIAL_RESTAURANTS[0].id)
+    const [restaurants, setRestaurants] = useState<Restaurant[]>([])
+    const [selectedRestaurant, setSelectedRestaurant] = useState<string>('')
+    const [loading, setLoading] = useState(true)
     const [editingItem, setEditingItem] = useState<MenuItem | null>(null)
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [editingCategoryId, setEditingCategoryId] = useState<string>('')
@@ -109,7 +71,44 @@ export default function RestaurantMenuPage() {
     const [qrData, setQrData] = useState<{ menuUrl: string; qrDataUrl: string } | null>(null)
     const [qrLoading, setQrLoading] = useState(false)
 
-    const currentRestaurant = restaurants.find(r => r.id === selectedRestaurant) || restaurants[0]
+    useEffect(() => {
+        const fetchRestaurants = async () => {
+            try {
+                const res = await fetch(`/api/admin/dining?locale=${locale}`)
+                if (res.ok) {
+                    const data = await res.json()
+                    const mapped: Restaurant[] = data.map((d: any) => ({
+                        id: d.id,
+                        name: d.title || d.name,
+                        description: d.description || '',
+                        image: d.image || '',
+                        // Fallback Categories mapping logic (can be extended to fetch individual menu categories from DB later)
+                        categories: [
+                            {
+                                id: 'c1', name: 'Başlangıçlar & Menüler', icon: 'appetizer', order: 1,
+                                items: []
+                            }
+                        ]
+                    }))
+                    setRestaurants(mapped.length > 0 ? mapped : BASE_RESTAURANTS)
+                    if (mapped.length > 0) setSelectedRestaurant(mapped[0].id)
+                    else setSelectedRestaurant(BASE_RESTAURANTS[0].id)
+                } else {
+                    setRestaurants(BASE_RESTAURANTS)
+                    setSelectedRestaurant(BASE_RESTAURANTS[0].id)
+                }
+            } catch (error) {
+                console.error('Fetch error:', error)
+                setRestaurants(BASE_RESTAURANTS)
+                setSelectedRestaurant(BASE_RESTAURANTS[0].id)
+            } finally {
+                setLoading(false)
+            }
+        }
+        fetchRestaurants()
+    }, [locale])
+
+    const currentRestaurant = restaurants.find(r => r.id === selectedRestaurant) || restaurants[0] || BASE_RESTAURANTS[0]
 
     // Form State
     const [itemForm, setItemForm] = useState({
@@ -207,20 +206,24 @@ export default function RestaurantMenuPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="md:col-span-2 bg-white dark:bg-[#1e293b] p-6 rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm">
                     <div className="flex items-center gap-4 mb-4">
-                        <div className="w-16 h-16 rounded-xl bg-cyan-500/10 flex items-center justify-center">
-                            <UtensilsCrossed size={28} className="text-cyan-500" />
+                        <div className="w-16 h-16 rounded-xl bg-cyan-500/10 flex items-center justify-center overflow-hidden flex-shrink-0">
+                            {currentRestaurant.image ? (
+                                <img src={currentRestaurant.image} alt={currentRestaurant.name} className="w-full h-full object-cover" />
+                            ) : (
+                                <UtensilsCrossed size={28} className="text-cyan-500" />
+                            )}
                         </div>
                         <div>
-                            <h2 className="text-xl font-bold text-slate-900 dark:text-white">{currentRestaurant.name}</h2>
-                            <p className="text-sm text-slate-500">{currentRestaurant.description}</p>
+                            <h2 className="text-xl font-bold text-slate-900 dark:text-white">{currentRestaurant?.name}</h2>
+                            <p className="text-sm text-slate-500">{currentRestaurant?.description || 'Açıklama bulunmuyor'}</p>
                         </div>
                     </div>
                     <div className="flex gap-4 text-sm">
                         <div className="bg-slate-50 dark:bg-slate-800 px-4 py-2 rounded-lg">
-                            <span className="text-slate-500">Kategori:</span> <span className="font-bold text-slate-900 dark:text-white">{currentRestaurant.categories.length}</span>
+                            <span className="text-slate-500">Kategori:</span> <span className="font-bold text-slate-900 dark:text-white">{currentRestaurant?.categories?.length || 0}</span>
                         </div>
                         <div className="bg-slate-50 dark:bg-slate-800 px-4 py-2 rounded-lg">
-                            <span className="text-slate-500">Ürün:</span> <span className="font-bold text-slate-900 dark:text-white">{currentRestaurant.categories.reduce((a, c) => a + c.items.length, 0)}</span>
+                            <span className="text-slate-500">Ürün:</span> <span className="font-bold text-slate-900 dark:text-white">{currentRestaurant?.categories?.reduce((a, c) => a + (c.items?.length || 0), 0) || 0}</span>
                         </div>
                     </div>
                 </div>

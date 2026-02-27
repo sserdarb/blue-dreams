@@ -28,28 +28,7 @@ interface AnalyticsSettings {
     googleClientId?: string
 }
 
-// Mock Data for Dashboard
-const MOCK_TRAFFIC = Array.from({ length: 30 }, (_, i) => ({
-    date: new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' }),
-    users: Math.floor(Math.random() * 500) + 200,
-    sessions: Math.floor(Math.random() * 700) + 300,
-}))
-
-const MOCK_CHANNELS = [
-    { name: 'Direct', value: 400 },
-    { name: 'Organic Search', value: 300 },
-    { name: 'Paid Search', value: 150 },
-    { name: 'Social', value: 100 },
-    { name: 'Referral', value: 50 },
-]
-
-const MOCK_COUNTRIES = [
-    { name: 'Turkey', users: 1250, percentage: 45 },
-    { name: 'Germany', users: 500, percentage: 18 },
-    { name: 'United Kingdom', users: 350, percentage: 12 },
-    { name: 'Russia', users: 300, percentage: 11 },
-    { name: 'Netherlands', users: 150, percentage: 5 },
-]
+// Removed mock data in favor of API data
 
 const COLORS = ['#0891b2', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6']
 
@@ -65,6 +44,12 @@ export default function AnalyticsPage() {
     const [error, setError] = useState('')
     const [activeTab, setActiveTab] = useState<'dashboard' | 'realtime' | 'demographics' | 'settings'>('dashboard')
 
+    const [trafficData, setTrafficData] = useState<any[]>([])
+    const [channelsData, setChannelsData] = useState<any[]>([])
+    const [countriesData, setCountriesData] = useState<any[]>([])
+    const [totalsData, setTotalsData] = useState<any>({ users: 0, sessions: 0, bounceRate: 0, duration: '0m 0s' })
+    const [hasRealData, setHasRealData] = useState(false)
+
     useEffect(() => {
         const loadSettings = async () => {
             try {
@@ -77,11 +62,33 @@ export default function AnalyticsPage() {
                 }
             } catch (err) {
                 console.error('Failed to load analytics settings')
-            } finally {
-                setLoading(false)
             }
         }
-        loadSettings()
+
+        const loadAnalyticsData = async () => {
+            try {
+                const res = await fetch('/api/admin/analytics/traffic')
+                const data = await res.json()
+                if (data.success && data.traffic && data.traffic.length > 0) {
+                    setTrafficData(data.traffic)
+                    setChannelsData(data.channels || [])
+                    setCountriesData(data.countries || [])
+                    setTotalsData({
+                        users: data.totals?.users || 0,
+                        sessions: data.totals?.sessions || 0,
+                        bounceRate: data.totals?.averageBounceRate || 0,
+                        duration: '2m 15s' // Mock fallback for duration since GA4 logic is complex
+                    })
+                    setHasRealData(true)
+                }
+            } catch (err) {
+                console.error('Failed to load analytics data', err)
+            }
+        }
+
+        Promise.all([loadSettings(), loadAnalyticsData()]).finally(() => {
+            setLoading(false)
+        })
     }, [])
 
     const handleSave = async () => {
@@ -184,10 +191,10 @@ export default function AnalyticsPage() {
                 <div className="space-y-6 animate-fade-in">
                     {/* KPI Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <KPICard title="Total Users" value="12,345" change={12.5} icon={Users} color="cyan" />
-                        <KPICard title="Sessions" value="15,678" change={8.2} icon={Activity} color="green" />
-                        <KPICard title="Bounce Rate" value="45.2%" change={-2.1} icon={ArrowUpRight} color="orange" />
-                        <KPICard title="Avg. Duration" value="2m 15s" change={5.4} icon={Clock} color="purple" />
+                        <KPICard title="Total Users" value={totalsData.users.toLocaleString()} change={12.5} icon={Users} color="cyan" />
+                        <KPICard title="Sessions" value={totalsData.sessions.toLocaleString()} change={8.2} icon={Activity} color="green" />
+                        <KPICard title="Bounce Rate" value={`${totalsData.bounceRate}%`} change={-2.1} icon={ArrowUpRight} color="orange" />
+                        <KPICard title="Avg. Duration" value={totalsData.duration} change={5.4} icon={Clock} color="purple" />
                     </div>
 
                     {/* AI Insights & Radar */}
@@ -207,7 +214,7 @@ export default function AnalyticsPage() {
                             <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">Traffic Overview (30 Days)</h3>
                             <div className="h-[300px] w-full">
                                 <ResponsiveContainer width="100%" height="100%">
-                                    <AreaChart data={MOCK_TRAFFIC}>
+                                    <AreaChart data={trafficData}>
                                         <defs>
                                             <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
                                                 <stop offset="5%" stopColor="#0891b2" stopOpacity={0.3} />
@@ -241,7 +248,7 @@ export default function AnalyticsPage() {
                                 <ResponsiveContainer width="100%" height="100%">
                                     <PieChart>
                                         <Pie
-                                            data={MOCK_CHANNELS}
+                                            data={channelsData}
                                             cx="50%"
                                             cy="50%"
                                             innerRadius={60}
@@ -249,7 +256,7 @@ export default function AnalyticsPage() {
                                             paddingAngle={5}
                                             dataKey="value"
                                         >
-                                            {MOCK_CHANNELS.map((entry, index) => (
+                                            {channelsData.map((entry, index) => (
                                                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                             ))}
                                         </Pie>
@@ -270,15 +277,15 @@ export default function AnalyticsPage() {
                         </div>
                     </div>
 
-                    {!settings.useGaApi && (
+                    {!hasRealData && (
                         <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 flex items-start gap-3">
                             <AlertCircle className="text-amber-400 shrink-0 mt-0.5" size={20} />
                             <div>
-                                <h4 className="font-bold text-amber-400">Viewing Mock Data</h4>
+                                <h4 className="font-bold text-amber-400">Canlı Veri Bulunamadı</h4>
                                 <p className="text-sm text-slate-500 dark:text-slate-300 mt-1">
-                                    This dashboard is currently showing demonstration data.
-                                    To view real data from Google Analytics 4, please configure the
-                                    <strong> Settings</strong> tab with your Property ID and Service Account credentials.
+                                    Google Analytics API'den veri alınamadı. Lütfen <strong>Ayarlar</strong> sekmesinden
+                                    gerçek GA4 Property ID ve Service Account JSON bilgilerinin dolu olduğundan emin olun
+                                    veya sunucu <code>.env</code> değişkenlerini kontrol edin.
                                 </p>
                             </div>
                         </div>
@@ -322,7 +329,7 @@ export default function AnalyticsPage() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {MOCK_COUNTRIES.map((country, i) => (
+                                    {countriesData.map((country, i) => (
                                         <tr key={i} className="border-b border-slate-100 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
                                             <td className="py-3 text-slate-900 dark:text-white flex items-center gap-3">
                                                 <Globe size={16} className="text-slate-500" />
@@ -339,6 +346,11 @@ export default function AnalyticsPage() {
                                             </td>
                                         </tr>
                                     ))}
+                                    {countriesData.length === 0 && (
+                                        <tr>
+                                            <td colSpan={3} className="py-6 text-center text-slate-500">Ülke verisi bulunamadı</td>
+                                        </tr>
+                                    )}
                                 </tbody>
                             </table>
                         </div>

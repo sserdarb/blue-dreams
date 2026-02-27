@@ -20,12 +20,12 @@ interface GuestProfile {
 }
 interface Segment { id: string; name: string; description: string | null; color: string; icon: string; guestCount: number; isAutomatic: boolean; _count: { members: number; campaigns: number } }
 interface Campaign { id: string; name: string; type: string; status: string; content: string | null; totalSent: number; totalDelivered: number; totalFailed: number; sentAt: string | null; createdAt: string; segment: { id: string; name: string; color: string; guestCount: number } | null }
-interface WaMessage { id: string; phone: string; direction: string; type: string; content: string; status: string; isFromGuest: boolean; createdAt: string; guest: { id: string; name: string; surname: string; country: string | null; totalStays: number } | null }
-interface WaConversation { phone: string; messageCount: number; lastMessageAt: string; guest: { id: string; name: string; surname: string; country: string | null; totalStays: number } | null; lastMessage: { content: string; direction: string; createdAt: string } | null }
+interface WaMessage { id: string; phone: string | null; socialId: string | null; platform: string; direction: string; type: string; content: string; status: string; isFromGuest: boolean; translated: string | null; createdAt: string; guest: { id: string; name: string; surname: string; country: string | null; totalStays: number } | null }
+interface WaConversation { identifier: string; platform: string; messageCount: number; lastMessageAt: string; guest: { id: string; name: string; surname: string; country: string | null; totalStays: number } | null; lastMessage: { content: string; direction: string; createdAt: string } | null }
 interface WaTemplate { id: string; name: string; content: string; category: string; language: string; useCount: number }
 interface EmailTpl { id: string; name: string; subject: string; htmlContent: string; category: string; isActive: boolean; createdAt: string }
 
-type Tab = 'guests' | 'segments' | 'campaigns' | 'emailTemplates' | 'whatsapp'
+type Tab = 'guests' | 'segments' | 'campaigns' | 'emailTemplates' | 'inbox'
 
 export default function CrmClient() {
     const [tab, setTab] = useState<Tab>('guests')
@@ -35,7 +35,7 @@ export default function CrmClient() {
         { key: 'segments', label: 'Segmentler', icon: <Target size={16} /> },
         { key: 'campaigns', label: 'Kampanyalar', icon: <Send size={16} /> },
         { key: 'emailTemplates', label: 'E-posta Şablonları', icon: <Mail size={16} /> },
-        { key: 'whatsapp', label: 'WhatsApp Inbox', icon: <MessageSquare size={16} /> },
+        { key: 'inbox', label: 'Merkezi Inbox', icon: <MessageSquare size={16} /> },
     ]
 
     return (
@@ -63,7 +63,7 @@ export default function CrmClient() {
             {tab === 'segments' && <SegmentsTab />}
             {tab === 'campaigns' && <CampaignsTab />}
             {tab === 'emailTemplates' && <EmailTemplatesTab />}
-            {tab === 'whatsapp' && <WhatsAppInboxTab />}
+            {tab === 'inbox' && <UnifiedInboxTab />}
         </div>
     )
 }
@@ -516,9 +516,9 @@ function EmailTemplatesTab() {
 }
 
 // ═══════════════════════════════════════════════════════
-// ██ WHATSAPP INBOX TAB
+// ██ UNIFIED INBOX TAB
 // ═══════════════════════════════════════════════════════
-function WhatsAppInboxTab() {
+function UnifiedInboxTab() {
     const [view, setView] = useState<'conversations' | 'messages' | 'templates'>('conversations')
     const [conversations, setConversations] = useState<WaConversation[]>([])
     const [messages, setMessages] = useState<WaMessage[]>([])
@@ -526,9 +526,12 @@ function WhatsAppInboxTab() {
     const [loading, setLoading] = useState(true)
     const [search, setSearch] = useState('')
     const [direction, setDirection] = useState('')
+    const [platform, setPlatform] = useState('')
     const [isFromGuest, setIsFromGuest] = useState('')
     const [selectedPhone, setSelectedPhone] = useState<string | null>(null)
+    const [selectedPlatform, setSelectedPlatform] = useState<string>('whatsapp')
     const [replyText, setReplyText] = useState('')
+    const [isTranslating, setIsTranslating] = useState(false)
     const [chatMessages, setChatMessages] = useState<WaMessage[]>([])
     const [showNewTemplate, setShowNewTemplate] = useState(false)
     const [newTpl, setNewTpl] = useState({ name: '', content: '', category: 'general' })
@@ -536,43 +539,55 @@ function WhatsAppInboxTab() {
     const fetchData = useCallback(async () => {
         setLoading(true)
         try {
-            const params = new URLSearchParams({ view, search, direction, isFromGuest })
-            const res = await fetch(`/api/admin/crm/whatsapp?${params}`)
+            const params = new URLSearchParams({ view, search, direction, platform, isFromGuest })
+            const res = await fetch(`/api/admin/crm/social?${params}`)
             const data = await res.json()
             if (view === 'conversations') setConversations(data.conversations || [])
             else if (view === 'templates') setTemplates(data.templates || [])
             else setMessages(data.messages || [])
         } catch { /* ignore */ }
         setLoading(false)
-    }, [view, search, direction, isFromGuest])
+    }, [view, search, direction, platform, isFromGuest])
 
     useEffect(() => { fetchData() }, [fetchData])
 
-    const openConversation = async (phone: string) => {
-        setSelectedPhone(phone)
-        const res = await fetch(`/api/admin/crm/whatsapp?view=messages&phone=${encodeURIComponent(phone)}&limit=100`)
+    const openConversation = async (identifier: string, pfm: string) => {
+        setSelectedPhone(identifier)
+        setSelectedPlatform(pfm)
+        const res = await fetch(`/api/admin/crm/social?view=messages&phone=${encodeURIComponent(identifier)}&limit=100`)
         const data = await res.json()
         setChatMessages(data.messages || [])
     }
 
     const sendReply = async () => {
         if (!replyText.trim() || !selectedPhone) return
-        await fetch('/api/admin/crm/whatsapp', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'reply', phone: selectedPhone, content: replyText }) })
+        await fetch('/api/admin/crm/social', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'reply', phone: selectedPhone, platform: selectedPlatform, content: replyText }) })
         setReplyText('')
-        openConversation(selectedPhone)
+        openConversation(selectedPhone, selectedPlatform)
+    }
+
+    const translateMessageOutbound = async () => {
+        if (!replyText.trim()) return
+        setIsTranslating(true)
+        try {
+            const res = await fetch('/api/admin/crm/social/translate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: replyText, targetLang: 'en' }) })
+            const data = await res.json()
+            if (data.translatedText) setReplyText(data.translatedText)
+        } catch { }
+        setIsTranslating(false)
     }
 
     const useTemplate = (content: string) => { setReplyText(content) }
 
     const createTemplate = async () => {
         if (!newTpl.name || !newTpl.content) return
-        await fetch('/api/admin/crm/whatsapp', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'createTemplate', ...newTpl }) })
+        await fetch('/api/admin/crm/social', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'createTemplate', ...newTpl }) })
         setNewTpl({ name: '', content: '', category: 'general' }); setShowNewTemplate(false); setView('templates'); fetchData()
     }
 
     const deleteTemplate = async (id: string) => {
         if (!confirm('Silmek istediğinize emin misiniz?')) return
-        await fetch('/api/admin/crm/whatsapp', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'deleteTemplate', id }) })
+        await fetch('/api/admin/crm/social', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'deleteTemplate', id }) })
         fetchData()
     }
 
@@ -607,6 +622,9 @@ function WhatsAppInboxTab() {
                     <select className="border dark:border-slate-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-white" value={direction} onChange={e => setDirection(e.target.value)}>
                         <option value="">Tümü</option><option value="inbound">Gelen</option><option value="outbound">Giden</option>
                     </select>
+                    <select className="border dark:border-slate-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-white" value={platform} onChange={e => setPlatform(e.target.value)}>
+                        <option value="">Platformlar</option><option value="whatsapp">WhatsApp</option><option value="facebook">Facebook</option><option value="instagram">Instagram</option>
+                    </select>
                     <select className="border dark:border-slate-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-white" value={isFromGuest} onChange={e => setIsFromGuest(e.target.value)}>
                         <option value="">Tüm Kişiler</option><option value="true">Eski Misafir</option><option value="false">Yeni Kişi</option>
                     </select>
@@ -619,16 +637,16 @@ function WhatsAppInboxTab() {
             {/* CONVERSATIONS VIEW */}
             {!loading && view === 'conversations' && !selectedPhone && (
                 <div className="space-y-2">
-                    {conversations.length === 0 ? <p className="text-center py-8 text-muted-foreground">Henüz WhatsApp mesajı alınmadı</p> :
+                    {conversations.length === 0 ? <p className="text-center py-8 text-muted-foreground">Henüz mesaj alınmadı</p> :
                         conversations.map(c => (
-                            <Card key={c.phone} className="p-3 hover:bg-slate-100 dark:bg-slate-800/50 cursor-pointer transition" onClick={() => openConversation(c.phone)}>
+                            <Card key={c.identifier} className="p-3 hover:bg-slate-100 dark:bg-slate-800/50 cursor-pointer transition" onClick={() => openConversation(c.identifier, c.platform)}>
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-0">
                                     <div className="flex items-center gap-3">
-                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold ${c.guest ? 'bg-green-600' : 'bg-gray-400'}`}>
-                                            {c.guest ? c.guest.name[0] : '?'}
+                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold ${c.platform === 'whatsapp' ? 'bg-green-600' : c.platform === 'facebook' ? 'bg-blue-600' : 'bg-pink-600'}`}>
+                                            {c.platform === 'whatsapp' ? 'WA' : c.platform === 'facebook' ? 'FB' : 'IG'}
                                         </div>
                                         <div>
-                                            <div className="font-medium">{c.guest ? `${c.guest.name} ${c.guest.surname}` : c.phone}</div>
+                                            <div className="font-medium">{c.guest ? `${c.guest.name} ${c.guest.surname}` : c.identifier}</div>
                                             <div className="text-xs text-muted-foreground flex items-center gap-2">
                                                 {c.guest && <Badge variant="outline" className="text-xs"><UserCheck size={10} className="mr-1" /> Eski Misafir ({c.guest.totalStays}x)</Badge>}
                                                 {c.guest?.country && <span><Globe size={10} className="inline mr-1" />{c.guest.country}</span>}
@@ -653,19 +671,28 @@ function WhatsAppInboxTab() {
                     <Card className="p-4">
                         <div className="space-y-3 max-h-[400px] overflow-y-auto">
                             {chatMessages.slice().reverse().map(m => (
-                                <div key={m.id} className={`flex ${m.direction === 'outbound' ? 'justify-end' : 'justify-start'}`}>
+                                <div key={m.id} className={`flex flex-col ${m.direction === 'outbound' ? 'items-end' : 'items-start'}`}>
                                     <div className={`max-w-[70%] px-3 py-2 rounded-lg text-sm ${m.direction === 'outbound' ? 'bg-primary text-primary-foreground' : 'bg-slate-200 dark:bg-slate-800'}`}>
                                         <p>{m.content}</p>
                                         <p className={`text-xs mt-1 ${m.direction === 'outbound' ? 'text-primary-foreground/60' : 'text-muted-foreground'}`}>
                                             {new Date(m.createdAt).toLocaleString('tr')}
                                         </p>
                                     </div>
+                                    {m.direction === 'inbound' && m.translated && (
+                                        <div className="mt-1 max-w-[70%] px-3 py-2 rounded-lg text-sm bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 border border-yellow-200 dark:border-yellow-800">
+                                            <p className="text-xs font-semibold mb-1 opacity-70">Çeviri:</p>
+                                            <p>{m.translated}</p>
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                             {chatMessages.length === 0 && <p className="text-center text-muted-foreground text-sm">Mesaj bulunamadı</p>}
                         </div>
                         <div className="flex gap-2 mt-4 pt-3 border-t">
                             <input className="flex-1 border dark:border-slate-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-white" placeholder="Yanıt yazın..." value={replyText} onChange={e => setReplyText(e.target.value)} onKeyDown={e => e.key === 'Enter' && sendReply()} />
+                            <button onClick={translateMessageOutbound} disabled={!replyText.trim() || isTranslating} className="px-3 py-2 border rounded-lg text-sm flex items-center gap-1 hover:bg-slate-50 dark:hover:bg-slate-800" title="İngilizceye Çevir">
+                                {isTranslating ? <Loader2 size={14} className="animate-spin" /> : <Globe size={14} />} Çevir
+                            </button>
                             <button onClick={sendReply} disabled={!replyText.trim()} className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 disabled:opacity-50 flex items-center gap-1"><Send size={14} /> Gönder</button>
                         </div>
                     </Card>
@@ -684,8 +711,11 @@ function WhatsAppInboxTab() {
                             {messages.length === 0 ? <tr><td colSpan={5} className="p-8 text-center text-muted-foreground">Mesaj bulunamadı</td></tr> :
                                 messages.map(m => (
                                     <tr key={m.id} className="border-b hover:bg-slate-100 dark:bg-slate-800/50">
-                                        <td className="p-3">{m.direction === 'inbound' ? <Badge variant="default" className="text-xs bg-blue-600">Gelen</Badge> : <Badge variant="secondary" className="text-xs">Giden</Badge>}</td>
-                                        <td className="p-3 font-mono text-xs">{m.phone}</td>
+                                        <td className="p-3">
+                                            {m.direction === 'inbound' ? <Badge variant="default" className="text-xs bg-blue-600">Gelen</Badge> : <Badge variant="secondary" className="text-xs">Giden</Badge>}
+                                            <Badge variant="outline" className="text-xs ml-1 uppercase">{m.platform.slice(0, 2)}</Badge>
+                                        </td>
+                                        <td className="p-3 font-mono text-xs">{m.phone || m.socialId}</td>
                                         <td className="p-3">{m.guest ? <span className="flex items-center gap-1"><UserCheck size={12} className="text-green-600" /> {m.guest.name} {m.guest.surname}</span> : <span className="text-muted-foreground">Bilinmiyor</span>}</td>
                                         <td className="p-3 max-w-[300px] truncate">{m.content}</td>
                                         <td className="p-3 text-xs text-muted-foreground">{new Date(m.createdAt).toLocaleString('tr')}</td>

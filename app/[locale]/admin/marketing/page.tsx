@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic'
 
-import { MarketingService } from '@/lib/services/marketing'
+import { AdCampaign, AdPlatform, MarketingOverview } from '@/lib/services/marketing'
 import MarketingClient from './MarketingClient'
 
 export default async function MarketingPage({
@@ -8,18 +8,10 @@ export default async function MarketingPage({
 }: {
     params: Promise<{ locale: string }>
 }) {
-    // const { locale } = await params // Not used yet but available
-
-    // Fetch Marketing Data (Last 30 days) from our new Service and mock fallback
-    const today = new Date()
-    const thirtyDaysAgo = new Date(today)
-    thirtyDaysAgo.setDate(today.getDate() - 30)
-
-    // We fetch real data from our internal API (which connects to Meta / Google)
-    // For Server Components we can use fetch directly with an absolute URL but since
-    // we don't know the host, we'll try to fetch or fall back to the mock if no ENV 
-    // variables are set
+    // We enforce real data logic now. No more mock fallbacks.
     let liveData = null
+    let errorMsg = null
+
     try {
         const HOST = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'
         const res = await fetch(`${HOST}/api/admin/analytics/ads`, { cache: 'no-store' })
@@ -27,31 +19,76 @@ export default async function MarketingPage({
             const data = await res.json()
             if (data.success) {
                 liveData = data.data
+            } else {
+                errorMsg = data.error || 'Failed to parse ads data'
             }
+        } else {
+            errorMsg = `API request failed with status: ${res.status}`
         }
-    } catch (e) {
+    } catch (e: any) {
         console.warn('Failed to fetch live marketing data:', e)
+        errorMsg = e.message || 'Connection error'
     }
 
-    // Default mock data via Service
-    const overview = await MarketingService.getOverview(thirtyDaysAgo, today)
-    const campaigns = await MarketingService.getCampaigns(thirtyDaysAgo, today)
+    const overview: MarketingOverview = {
+        totalSpend: 0,
+        totalRevenue: 0,
+        totalROAS: 0,
+        platformBreakdown: []
+    }
+    const campaigns: AdCampaign[] = []
 
-    // Merge live data into overview if available
-    if (liveData && liveData.totalSpend > 0) {
-        overview.totalSpend = liveData.totalSpend
+    if (liveData) {
+        overview.totalSpend = liveData.totalSpend || 0
 
-        // Find platforms and update stats
-        const metaIdx = overview.platformBreakdown.findIndex(p => p.platform === 'Meta (Facebook & Instagram)' || p.platform === 'Meta')
-        if (metaIdx > -1 && liveData.metaAds) {
-            overview.platformBreakdown[metaIdx].spend = liveData.metaAds.spend
-            overview.platformBreakdown[metaIdx].roas = liveData.metaAds.roas
+        // Meta Ads Summary
+        if (liveData.metaAds) {
+            const spend = liveData.metaAds.spend || 0
+            const roas = liveData.metaAds.roas || 0
+            overview.platformBreakdown.push({
+                platform: 'Meta (Facebook & Instagram)' as AdPlatform,
+                spend,
+                roas
+            })
+
+            campaigns.push({
+                id: 'meta_summary',
+                platform: 'Meta (Facebook & Instagram)' as AdPlatform,
+                name: 'Meta Ads - Account Summary (Last 30 Days)',
+                status: liveData.metaAds.status === 'Connected' ? 'active' : 'paused',
+                spend: spend,
+                impressions: liveData.metaAds.impressions || 0,
+                clicks: liveData.metaAds.clicks || 0,
+                ctr: liveData.metaAds.impressions ? ((liveData.metaAds.clicks || 0) / liveData.metaAds.impressions) * 100 : 0,
+                cpc: liveData.metaAds.clicks ? (spend / liveData.metaAds.clicks) : 0,
+                conversions: 0, // Need pixel/conversion API data
+                roas: roas
+            })
         }
 
-        const googleIdx = overview.platformBreakdown.findIndex(p => p.platform === 'Google Ads' || p.platform === 'Google')
-        if (googleIdx > -1 && liveData.googleAds && typeof liveData.googleAds.spend === 'number') {
-            overview.platformBreakdown[googleIdx].spend = liveData.googleAds.spend
-            overview.platformBreakdown[googleIdx].roas = liveData.googleAds.roas
+        // Google Ads Summary
+        if (liveData.googleAds) {
+            const spend = liveData.googleAds.spend || 0
+            const roas = liveData.googleAds.roas || 0
+            overview.platformBreakdown.push({
+                platform: 'Google Ads' as AdPlatform,
+                spend,
+                roas
+            })
+
+            campaigns.push({
+                id: 'google_summary',
+                platform: 'Google Ads' as AdPlatform,
+                name: 'Google Ads - Account Summary (Last 30 Days)',
+                status: liveData.googleAds.status === 'Connected' ? 'active' : 'paused',
+                spend: spend,
+                impressions: liveData.googleAds.impressions || 0,
+                clicks: liveData.googleAds.clicks || 0,
+                ctr: liveData.googleAds.impressions ? ((liveData.googleAds.clicks || 0) / liveData.googleAds.impressions) * 100 : 0,
+                cpc: liveData.googleAds.clicks ? (spend / liveData.googleAds.clicks) : 0,
+                conversions: 0, // Need conversion tracking setup
+                roas: roas
+            })
         }
 
         // Recalculate average ROAS based on live data
@@ -72,20 +109,31 @@ export default async function MarketingPage({
         }
     }
 
+    const hasLiveConnection = liveData?.metaAds?.status === 'Connected' || liveData?.googleAds?.status === 'Connected'
+
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white mb-2">Marketing Overview</h1>
-                    <p className="text-slate-500 dark:text-slate-400">Track ad performance across Google, Meta, and TikTok.</p>
+                    <p className="text-slate-500 dark:text-slate-400">Track ad performance across Google & Meta. Data is loaded directly from real APIs.</p>
                 </div>
-                <div className="text-right text-sm text-slate-500">
+                <div className="text-right text-sm text-slate-500 flex flex-col items-end">
                     <span className="flex items-center gap-2">
-                        <span className={`h-2 w-2 rounded-full ${liveData?.totalSpend > 0 ? 'bg-green-500' : 'bg-amber-500 animate-pulse'}`}></span>
-                        {liveData?.totalSpend > 0 ? 'Live Data (Meta/Google)' : 'Mock Data (API Credentials Required)'}
+                        <span className={`h-2 w-2 rounded-full ${hasLiveConnection ? 'bg-green-500' : 'bg-amber-500 animate-pulse'}`}></span>
+                        {hasLiveConnection ? 'Live Data Connected' : 'Missing API Credentials'}
                     </span>
+                    {errorMsg && <span className="text-red-500 text-xs mt-1">{errorMsg}</span>}
                 </div>
             </div>
+
+            {!hasLiveConnection && (
+                <div className="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-xl text-sm">
+                    <strong>Bilgi:</strong> API bağlantıları kurulamadı veya eksik (Meta Token ya da Google OAuth).
+                    Gerçek zamanlı verileri görebilmek için lütfen <code>.env</code> dosyasındaki
+                    <code>META_ACCESS_TOKEN</code> ve <code>GOOGLE_ADS_*</code> kimlik bilgilerini tanımlayınız. Mock veri kullanımı devre dışı bırakılmıştır.
+                </div>
+            )}
 
             <MarketingClient overview={overview} campaigns={campaigns} />
         </div>

@@ -62,6 +62,11 @@ export const MODULE_REGISTRY: ModuleDefinition[] = [
         offlineReason: 'Elektra PMS API bağlantısı kurulamadı — misafir yorum ve memnuniyet verileri alınamıyor',
     },
     {
+        id: 'nav-crm-marketing', label: 'CRM Marketing', section: 'section-satis',
+        href: '/crm-marketing', dataSource: 'local', defaultEnabled: true,
+        description: 'Misafir segmentasyonu, otomatik kampanyalar ve hatırlatma mesajları',
+    },
+    {
         id: 'nav-marketing', label: 'Pazarlama', section: 'section-satis',
         href: '/marketing', dataSource: 'local', defaultEnabled: true,
         description: 'Pazarlama kampanyaları ve reklam yönetimi',
