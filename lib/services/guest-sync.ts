@@ -50,20 +50,24 @@ export async function syncGuestsFromElektra(
 
         if (!key || key === '_') continue;
 
+        // Prefer guestList[0] email/phone if contactEmail is missing or invalid
+        const resEmail = (res.contactEmail as string) || guestList[0]?.email || null;
+        const resPhone = (res.contactPhone as string) || guestList[0]?.phone || null;
+
         if (!guestMap.has(key)) {
             guestMap.set(key, {
                 name: firstName,
                 surname: lastName,
                 country: guestNationality || 'Unknown',
-                email: (res.contactEmail as string) || null,
-                phone: (res.contactPhone as string) || null,
+                email: resEmail,
+                phone: resPhone,
                 reservations: [res],
             });
         } else {
             const existing = guestMap.get(key)!;
             existing.reservations.push(res);
-            if (!existing.email && res.contactEmail) existing.email = res.contactEmail as string;
-            if (!existing.phone && res.contactPhone) existing.phone = res.contactPhone as string;
+            if (!existing.email && resEmail) existing.email = resEmail;
+            if (!existing.phone && resPhone) existing.phone = resPhone;
             if (existing.country === 'Unknown' && res.country) existing.country = res.country;
         }
     }
@@ -96,8 +100,8 @@ export async function syncGuestsFromElektra(
             // Try to find existing guest by name+surname
             const existing = await prisma.guestProfile.findFirst({
                 where: {
-                    name: { equals: guest.name, mode: 'insensitive' },
-                    surname: { equals: guest.surname, mode: 'insensitive' },
+                    name: guest.name,
+                    surname: guest.surname,
                 },
             });
 

@@ -42,6 +42,7 @@ export default function AnalyticsPage() {
     const [saving, setSaving] = useState(false)
     const [saved, setSaved] = useState(false)
     const [error, setError] = useState('')
+    const [apiError, setApiError] = useState('')
     const [activeTab, setActiveTab] = useState<'dashboard' | 'realtime' | 'demographics' | 'settings'>('dashboard')
 
     const [trafficData, setTrafficData] = useState<any[]>([])
@@ -80,9 +81,16 @@ export default function AnalyticsPage() {
                         duration: '2m 15s' // Mock fallback for duration since GA4 logic is complex
                     })
                     setHasRealData(true)
+                } else if (!data.success && data.error) {
+                    setApiError(data.error)
+                    setHasRealData(false)
+                } else {
+                    setApiError('Görüntülenecek veri bulunamadı veya GA4 bağlantısı kurulamadı.')
+                    setHasRealData(false)
                 }
             } catch (err) {
                 console.error('Failed to load analytics data', err)
+                setApiError('API isteği sırasında bir hata oluştu.')
             }
         }
 
@@ -190,12 +198,24 @@ export default function AnalyticsPage() {
             {activeTab === 'dashboard' && (
                 <div className="space-y-6 animate-fade-in">
                     {/* KPI Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <KPICard title="Total Users" value={totalsData.users.toLocaleString()} change={12.5} icon={Users} color="cyan" />
-                        <KPICard title="Sessions" value={totalsData.sessions.toLocaleString()} change={8.2} icon={Activity} color="green" />
-                        <KPICard title="Bounce Rate" value={`${totalsData.bounceRate}%`} change={-2.1} icon={ArrowUpRight} color="orange" />
-                        <KPICard title="Avg. Duration" value={totalsData.duration} change={5.4} icon={Clock} color="purple" />
-                    </div>
+                    {hasRealData ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <KPICard title="Total Users" value={totalsData.users.toLocaleString()} change={12.5} icon={Users} color="cyan" />
+                            <KPICard title="Sessions" value={totalsData.sessions.toLocaleString()} change={8.2} icon={Activity} color="green" />
+                            <KPICard title="Bounce Rate" value={`${totalsData.bounceRate}%`} change={-2.1} icon={ArrowUpRight} color="orange" />
+                            <KPICard title="Avg. Duration" value={totalsData.duration} change={5.4} icon={Clock} color="purple" />
+                        </div>
+                    ) : (
+                        <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-xl p-6 mb-6">
+                            <div className="flex items-start gap-4">
+                                <AlertCircle className="text-red-500 mt-1" size={24} />
+                                <div>
+                                    <h3 className="text-lg font-bold text-red-700 dark:text-red-400">Analitik Verisi Alınamadı</h3>
+                                    <p className="text-red-600 dark:text-red-300 mt-1">{apiError || 'Google Analytics bağlantısında bir sorun oluştu.'}</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {/* AI Insights & Radar */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -208,74 +228,76 @@ export default function AnalyticsPage() {
                     </div>
 
                     {/* Charts Row */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        {/* Main Traffic Chart */}
-                        <div className="lg:col-span-2 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6">
-                            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">Traffic Overview (30 Days)</h3>
-                            <div className="h-[300px] w-full">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <AreaChart data={trafficData}>
-                                        <defs>
-                                            <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="5%" stopColor="#0891b2" stopOpacity={0.3} />
-                                                <stop offset="95%" stopColor="#0891b2" stopOpacity={0} />
-                                            </linearGradient>
-                                        </defs>
-                                        <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" />
-                                        <XAxis dataKey="date" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                                        <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                                        <Tooltip content={({ active, payload, label }) => {
-                                            if (active && payload && payload.length) {
-                                                return (
-                                                    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 rounded-xl shadow-lg">
-                                                        <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">{label}</p>
-                                                        <p className="font-bold text-slate-900 dark:text-white">{payload[0].value} users</p>
-                                                    </div>
-                                                )
-                                            }
-                                            return null
-                                        }} />
-                                        <Area type="monotone" dataKey="users" stroke="#06b6d4" strokeWidth={2} fillOpacity={1} fill="url(#colorUsers)" />
-                                    </AreaChart>
-                                </ResponsiveContainer>
+                    {hasRealData && (
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            {/* Main Traffic Chart */}
+                            <div className="lg:col-span-2 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+                                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">Traffic Overview (30 Days)</h3>
+                                <div className="h-[300px] w-full">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <AreaChart data={trafficData}>
+                                            <defs>
+                                                <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="5%" stopColor="#0891b2" stopOpacity={0.3} />
+                                                    <stop offset="95%" stopColor="#0891b2" stopOpacity={0} />
+                                                </linearGradient>
+                                            </defs>
+                                            <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" />
+                                            <XAxis dataKey="date" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                                            <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                                            <Tooltip content={({ active, payload, label }) => {
+                                                if (active && payload && payload.length) {
+                                                    return (
+                                                        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 rounded-xl shadow-lg">
+                                                            <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">{label}</p>
+                                                            <p className="font-bold text-slate-900 dark:text-white">{payload[0].value} users</p>
+                                                        </div>
+                                                    )
+                                                }
+                                                return null
+                                            }} />
+                                            <Area type="monotone" dataKey="users" stroke="#06b6d4" strokeWidth={2} fillOpacity={1} fill="url(#colorUsers)" />
+                                        </AreaChart>
+                                    </ResponsiveContainer>
+                                </div>
                             </div>
-                        </div>
 
-                        {/* Channels Chart */}
-                        <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6">
-                            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">Acquisition Channels</h3>
-                            <div className="h-[300px] w-full">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <PieChart>
-                                        <Pie
-                                            data={channelsData}
-                                            cx="50%"
-                                            cy="50%"
-                                            innerRadius={60}
-                                            outerRadius={100}
-                                            paddingAngle={5}
-                                            dataKey="value"
-                                        >
-                                            {channelsData.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                            ))}
-                                        </Pie>
-                                        <Tooltip content={({ active, payload }) => {
-                                            if (active && payload && payload.length) {
-                                                return (
-                                                    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 rounded-xl shadow-lg">
-                                                        <p className="font-bold text-slate-900 dark:text-white">{payload[0].name}: {payload[0].value}</p>
-                                                    </div>
-                                                )
-                                            }
-                                            return null
-                                        }} />
-                                        <Legend verticalAlign="bottom" height={36} />
-                                    </PieChart>
-                                </ResponsiveContainer>
+                            {/* Channels Chart */}
+                            <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+                                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">Acquisition Channels</h3>
+                                <div className="h-[300px] w-full">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <PieChart>
+                                            <Pie
+                                                data={channelsData}
+                                                cx="50%"
+                                                cy="50%"
+                                                innerRadius={60}
+                                                outerRadius={100}
+                                                paddingAngle={5}
+                                                dataKey="value"
+                                            >
+                                                {channelsData.map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                                ))}
+                                            </Pie>
+                                            <Tooltip content={({ active, payload }) => {
+                                                if (active && payload && payload.length) {
+                                                    return (
+                                                        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 rounded-xl shadow-lg">
+                                                            <p className="font-bold text-slate-900 dark:text-white">{payload[0].name}: {payload[0].value}</p>
+                                                        </div>
+                                                    )
+                                                }
+                                                return null
+                                            }} />
+                                            <Legend verticalAlign="bottom" height={36} />
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    )}
 
                     {!hasRealData && (
                         <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 flex items-start gap-3">

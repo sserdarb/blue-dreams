@@ -59,7 +59,7 @@ export type Reservation = {
     contactPhone: string | null
     lastUpdate: string
     reservationDate: string
-    guests: { name: string; surname: string; country: string }[]
+    guests: { name: string; surname: string; country: string; email?: string; phone?: string }[]
     status: string
     // Enhanced Fields
     country: string // derived from first guest or contact
@@ -411,7 +411,9 @@ async function fetchReservations(fromDate: string, toDate: string, status: strin
         const guests = ((item['guest-list'] as Array<Record<string, unknown>>) || []).map(g => ({
             name: (g['name'] as string) || '',
             surname: (g['surname'] as string) || '',
-            country: resolveCountry(g, countryMap)
+            country: resolveCountry(g, countryMap),
+            email: (g['email'] as string) || (g['e-mail'] as string) || '',
+            phone: (g['phone'] as string) || (g['gsm'] as string) || (g['mobile-phone'] as string) || ''
         }))
 
         // Also try reservation-level country fields

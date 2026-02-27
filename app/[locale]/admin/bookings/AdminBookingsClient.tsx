@@ -70,11 +70,11 @@ export default function AdminBookingsClient() {
                     </h1>
                     <p className="text-sm text-slate-500 mt-1">{total} kayıt bulundu</p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
                     <select
                         value={statusFilter}
                         onChange={(e) => { setStatusFilter(e.target.value); setPage(1) }}
-                        className="px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm dark:bg-slate-800 dark:text-white"
+                        className="flex-1 sm:flex-none px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm dark:bg-slate-800 dark:text-white"
                     >
                         <option value="all">Tüm Durumlar</option>
                         <option value="pending">Beklemede</option>
@@ -83,7 +83,7 @@ export default function AdminBookingsClient() {
                         <option value="failed">Başarısız</option>
                         <option value="cancelled">İptal</option>
                     </select>
-                    <button onClick={fetchBookings} className="p-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500 transition-colors">
+                    <button onClick={fetchBookings} className="p-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-500 transition-colors shrink-0">
                         <RefreshCcw size={16} />
                     </button>
                 </div>

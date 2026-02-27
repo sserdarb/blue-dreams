@@ -33,13 +33,12 @@ export async function GET(request: Request) {
         const privateKey = process.env.GA_PRIVATE_KEY
 
         if (!propertyId || !clientEmail || !privateKey) {
-            // Return empty data gracefully instead of 500 error
             return NextResponse.json({
-                success: true,
+                success: false,
                 data: [],
                 totals: { users: 0, pageViews: 0, sessions: 0, averageBounceRate: 0 },
-                warning: 'Google Analytics yapılandırılmamış. GA_PROPERTY_ID, GA_CLIENT_EMAIL ve GA_PRIVATE_KEY env değişkenlerini ayarlayın.'
-            })
+                error: 'Google Analytics API kimlik bilgileri eksik. Lütfen Ayarlar sekmesinden yapılandırın veya .env dosyanızı kontrol edin.'
+            }, { status: 400 })
         }
 
         // Optional date range from query string, defaults to last 30 days
