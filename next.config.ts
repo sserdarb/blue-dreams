@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  serverExternalPackages: ['iyzipay'],
   // output: 'standalone', // Disabled for Nixpacks compatibility (fixes 400 Bad Request on _next/static)
   images: {
     remotePatterns: [
