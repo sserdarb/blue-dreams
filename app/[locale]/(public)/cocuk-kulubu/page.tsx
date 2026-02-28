@@ -33,7 +33,7 @@ export default async function KidsClubPage({ params }: { params: Promise<{ local
         {
             title: locale === 'tr' ? 'Çocuk Havuz Oyunları' : 'Kids Pool Games',
             desc: locale === 'tr' ? 'Gözetmen eşliğinde güvenli ve eğlenceli su oyunları.' : 'Safe and fun water games under supervision.',
-            img: 'https://images.unsplash.com/photo-1544453535-ecb6020588ce?q=80&w=1471&auto=format&fit=crop', // Kids in pool
+            img: 'https://images.unsplash.com/photo-1576610616656-d7aa01f498ec?q=80&w=1471&auto=format&fit=crop', // Kids pool fun
         },
         {
             title: locale === 'tr' ? 'Mini Disko' : 'Mini Disco',
