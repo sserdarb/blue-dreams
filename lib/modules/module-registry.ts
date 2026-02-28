@@ -62,6 +62,11 @@ export const MODULE_REGISTRY: ModuleDefinition[] = [
         offlineReason: 'Elektra PMS API bağlantısı kurulamadı — misafir yorum ve memnuniyet verileri alınamıyor',
     },
     {
+        id: 'nav-call-center', label: 'Çağrı Merkezi', section: 'section-satis',
+        href: '/crm/call-center', dataSource: 'local', defaultEnabled: true,
+        description: 'Çağrı merkezi metrikleri, günlük teklif ve ciro performans analizleri',
+    },
+    {
         id: 'nav-crm-marketing', label: 'CRM Marketing', section: 'section-satis',
         href: '/crm-marketing', dataSource: 'local', defaultEnabled: true,
         description: 'Misafir segmentasyonu, otomatik kampanyalar ve hatırlatma mesajları',
@@ -80,6 +85,11 @@ export const MODULE_REGISTRY: ModuleDefinition[] = [
         id: 'nav-content-gen', label: 'İçerik Üretici', section: 'section-satis',
         href: '/social/content', dataSource: 'none', defaultEnabled: true,
         description: 'AI içerik üretici, tasarım aracı, video düzenleyici',
+    },
+    {
+        id: 'nav-competitors', label: 'Rakip Analizi', section: 'section-satis',
+        href: '/competitors', dataSource: 'local', defaultEnabled: true,
+        description: 'Rakip otellerin metrik ve analiz takibi',
     },
 
     // ── Finans & Tedarik ──
