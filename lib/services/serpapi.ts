@@ -72,15 +72,20 @@ export async function fetchBodrumAttractions(): Promise<SerpAttraction[]> {
         const results: SerpAttraction[] = (data.organic_results || []).map((r: any, i: number) => {
             let name = r.title || ''
             name = name.replace(/\- Tripadvisor.*/i, '').replace(/\- 202\d.*/, '').trim()
-            
+
+            let hqImage = ''
+            if (r.pagemap && r.pagemap.cse_image && r.pagemap.cse_image.length > 0) {
+                hqImage = r.pagemap.cse_image[0].src
+            }
+
             return {
-                id: `serp-ta-attr-${i}`,
+                id: `serp-ta-attr-${r.position || i}`,
                 title: name,
                 address: r.snippet ? extractAddress(r.snippet) : 'Bodrum, Muğla',
                 rating: r.rating || 4.5,
                 reviews: r.reviews || 120,
                 type: 'TripAdvisor Önerisi',
-                thumbnail: r.thumbnail || 'https://bluedreamsresort.com/wp-content/uploads/2023/04/bdr-explore-1.jpg',
+                thumbnail: hqImage || r.thumbnail || 'https://bluedreamsresort.com/wp-content/uploads/2023/04/bdr-explore-1.jpg',
                 description: r.snippet || '',
                 link: r.link || '',
                 approved: false,
@@ -164,19 +169,26 @@ async function fetchTripAdvisorEvents(): Promise<SerpEvent[]> {
         if (!response.ok) return []
 
         const data = await response.json()
-        const results: SerpEvent[] = (data.organic_results || []).slice(0, 10).map((r: any, i: number) => ({
-            id: `serp-ta-${i}`,
-            title: r.title || '',
-            date: '',
-            time: '',
-            venue: '',
-            address: r.snippet ? extractAddress(r.snippet) : '',
-            thumbnail: r.thumbnail || '',
-            description: r.snippet || '',
-            link: r.link || '',
-            source: 'tripadvisor',
-            approved: false,
-        }))
+        const results: SerpEvent[] = (data.organic_results || []).slice(0, 10).map((r: any, i: number) => {
+            let hqImage = ''
+            if (r.pagemap && r.pagemap.cse_image && r.pagemap.cse_image.length > 0) {
+                hqImage = r.pagemap.cse_image[0].src
+            }
+
+            return {
+                id: `serp-ta-${r.position || i}`,
+                title: r.title || '',
+                date: '',
+                time: '',
+                venue: '',
+                address: r.snippet ? extractAddress(r.snippet) : '',
+                thumbnail: hqImage || r.thumbnail || '',
+                description: r.snippet || '',
+                link: r.link || '',
+                source: 'tripadvisor',
+                approved: false,
+            }
+        })
 
         eventsCache = { data: results, ts: Date.now() }
         return results

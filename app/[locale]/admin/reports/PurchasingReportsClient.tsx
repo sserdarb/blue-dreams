@@ -41,10 +41,17 @@ const CATEGORY_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', 
 
 export default function PurchasingReportsClient({ kpis, stockItems, purchaseOrders, vendors, inventoryNeeds, priceTrends, dataSource }: Props) {
     const [activeTab, setActiveTab] = useState<'overview' | 'orders' | 'inventory' | 'vendors'>('overview')
-    const [datePreset, setDatePreset] = useState<'month' | 'quarter' | 'year' | 'custom'>('year')
+    const [datePreset, setDatePreset] = useState<'month' | 'quarter' | 'year' | 'all_time' | 'custom'>('year')
     const [customStart, setCustomStart] = useState('')
     const [customEnd, setCustomEnd] = useState('')
+    const [tempStart, setTempStart] = useState('')
+    const [tempEnd, setTempEnd] = useState('')
     const [statusFilter, setStatusFilter] = useState<string>('ALL')
+
+    const applyCustomDates = () => {
+        setCustomStart(tempStart)
+        setCustomEnd(tempEnd)
+    }
 
     const tabs = [
         { key: 'overview' as const, label: 'Genel Bakış', icon: BarChart3 },
@@ -69,6 +76,9 @@ export default function PurchasingReportsClient({ kpis, stockItems, purchaseOrde
                 const endMonth = q * 3 + 3
                 const lastDay = new Date(now.getFullYear(), endMonth, 0).getDate()
                 end = `${now.getFullYear()}-${String(endMonth).padStart(2, '0')}-${lastDay}`
+            } else if (datePreset === 'all_time') {
+                // Return all orders immediately
+                start = '1970-01-01'; end = '2099-12-31'
             } else if (datePreset === 'custom' && customStart && customEnd) {
                 start = customStart; end = customEnd
             }
@@ -194,29 +204,34 @@ export default function PurchasingReportsClient({ kpis, stockItems, purchaseOrde
                 <div className="flex-1" />
 
                 {/* Date Range Filter */}
-                <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
-                    <CalendarRange size={14} className="text-slate-400 ml-1" />
-                    {(['month', 'quarter', 'year'] as const).map(p => (
+                <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1 overflow-x-auto whitespace-nowrap scrollbar-none w-full lg:w-auto">
+                    <CalendarRange size={14} className="text-slate-400 ml-1 shrink-0" />
+                    {(['month', 'quarter', 'year', 'all_time'] as const).map(p => (
                         <button
                             key={p}
                             onClick={() => setDatePreset(p)}
-                            className={`px-2.5 py-1 text-[10px] font-bold rounded-md transition-colors ${datePreset === p ? 'bg-orange-500 text-white' : 'text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700'}`}
+                            className={`px-2.5 py-1 text-[10px] font-bold rounded-md transition-colors shrink-0 ${datePreset === p ? 'bg-orange-500 text-white' : 'text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700'}`}
                         >
-                            {p === 'month' ? 'Ay' : p === 'quarter' ? 'Çeyrek' : 'Yıl'}
+                            {p === 'month' ? 'Ay' : p === 'quarter' ? 'Çeyrek' : p === 'year' ? 'Yıl' : 'Tüm Zamanlar'}
                         </button>
                     ))}
                     <button
                         onClick={() => setDatePreset('custom')}
-                        className={`px-2.5 py-1 text-[10px] font-bold rounded-md transition-colors ${datePreset === 'custom' ? 'bg-orange-500 text-white' : 'text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700'}`}
+                        className={`px-2.5 py-1 text-[10px] font-bold rounded-md transition-colors shrink-0 ${datePreset === 'custom' ? 'bg-orange-500 text-white' : 'text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700'}`}
                     >
                         Özel
                     </button>
                 </div>
                 {datePreset === 'custom' && (
-                    <div className="flex items-center gap-1">
-                        <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)} className="text-[10px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded px-1.5 py-1 text-slate-700 dark:text-slate-300" />
+                    <div className="flex items-center gap-1 shrink-0">
+                        <input type="date" value={tempStart} onChange={e => setTempStart(e.target.value)} className="text-[10px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded px-1.5 py-1 text-slate-700 dark:text-slate-300 w-[100px] sm:w-auto" />
                         <span className="text-slate-400 text-[10px]">–</span>
-                        <input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)} className="text-[10px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded px-1.5 py-1 text-slate-700 dark:text-slate-300" />
+                        <input type="date" value={tempEnd} onChange={e => setTempEnd(e.target.value)} className="text-[10px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded px-1.5 py-1 text-slate-700 dark:text-slate-300 w-[100px] sm:w-auto" />
+                        {(tempStart !== customStart || tempEnd !== customEnd) && (
+                            <button onClick={applyCustomDates} className="bg-orange-500 hover:bg-orange-600 text-white text-[10px] font-bold px-2 py-1 rounded transition-colors shrink-0">
+                                Uygula
+                            </button>
+                        )}
                     </div>
                 )}
 

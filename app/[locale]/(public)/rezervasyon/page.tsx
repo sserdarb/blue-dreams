@@ -20,7 +20,7 @@ const i18n: Record<string, Record<string, string>> = {
         supportDesc: "Rezervasyon sürecinizde yanınızdayız.",
         contactTitle: "İletişim",
         phone: "+90 252 337 11 11",
-        address: "Akyarlar Mah., Turgutreis, Bodrum",
+        address: "Torba Mah. Torba Cad. No:4/1 Torba / Bodrum",
         hours: "Resepsiyon: 7/24",
     },
     en: {
@@ -38,7 +38,7 @@ const i18n: Record<string, Record<string, string>> = {
         supportDesc: "We're here for you throughout the booking process.",
         contactTitle: "Contact",
         phone: "+90 252 337 11 11",
-        address: "Akyarlar Mah., Turgutreis, Bodrum",
+        address: "Torba Mah. Torba Cad. No:4/1 Torba / Bodrum",
         hours: "Reception: 24/7",
     }
 }
@@ -75,7 +75,7 @@ export default async function ReservationPage({ params }: { params: Promise<{ lo
                             <h2 className="text-xl font-bold">{t.searchTitle}</h2>
                         </div>
                         <div className="p-6">
-                            <BookingWidget />
+                            <BookingWidget inline />
                         </div>
                     </div>
                 </div>

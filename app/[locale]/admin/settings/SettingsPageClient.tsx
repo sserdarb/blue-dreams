@@ -1,12 +1,13 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Settings, Globe, Puzzle, Shield, Receipt } from 'lucide-react'
+import { Settings, Globe, Puzzle, Shield, Receipt, Database } from 'lucide-react'
 import { SiteSettingsForm } from '@/components/admin/SiteSettingsForm'
 import SettingsModuleManager from '@/components/admin/SettingsModuleManager'
 import TaxSettingsForm from '@/components/admin/TaxSettingsForm'
+import ElektraSettingsForm from '@/components/admin/ElektraSettingsForm'
 
-type MainTab = 'site' | 'modules' | 'tax'
+type MainTab = 'site' | 'modules' | 'tax' | 'elektra'
 
 interface SettingsPageClientProps {
     locale: string
@@ -64,6 +65,15 @@ export default function SettingsPageClient({ locale, initialSettings, taxRates }
                 >
                     <Receipt size={16} /> Vergi Ayarları
                 </button>
+                <button
+                    onClick={() => setMainTab('elektra')}
+                    className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${mainTab === 'elektra'
+                        ? 'bg-white dark:bg-gradient-to-r dark:from-indigo-600 dark:to-purple-600 text-slate-900 dark:text-white shadow-sm'
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white'
+                        }`}
+                >
+                    <Database size={16} /> Elektra & Önbellek
+                </button>
             </div>
 
             {/* Tab Content */}
@@ -81,6 +91,8 @@ export default function SettingsPageClient({ locale, initialSettings, taxRates }
                 </div>
             ) : mainTab === 'tax' ? (
                 <TaxSettingsForm initialRates={taxRates} />
+            ) : mainTab === 'elektra' ? (
+                <ElektraSettingsForm />
             ) : (
                 <SettingsModuleManager />
             )}

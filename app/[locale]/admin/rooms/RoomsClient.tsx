@@ -88,6 +88,8 @@ export default function RoomsClient({ initialRooms, error }: Props) {
     const today = new Date()
     const [fromDate, setFromDate] = useState(fmtDate(today))
     const [toDate, setToDate] = useState(fmtDate(new Date(today.getTime() + 30 * 86400000)))
+    const [tempFrom, setTempFrom] = useState(fromDate)
+    const [tempTo, setTempTo] = useState(toDate)
 
     // Quick presets
     const [activePreset, setActivePreset] = useState<string>('30d')
@@ -136,12 +138,16 @@ export default function RoomsClient({ initialRooms, error }: Props) {
         }
         setFromDate(from)
         setToDate(to)
+        setTempFrom(from)
+        setTempTo(to)
         fetchAvailability(from, to)
     }
 
     const handleCustomSearch = () => {
         setActivePreset('custom')
-        fetchAvailability(fromDate, toDate)
+        setFromDate(tempFrom)
+        setToDate(tempTo)
+        fetchAvailability(tempFrom, tempTo)
     }
 
     const sorted = useMemo(() => {
@@ -219,16 +225,18 @@ export default function RoomsClient({ initialRooms, error }: Props) {
                     </div>
 
                     {/* Custom date range */}
-                    <div className="flex items-center gap-2">
-                        <Calendar size={14} className="text-slate-500" />
-                        <input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)}
-                            className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-3 py-1.5 text-sm text-slate-900 dark:text-white focus:border-cyan-500 outline-none" />
-                        <span className="text-slate-500 text-sm">→</span>
-                        <input type="date" value={toDate} onChange={e => setToDate(e.target.value)}
-                            className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-3 py-1.5 text-sm text-slate-900 dark:text-white focus:border-cyan-500 outline-none" />
+                    <div className="flex items-center gap-1 sm:gap-2">
+                        <div className="flex items-center bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg p-1">
+                            <Calendar size={14} className="text-slate-500 mx-2 shrink-0" />
+                            <input type="date" value={tempFrom} onChange={e => setTempFrom(e.target.value)}
+                                className="bg-transparent text-xs sm:text-sm text-slate-900 dark:text-white outline-none w-[100px] sm:w-auto" />
+                            <span className="text-slate-500 text-sm mx-1 shrink-0">→</span>
+                            <input type="date" value={tempTo} onChange={e => setTempTo(e.target.value)}
+                                className="bg-transparent text-xs sm:text-sm text-slate-900 dark:text-white outline-none w-[100px] sm:w-auto pr-2" />
+                        </div>
                         <button onClick={handleCustomSearch}
-                            className="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-medium transition-colors flex items-center gap-1">
-                            <Search size={14} /> Sorgula
+                            className="px-3 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-medium transition-colors flex items-center gap-1 shrink-0">
+                            <Search size={14} className="hidden sm:block" /> Sorgula
                         </button>
                     </div>
 

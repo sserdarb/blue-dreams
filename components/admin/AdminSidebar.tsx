@@ -38,7 +38,9 @@ import {
     Languages,
     CheckSquare,
     GitBranch,
-    Mail
+    Mail,
+    Crosshair,
+    PhoneCall
 } from 'lucide-react'
 import { AdminTranslations } from '@/lib/admin-translations'
 import { useTheme } from '@/components/admin/ThemeProvider'
@@ -97,11 +99,13 @@ export default function AdminSidebar({ locale, t, userRole: propRole = 'admin', 
                 { id: 'nav-yield', href: '/yield', label: t.yieldManagement, icon: TrendingUp },
                 { id: 'nav-extras', href: '/extras', label: t.extras, icon: ShoppingBag },
                 { id: 'nav-crm', href: '/crm', label: 'CRM (Misafir İlişk)', icon: PieChart },
+                { id: 'nav-call-center', href: '/crm/call-center', label: 'Çağrı Merkezi', icon: PhoneCall },
                 { id: 'nav-crm-marketing', href: '/crm-marketing', label: 'CRM Marketing', icon: Megaphone },
                 { id: 'nav-marketing', href: '/marketing', label: 'Dijital Pazarlama', icon: Share2 },
                 { id: 'nav-analytics', href: '/analytics', label: t.analytics, icon: BarChart3 },
                 { id: 'nav-social', href: '/social', label: t.socialMedia, icon: Share2 },
                 { id: 'nav-content-gen', href: '/social/content', label: t.contentCreator, icon: Sparkles },
+                { id: 'nav-competitors', href: '/competitors', label: 'Rakip Analizi', icon: Crosshair },
             ]
         },
         {

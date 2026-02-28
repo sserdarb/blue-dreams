@@ -12,6 +12,7 @@ interface Dining {
     description: string | null
     image: string
     images: string[] | null
+    menuUrl: string | null
     order: number
 }
 
@@ -32,7 +33,7 @@ export default function DiningManagementPage() {
     const [showForm, setShowForm] = useState(false)
     const [editingId, setEditingId] = useState<string | null>(null)
     const [form, setForm] = useState({
-        title: '', type: 'restaurant', description: '', image: '', images: [] as string[], order: 0
+        title: '', type: 'restaurant', description: '', image: '', images: [] as string[], menuUrl: '', order: 0
     })
 
     const fetchEntries = useCallback(async () => {
@@ -82,7 +83,7 @@ export default function DiningManagementPage() {
             await fetchEntries()
             setShowForm(false)
             setEditingId(null)
-            setForm({ title: '', type: 'restaurant', description: '', image: '', images: [], order: 0 })
+            setForm({ title: '', type: 'restaurant', description: '', image: '', images: [], menuUrl: '', order: 0 })
         } catch (err: any) {
             setError(err.message)
         } finally {
@@ -97,6 +98,7 @@ export default function DiningManagementPage() {
             description: entry.description || '',
             image: entry.image,
             images: entry.images || [],
+            menuUrl: entry.menuUrl || '',
             order: entry.order || 0
         })
         setEditingId(entry.id)
@@ -131,7 +133,7 @@ export default function DiningManagementPage() {
                     </button>
                     {!showForm && (
                         <button onClick={() => {
-                            setForm({ title: '', type: 'restaurant', description: '', image: '', images: [], order: entries.length });
+                            setForm({ title: '', type: 'restaurant', description: '', image: '', images: [], menuUrl: '', order: entries.length });
                             setShowForm(true); setEditingId(null); setError(null)
                         }} className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
                             <Plus size={18} /> Yeni Mekan Ekle
@@ -179,6 +181,12 @@ export default function DiningManagementPage() {
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Açıklama</label>
                                 <textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} rows={5}
+                                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white focus:border-orange-500 outline-none" />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Menü URL (Menü butonunu göstermek için URL girin)</label>
+                                <input value={form.menuUrl} onChange={e => setForm({ ...form, menuUrl: e.target.value })} placeholder="/tr/menu/x veya https://..."
                                     className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white focus:border-orange-500 outline-none" />
                             </div>
                         </div>

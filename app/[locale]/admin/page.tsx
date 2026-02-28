@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { Calendar, TrendingUp, DollarSign, Activity } from 'lucide-react'
 import { ElektraService } from '@/lib/services/elektra'
+import { fetchDashboardStats } from '@/lib/services/pms-asisia'
 import { SalesChart } from '@/components/admin/charts/SalesChart'
 import { ChannelTrendChart } from '@/components/admin/charts/ChannelTrendChart'
 import { ReviewTrendChart } from '@/components/admin/charts/ReviewTrendChart'
@@ -30,11 +31,12 @@ export default async function AdminDashboard({
   if (from) startDate = new Date(from)
 
   try {
-    const [salesData, stats, , reviews] = await Promise.all([
+    const [salesData, stats, , reviews, asisiaStats] = await Promise.all([
       ElektraService.getSalesData(startDate, endDate),
       ElektraService.getDailyStats(),
       ElektraService.getRecentReservations(5),
-      ElektraService.getGuestReviews(startDate, endDate)
+      ElektraService.getGuestReviews(startDate, endDate),
+      fetchDashboardStats(startDate.toISOString().split('T')[0], endDate.toISOString().split('T')[0])
     ])
 
     return (
@@ -45,7 +47,7 @@ export default async function AdminDashboard({
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
           </span>
-          <span className="text-emerald-300 text-sm">{(t as any).connectionStatus || 'Elektra PMS Canlı Bağlantısı Aktif'}</span>
+          <span className="text-emerald-300 text-sm">{(t as any).connectionStatus || 'Asisia PMS Canlı MS SQL Bağlantısı Aktif'}</span>
         </div>
 
         {/* Header & Filter */}
@@ -68,17 +70,17 @@ export default async function AdminDashboard({
               </div>
               <div>
                 <p className="text-cyan-100 font-medium">Bu Ay Toplam Rezervasyon</p>
-                <p className="text-xs text-cyan-200">Elektra PMS üzerinden canlı veri</p>
+                <p className="text-xs text-cyan-200">Asisia PMS üzerinden canlı veri</p>
               </div>
             </div>
             <div className="flex items-end justify-between">
               <div>
-                <h2 className="text-5xl font-black">{stats.monthlyReservationCount}</h2>
+                <h2 className="text-5xl font-black">{asisiaStats.totalReservations.toLocaleString('tr-TR')}</h2>
                 <p className="text-cyan-100 mt-1">Adet Onaylı Rezervasyon</p>
               </div>
               <div className="text-right">
-                <p className="text-xl font-bold">{stats.totalRevenue}</p>
-                <p className="text-sm font-medium text-cyan-200">{stats.totalRevenueEUR}</p>
+                <p className="text-xl font-bold">₺{asisiaStats.totalRevenue.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}</p>
+                <p className="text-sm font-medium text-cyan-200">Toplam Misafir: {asisiaStats.totalGuests}</p>
               </div>
             </div>
           </div>

@@ -7,7 +7,7 @@ export async function GET(request: Request) {
         const locale = searchParams.get('locale') || 'tr'
 
         // Fetch all top level menu items and include their children
-        const menuItems = await prisma.menuItem.findMany({
+        let menuItems = await prisma.menuItem.findMany({
             where: { locale, parentId: null },
             orderBy: { order: 'asc' },
             include: {
@@ -16,6 +16,28 @@ export async function GET(request: Request) {
                 }
             }
         })
+
+        // Auto-seed default menu items if DB is completely empty for this locale
+        if (menuItems.length === 0) {
+            const defaults = [
+                { locale, label: 'Konaklama', url: '/odalar', order: 1, isActive: true, target: '_self' },
+                { locale, label: 'Restoranlar', url: '/#dining', order: 2, isActive: true, target: '_self' },
+                { locale, label: 'Spa', url: '/#spa', order: 3, isActive: true, target: '_self' },
+                { locale, label: 'İletişim', url: '/iletisim', order: 4, isActive: true, target: '_self' }
+            ]
+            await prisma.menuItem.createMany({ data: defaults })
+
+            // Re-fetch after seeding
+            menuItems = await prisma.menuItem.findMany({
+                where: { locale, parentId: null },
+                orderBy: { order: 'asc' },
+                include: {
+                    children: {
+                        orderBy: { order: 'asc' }
+                    }
+                }
+            })
+        }
 
         return NextResponse.json(menuItems)
     } catch (error) {

@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import Image from 'next/image'
 import { useGeoCurrency, formatGeoPrice, type GeoCurrency } from '@/lib/utils/geo-currency'
+import { ROOM_TYPES } from '@/lib/content'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -37,65 +38,38 @@ interface AvailabilityResponse {
 
 // ─── Room Display Data (matches Elektra PMS room type names) ─────────────────
 
-const ROOM_DISPLAY: Record<string, {
-    title: string; titleEn: string; subtitle: string; subtitleEn: string;
-    image: string; size: string; capacity: string; view: string;
-    features: string[]; featuresEn: string[];
-    slug: string
-}> = {
-    'CLUB': {
-        title: 'Club Oda', titleEn: 'Club Room',
-        subtitle: 'Konforlu Konaklama', subtitleEn: 'Comfortable Stay',
-        image: '/images/rooms/club-room/clubroom.jpg',
-        size: '20-22 m²', capacity: '2 Kişi', view: 'Kara / Deniz Manzaralı',
-        features: ['Split Klima', 'LCD TV', 'Minibar', 'Duşlu Banyo'],
-        featuresEn: ['Split AC', 'LCD TV', 'Minibar', 'Shower'],
-        slug: 'club'
-    },
-    'CLUB DENİZ': {
-        title: 'Club Oda (Deniz)', titleEn: 'Club Room (Sea View)',
-        subtitle: 'Deniz Manzaralı', subtitleEn: 'Sea View',
-        image: '/images/rooms/club-sea-view/ClubSeaViewRoom.jpg',
-        size: '20-22 m²', capacity: '2 Kişi', view: 'Deniz Manzaralı',
-        features: ['Deniz Manzarası', 'Split Klima', 'LCD TV', 'Minibar'],
-        featuresEn: ['Sea View', 'Split AC', 'LCD TV', 'Minibar'],
-        slug: 'club'
-    },
-    'DELUXE': {
-        title: 'Deluxe Oda', titleEn: 'Deluxe Room',
-        subtitle: 'Lüks ve Konfor', subtitleEn: 'Luxury & Comfort',
-        image: '/images/rooms/deluxe-sea-view/MER01334.jpg',
-        size: '40-45 m²', capacity: '2-3 Kişi', view: 'Panoramik Deniz & Havuz',
-        features: ['Özel Balkon', 'Nespresso', 'Merkezi Klima', 'Giysi Odası'],
-        featuresEn: ['Private Balcony', 'Nespresso', 'Central AC', 'Dressing Room'],
-        slug: 'deluxe'
-    },
-    'AİLE': {
-        title: 'Aile Suiti', titleEn: 'Family Suite',
-        subtitle: 'Geniş Aile Odaları', subtitleEn: 'Spacious Family Rooms',
-        image: '/images/rooms/club-family-room/ClubFamilyRoom1.jpg',
-        size: '55-60 m²', capacity: '4-5 Kişi', view: 'Bahçe & Deniz',
-        features: ['2 Yatak Odası', '2 Banyo', 'Geniş Balkon', 'Bebek Karyolası'],
-        featuresEn: ['2 Bedrooms', '2 Bathrooms', 'Large Balcony', 'Baby Crib'],
-        slug: 'aile'
-    },
-    'FAMILY': {
-        title: 'Aile Suiti', titleEn: 'Family Suite',
-        subtitle: 'Geniş Aile Odaları', subtitleEn: 'Spacious Family Rooms',
-        image: '/images/rooms/club-family-room/ClubFamilyRoom1.jpg',
-        size: '55-60 m²', capacity: '4-5 Kişi', view: 'Bahçe & Deniz',
-        features: ['2 Yatak Odası', '2 Banyo', 'Geniş Balkon', 'Bebek Karyolası'],
-        featuresEn: ['2 Bedrooms', '2 Bathrooms', 'Large Balcony', 'Baby Crib'],
-        slug: 'aile'
-    },
-}
-
 function getDisplayInfo(roomType: string) {
     const upper = roomType.toUpperCase()
-    if (ROOM_DISPLAY[upper]) return ROOM_DISPLAY[upper]
-    for (const [key, val] of Object.entries(ROOM_DISPLAY)) {
-        if (upper.includes(key) || key.includes(upper)) return val
+
+    // Explicit mappings to specific IDs based on Elektra PMS names
+    let matchedId = null
+    if (upper.includes('CLUB DEN') || upper.includes('CLUB SEA')) matchedId = 'club-deniz'
+    else if (upper.includes('AİLE') || upper.includes('FAMILY')) matchedId = 'club-aile'
+    else if (upper.includes('DELUXE DEN')) matchedId = 'deluxe-deniz'
+    else if (upper.includes('DELUXE AİLE') || upper.includes('DELUXE FAMILY')) matchedId = 'deluxe-aile'
+    else if (upper.includes('DELUXE')) matchedId = 'deluxe-oda'
+    else if (upper.includes('CLUB')) matchedId = 'club-oda'
+
+    const found = matchedId
+        ? ROOM_TYPES.find(rt => rt.id === matchedId)
+        : ROOM_TYPES.find(rt => upper.includes(rt.title.toUpperCase()))
+
+    if (found) {
+        return {
+            title: found.title,
+            titleEn: found.title,
+            subtitle: found.subtitle,
+            subtitleEn: found.subtitle,
+            image: found.heroImage,
+            size: found.size,
+            capacity: found.capacity,
+            view: found.view,
+            features: found.features.slice(0, 4),
+            featuresEn: found.features.slice(0, 4),
+            slug: found.slug
+        }
     }
+
     return {
         title: roomType, titleEn: roomType,
         subtitle: 'Oda', subtitleEn: 'Room',

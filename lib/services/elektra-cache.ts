@@ -4,6 +4,8 @@
 
 import { ElektraService, type Reservation, type RoomAvailability, type ExchangeRates } from './elektra'
 import { prisma } from '@/lib/prisma'
+import fs from 'fs'
+import path from 'path'
 
 export interface ElektraCacheData {
     reservations: Reservation[]
@@ -22,7 +24,30 @@ export interface CacheStatus {
 }
 
 // Default TTL for "freshness" check, though DB holds data indefinitely
-const DEFAULT_TTL_MS = 30 * 60 * 1000 // 30 minutes
+export interface ElektraConfig {
+    ttlMinutes: number
+}
+
+const CONFIG_PATH = path.join(process.cwd(), 'data', 'elektra-config.json')
+
+function getElektraConfig(): ElektraConfig {
+    if (fs.existsSync(CONFIG_PATH)) {
+        try {
+            const data = fs.readFileSync(CONFIG_PATH, 'utf-8')
+            return { ...{ ttlMinutes: 30 }, ...JSON.parse(data) }
+        } catch { return { ttlMinutes: 30 } }
+    }
+    return { ttlMinutes: 30 }
+}
+
+export function setElektraConfig(config: Partial<ElektraConfig>) {
+    const current = getElektraConfig()
+    const newConfig = { ...current, ...config }
+    const dir = path.dirname(CONFIG_PATH)
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
+    fs.writeFileSync(CONFIG_PATH, JSON.stringify(newConfig, null, 2), 'utf-8')
+    return newConfig
+}
 
 // ─── Exported API ──────────────────────────────────────────────
 
@@ -179,18 +204,20 @@ export const ElektraCache = {
      */
     async getStatus(): Promise<CacheStatus> {
         try {
+            const config = getElektraConfig()
+            const ttlMs = config.ttlMinutes * 60 * 1000
             const count = await prisma.elektraReservation.count()
             const lastRate = await prisma.elektraRate.findFirst({ orderBy: { fetchedAt: 'desc' } })
 
             const lastUpdated = lastRate?.fetchedAt.toISOString() || null
-            const isStale = lastUpdated ? (Date.now() - new Date(lastUpdated).getTime() > DEFAULT_TTL_MS) : true
+            const isStale = lastUpdated ? (Date.now() - new Date(lastUpdated).getTime() > ttlMs) : true
 
             return {
                 lastUpdated,
                 isStale,
-                nextRefresh: lastUpdated ? new Date(new Date(lastUpdated).getTime() + DEFAULT_TTL_MS).toISOString() : null,
+                nextRefresh: lastUpdated ? new Date(new Date(lastUpdated).getTime() + ttlMs).toISOString() : null,
                 reservationCount: count,
-                ttlMinutes: 30
+                ttlMinutes: config.ttlMinutes
             }
         } catch (e) {
             return {

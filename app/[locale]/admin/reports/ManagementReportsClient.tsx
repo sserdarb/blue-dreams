@@ -7,6 +7,7 @@ import { type PriceMode, displayPrice, PriceModeToggle } from '@/lib/utils/price
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { getAdminTranslations, type AdminLocale, type AdminTranslations } from '@/lib/admin-translations'
+import { exportPdf } from '@/lib/export-pdf'
 
 // ─── Types ────────────────────────────────────────────────────
 interface ReservationSlim {
@@ -246,10 +247,10 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
     const filteredPY = useMemo(() => {
         let data = prevYearReservations
         if (marketFilter !== 'ALL') data = data.filter(r => (r.agency || 'Bilinmeyen') === marketFilter)
-        // Kullanıcı Talebi: YTD modunda olsa bile geçen yılın tüm verileri gelmeli
-        // if (ytdMode) data = data.filter(r => isWithinYtd(r.reservationDate, prevYear))
+        // Kullanıcı Talebi: YoY karşılaştırma mantığı o güne kadar alınmış rezervasyonları kıyaslayacak şekilde düzeltildi (Pace)
+        data = data.filter(r => isWithinYtd(r.reservationDate, prevYear))
         return data
-    }, [prevYearReservations, marketFilter, ytdMode, prevYear, todayDayOfYear])
+    }, [prevYearReservations, marketFilter, prevYear, todayDayOfYear])
 
     // Aggregate data (now using filtered)
     const cyMonth = useMemo(() => aggregateByMonth(filteredCY, exchangeRates, currentYear, monthNamesLocal, priceMode, totalTaxRate), [filteredCY, exchangeRates, currentYear, monthNamesLocal, priceMode, totalTaxRate])
@@ -452,113 +453,15 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
 
     // PDF Export
     const handlePdfExport = async () => {
-        setPdfPreparing(true)
-        setPdfReady(false)
-        try {
-            const { jsPDF } = await import('jspdf')
-            const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' })
-
-            // Corporate Header
-            doc.setFillColor(15, 23, 42) // navy
-            doc.rect(0, 0, 297, 25, 'F')
-            doc.setTextColor(255, 255, 255)
-            doc.setFontSize(18)
-            doc.setFont('helvetica', 'bold')
-            doc.text('BLUE DREAMS RESORT', 15, 15)
-            doc.setFontSize(10)
-            doc.setFont('helvetica', 'normal')
-            doc.text('Ultra All Inclusive • Torba / Bodrum', 15, 21)
-            doc.text(`Rapor Tarihi: ${new Date().toLocaleDateString('tr-TR')}`, 250, 15)
-
-            // Report Title
-            doc.setTextColor(0, 0, 0)
-            doc.setFontSize(14)
-            doc.setFont('helvetica', 'bold')
-            const reportTitle = activeReport === 's26' ? `S${currentYear.toString().slice(-2)} ${t.managementReports.netReservations.toUpperCase()}` : `${t.managementReports.paceReport.toUpperCase()} ${prevYear} - ${currentYear}`
-            doc.text(reportTitle, 15, 35)
-
-            // Table
-            let y = 42
-            doc.setFontSize(8)
-            const isS26 = activeReport === 's26'
-
-            if (isS26) {
-                // S26 Table Headers
-                const headers = ['Ay', 'Oda Geceleme', 'Yatak Geceleme', 'ADB', 'ADR', 'Oda Doluluk', 'Oda Geliri']
-                const colWidths = [30, 35, 35, 30, 30, 30, 45]
-                let x = 15
-                doc.setFillColor(230, 230, 230)
-                doc.rect(15, y - 4, 235, 7, 'F')
-                doc.setFont('helvetica', 'bold')
-                doc.setTextColor(0, 0, 0)
-                headers.forEach((h, i) => {
-                    doc.text(h, x + 2, y)
-                    x += colWidths[i]
-                })
-                y += 8
-
-                doc.setFont('helvetica', 'normal')
-                for (const m of activeMonths) {
-                    const c = cyMonth[m.month]
-                    let x = 15
-                    doc.text(monthNamesLocal[m.month], x + 2, y); x += colWidths[0]
-                    doc.text(fmt(c.roomNights), x + 2, y); x += colWidths[1]
-                    doc.text(fmt(c.bedNights), x + 2, y); x += colWidths[2]
-                    doc.text(fmtEur(c.adb), x + 2, y); x += colWidths[3]
-                    doc.text(fmtEur(c.adr), x + 2, y); x += colWidths[4]
-                    doc.text(pct(c.occupancy), x + 2, y); x += colWidths[5]
-                    doc.text(fmtEur(c.revenueEur), x + 2, y)
-                    y += 6
-                }
-                // Totals row
-                doc.setFont('helvetica', 'bold')
-                doc.setFillColor(240, 240, 240)
-                doc.rect(15, y - 4, 235, 7, 'F')
-                let x2 = 15
-                doc.text('Toplam', x2 + 2, y); x2 += colWidths[0]
-                doc.text(fmt(cyTotal.roomNights), x2 + 2, y); x2 += colWidths[1]
-                doc.text(fmt(cyTotal.bedNights), x2 + 2, y); x2 += colWidths[2]
-                const totalAdb = cyTotal.bedNights > 0 ? cyTotal.revenueEur / cyTotal.bedNights : 0
-                const totalAdr = cyTotal.roomNights > 0 ? cyTotal.revenueEur / cyTotal.roomNights : 0
-                const totalOcc = cyTotal.capacity > 0 ? cyTotal.roomNights / cyTotal.capacity : 0
-                doc.text(fmtEur(totalAdb), x2 + 2, y); x2 += colWidths[3]
-                doc.text(fmtEur(totalAdr), x2 + 2, y); x2 += colWidths[4]
-                doc.text(pct(totalOcc), x2 + 2, y); x2 += colWidths[5]
-                doc.text(fmtEur(cyTotal.revenueEur), x2 + 2, y)
-            }
-
-            // AI Summary Page
-            if (aiSummary) {
-                doc.addPage()
-                doc.setFillColor(15, 23, 42)
-                doc.rect(0, 0, 297, 20, 'F')
-                doc.setTextColor(255, 255, 255)
-                doc.setFontSize(12)
-                doc.setFont('helvetica', 'bold')
-                doc.text('AI Rapor Yorumu', 15, 13)
-                doc.setTextColor(0, 0, 0)
-                doc.setFontSize(10)
-                doc.setFont('helvetica', 'normal')
-                const lines = doc.splitTextToSize(aiSummary, 267)
-                doc.text(lines, 15, 30)
-            }
-
-            // Footer
-            const pageCount = doc.getNumberOfPages()
-            for (let i = 1; i <= pageCount; i++) {
-                doc.setPage(i)
-                doc.setFontSize(8)
-                doc.setTextColor(150, 150, 150)
-                doc.text(`Blue Dreams Resort • Yönetim Raporu • Sayfa ${i}/${pageCount}`, 15, 200)
-            }
-
-            doc.save(`BlueDreams_${activeReport === 's26' ? 'NetSales' : 'PaceReport'}_${currentYear}.pdf`)
-            setPdfReady(true)
-        } catch (err) {
-            console.error('PDF generation error:', err)
-        } finally {
-            setPdfPreparing(false)
-        }
+        if (!reportRef.current) return
+        await exportPdf({
+            element: reportRef.current,
+            filename: `BlueDreams_${activeReport === 's26' ? 'NetSales' : 'PaceReport'}_${currentYear}`,
+            title: activeReport === 's26' ? `S${currentYear.toString().slice(-2)} ${t.managementReports.netReservations.toUpperCase()}` : `${t.managementReports.paceReport.toUpperCase()} ${prevYear} - ${currentYear}`,
+            orientation: 'landscape',
+            onStart: () => { setPdfPreparing(true); setPdfReady(false) },
+            onFinish: () => { setPdfPreparing(false); setPdfReady(true) },
+        })
     }
 
     // AI Summary Generation — Groups data by season to minimize token usage
@@ -1514,8 +1417,8 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
             </div>
 
             {/* Scheduled Email Card */}
-            <div className="bg-gradient-to-r from-blue-500/10 to-cyan-500/10 dark:from-blue-900/20 dark:to-cyan-900/20 border border-blue-200 dark:border-blue-500/20 rounded-2xl p-6">
-                <div className="flex items-center gap-4">
+            <div className="bg-gradient-to-r from-blue-500/10 to-cyan-500/10 dark:from-blue-900/20 dark:to-cyan-900/20 border border-blue-200 dark:border-blue-500/20 rounded-2xl p-6 mt-6">
+                <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
                     <div className="w-12 h-12 bg-blue-500 rounded-xl flex items-center justify-center flex-shrink-0">
                         <BellRing size={24} className="text-white" />
                     </div>
@@ -1523,13 +1426,13 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
                         <h4 className="text-sm font-bold text-blue-700 dark:text-blue-300 mb-1">Zamanlı Rapor Gönderimi</h4>
                         <p className="text-xs text-slate-600 dark:text-slate-400">Bu raporu belirli aralıklarla e-posta ile otomatik göndermek için zamanlanmış gönderim oluşturabilirsiniz.</p>
                     </div>
-                    <div className="flex gap-2">
-                        <select className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-xs text-slate-700 dark:text-slate-300 outline-none">
+                    <div className="flex gap-2 w-full sm:w-auto mt-4 sm:mt-0">
+                        <select className="flex-1 sm:flex-none bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-xs text-slate-700 dark:text-slate-300 outline-none">
                             <option>Haftalık</option>
                             <option>Aylık</option>
                             <option>Günlük</option>
                         </select>
-                        <button className="bg-blue-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-blue-500 transition-colors">Etkinleştir</button>
+                        <button className="flex-1 sm:flex-none bg-blue-600 text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-blue-500 transition-colors">Etkinleştir</button>
                     </div>
                 </div>
             </div>

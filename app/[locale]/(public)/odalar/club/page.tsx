@@ -7,7 +7,7 @@ import { Maximize, Users, Mountain } from 'lucide-react'
 import LivePricing from '@/components/shared/LivePricing'
 
 export default function ClubRoomsPage() {
-    const room = ROOM_TYPES.find(r => r.id === 'club')!
+    const room = ROOM_TYPES.find(r => r.id === 'club-oda')!
 
     return (
         <div>
@@ -126,7 +126,7 @@ export default function ClubRoomsPage() {
                 <div className="container mx-auto px-6 text-center">
                     <h3 className="text-3xl font-serif mb-8">Diğer Oda Tipleri</h3>
                     <div className="flex flex-wrap justify-center gap-4">
-                        {ROOM_TYPES.filter(r => r.id !== 'club').map(r => (
+                        {ROOM_TYPES.filter(r => r.id !== 'club-oda').map(r => (
                             <a
                                 key={r.id}
                                 href={`/tr/odalar/${r.slug}`}

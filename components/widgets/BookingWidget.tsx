@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Calendar, Users, ChevronDown, ArrowRight, Phone, Facebook, Instagram, Youtube, X, Loader2, TrendingDown, Star, Sparkles } from 'lucide-react'
+import { Calendar, Users, ChevronDown, ArrowRight, Phone, Facebook, Instagram, Youtube, X, Loader2, TrendingDown, Star, Sparkles, Search } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 
 const WhatsAppIcon = ({ size = 16, className = "" }: { size?: number, className?: string }) => (
@@ -37,8 +37,8 @@ interface AlternativeDate {
     savingsAmount: number
 }
 
-export default function BookingWidget() {
-    const [isVisible, setIsVisible] = useState(false)
+export default function BookingWidget({ inline = false }: { inline?: boolean }) {
+    const [isVisible, setIsVisible] = useState(inline ? true : false)
     const [showResults, setShowResults] = useState(false)
     const [loading, setLoading] = useState(false)
     const [results, setResults] = useState<RoomResult[]>([])
@@ -70,11 +70,12 @@ export default function BookingWidget() {
     }
 
     useEffect(() => {
+        if (inline) return
         const handleScroll = () => setIsVisible(window.scrollY > 100)
         handleScroll()
         window.addEventListener('scroll', handleScroll)
         return () => window.removeEventListener('scroll', handleScroll)
-    }, [])
+    }, [inline])
 
     const handleSearch = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -175,7 +176,7 @@ export default function BookingWidget() {
         <>
             {/* Results Panel */}
             {showResults && (
-                <div className={`fixed bottom-[62px] md:bottom-[56px] left-0 right-0 z-[39] bg-white/98 backdrop-blur-lg border-t border-gray-100 shadow-[0_-10px_40px_rgba(0,0,0,0.15)] transition-all duration-500 max-h-[60vh] overflow-y-auto ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}`}>
+                <div className={`${inline ? 'mt-4 border rounded-xl' : 'fixed bottom-[62px] md:bottom-[56px] left-0 right-0 z-[39] shadow-[0_-10px_40px_rgba(0,0,0,0.15)]'} bg-white/98 backdrop-blur-lg border-t border-gray-100 transition-all duration-500 max-h-[60vh] overflow-y-auto ${isVisible ? (inline ? 'opacity-100' : 'translate-y-0 opacity-100') : (inline ? 'hidden' : 'translate-y-full opacity-0')}`}>
                     <div className="container mx-auto px-4 py-4">
                         <div className="flex items-center justify-between mb-3">
                             <h3 className="font-bold text-gray-800 text-sm flex items-center gap-2">
@@ -235,7 +236,7 @@ export default function BookingWidget() {
                                         <div className="bg-brand/5 border border-brand/20 rounded-xl p-4">
                                             <div className="flex items-center justify-between mb-4">
                                                 <h4 className="font-bold text-gray-800 text-sm">{selectedRoom.roomType} — {locale === 'tr' ? 'Rezervasyon Bilgileri' : 'Reservation Details'}</h4>
-                                                <button onClick={() => setSelectedRoom(null)} className="text-gray-400 hover:text-gray-600 text-xs">✕</button>
+                                                <button type="button" onClick={() => setSelectedRoom(null)} className="text-gray-400 hover:text-gray-600 text-xs">✕</button>
                                             </div>
                                             <form onSubmit={handleBookingSubmit} className="space-y-3">
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -284,7 +285,7 @@ export default function BookingWidget() {
                                         <p className="font-bold text-sm mb-1">{bookingResult.success ? (locale === 'tr' ? 'Talebiniz Alındı!' : 'Request Received!') : (locale === 'tr' ? 'Hata' : 'Error')}</p>
                                         <p className="text-xs text-gray-500">{bookingResult.message}</p>
                                         {bookingResult.success && (
-                                            <button onClick={() => { setBookingResult(null); setSelectedRoom(null); setShowResults(false) }} className="mt-3 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs rounded-lg transition-colors">
+                                            <button type="button" onClick={() => { setBookingResult(null); setSelectedRoom(null); setShowResults(false) }} className="mt-3 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs rounded-lg transition-colors">
                                                 {locale === 'tr' ? 'Tamam' : 'OK'}
                                             </button>
                                         )}
@@ -302,6 +303,7 @@ export default function BookingWidget() {
                                             {alternatives.slice(0, 5).map((alt, i) => (
                                                 <button
                                                     key={i}
+                                                    type="button"
                                                     onClick={() => handleAlternativeSearch(alt)}
                                                     className={`flex-shrink-0 px-4 py-3 rounded-xl border text-left transition-all hover:shadow-md hover:-translate-y-0.5 ${alt.savings > 0
                                                         ? 'bg-emerald-50 border-emerald-200 hover:border-emerald-400'
@@ -330,48 +332,40 @@ export default function BookingWidget() {
             )}
 
             {/* Booking Bar */}
-            <div className={`fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-gray-100 shadow-[0_-5px_25px_rgba(0,0,0,0.1)] transition-transform duration-500 ease-in-out ${isVisible ? 'translate-y-0' : 'translate-y-full'}`}>
+            <div className={`${inline ? 'w-full' : `fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md shadow-[0_-5px_25px_rgba(0,0,0,0.1)] transition-transform duration-500 ease-in-out border-t border-gray-100 ${isVisible ? 'translate-y-0' : 'translate-y-full'}`}`}>
                 <div className="container mx-auto px-4 py-2 md:py-3">
                     <form id="booking-form" className="flex items-center justify-between md:justify-center gap-3 md:gap-4" onSubmit={handleSearch}>
 
                         {/* Mobile Layout */}
-                        <div className="md:hidden flex flex-col w-full gap-2 py-1">
-                            <div className="flex gap-2">
-                                <div className="flex-1 bg-gray-50 rounded-lg p-2 flex flex-col justify-center border border-gray-200">
-                                    <span className="text-[9px] text-gray-500 font-bold uppercase tracking-wide">{texts.checkin}</span>
-                                    <input type="date" value={checkIn} min={getToday()} onChange={(e) => handleCheckInChange(e.target.value)} className="bg-transparent text-xs font-bold text-gray-900 w-full outline-none p-0" />
+                        <div className="md:hidden flex flex-row items-center w-full gap-1.5 py-0.5">
+                            <div className="flex flex-row flex-[2] bg-gray-50 rounded-lg p-1 border border-gray-200">
+                                <div className="flex-1 flex flex-col justify-center items-center overflow-hidden">
+                                    <span className="text-[8px] text-gray-500 font-bold uppercase tracking-tighter">{texts.checkin}</span>
+                                    <input type="date" value={checkIn} min={getToday()} onChange={(e) => handleCheckInChange(e.target.value)} className="bg-transparent text-[10px] sm:text-[11px] font-bold text-gray-900 w-full outline-none p-0 text-center" />
                                 </div>
-                                <div className="flex-1 bg-gray-50 rounded-lg p-2 flex flex-col justify-center border border-gray-200">
-                                    <span className="text-[9px] text-gray-500 font-bold uppercase tracking-wide">{texts.checkout}</span>
-                                    <input type="date" value={checkOut} min={getNextDay(checkIn)} onChange={(e) => handleCheckOutChange(e.target.value)} className="bg-transparent text-xs font-bold text-gray-900 w-full outline-none p-0" />
+                                <div className="w-px bg-gray-200 my-1 mx-0.5" />
+                                <div className="flex-1 flex flex-col justify-center items-center overflow-hidden">
+                                    <span className="text-[8px] text-gray-500 font-bold uppercase tracking-tighter">{texts.checkout}</span>
+                                    <input type="date" value={checkOut} min={getNextDay(checkIn)} onChange={(e) => handleCheckOutChange(e.target.value)} className="bg-transparent text-[10px] sm:text-[11px] font-bold text-gray-900 w-full outline-none p-0 text-center" />
                                 </div>
                             </div>
-                            <div className="flex gap-2">
-                                <div className="flex-1 bg-gray-50 rounded-lg p-2 flex flex-col justify-center border border-gray-200 relative">
-                                    <span className="text-[9px] text-gray-500 font-bold uppercase tracking-wide">{texts.adults}</span>
-                                    <select value={guests} onChange={(e) => setGuests(e.target.value)} className="bg-transparent text-xs font-bold text-gray-900 w-full outline-none p-0 appearance-none pt-0.5">
+
+                            <div className="flex flex-col flex-[0.7] justify-center items-center bg-gray-50 rounded-lg p-1 border border-gray-200 relative">
+                                <span className="text-[8px] text-gray-500 font-bold uppercase tracking-tighter">{texts.guest}</span>
+                                <div className="flex items-center gap-1">
+                                    <Users size={10} className="text-brand shrink-0" />
+                                    <select value={guests} onChange={(e) => setGuests(e.target.value)} className="bg-transparent text-[11px] font-bold text-gray-900 outline-none p-0 appearance-none text-center">
                                         <option value="1">1</option>
                                         <option value="2">2</option>
                                         <option value="3">3</option>
                                         <option value="4">4</option>
+                                        <option value="5">5</option>
                                     </select>
-                                    <ChevronDown size={12} className="absolute right-2 bottom-2 pointer-events-none text-gray-400" />
-                                </div>
-                                <div className="flex-1 bg-gray-50 rounded-lg p-2 flex flex-col justify-center border border-gray-200 relative">
-                                    <span className="text-[9px] text-gray-500 font-bold uppercase tracking-wide">{texts.children}</span>
-                                    <select value={kids} onChange={(e) => setKids(e.target.value)} className="bg-transparent text-xs font-bold text-gray-900 w-full outline-none p-0 appearance-none pt-0.5">
-                                        <option value="0">0</option>
-                                        <option value="1">1</option>
-                                        <option value="2">2</option>
-                                        <option value="3">3</option>
-                                    </select>
-                                    <ChevronDown size={12} className="absolute right-2 bottom-2 pointer-events-none text-gray-400" />
                                 </div>
                             </div>
-                            <button type="submit" disabled={loading} className="bg-brand text-white h-[40px] w-full text-xs font-bold tracking-widest uppercase rounded-lg shadow-lg flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-70">
-                                {loading ? <Loader2 size={14} className="animate-spin" /> : null}
-                                {loading ? '...' : texts.search}
-                                {!loading && <ArrowRight size={14} />}
+
+                            <button type="submit" disabled={loading} className="w-[42px] h-[36px] bg-brand text-white rounded-lg shadow-md flex items-center justify-center shrink-0 active:scale-95 transition-transform disabled:opacity-70">
+                                {loading ? <Loader2 size={16} className="animate-spin" /> : <Search size={16} />}
                             </button>
                         </div>
 

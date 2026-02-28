@@ -72,12 +72,12 @@ export default function BigDataClient({ data, error, locale }: { data: any; erro
             channelMix: S.channelMixTrend(reservations),
             channelADR: S.channelADR(reservations),
             // Guests
-            countries: S.nationalityDistribution(reservations),
+            countries: S.countryDistribution(reservations),
             revByCountry: S.revenueByCountry(reservations),
             stayByCountry: S.avgStayByCountry(reservations),
-            natTrend: S.nationalityTrend(reservations),
+            natTrend: S.countryTrend(reservations),
             guestSegments: S.guestSegmentation(reservations),
-            natChannelMatrix: S.nationalityChannelMatrix(reservations),
+            natChannelMatrix: S.countryChannelMatrix(reservations),
             rateByCountry: S.avgRateByCountry(reservations),
             // Booking Patterns
             leadTime: S.leadTimeDistribution(reservations),

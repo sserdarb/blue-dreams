@@ -84,7 +84,7 @@ export default async function ManagementReportsPage({
             FinanceService.getExpenseBreakdown(),
         ])
 
-        dataSourceLabel = FinanceService.dataSource === 'live' ? 'Elektra Live' : 'Demo'
+        dataSourceLabel = ElektraService.isFullyLive ? 'Elektra Live (PMS)' : (FinanceService.dataSource === 'live' ? 'Elektra Live' : 'Demo')
         content = (
             <FinanceReportsClient
                 kpis={kpis}

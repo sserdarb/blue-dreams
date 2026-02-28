@@ -490,16 +490,23 @@ export const FinanceService = {
         const prevStartDate = `${y - 1}-01-01`
         const prevEndDate = `${y - 1}-12-31`
 
-        const [trialBalance, invoices, prevInvoices] = await Promise.all([
+        const { ElektraService } = await import('./elektra')
+        const yStart = new Date(y, 0, 1)
+        const yEnd = new Date(y, 11, 31)
+
+        const [trialBalance, invoices, prevInvoices, currentRes] = await Promise.all([
             this.getTrialBalance(startDate, endDate),
             this.getInvoiceList(startDate, endDate),
             this.getInvoiceList(prevStartDate, prevEndDate),
+            ElektraService.getReservations(yStart, yEnd)
         ])
 
         const revenueRows = trialBalance.filter(r => r.group === 'Gelir')
         const expenseRows = trialBalance.filter(r => r.group === 'Gider')
 
-        const totalRevenue = revenueRows.reduce((s, r) => s + r.credit, 0)
+        const pmsTotalRevenue = currentRes.reduce((s, r) => s + r.totalPrice, 0)
+        const totalRevenue = pmsTotalRevenue > 0 ? pmsTotalRevenue : revenueRows.reduce((s, r) => s + r.credit, 0)
+
         const totalExpense = expenseRows.reduce((s, r) => s + r.debit, 0)
         const profit = totalRevenue - totalExpense
         const profitMargin = totalRevenue > 0 ? Math.round((profit / totalRevenue) * 100) : 0
@@ -527,6 +534,29 @@ export const FinanceService = {
     async getMonthlyData(year?: number): Promise<MonthlyFinance[]> {
         const y = year || new Date().getFullYear()
 
+        const { ElektraService } = await import('./elektra')
+        const cyStart = new Date(y, 0, 1)
+        const cyEnd = new Date(y, 11, 31)
+        const pyStart = new Date(y - 1, 0, 1)
+        const pyEnd = new Date(y - 1, 11, 31)
+
+        const [currentRes, prevRes] = await Promise.all([
+            ElektraService.getReservations(cyStart, cyEnd),
+            ElektraService.getReservations(pyStart, pyEnd)
+        ])
+
+        const currentMonthlyRev = new Array(12).fill(0)
+        currentRes.forEach(r => {
+            const m = parseInt(r.checkIn.slice(5, 7)) - 1 // YYYY-MM-DD
+            if (m >= 0 && m < 12) currentMonthlyRev[m] += r.totalPrice
+        })
+
+        const prevMonthlyRev = new Array(12).fill(0)
+        prevRes.forEach(r => {
+            const m = parseInt(r.checkIn.slice(5, 7)) - 1
+            if (m >= 0 && m < 12) prevMonthlyRev[m] += r.totalPrice
+        })
+
         // Base annual values — 341 room ultra all-inclusive resort
         // ~₺250M annual revenue, ~₺180M annual expense
         const baseRevenue = 250_000_000 / 12
@@ -535,11 +565,21 @@ export const FinanceService = {
         const currentData = generateMonthlyData(baseRevenue, baseExpense, y)
         const prevData = generateMonthlyData(baseRevenue * 0.85, baseExpense * 0.82, y - 1)
 
-        return currentData.map((m, i) => ({
-            ...m,
-            prevYearRevenue: prevData[i].revenue,
-            prevYearExpense: prevData[i].expense,
-        }))
+        return currentData.map((m, i) => {
+            const realRev = currentMonthlyRev[i]
+            const realPrevRev = prevMonthlyRev[i]
+            // Fallback to generated if absolutely zero
+            const finalRev = realRev > 0 ? realRev : m.revenue
+            const finalPrevRev = realPrevRev > 0 ? realPrevRev : prevData[i].revenue
+
+            return {
+                ...m,
+                revenue: finalRev,
+                profit: finalRev - m.expense,
+                prevYearRevenue: finalPrevRev,
+                prevYearExpense: prevData[i].expense,
+            }
+        })
     },
 
     // ── Department Revenue Breakdown ─────────────────────────────

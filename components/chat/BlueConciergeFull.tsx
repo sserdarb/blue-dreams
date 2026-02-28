@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { X, Send, Sparkles, Mic, MicOff, RefreshCw, ChevronRight, Phone, MapPin, ArrowLeft, ArrowRight, Download, Share2, BedDouble, Users, Scan, CheckCircle2, Plane, Car, Map, Check, Star, Volume2, StopCircle, CalendarDays, TrendingUp, ExternalLink, UtensilsCrossed, Waves, Shield, Loader2, Search } from 'lucide-react'
+import { createSession, sendMessage, getSessionMessagesSince } from '@/app/actions/chat'
 
 // TTS Helper
 const speakText = (text: string, lang: string = 'tr-TR') => {
@@ -175,16 +176,16 @@ const categoryImages: Record<string, string> = {
 
 // Room data
 const ROOMS = [
-    { id: 'club', title: 'Club Odalar', size: '20-22 m²', description: 'Modern tasarım ve deniz manzarası ile konforlu konaklama.', image: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/Club-Room-Sea-View-2.jpg' },
-    { id: 'deluxe', title: 'Deluxe Odalar', size: '25-28 m²', description: 'Geniş yaşam alanı ve premium konfor.', image: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/Club-Room-Sea-View-2.jpg' },
-    { id: 'family', title: 'Club Aile Odaları', size: '35 m²', description: 'Aileler için ideal, geniş yaşam alanı ve ayrı yatak bölümü.', image: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/Club-Room-Sea-View-2.jpg' }
+    { id: 'club', title: 'Club Odalar', size: '20-22 m²', description: 'Modern tasarım ve deniz manzarası ile konforlu konaklama.', image: '/images/rooms/club-room/clubroom.jpg' },
+    { id: 'deluxe', title: 'Deluxe Odalar', size: '25-28 m²', description: 'Geniş yaşam alanı ve premium konfor.', image: '/images/rooms/deluxe-sea-view/MER01334.jpg' },
+    { id: 'family', title: 'Club Aile Odaları', size: '35 m²', description: 'Aileler için ideal, geniş yaşam alanı ve ayrı yatak bölümü.', image: '/images/rooms/club-family-room/ClubFamilyRoom1.jpg' }
 ]
 
 // Room details
 const ROOM_DETAILS: Record<string, any> = {
     'Club Odalar': {
         title: 'Club Odalar',
-        image: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/Club-Room-Sea-View-2.jpg',
+        image: '/images/rooms/club-room/clubroom.jpg',
         size: '20-22 m²',
         view: 'Deniz veya Bahçe',
         capacity: '2+1',
@@ -193,7 +194,7 @@ const ROOM_DETAILS: Record<string, any> = {
     },
     'Deluxe Odalar': {
         title: 'Deluxe Odalar',
-        image: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/Club-Room-Sea-View-2.jpg',
+        image: '/images/rooms/deluxe-sea-view/MER01334.jpg',
         size: '25-28 m²',
         view: 'Deniz Manzarası',
         capacity: '2+2',
@@ -202,7 +203,7 @@ const ROOM_DETAILS: Record<string, any> = {
     },
     'Club Aile Odaları': {
         title: 'Club Aile Odaları',
-        image: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/Club-Room-Sea-View-2.jpg',
+        image: '/images/rooms/club-family-room/ClubFamilyRoom1.jpg',
         size: '35 m²',
         view: 'Bahçe ve Kısmi Deniz',
         capacity: '4 Yetişkin',
@@ -600,6 +601,15 @@ const ReviewsWidget = () => {
     ]
     return (
         <div className="flex flex-col gap-4 mt-4">
+            <div className="bg-gradient-to-r from-[#003580] to-[#004e9c] p-4 rounded-xl shadow-lg flex items-center gap-4 text-white">
+                <div className="bg-[#00224f] p-3 rounded-lg text-2xl font-black flex-shrink-0">
+                    9.4
+                </div>
+                <div>
+                    <h4 className="font-bold text-lg mb-0.5 mt-0">Mükemmel</h4>
+                    <p className="text-xs opacity-90">Booking.com Misafir Değerlendirmeleri</p>
+                </div>
+            </div>
             {reviews.map((review, i) => (
                 <div key={i} className="bg-white p-4 rounded-xl border-l-4 border-blue-600 shadow-lg">
                     <div className="flex items-center justify-between mb-2">
@@ -827,10 +837,64 @@ export function BlueConciergeFull({ isOpen, onClose, locale = 'tr' }: BlueConcie
     const [messages, setMessages] = useState<Message[]>([])
     const [isLoading, setIsLoading] = useState(false)
     const [isListening, setIsListening] = useState(false)
+    const [sessionId, setSessionId] = useState<string | null>(null)
+    const [lastSync, setLastSync] = useState<string>(new Date().toISOString())
+    const [isAgentActive, setIsAgentActive] = useState(false)
+
     const messagesEndRef = useRef<HTMLDivElement>(null)
     const inputRef = useRef<HTMLInputElement>(null)
 
     const t = translations[locale] || translations.tr
+
+    // Initialize Session
+    useEffect(() => {
+        if (!isOpen) return;
+        const initSession = async () => {
+            try {
+                let sid = localStorage.getItem('blue_concierge_session')
+                if (!sid) {
+                    const sess = await createSession()
+                    sid = sess.id
+                    localStorage.setItem('blue_concierge_session', sid)
+                }
+                setSessionId(sid)
+            } catch (e) { console.error('Session init error', e) }
+        }
+        initSession()
+    }, [isOpen])
+
+    // Polling for admin messages
+    useEffect(() => {
+        if (!sessionId || !isOpen) return;
+        const interval = setInterval(async () => {
+            try {
+                const newMsgs = await getSessionMessagesSince(sessionId, lastSync)
+                if (newMsgs && newMsgs.length > 0) {
+                    const agentMsgs = newMsgs.filter(m => m.sender === 'agent')
+                    if (agentMsgs.length > 0) {
+                        setIsAgentActive(true) // Disable AI takeover once an agent sends a message
+                        setMessages(prev => {
+                            const newHistory = [...prev];
+                            agentMsgs.forEach(am => {
+                                if (!newHistory.find(m => m.id === am.id)) {
+                                    newHistory.push({
+                                        id: am.id,
+                                        role: 'model',
+                                        text: am.content,
+                                        data: { _agent: true }
+                                    })
+                                }
+                            })
+                            return newHistory
+                        })
+                    }
+                    const latestDate = newMsgs[newMsgs.length - 1].createdAt
+                    setLastSync(new Date(latestDate).toISOString())
+                }
+            } catch (e) { /* ignore polling errors */ }
+        }, 3000)
+        return () => clearInterval(interval)
+    }, [sessionId, isOpen, lastSync])
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -917,13 +981,18 @@ export function BlueConciergeFull({ isOpen, onClose, locale = 'tr' }: BlueConcie
                     payloadData = localData || ROOM_DETAILS['Club Odalar']
                 }
 
+                const finalUiPayload = { type: data.uiPayload.type, data: payloadData };
                 setMessages(prev => [...prev, {
                     id: Date.now().toString(),
                     role: 'model',
                     text: data.text || data.uiPayload.message || 'İşte istediğiniz bilgiler:',
-                    uiPayload: { type: data.uiPayload.type, data: payloadData },
+                    uiPayload: finalUiPayload,
                     data: { ...(data.data || {}), _topic: topic }
                 }])
+
+                if (sessionId) {
+                    sendMessage(sessionId, data.text || data.uiPayload.message || 'UI Komutu', 'bot', finalUiPayload).catch(console.error)
+                }
             } else {
                 // Even plain text responses get topic + quick actions
                 setMessages(prev => [...prev, {
@@ -932,6 +1001,15 @@ export function BlueConciergeFull({ isOpen, onClose, locale = 'tr' }: BlueConcie
                     text: data.text || 'Üzgünüm, yanıt oluşturulamadı.',
                     data: { _topic: topic }
                 }])
+
+                if (sessionId) {
+                    sendMessage(sessionId, data.text || 'Üzgünüm, yanıt oluşturulamadı.', 'bot').catch(console.error)
+                }
+            }
+
+            if (sessionId && data._debug) {
+                // Background log error quietly
+                sendMessage(sessionId, `HATA: ${data._debug}`, 'bot', { isError: true }).catch()
             }
         } catch (error) {
             console.error('AI Error:', error)
@@ -953,6 +1031,15 @@ export function BlueConciergeFull({ isOpen, onClose, locale = 'tr' }: BlueConcie
         const newHistory = [...messages, userMsg]
         setMessages(newHistory)
         setInput('')
+
+        if (sessionId) {
+            sendMessage(sessionId, text, 'user').catch(console.error)
+        }
+
+        if (isAgentActive) {
+            return; // Skip AI generation if an agent has taken over
+        }
+
         processMessage(newHistory)
     }
 

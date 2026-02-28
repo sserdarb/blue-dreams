@@ -85,6 +85,7 @@ function getPresetDates(preset: string): { start: string; end: string } {
         case 'season': return { start: `${today.getFullYear()}-04-01`, end: `${today.getFullYear()}-11-01` }
         case 'prevSeason': return { start: `${today.getFullYear() - 1}-04-01`, end: `${today.getFullYear() - 1}-11-01` }
         case 'year': return { start: `${today.getFullYear()}-01-01`, end: fmt(today) }
+        case 'all_time': return { start: '1970-01-01', end: '2099-12-31' }
         default: return { start: `${today.getFullYear()}-01-01`, end: fmt(today) }
     }
 }
@@ -97,6 +98,7 @@ function getDatePresets(t: AdminTranslations) {
         { key: 'month', label: t.thisMonth },
         { key: 'season', label: t.thisSeason },
         { key: 'year', label: t.thisYear },
+        { key: 'all_time', label: 'Tüm Zamanlar' },
     ]
 }
 
@@ -125,6 +127,8 @@ export default function ReportsClient({ reservations, comparisonReservations = [
     const initialStart = lastUpdated ? `${lastUpdated.slice(0, 4)}-01-01` : '2026-01-01'
     const [startDate, setStartDate] = useState(initialStart)
     const [endDate, setEndDate] = useState(initialEnd)
+    const [tempStart, setTempStart] = useState(initialStart)
+    const [tempEnd, setTempEnd] = useState(initialEnd)
     const [activePreset, setActivePreset] = useState<string>('year')
     const [dateBasis, setDateBasis] = useState<'sale' | 'stay'>('sale')
 
@@ -148,7 +152,15 @@ export default function ReportsClient({ reservations, comparisonReservations = [
         const { start, end } = getPresetDates(key)
         setStartDate(start)
         setEndDate(end)
+        setTempStart(start)
+        setTempEnd(end)
         setActivePreset(key)
+    }
+
+    const applyManualDates = () => {
+        setStartDate(tempStart)
+        setEndDate(tempEnd)
+        setActivePreset('')
     }
 
     // ─── Currency Helper ───
@@ -184,8 +196,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
     const filteredComparison = useMemo(() => {
         if (!comparisonReservations.length) return []
 
-        // Use pure string manipulation to subtract 1 year — avoids timezone-sensitive Date parsing
-        // that causes hydration mismatch (server UTC vs client local timezone)
+        // Use pure string manipulation to subtract 1 year
         const shiftYear = (dateStr: string) => {
             const year = parseInt(dateStr.slice(0, 4), 10)
             return `${year - 1}${dateStr.slice(4)}`
@@ -194,11 +205,23 @@ export default function ReportsClient({ reservations, comparisonReservations = [
         const targetStart = startDate ? shiftYear(startDate) : ''
         const targetEnd = endDate ? shiftYear(endDate) : ''
 
-        // Filter comp data by Last Year's equivalent dates
+        // OTB pace comparison: only consider last year's bookings taken up to the equivalent day
+        const today = new Date()
+        const lastYearToday = `${today.getFullYear() - 1}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+
         let data = comparisonReservations
         const dateField = dateBasis === 'sale' ? 'saleDate' : 'checkIn'
-        if (targetStart) data = data.filter(r => r[dateField] >= targetStart)
-        if (targetEnd) data = data.filter(r => r[dateField] <= targetEnd)
+
+        data = data.filter(r => {
+            const dateValue = r[dateField]
+            const saleDate = r.saleDate || r.lastUpdate?.slice(0, 10);
+
+            const matchesStart = targetStart ? dateValue >= targetStart : true
+            const matchesEnd = targetEnd ? dateValue <= targetEnd : true
+            const bookedByThisTimeLastYear = !saleDate || saleDate <= lastYearToday
+
+            return matchesStart && matchesEnd && bookedByThisTimeLastYear
+        })
 
         return data
     }, [comparisonReservations, startDate, endDate, dateBasis])
@@ -3833,10 +3856,18 @@ export default function ReportsClient({ reservations, comparisonReservations = [
 
                     <div className="flex items-center gap-2 flex-wrap w-full lg:w-auto">
                         {/* Date Picker */}
-                        <div className="flex items-center bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-1 min-w-0">
-                            <input type="date" value={startDate} onChange={e => { setStartDate(e.target.value); setActivePreset('') }} className="bg-transparent text-xs sm:text-sm font-medium px-1.5 sm:px-2 py-1 outline-none text-slate-900 dark:text-white w-[110px] sm:w-auto" />
-                            <span className="text-slate-400 dark:text-slate-600">—</span>
-                            <input type="date" value={endDate} onChange={e => { setEndDate(e.target.value); setActivePreset('') }} className="bg-transparent text-xs sm:text-sm font-medium px-1.5 sm:px-2 py-1 outline-none text-slate-900 dark:text-white w-[110px] sm:w-auto" />
+                        <div className="flex items-center gap-1 sm:gap-2">
+                            <div className="flex items-center bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-1 min-w-0">
+                                <input type="date" value={tempStart} onChange={e => { setTempStart(e.target.value); setActivePreset('') }} className="bg-transparent text-xs sm:text-sm font-medium px-1.5 sm:px-2 py-1 outline-none text-slate-900 dark:text-white w-[110px] sm:w-auto" />
+                                <span className="text-slate-400 dark:text-slate-600">—</span>
+                                <input type="date" value={tempEnd} onChange={e => { setTempEnd(e.target.value); setActivePreset('') }} className="bg-transparent text-xs sm:text-sm font-medium px-1.5 sm:px-2 py-1 outline-none text-slate-900 dark:text-white w-[110px] sm:w-auto" />
+                            </div>
+                            {/* Apply Button for manual dates */}
+                            {(tempStart !== startDate || tempEnd !== endDate) && (
+                                <button onClick={applyManualDates} className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-2 rounded-xl transition-colors shrink-0">
+                                    Uygula
+                                </button>
+                            )}
                         </div>
 
                         {/* Gross/Net Toggle */}

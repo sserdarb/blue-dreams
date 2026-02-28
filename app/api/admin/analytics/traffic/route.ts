@@ -1,36 +1,49 @@
 import { NextResponse } from 'next/server'
 import { BetaAnalyticsDataClient } from '@google-analytics/data'
+import { prisma } from '@/lib/prisma'
 
-// Initialize the Google Analytics Data API client
-// We initialize it lazily to not crash the app if env vars are missing at boot
-let analyticsDataClient: BetaAnalyticsDataClient | null = null
+function getClient(clientEmail: string, privateKey: string) {
+    // Fix newlines in Vercel/Coolify
+    const formattedKey = privateKey.replace(/\\n/g, '\n')
 
-function getClient() {
-    if (analyticsDataClient) return analyticsDataClient
-
-    // Require credentials from ENV
-    const clientEmail = process.env.GA_CLIENT_EMAIL
-    const privateKey = process.env.GA_PRIVATE_KEY?.replace(/\\n/g, '\n') // Fix newlines in Vercel/Coolify
-
-    if (!clientEmail || !privateKey) {
-        throw new Error('Missing Google Analytics Configuration (GA_CLIENT_EMAIL or GA_PRIVATE_KEY)')
-    }
-
-    analyticsDataClient = new BetaAnalyticsDataClient({
+    return new BetaAnalyticsDataClient({
         credentials: {
             client_email: clientEmail,
-            private_key: privateKey
+            private_key: formattedKey
         }
     })
-
-    return analyticsDataClient
 }
 
 export async function GET(request: Request) {
     try {
-        const propertyId = process.env.GA_PROPERTY_ID
-        const clientEmail = process.env.GA_CLIENT_EMAIL
-        const privateKey = process.env.GA_PRIVATE_KEY
+        const db = prisma as any
+        const config = await db.analyticsConfig.findFirst()
+
+        let propertyId = config?.gaPropertyId || process.env.GA_PROPERTY_ID
+        let clientEmail = process.env.GA_CLIENT_EMAIL
+        let privateKey = process.env.GA_PRIVATE_KEY
+
+        if (config?.gaServiceKey) {
+            try {
+                const serviceAccount = JSON.parse(config.gaServiceKey)
+                if (serviceAccount.client_email && serviceAccount.private_key) {
+                    clientEmail = serviceAccount.client_email
+                    privateKey = serviceAccount.private_key
+                }
+            } catch (e) {
+                // If it's pure Base64, try decoding
+                try {
+                    const decoded = Buffer.from(config.gaServiceKey, 'base64').toString('utf-8')
+                    const serviceAccount = JSON.parse(decoded)
+                    if (serviceAccount.client_email && serviceAccount.private_key) {
+                        clientEmail = serviceAccount.client_email
+                        privateKey = serviceAccount.private_key
+                    }
+                } catch (e2) {
+                    // invalid JSON
+                }
+            }
+        }
 
         if (!propertyId || !clientEmail || !privateKey) {
             return NextResponse.json({
@@ -46,7 +59,7 @@ export async function GET(request: Request) {
         const startDate = searchParams.get('startDate') || '30daysAgo'
         const endDate = searchParams.get('endDate') || 'today'
 
-        const client = getClient()
+        const client = getClient(clientEmail, privateKey)
 
         // Make the API calls to GA4 concurrently
         const [

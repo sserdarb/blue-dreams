@@ -13,7 +13,7 @@ async function getAnalyticsSettings(): Promise<AnalyticsSettings> {
         const config = await db.analyticsConfig.findFirst()
         if (config) {
             return {
-                gaId: config.gaId || '',
+                gaId: config.gaId || 'G-KHMZFFEDPJ',
                 gtmId: config.gtmId || '',
                 fbPixelId: config.fbPixelId || '',
             }
@@ -21,7 +21,7 @@ async function getAnalyticsSettings(): Promise<AnalyticsSettings> {
     } catch (error) {
         console.error('Error reading analytics settings:', error)
     }
-    return { gaId: '', gtmId: '', fbPixelId: '' }
+    return { gaId: 'G-KHMZFFEDPJ', gtmId: '', fbPixelId: '' }
 }
 
 export default async function AnalyticsScripts() {

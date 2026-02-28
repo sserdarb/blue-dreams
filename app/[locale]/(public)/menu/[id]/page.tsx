@@ -123,13 +123,15 @@ const CATEGORY_COLORS: Record<string, string> = {
     'drink': 'from-amber-500/20 to-amber-600/5',
 }
 
-// Slug → ID mapping (matches what admin generates)
 const SLUG_TO_ID: Record<string, string> = {
     'ana-restoran': '1',
     'a-la-carte-restoran': '2',
     'snack-bar': '3',
     'aqua-restaurant': '1',
     'blue-a-la-carte': '2',
+    'begonville': '1',
+    'lalocanda': '2',
+    'snackrestaurant': '3',
     '1': '1',
     '2': '2',
     '3': '3',
@@ -140,7 +142,7 @@ export default function PublicMenuPage() {
     const params = useParams()
     const rawId = (params?.id as string) || '1'
     const restaurantId = SLUG_TO_ID[rawId] || rawId
-    const restaurant = RESTAURANTS[restaurantId] || RESTAURANTS['1']
+    const restaurant = RESTAURANTS[restaurantId]
 
     const [searchTerm, setSearchTerm] = useState('')
     const [expandedCategories, setExpandedCategories] = useState<string[]>(() =>

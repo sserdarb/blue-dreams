@@ -86,51 +86,23 @@ export async function exportPdf({
         const margin = 6
         const usableWidth = pageWidth - margin * 2
         const usableHeight = pageHeight - headerHeight - margin
-        const imgWidth = usableWidth
-        const imgHeight = (canvas.height / canvas.width) * imgWidth
 
-        if (imgHeight <= usableHeight) {
-            // Single page
-            pdf.addImage(imgData, 'JPEG', margin, headerHeight, imgWidth, imgHeight)
-        } else {
-            // Multi-page: slice the image
-            let yOffset = 0
-            let pageIndex = 0
+        let imgWidth = usableWidth
+        let imgHeight = (canvas.height / canvas.width) * imgWidth
 
-            while (yOffset < imgHeight) {
-                if (pageIndex > 0) {
-                    pdf.addPage()
-                }
-
-                const sliceHeight = pageIndex === 0 ? usableHeight : pageHeight - margin * 2
-                const yPos = pageIndex === 0 ? headerHeight : margin
-
-                // Calculate source crop from canvas
-                const sourceY = (yOffset / imgHeight) * canvas.height
-                const sourceH = (sliceHeight / imgHeight) * canvas.height
-
-                // Create a temporary canvas for this slice
-                const sliceCanvas = document.createElement('canvas')
-                sliceCanvas.width = canvas.width
-                sliceCanvas.height = Math.min(sourceH, canvas.height - sourceY)
-                const ctx = sliceCanvas.getContext('2d')
-                if (ctx) {
-                    ctx.drawImage(
-                        canvas,
-                        0, sourceY,
-                        canvas.width, sliceCanvas.height,
-                        0, 0,
-                        canvas.width, sliceCanvas.height
-                    )
-                    const sliceData = sliceCanvas.toDataURL('image/jpeg', 0.95)
-                    const sliceImgHeight = (sliceCanvas.height / canvas.width) * imgWidth
-                    pdf.addImage(sliceData, 'JPEG', margin, yPos, imgWidth, sliceImgHeight)
-                }
-
-                yOffset += sliceHeight
-                pageIndex++
-            }
+        // If the scaled height is still larger than the usable page height, scale it down further
+        // to fit entirely onto a single page (user request: sayfaya tam sığacak şekilde)
+        if (imgHeight > usableHeight) {
+            const ratio = usableHeight / imgHeight
+            imgHeight = usableHeight
+            imgWidth = imgWidth * ratio
         }
+
+        // Center the image horizontally
+        const xOffset = margin + (usableWidth - imgWidth) / 2
+
+        // Always a single page
+        pdf.addImage(imgData, 'JPEG', xOffset, headerHeight, imgWidth, imgHeight)
 
         // Footer on each page
         const totalPages = pdf.getNumberOfPages()

@@ -4,7 +4,6 @@
 export async function register() {
     // Only run auto-refresh in Node.js runtime (not edge)
     if (process.env.NEXT_RUNTIME === 'nodejs') {
-        const REFRESH_INTERVAL_MS = 30 * 60 * 1000 // 30 minutes
 
         // Delay first refresh by 10 seconds to let the server warm up
         setTimeout(async () => {
@@ -14,16 +13,35 @@ export async function register() {
                 await ElektraCache.refresh()
                 console.log('[Instrumentation] Initial cache refresh complete')
 
-                // Set up periodic refresh
-                setInterval(async () => {
+                // Recursive refresh to support dynamic TTL config
+                const scheduleNext = async () => {
+                    // Quick import here since this runs outside standard execution
+                    const path = await import('path')
+                    const fs = await import('fs')
+                    let ttlMs = 30 * 60 * 1000 // 30 min default
+
                     try {
-                        console.log('[Instrumentation] Auto-refreshing Elektra cache...')
-                        await ElektraCache.refresh()
-                        console.log('[Instrumentation] Auto-refresh complete')
-                    } catch (err) {
-                        console.error('[Instrumentation] Auto-refresh failed:', err)
-                    }
-                }, REFRESH_INTERVAL_MS)
+                        const CONFIG_PATH = path.join(process.cwd(), 'data', 'elektra-config.json')
+                        if (fs.existsSync(CONFIG_PATH)) {
+                            const config = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf-8'))
+                            if (config.ttlMinutes) ttlMs = config.ttlMinutes * 60 * 1000
+                        }
+                    } catch (e) { }
+
+                    setTimeout(async () => {
+                        try {
+                            console.log('[Instrumentation] Auto-refreshing Elektra cache...')
+                            await ElektraCache.refresh()
+                            console.log('[Instrumentation] Auto-refresh complete')
+                        } catch (err) {
+                            console.error('[Instrumentation] Auto-refresh failed:', err)
+                        } finally {
+                            scheduleNext() // queue next
+                        }
+                    }, ttlMs)
+                }
+
+                scheduleNext()
             } catch (err) {
                 console.error('[Instrumentation] Initial refresh failed:', err)
             }

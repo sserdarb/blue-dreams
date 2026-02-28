@@ -68,13 +68,27 @@ export default function ReviewsClient({ initialReviews, comparisonReviews = [], 
     const [filterStatus, setFilterStatus] = useState<string>('All')
     const [filterScore, setFilterScore] = useState<string>('All')
 
-    // Date State (Defaults to data range or last 30 days)
     const [startDate, setStartDate] = useState(() => {
         const d = new Date()
         d.setDate(d.getDate() - 30)
         return d.toISOString().split('T')[0]
     })
     const [endDate, setEndDate] = useState(() => new Date().toISOString().split('T')[0])
+
+    const [tempStartDate, setTempStartDate] = useState(startDate)
+    const [tempEndDate, setTempEndDate] = useState(endDate)
+
+    const applyDateFilter = () => {
+        setStartDate(tempStartDate)
+        setEndDate(tempEndDate)
+    }
+
+    const setAllTime = () => {
+        setStartDate('')
+        setEndDate('')
+        setTempStartDate('')
+        setTempEndDate('')
+    }
 
     const [analyzing, setAnalyzing] = useState(false)
     const [analysisResult, setAnalysisResult] = useState<string | null>(null)
@@ -329,20 +343,28 @@ export default function ReviewsClient({ initialReviews, comparisonReviews = [], 
                     <Filter className="h-4 w-4 text-slate-400" />
 
                     {/* Date Pickers */}
-                    <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 rounded px-2 py-1 border border-slate-200 dark:border-slate-700">
+                    <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 rounded px-2 py-1 border border-slate-200 dark:border-slate-700 overflow-x-auto whitespace-nowrap scrollbar-none">
                         <input
                             type="date"
-                            className="bg-transparent text-white text-sm outline-none w-32 min-h-[44px] [color-scheme:dark]"
-                            value={startDate}
-                            onChange={(e) => setStartDate(e.target.value)}
+                            className="bg-transparent text-slate-900 dark:text-white text-sm outline-none w-[120px] min-h-[44px] [color-scheme:dark] shrink-0"
+                            value={tempStartDate}
+                            onChange={(e) => setTempStartDate(e.target.value)}
                         />
-                        <span className="text-slate-500">-</span>
+                        <span className="text-slate-500 shrink-0">-</span>
                         <input
                             type="date"
-                            className="bg-transparent text-white text-sm outline-none w-32 min-h-[44px] [color-scheme:dark]"
-                            value={endDate}
-                            onChange={(e) => setEndDate(e.target.value)}
+                            className="bg-transparent text-slate-900 dark:text-white text-sm outline-none w-[120px] min-h-[44px] [color-scheme:dark] shrink-0"
+                            value={tempEndDate}
+                            onChange={(e) => setTempEndDate(e.target.value)}
                         />
+                        {(startDate !== tempStartDate || endDate !== tempEndDate) && (
+                            <button onClick={applyDateFilter} className="bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-bold px-2 py-1 rounded transition-colors shrink-0">
+                                Uygula
+                            </button>
+                        )}
+                        <button onClick={setAllTime} className="px-2 text-[10px] text-slate-500 hover:text-cyan-500 transition-colors shrink-0">
+                            Tüm Zamanlar
+                        </button>
                     </div>
 
                     <select

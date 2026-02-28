@@ -5,6 +5,9 @@ import { fetchSheetData, extractSheetId } from '@/lib/services/google-sheets'
 import { getGeminiApiKey, GEMINI_MODEL } from '@/lib/ai-config'
 import { ElektraService } from '@/lib/services/elektra'
 import { FACTSHEET_TR } from '@/lib/factsheet'
+import { fetchBodrumAttractions, fetchBodrumEvents } from '@/lib/services/serpapi'
+import fs from 'fs'
+import path from 'path'
 
 // Tool Definitions
 const priceCheckTool: FunctionDeclaration = {
@@ -76,6 +79,48 @@ async function getContextData(locale: string) {
     }
 }
 
+function getApprovedLocalGuideIds() {
+    const file = path.join(process.cwd(), 'data', 'approved-local-guide.json')
+    if (fs.existsSync(file)) {
+        try { return JSON.parse(fs.readFileSync(file, 'utf-8')) } catch { }
+    }
+    return { attractions: [], events: [] }
+}
+
+async function getLocalGuideContext() {
+    const approved = getApprovedLocalGuideIds()
+    if (approved.attractions.length === 0 && approved.events.length === 0) return ''
+
+    try {
+        const [allAttr, allEvt] = await Promise.all([
+            fetchBodrumAttractions(),
+            fetchBodrumEvents()
+        ])
+
+        const myAttr = allAttr.filter(a => approved.attractions.includes(a.id))
+        const myEvt = allEvt.filter(e => approved.events.includes(e.id))
+
+        let text = ''
+        if (myAttr.length > 0) {
+            text += '\nÖNERİLEN BODRUM ÇEVRESİ GEZİLECEK YERLER (SerpAPI Onaylı):\n'
+            myAttr.forEach(a => {
+                text += `- ${a.title} (${a.type || 'Turistik Yer'}): ${a.description}. Adres: ${a.address}\n`
+                if (a.link) text += `  Yol tarifi/Link: ${a.link}\n`
+            })
+        }
+        if (myEvt.length > 0) {
+            text += '\nÖNERİLEN BODRUM ETKİNLİKLERİ:\n'
+            myEvt.forEach(e => {
+                text += `- ${e.title} (${e.date || ''} ${e.time || ''}): ${e.venue || ''}. Adres: ${e.address || ''}. ${e.description || ''}\n`
+                if (e.link) text += `  Detay/Link: ${e.link}\n`
+            })
+        }
+        return text
+    } catch (e) {
+        return ''
+    }
+}
+
 // Safely extract text from Gemini response
 function extractResponseText(response: any): string {
     try {
@@ -107,7 +152,10 @@ export async function POST(request: Request) {
         }
 
         // 1. Fetch Dynamic Content from DB
-        const context = await getContextData(locale)
+        const [context, localGuideContext] = await Promise.all([
+            getContextData(locale),
+            getLocalGuideContext()
+        ])
 
         // 3-tier API key: DB settings → env var → empty
         const { key: apiKey, source: keySource } = await getGeminiApiKey(locale)
@@ -157,6 +205,11 @@ export async function POST(request: Request) {
         // Append Google Sheets knowledge if available
         if (context.sheetContext) {
             systemPrompt += `\n\nEKSPERT BİLGİSİ (Google Sheets SSS):\n${context.sheetContext}\n`
+        }
+
+        // Append Local Guide Knowledge
+        if (localGuideContext) {
+            systemPrompt += `\n\n${localGuideContext}\n(Bodrum gezilecek yerler ve etkinlikler sorulduğunda yukarıdaki SerpAPI ile admin onaylı olan bu listeyi kullan, güzelce anlat ve mutlaka yol tarifi için sunduğun lokasyonun linkini tavsiye et.)\n`
         }
 
         // Append Factsheet knowledge

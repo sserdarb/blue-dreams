@@ -99,6 +99,7 @@ export default async function RestaurantPage({ params }: { params: Promise<{ loc
             capacity: 350,
             image: '/images/dining/begonville.jpg',
             features: locale === 'tr' ? 'Açık Büfe,Deniz Manzarası,Türk Mutfağı,Dünya Mutfağı,Vejetaryen Seçenekler' : 'Open Buffet,Sea View,Turkish Cuisine,World Cuisine,Vegetarian Options',
+            menuUrl: `/${locale}/menu/begonville`,
             events: [],
         },
         {
@@ -116,6 +117,7 @@ export default async function RestaurantPage({ params }: { params: Promise<{ loc
             capacity: 80,
             image: '/images/dining/halicarnassus.jpg',
             features: locale === 'tr' ? 'Deniz Mahsulleri,Gün Batımı Manzarası,Rezervasyon Gerekli,A La Carte,Romantik' : 'Seafood,Sunset View,Reservation Required,A La Carte,Romantic',
+            menuUrl: null,
             events: [],
         },
         {
@@ -133,6 +135,7 @@ export default async function RestaurantPage({ params }: { params: Promise<{ loc
             capacity: 60,
             image: '/images/dining/lalocanda.jpg',
             features: locale === 'tr' ? 'İtalyan Mutfağı,Şarap Seçenekleri,Rezervasyon Gerekli,A La Carte,Şık Ambiyans' : 'Italian Cuisine,Wine Selection,Reservation Required,A La Carte,Elegant Ambiance',
+            menuUrl: `/${locale}/menu/lalocanda`,
             events: [],
         },
         {
@@ -146,6 +149,7 @@ export default async function RestaurantPage({ params }: { params: Promise<{ loc
             capacity: 150,
             image: '/images/dining/snackrestaurant.jpg',
             features: locale === 'tr' ? 'Hızlı Servis,Geniş Seçenekler,Açık Alan' : 'Fast Service,Wide Selection,Outdoor Seating',
+            menuUrl: `/${locale}/menu/snackrestaurant`,
             events: [],
         },
     ]
@@ -360,14 +364,16 @@ export default async function RestaurantPage({ params }: { params: Promise<{ loc
                                             )}
 
                                             {/* Menu Link */}
-                                            <div className="pt-4">
-                                                <a
-                                                    href={`/${locale}/menu/${venue.id}`}
-                                                    className="inline-flex items-center justify-center px-8 py-3.5 bg-[#c9a96e] text-[#0a0a0a] hover:bg-[#b8954f] transition-colors duration-300 rounded-full text-sm font-bold tracking-widest uppercase"
-                                                >
-                                                    {g('viewMenu', locale)}
-                                                </a>
-                                            </div>
+                                            {venue.menuUrl && (
+                                                <div className="pt-4">
+                                                    <a
+                                                        href={venue.menuUrl}
+                                                        className="inline-flex items-center justify-center px-8 py-3.5 bg-[#c9a96e] text-[#0a0a0a] hover:bg-[#b8954f] transition-colors duration-300 rounded-full text-sm font-bold tracking-widest uppercase"
+                                                    >
+                                                        {g('viewMenu', locale)}
+                                                    </a>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 )

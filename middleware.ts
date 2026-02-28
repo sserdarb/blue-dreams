@@ -63,13 +63,49 @@ export function middleware(request: NextRequest) {
 
   const pathnameLocale = getLocaleFromPath(pathname);
 
+  // Route translation map
+  const routeMap: Record<string, string> = {
+    '/en/reservation': '/en/rezervasyon',
+    '/de/reservierung': '/de/rezervasyon',
+    '/ru/bronirovanie': '/ru/rezervasyon',
+    '/en/rooms': '/en/odalar',
+    '/de/zimmer': '/de/odalar',
+    '/ru/nomera': '/ru/odalar',
+    '/en/contact': '/en/iletisim',
+    '/de/kontakt': '/de/iletisim',
+    '/ru/kontakty': '/ru/iletisim',
+    '/en/about-us': '/en/hakkimizda',
+    '/de/uber-uns': '/de/hakkimizda',
+    '/ru/o-nas': '/ru/hakkimizda',
+    '/en/kids-club': '/en/cocuk-kulubu',
+    '/de/kinderclub': '/de/cocuk-kulubu',
+    '/ru/detskiy-klub': '/ru/cocuk-kulubu',
+    '/en/gallery': '/en/galeri',
+    '/de/galerie': '/de/galeri',
+    '/ru/galereya': '/ru/galeri',
+    '/en/restaurants': '/en/restoran',
+    '/de/restaurants': '/de/restoran',
+    '/ru/restorany': '/ru/restorany', // Actually it maps to /ru/restoran
+  };
+
   // If no locale in path, redirect to preferred locale
   if (!pathnameLocale) {
     const preferredLocale = getPreferredLocale(request);
     const newUrl = new URL(`/${preferredLocale}${pathname}`, request.url);
     const response = NextResponse.redirect(newUrl);
     response.cookies.set('NEXT_LOCALE', preferredLocale, { maxAge: 60 * 60 * 24 * 365 });
-    return response;
+    return addSecurityHeaders(response);
+  }
+
+  // Handle translated route rewrites
+  if (routeMap[pathname]) {
+    const rewriteUrl = new URL(routeMap[pathname], request.url);
+    return addSecurityHeaders(NextResponse.rewrite(rewriteUrl));
+  }
+
+  // Specific fix for '/ru/restorany' mapping mapping
+  if (pathname === '/ru/restorany') {
+    return addSecurityHeaders(NextResponse.rewrite(new URL('/ru/restoran', request.url)));
   }
 
   // Admin page protection (not API — already handled above)

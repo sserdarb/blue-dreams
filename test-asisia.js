@@ -4,21 +4,25 @@ const config = {
     user: 'jasmin',
     password: 'X9v!Q7r#Lm2@Tz8$Wp',
     server: 'pmsjasmin.asisia.com',
-    database: 'master', // Default or need to discover
+    database: 'ASISIA_JASMIN',
     options: {
         encrypt: true,
-        trustServerCertificate: true // Trust if self-signed
+        trustServerCertificate: true
     }
 };
 
 async function checkDb() {
     try {
-        console.log('Connecting to Asisia CRM...');
         await sql.connect(config);
-        console.log('Connected! Fetching tables...');
 
-        const result = await sql.query`SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'`;
-        console.log(result.recordset.map(r => r.TABLE_NAME));
+        console.log("\n--- USERS (Agent details) ---");
+        const users = await sql.query`SELECT TOP 5 ID, FIRSTNAME, LASTNAME, USERNAME FROM USERS`;
+        console.log(users.recordset);
+
+        console.log("\n--- REQUEST_DETAIL (Looking for Quotes) ---");
+        // Usually KIND or STATUS indicates the type of request (2 = Quote/Teklif, 3 = Rezervasyon vb.)
+        const requests = await sql.query`SELECT TOP 5 REQUESTID, KIND, STATUS, ADDUSER, ADDDATE FROM REQUEST_DETAIL WHERE KIND IS NOT NULL`;
+        console.log(requests.recordset);
 
         sql.close();
     } catch (err) {

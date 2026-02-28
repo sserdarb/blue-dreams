@@ -30,7 +30,7 @@ export async function PUT(
     try {
         const { id } = await params
         const body = await request.json()
-        const { title, name, type, description, image, images, order, cuisine, hours, capacity, location, features, isActive } = body
+        const { title, name, type, description, image, images, order, cuisine, hours, capacity, location, features, menuUrl, isActive } = body
 
         if (!(title || name) || !image) {
             return new NextResponse('Missing required fields', { status: 400 })
@@ -50,6 +50,7 @@ export async function PUT(
                 capacity,
                 location,
                 features,
+                menuUrl,
                 isActive: isActive ?? true
             }
         })

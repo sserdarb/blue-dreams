@@ -83,6 +83,8 @@ export default function ReservationsClient({ initialData, comparisonData, compar
 
     // Stay Date Filter (Client)
     const [stayDateRange, setStayDateRange] = useState({ start: '', end: '' })
+    const [tempStayStart, setTempStayStart] = useState('')
+    const [tempStayEnd, setTempStayEnd] = useState('')
 
     const [priceRange, setPriceRange] = useState({ min: '', max: '' })
     const [page, setPage] = useState(1)
@@ -121,10 +123,15 @@ export default function ReservationsClient({ initialData, comparisonData, compar
         // Let's put it IN the filter panel.
     }
 
-    const setBookingPreset = (days: number | 'yesterday') => {
+    const setBookingPreset = (days: number | 'yesterday' | 'all_time') => {
         const today = new Date()
         const end = today.toISOString().split('T')[0]
         let start = ''
+
+        if (days === 'all_time') {
+            setBookingDateRange({ start: '1970-01-01', end: '2099-12-31' })
+            return
+        }
 
         if (days === 'yesterday') {
             const y = new Date()
@@ -430,6 +437,7 @@ export default function ReservationsClient({ initialData, comparisonData, compar
                             <button onClick={() => setBookingPreset('yesterday')} className="px-3 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-cyan-600 dark:hover:text-white hover:bg-white dark:hover:bg-white/10 rounded transition-colors whitespace-nowrap">Dün</button>
                             <button onClick={() => setBookingPreset(7)} className="px-3 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-cyan-600 dark:hover:text-white hover:bg-white dark:hover:bg-white/10 rounded transition-colors whitespace-nowrap">7 Gün</button>
                             <button onClick={() => setBookingPreset(30)} className="px-3 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-cyan-600 dark:hover:text-white hover:bg-white dark:hover:bg-white/10 rounded transition-colors whitespace-nowrap">30 Gün</button>
+                            <button onClick={() => setBookingPreset('all_time')} className="px-3 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-cyan-600 dark:hover:text-white hover:bg-white dark:hover:bg-white/10 rounded transition-colors whitespace-nowrap">Tüm Zamanlar</button>
                         </div>
 
                         <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-700/50 rounded-lg px-3 py-1.5 border border-slate-200 dark:border-slate-600/50 w-full md:w-auto">
@@ -670,21 +678,29 @@ export default function ReservationsClient({ initialData, comparisonData, compar
                     </select>
 
                     {/* Stay Date Range (Konaklama Tarihi) - Client Side */}
-                    <div className="flex items-center gap-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg p-1 pl-3 w-full md:w-auto">
-                        <span className="text-xs text-slate-500 dark:text-slate-400 uppercase font-medium mr-1 whitespace-nowrap">Konaklama:</span>
+                    <div className="flex items-center gap-2 bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg p-1 pl-3 w-full md:w-auto overflow-x-auto whitespace-nowrap scrollbar-none">
+                        <span className="text-xs text-slate-500 dark:text-slate-400 uppercase font-medium mr-1 shrink-0">Konaklama:</span>
                         <input
                             type="date"
-                            className="bg-transparent text-slate-900 dark:text-white text-sm outline-none px-2 py-1 flex-1 md:w-auto"
-                            value={stayDateRange.start}
-                            onChange={e => setStayDateRange(prev => ({ ...prev, start: e.target.value }))}
+                            className="bg-transparent text-slate-900 dark:text-white text-sm outline-none px-2 py-1 w-[120px] shrink-0"
+                            value={tempStayStart}
+                            onChange={e => setTempStayStart(e.target.value)}
                         />
-                        <span className="text-slate-500">-</span>
+                        <span className="text-slate-500 shrink-0">-</span>
                         <input
                             type="date"
-                            className="bg-transparent text-slate-900 dark:text-white text-sm outline-none px-2 py-1 flex-1 md:w-auto"
-                            value={stayDateRange.end}
-                            onChange={e => setStayDateRange(prev => ({ ...prev, end: e.target.value }))}
+                            className="bg-transparent text-slate-900 dark:text-white text-sm outline-none px-2 py-1 w-[120px] shrink-0"
+                            value={tempStayEnd}
+                            onChange={e => setTempStayEnd(e.target.value)}
                         />
+                        {(tempStayStart !== stayDateRange.start || tempStayEnd !== stayDateRange.end) && (
+                            <button onClick={() => setStayDateRange({ start: tempStayStart, end: tempStayEnd })} className="bg-cyan-600 hover:bg-cyan-500 text-white text-[10px] font-bold px-2 py-1 rounded transition-colors shrink-0">
+                                Uygula
+                            </button>
+                        )}
+                        <button onClick={() => { setStayDateRange({ start: '1970-01-01', end: '2099-12-31' }); setTempStayStart(''); setTempStayEnd(''); }} className="px-2 text-[10px] text-slate-500 hover:text-cyan-500 transition-colors shrink-0">
+                            Tüm Zamanlar
+                        </button>
                     </div>
 
                     {/* Price Range */}

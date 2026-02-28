@@ -28,17 +28,17 @@ export default async function KidsClubPage({ params }: { params: Promise<{ local
         {
             title: locale === 'tr' ? 'Yüz Boyama ve El Sanatları' : 'Face Painting & Crafts',
             desc: locale === 'tr' ? 'Çocukların yaratıcılıklarını geliştiren sanatsal atölyeler.' : 'Art workshops that enhance children’s creativity.',
-            img: 'https://images.unsplash.com/photo-1544604862-2bd1619aa302?auto=format&fit=crop&w=800&q=80',
+            img: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/aqua.jpg',
         },
         {
             title: locale === 'tr' ? 'Çocuk Havuz Oyunları' : 'Kids Pool Games',
             desc: locale === 'tr' ? 'Gözetmen eşliğinde güvenli ve eğlenceli su oyunları.' : 'Safe and fun water games under supervision.',
-            img: 'https://images.unsplash.com/photo-1600868846351-a20c32aa31d7?auto=format&fit=crop&w=800&q=80',
+            img: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/alacarte.jpg',
         },
         {
             title: locale === 'tr' ? 'Mini Disko' : 'Mini Disco',
             desc: locale === 'tr' ? 'Akşamları çocuklara özel müzik ve dans gösterileri.' : 'Special music and dancing for children in the evening.',
-            img: 'https://images.unsplash.com/photo-1516627145497-ae6968895b74?auto=format&fit=crop&w=800&q=80',
+            img: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/bar1.jpg',
         }
     ]
 

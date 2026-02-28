@@ -174,11 +174,19 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
 
     // ─── Date Range State ─────────────────────────────────────
     const now = new Date()
-    const [datePreset, setDatePreset] = useState<'month' | 'season' | 'year' | 'custom'>('year')
+    const [datePreset, setDatePreset] = useState<'month' | 'season' | 'year' | 'all_time' | 'custom'>('year')
     const [customStart, setCustomStart] = useState(`${currentYear}-01-01`)
     const [customEnd, setCustomEnd] = useState(`${currentYear}-12-31`)
+    const [tempStart, setTempStart] = useState(customStart)
+    const [tempEnd, setTempEnd] = useState(customEnd)
+
+    const applyCustomDates = () => {
+        setCustomStart(tempStart)
+        setCustomEnd(tempEnd)
+    }
 
     const dateRange = useMemo(() => {
+        if (datePreset === 'all_time') return { start: '1970-01-01', end: '2099-12-31' }
         if (datePreset === 'custom') return { start: customStart, end: customEnd }
         const y = currentYear
         if (datePreset === 'month') {
@@ -202,13 +210,23 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
         })
     }, [currentYearReservations, dateRange])
 
-    // Filter prev year for comparison
+    // Filter prev year for comparison (up to the same point in time last year)
     const filteredPrevReservations = useMemo(() => {
         const prevStart = dateRange.start.replace(String(currentYear), String(currentYear - 1))
         const prevEnd = dateRange.end.replace(String(currentYear), String(currentYear - 1))
+
+        // "O güne kadar alınmış rezervasyonları kıyaslama": filter by last year's "today" equivalent
+        const today = new Date()
+        const lastYearToday = `${today.getFullYear() - 1}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+
         return prevYearReservations.filter(r => {
             const ci = r.checkIn?.slice(0, 10)
-            return ci >= prevStart && ci <= prevEnd
+            const saleDate = r.lastUpdate?.slice(0, 10)
+
+            const withinStayRange = ci >= prevStart && ci <= prevEnd
+            const bookedByThisTimeLastYear = !saleDate || saleDate <= lastYearToday
+
+            return withinStayRange && bookedByThisTimeLastYear
         })
     }, [prevYearReservations, dateRange, currentYear])
 
@@ -516,15 +534,15 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
                     </button>
 
                     {/* Date Range Picker */}
-                    <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
-                        <CalendarRange size={14} className="text-gray-500 dark:text-gray-400 ml-2" />
-                        {(['month', 'season', 'year'] as const).map(p => (
+                    <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1 overflow-x-auto whitespace-nowrap scrollbar-none max-w-full">
+                        <CalendarRange size={14} className="text-gray-500 dark:text-gray-400 ml-2 shrink-0" />
+                        {(['month', 'season', 'year', 'all_time'] as const).map(p => (
                             <button
                                 key={p}
                                 onClick={() => setDatePreset(p)}
-                                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${datePreset === p ? 'bg-emerald-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
+                                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors shrink-0 ${datePreset === p ? 'bg-emerald-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
                             >
-                                {p === 'month' ? (t as any).thisMonth : p === 'season' ? (t as any).thisSeason : (t as any).thisYear}
+                                {p === 'month' ? (t as any).thisMonth : p === 'season' ? (t as any).thisSeason : p === 'year' ? (t as any).thisYear : 'Tüm Zamanlar'}
                             </button>
                         ))}
                         <button
@@ -538,17 +556,22 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
                         <div className="flex items-center gap-2">
                             <input
                                 type="date"
-                                value={customStart}
-                                onChange={e => setCustomStart(e.target.value)}
-                                className="text-xs bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1.5 text-gray-700 dark:text-gray-300"
+                                value={tempStart}
+                                onChange={e => setTempStart(e.target.value)}
+                                className="text-xs bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1.5 text-gray-700 dark:text-gray-300 w-[110px]"
                             />
                             <span className="text-gray-400 text-xs">–</span>
                             <input
                                 type="date"
-                                value={customEnd}
-                                onChange={e => setCustomEnd(e.target.value)}
-                                className="text-xs bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1.5 text-gray-700 dark:text-gray-300"
+                                value={tempEnd}
+                                onChange={e => setTempEnd(e.target.value)}
+                                className="text-xs bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1.5 text-gray-700 dark:text-gray-300 w-[110px]"
                             />
+                            {(tempStart !== customStart || tempEnd !== customEnd) && (
+                                <button onClick={applyCustomDates} className="bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold px-2 py-1 rounded transition-colors shrink-0">
+                                    Uygula
+                                </button>
+                            )}
                         </div>
                     )}
 
