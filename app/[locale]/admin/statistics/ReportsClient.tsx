@@ -106,6 +106,7 @@ function getDatePresets(t: AdminTranslations) {
 interface Props { reservations: Reservation[]; comparisonReservations?: Reservation[]; error: string | null; lastUpdated?: string | null; locale?: string; taxRates?: { vatAccommodation: number; taxAccommodation: number; vatFnb: number } }
 
 import ModuleOffline from '@/components/admin/ModuleOffline'
+import SocialStatsWidget from './SocialStatsWidget'
 
 export default function ReportsClient({ reservations, comparisonReservations = [], error, lastUpdated, locale: propLocale }: Props) {
     const params = useParams()
@@ -4075,6 +4076,14 @@ export default function ReportsClient({ reservations, comparisonReservations = [
                             }} className="px-4 py-2 text-sm font-bold bg-cyan-600 text-white rounded-lg hover:bg-cyan-500">{t.save || 'Kaydet'}</button>
                         </div>
                     </div>
+                </div>
+            )}
+
+            {/* New Social Media & SEO Widget rendered directly below KPI cards for Epic 2 */}
+            {widgetConfigs.some(w => w.visible) && (
+                <div className="mt-8 border-t border-slate-200 dark:border-slate-800 pt-8 max-w-7xl">
+                    <h3 className="text-xl font-bold flex items-center gap-2 mb-4"><Activity size={24} /> Dijital Varlık & Sosyal Medya Raporu</h3>
+                    <SocialStatsWidget />
                 </div>
             )}
 

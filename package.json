@@ -23,6 +23,7 @@
     "credit-card-type": "^10.1.2",
     "crypto-js": "^4.2.0",
     "exa-js": "^2.6.1",
+    "google-ads-api": "^23.0.0",
     "html2canvas": "^1.4.1",
     "imap": "^0.8.19",
     "iyzipay": "^2.0.65",

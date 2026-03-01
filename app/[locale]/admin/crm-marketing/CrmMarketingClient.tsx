@@ -25,7 +25,9 @@ interface WaConversation { identifier: string; platform: string; messageCount: n
 interface WaTemplate { id: string; name: string; content: string; category: string; language: string; useCount: number }
 interface EmailTpl { id: string; name: string; subject: string; htmlContent: string; category: string; isActive: boolean; createdAt: string }
 
-type Tab = 'guests' | 'segments' | 'campaigns' | 'emailTemplates' | 'inbox'
+import GoogleAdsTab from './GoogleAdsTab'
+
+type Tab = 'guests' | 'segments' | 'campaigns' | 'emailTemplates' | 'inbox' | 'ads'
 
 export default function CrmClient() {
     const [tab, setTab] = useState<Tab>('guests')
@@ -36,6 +38,7 @@ export default function CrmClient() {
         { key: 'campaigns', label: 'Kampanyalar', icon: <Send size={16} /> },
         { key: 'emailTemplates', label: 'E-posta Şablonları', icon: <Mail size={16} /> },
         { key: 'inbox', label: 'Merkezi Inbox', icon: <MessageSquare size={16} /> },
+        { key: 'ads', label: 'Google Ads', icon: <BarChart3 size={16} /> },
     ]
 
     return (
@@ -44,7 +47,7 @@ export default function CrmClient() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-0">
                 <div>
                     <h1 className="text-2xl font-bold flex items-center gap-2"><Layers size={24} /> CRM & Pazarlama</h1>
-                    <p className="text-sm text-muted-foreground mt-1">Misafir yönetimi, segmentasyon, kampanyalar ve mesajlaşma</p>
+                    <p className="text-sm text-muted-foreground mt-1">Misafir yönetimi, segmentasyon, reklam performansı ve mesajlaşma</p>
                 </div>
             </div>
 
@@ -64,6 +67,7 @@ export default function CrmClient() {
             {tab === 'campaigns' && <CampaignsTab />}
             {tab === 'emailTemplates' && <EmailTemplatesTab />}
             {tab === 'inbox' && <UnifiedInboxTab />}
+            {tab === 'ads' && <GoogleAdsTab />}
         </div>
     )
 }

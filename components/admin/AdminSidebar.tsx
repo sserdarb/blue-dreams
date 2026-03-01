@@ -105,7 +105,7 @@ export default function AdminSidebar({ locale, t, userRole: propRole = 'admin', 
                 { id: 'nav-marketing', href: '/marketing', label: 'Dijital Pazarlama', icon: Share2 },
                 { id: 'nav-analytics', href: '/analytics', label: t.analytics, icon: BarChart3 },
                 { id: 'nav-social', href: '/social', label: t.socialMedia, icon: Share2 },
-                { id: 'nav-content-gen', href: '/social/content', label: t.contentCreator, icon: Sparkles },
+                { id: 'nav-content-gen', href: '/ai-planner', label: t.contentCreator, icon: Sparkles },
                 { id: 'nav-competitors', href: '/competitors', label: 'Rakip Analizi', icon: Crosshair },
             ]
         },
