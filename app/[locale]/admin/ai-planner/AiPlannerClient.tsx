@@ -12,13 +12,24 @@ const LANGUAGES = [
     { code: 'de', name: 'Almanca' }
 ]
 
-export default function AiPlannerClient() {
+interface MediaFile {
+    id: string
+    url: string
+    filename: string
+    type: string
+}
+
+export default function AiPlannerClient({ initialFiles = [] }: { initialFiles?: MediaFile[] }) {
     const [topic, setTopic] = useState('Yaz Tatili Özel İndirimi')
     const [tone, setTone] = useState(TONES[0])
     const [language, setLanguage] = useState('tr')
     const [dateInfo, setDateInfo] = useState('Temmuz Ayı Boyunca')
     const [keywords, setKeywords] = useState('Bodrum, Lüks Tatil, Blue Dreams, Erken Rezervasyon')
-    const [imageContext, setImageContext] = useState('Sonsuzluk havuzunda gün batımı')
+
+    // Instead of text context, let's keep the text context optional and add actual image selection
+    const [imageContext, setImageContext] = useState('')
+    const [selectedImage, setSelectedImage] = useState<MediaFile | null>(null)
+    const [showImagePicker, setShowImagePicker] = useState(false)
 
     const [generating, setGenerating] = useState(false)
     const [result, setResult] = useState<string | null>(null)
@@ -32,10 +43,14 @@ export default function AiPlannerClient() {
         setCopied(false)
 
         try {
+            const finalImageContext = selectedImage
+                ? `(Seçilen Görsel URL: ${selectedImage.url}) ${imageContext}`
+                : imageContext
+
             const res = await fetch('/api/admin/ai-planner', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ topic, tone, language, dateInfo, keywords, imageContext })
+                body: JSON.stringify({ topic, tone, language, dateInfo, keywords, imageContext: finalImageContext })
             })
 
             const data = await res.json()
@@ -107,9 +122,48 @@ export default function AiPlannerClient() {
                             </div>
 
                             <div>
-                                <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1"><ImageIcon size={14} /> Görsel Bağlamı (İsteğe Bağlı)</label>
-                                <textarea value={imageContext} onChange={e => setImageContext(e.target.value)} className="w-full border rounded-md px-3 py-2 bg-slate-50 dark:bg-slate-950 dark:border-slate-800 min-h-[80px]" placeholder="AI'a görseli tarif edin ki metni ona göre yazsın... (Örn: Mavi bayraklı plajımızda kokteyl yudumlayan bir çift)" />
-                                <p className="text-[10px] text-muted-foreground mt-1">Not: Gelecekte Google Drive klasöründen otomatik görsel seçimi entegre edilecektir.</p>
+                                <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1"><ImageIcon size={14} /> Görsel Seçimi (Sistemden)</label>
+
+                                {selectedImage ? (
+                                    <div className="relative rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden mb-2  group">
+                                        <img src={selectedImage.url} alt="Selected" className="w-full h-32 object-cover" />
+                                        <button
+                                            onClick={() => setSelectedImage(null)}
+                                            className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                        >
+                                            <X size={14} />
+                                        </button>
+                                        <div className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[10px] p-1 truncate">
+                                            {selectedImage.filename}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <button
+                                        onClick={() => setShowImagePicker(!showImagePicker)}
+                                        className="w-full border border-dashed rounded-md px-3 py-4 text-center text-sm text-slate-500 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-950/50 transition-colors mb-2"
+                                    >
+                                        <div className="flex flex-col items-center gap-1">
+                                            <ImageIcon size={20} className="text-slate-400" />
+                                            <span>Medya Kütüphanesinden Seç</span>
+                                        </div>
+                                    </button>
+                                )}
+
+                                {showImagePicker && initialFiles.length > 0 && !selectedImage && (
+                                    <div className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg p-2 max-h-48 overflow-y-auto grid grid-cols-3 gap-2 mb-2">
+                                        {initialFiles.filter(f => f.type.startsWith('image/')).map(file => (
+                                            <div
+                                                key={file.id}
+                                                onClick={() => { setSelectedImage(file); setShowImagePicker(false); }}
+                                                className="cursor-pointer border rounded bg-white hover:border-cyan-500 overflow-hidden"
+                                            >
+                                                <img src={file.url} alt={file.filename} className="w-full h-16 object-cover" />
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                <textarea value={imageContext} onChange={e => setImageContext(e.target.value)} className="w-full border rounded-md px-3 py-2 bg-slate-50 dark:bg-slate-950 dark:border-slate-800 min-h-[60px]" placeholder="AI'a görseli kısaca tarif edin (Opsiyonel)" />
                             </div>
                         </div>
 
