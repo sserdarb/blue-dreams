@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { ElektraService } from '@/lib/services/elektra'
+import { ElektraCache } from '@/lib/services/elektra-cache'
 
 export async function GET(request: NextRequest) {
     try {
@@ -30,9 +30,8 @@ export async function GET(request: NextRequest) {
             toDate.setDate(today.getDate() + 90)
         }
 
-        let reservations = dateType === 'sale'
-            ? await ElektraService.getReservationsByBookingDate(fromDate, toDate)
-            : await ElektraService.getReservations(fromDate, toDate, status || undefined)
+        // DB-first: read from cached reservations
+        let reservations = await ElektraCache.getReservations(fromDate, toDate)
 
         // Filter by channel
         if (channel && channel !== 'all') {

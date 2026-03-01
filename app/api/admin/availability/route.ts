@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { ElektraService } from '@/lib/services/elektra'
+import { ElektraCache } from '@/lib/services/elektra-cache'
 
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
@@ -14,7 +14,7 @@ export async function GET(request: Request) {
     try {
         const fromDate = new Date(from)
         const toDate = new Date(to)
-        const availability = await ElektraService.getAvailability(fromDate, toDate, currency)
+        const availability = await ElektraCache.getAvailability(fromDate, toDate, currency)
 
         // Group by room type
         const byRoom = new Map<string, {

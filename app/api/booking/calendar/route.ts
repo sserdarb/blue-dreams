@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { ElektraService } from '@/lib/services/elektra'
+import { ElektraCache } from '@/lib/services/elektra-cache'
 
 export const dynamic = 'force-dynamic'
 
 /**
  * GET /api/booking/calendar?month=2026-06&currency=TRY
- * Returns daily pricing and availability using HotelWeb contract for a month
+ * Returns daily pricing and availability — DB-first via ElektraCache
  */
 export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url)
@@ -23,8 +23,8 @@ export async function GET(req: NextRequest) {
         const firstDay = new Date(year, mo - 1, 1)
         const lastDay = new Date(year, mo, 1) // First day of next month is effectively the bounds
 
-        // Fetch availability for the entire month in one call
-        const availability = await ElektraService.getAvailability(firstDay, lastDay, currency)
+        // DB-first: read availability from cache
+        const availability = await ElektraCache.getAvailability(firstDay, lastDay, currency)
 
         const dailyData = new Map<string, { minPrice: number, available: boolean, roomType: string }>()
 

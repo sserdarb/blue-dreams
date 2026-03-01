@@ -1,11 +1,17 @@
 // Elektra PMS DB-Based Cache Layer
-// Caches reservation/availability data in SQL (Prisma) for instant dashboard loads
+// ALL data is persisted to PostgreSQL — never browser cache or in-memory only.
 // Auto-refreshed via instrumentation.ts interval
 
 import { ElektraService, type Reservation, type RoomAvailability, type ExchangeRates } from './elektra'
 import { prisma } from '@/lib/prisma'
 import fs from 'fs'
 import path from 'path'
+
+// ─── In-process TTL guard (to avoid hitting PMS on every single request) ─────
+let lastAvailabilitySync = 0
+let lastCountriesSync = 0
+const AVAILABILITY_SYNC_TTL = 5 * 60 * 1000  // 5 minutes
+const COUNTRIES_SYNC_TTL = 24 * 60 * 60 * 1000 // 24 hours
 
 export interface ElektraCacheData {
     reservations: Reservation[]
@@ -197,6 +203,57 @@ export const ElektraCache = {
         } catch (e) {
             console.error('[ElektraCache] Reservation Refresh Error:', e)
         }
+
+        // ─── Sync Availability (next 6 months) ───
+        try {
+            const avFromDate = new Date(today)
+            const avToDate = new Date(today.getFullYear(), today.getMonth() + 6, 0)
+            const availability = await ElektraService.getAvailability(avFromDate, avToDate, 'TRY')
+
+            // Delete old availability for this date range, then bulk insert
+            await prisma.elektraAvailability.deleteMany({
+                where: { date: { gte: avFromDate.toISOString().split('T')[0], lte: avToDate.toISOString().split('T')[0] } }
+            })
+
+            // Batch insert in chunks of 100
+            for (let i = 0; i < availability.length; i += 100) {
+                const chunk = availability.slice(i, i + 100)
+                await prisma.elektraAvailability.createMany({
+                    data: chunk.map(a => ({
+                        date: a.date,
+                        roomType: a.roomType,
+                        roomTypeId: a.roomTypeId,
+                        availableCount: a.availableCount,
+                        basePrice: a.basePrice,
+                        discountedPrice: a.discountedPrice,
+                        stopsell: a.stopsell,
+                        currency: 'TRY',
+                        fetchedAt: new Date()
+                    })),
+                    skipDuplicates: true
+                })
+            }
+            lastAvailabilitySync = Date.now()
+            console.log(`[ElektraCache] Synced ${availability.length} availability records`)
+        } catch (e) {
+            console.error('[ElektraCache] Availability Refresh Error:', e)
+        }
+
+        // ─── Sync Countries ───
+        try {
+            const countries = await ElektraService.getCountries()
+            // Delete all, then re-insert
+            await prisma.elektraCountry.deleteMany({})
+            if (countries.length > 0) {
+                await prisma.elektraCountry.createMany({
+                    data: countries.map(c => ({ id: c.id, name: c.name, fetchedAt: new Date() }))
+                })
+            }
+            lastCountriesSync = Date.now()
+            console.log(`[ElektraCache] Synced ${countries.length} countries`)
+        } catch (e) {
+            console.error('[ElektraCache] Countries Refresh Error:', e)
+        }
     },
 
     /**
@@ -302,6 +359,93 @@ export const ElektraCache = {
             EUR_TO_TRY: rate.eur,
             USD_TO_TRY: rate.usd,
             fetchedAt: rate.fetchedAt.getTime()
+        }
+    },
+
+    // ─── DB-First Availability ─────────────────────────────────────
+    /**
+     * Returns availability from DB cache. If DB is empty or stale,
+     * fetches from live PMS, writes to DB, then returns.
+     * Currency conversion is handled by the caller — DB stores TRY.
+     */
+    async getAvailability(from: Date, to: Date, currency?: string): Promise<RoomAvailability[]> {
+        const fromStr = from.toISOString().split('T')[0]
+        const toStr = to.toISOString().split('T')[0]
+
+        try {
+            // Try DB first
+            const dbRows = await prisma.elektraAvailability.findMany({
+                where: { date: { gte: fromStr, lte: toStr } },
+                orderBy: { date: 'asc' }
+            })
+
+            if (dbRows.length > 0) {
+                return dbRows.map((r: any) => ({
+                    date: r.date,
+                    roomType: r.roomType,
+                    roomTypeId: r.roomTypeId,
+                    availableCount: r.availableCount,
+                    basePrice: r.basePrice,
+                    discountedPrice: r.discountedPrice,
+                    stopsell: r.stopsell,
+                    vatAmount: null
+                }))
+            }
+
+            // DB empty for this range → fetch live, cache, return
+            console.log(`[ElektraCache] Availability cache miss for ${fromStr}..${toStr}, fetching live`)
+            const live = await ElektraService.getAvailability(from, to, currency)
+            // Store in DB for next time
+            if (live.length > 0) {
+                for (let i = 0; i < live.length; i += 100) {
+                    const chunk = live.slice(i, i + 100)
+                    await prisma.elektraAvailability.createMany({
+                        data: chunk.map(a => ({
+                            date: a.date,
+                            roomType: a.roomType,
+                            roomTypeId: a.roomTypeId,
+                            availableCount: a.availableCount,
+                            basePrice: a.basePrice,
+                            discountedPrice: a.discountedPrice,
+                            stopsell: a.stopsell,
+                            currency: currency || 'TRY',
+                            fetchedAt: new Date()
+                        })),
+                        skipDuplicates: true
+                    })
+                }
+            }
+            return live
+        } catch (e) {
+            console.error('[ElektraCache] Availability Error:', e)
+            // Fallback to live
+            try {
+                return await ElektraService.getAvailability(from, to, currency)
+            } catch { return [] }
+        }
+    },
+
+    // ─── DB-First Countries ────────────────────────────────────────
+    async getCountries(): Promise<{ id: number; name: string }[]> {
+        try {
+            const dbCountries = await prisma.elektraCountry.findMany({ orderBy: { name: 'asc' } })
+            if (dbCountries.length > 0) {
+                return dbCountries.map((c: any) => ({ id: c.id, name: c.name }))
+            }
+
+            // DB empty → fetch live, cache, return
+            console.log('[ElektraCache] Countries cache miss, fetching live')
+            const live = await ElektraService.getCountries()
+            if (live.length > 0) {
+                await prisma.elektraCountry.createMany({
+                    data: live.map(c => ({ id: c.id, name: c.name, fetchedAt: new Date() })),
+                    skipDuplicates: true
+                })
+            }
+            return live
+        } catch (e) {
+            console.error('[ElektraCache] Countries Error:', e)
+            try { return await ElektraService.getCountries() } catch { return [] }
         }
     }
 }

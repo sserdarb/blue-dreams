@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server'
-import { ElektraService } from '@/lib/services/elektra'
+import { ElektraCache } from '@/lib/services/elektra-cache'
 
 // Public API — no auth required
-// Caches for 5 min via Elektra's built-in revalidate
+// DB-first: reads from cached availability data
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const from = searchParams.get('from')
@@ -19,7 +19,7 @@ export async function GET(request: Request) {
     const toDate = to ? new Date(to) : defaultTo
 
     try {
-        const availability = await ElektraService.getAvailability(fromDate, toDate, currency)
+        const availability = await ElektraCache.getAvailability(fromDate, toDate, currency)
 
         // Group by room type and compute summary pricing
         const byRoom = new Map<string, {
