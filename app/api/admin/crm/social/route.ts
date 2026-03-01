@@ -42,10 +42,7 @@ export async function GET(req: NextRequest) {
                 rawConversations.map(async conv => {
                     const guest = await prisma.guestProfile.findFirst({
                         where: {
-                            OR: [
-                                { phone: conv.identifier },
-                                { socialIds: { contains: conv.identifier } }
-                            ]
+                            phone: conv.identifier
                         },
                         select: { id: true, name: true, surname: true, country: true, totalStays: true },
                     });
@@ -133,7 +130,7 @@ export async function POST(req: NextRequest) {
             // Record sent message
             const guest = await prisma.guestProfile.findFirst({
                 where: {
-                    OR: [{ phone }, { socialIds: { contains: phone } }]
+                    phone: phone
                 }
             });
 

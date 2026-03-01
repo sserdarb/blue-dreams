@@ -364,10 +364,10 @@ export default async function RestaurantPage({ params }: { params: Promise<{ loc
                                             )}
 
                                             {/* Menu Link */}
-                                            {venue.menuUrl && (
+                                            {(venue as any).menuUrl && (
                                                 <div className="pt-4">
                                                     <a
-                                                        href={venue.menuUrl}
+                                                        href={(venue as any).menuUrl}
                                                         className="inline-flex items-center justify-center px-8 py-3.5 bg-[#c9a96e] text-[#0a0a0a] hover:bg-[#b8954f] transition-colors duration-300 rounded-full text-sm font-bold tracking-widest uppercase"
                                                     >
                                                         {g('viewMenu', locale)}

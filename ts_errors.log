@@ -1,0 +1,40 @@
+.next/types/app/[locale]/admin/crm/meetings/page.ts(34,29): error TS2344: Type '{ params: { locale: string; }; }' does not satisfy the constraint 'PageProps'.
+  Types of property 'params' are incompatible.
+    Type '{ locale: string; }' is missing the following properties from type 'Promise<any>': then, catch, finally, [Symbol.toStringTag]
+.next/types/app/api/booking/vpos-callback/[provider]/route.ts(166,7): error TS2344: Type '{ __tag__: "POST"; __param_position__: "second"; __param_type__: { params: { provider: string; }; }; }' does not satisfy the constraint 'ParamCheck<RouteContext>'.
+  The types of '__param_type__.params' are incompatible between these types.
+    Type '{ provider: string; }' is missing the following properties from type 'Promise<any>': then, catch, finally, [Symbol.toStringTag]
+app/[locale]/(public)/restoran/page.tsx(367,52): error TS2339: Property 'menuUrl' does not exist on type '({ events: { id: string; createdAt: Date; updatedAt: Date; description: string | null; title: string; locale: string; time: string | null; image: string | null; isActive: boolean; diningId: string; date: Date | null; }[]; } & { ...; }) | { ...; } | { ...; }'.
+  Property 'menuUrl' does not exist on type '{ events: { id: string; createdAt: Date; updatedAt: Date; description: string | null; title: string; locale: string; time: string | null; image: string | null; isActive: boolean; diningId: string; date: Date | null; }[]; } & { ...; }'.
+app/[locale]/(public)/restoran/page.tsx(370,69): error TS2339: Property 'menuUrl' does not exist on type '({ events: { id: string; createdAt: Date; updatedAt: Date; description: string | null; title: string; locale: string; time: string | null; image: string | null; isActive: boolean; diningId: string; date: Date | null; }[]; } & { ...; }) | { ...; } | { ...; }'.
+  Property 'menuUrl' does not exist on type '{ events: { id: string; createdAt: Date; updatedAt: Date; description: string | null; title: string; locale: string; time: string | null; image: string | null; isActive: boolean; diningId: string; date: Date | null; }[]; } & { ...; }'.
+app/[locale]/admin/ai-planner/AiPlannerClient.tsx(134,46): error TS2304: Cannot find name 'X'.
+app/[locale]/admin/crm-marketing/CrmMarketingClient.tsx(698,51): error TS2304: Cannot find name 'Loader2'.
+app/[locale]/admin/crm/meetings/page.tsx(13,42): error TS2345: Argument of type 'string' is not assignable to parameter of type 'AdminLocale'.
+app/[locale]/admin/reports/ManagementReportsClient.tsx(573,74): error TS2339: Property 'guestNationality' does not exist on type 'AdminTranslations'.
+app/[locale]/admin/reports/ManagementReportsClient.tsx(1141,102): error TS2339: Property 'guestNationality' does not exist on type 'AdminTranslations'.
+app/[locale]/admin/reports/ManagementReportsClient.tsx(1176,97): error TS2339: Property 'guestNationality' does not exist on type 'AdminTranslations'.
+app/[locale]/admin/reports/ManagementReportsClient.tsx(1184,74): error TS2339: Property 'guestNationality' does not exist on type 'AdminTranslations'.
+app/[locale]/admin/statistics/ReportsClient.tsx(218,46): error TS2339: Property 'lastUpdate' does not exist on type 'Reservation'.
+app/api/admin/ads/route.ts(18,39): error TS2551: Property 'siteSetting' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'. Did you mean 'siteSettings'?
+app/api/admin/ads/route.ts(24,45): error TS7006: Parameter 's' implicitly has an 'any' type.
+app/api/admin/ads/route.ts(25,43): error TS7006: Parameter 's' implicitly has an 'any' type.
+app/api/admin/crm/social/route.ts(47,35): error TS2353: Object literal may only specify known properties, and 'socialIds' does not exist in type 'GuestProfileWhereInput'.
+app/api/admin/crm/social/route.ts(136,39): error TS2353: Object literal may only specify known properties, and 'socialIds' does not exist in type 'GuestProfileWhereInput'.
+app/api/admin/dining/[id]/route.ts(53,17): error TS2353: Object literal may only specify known properties, and 'menuUrl' does not exist in type '(Without<DiningUpdateInput, DiningUncheckedUpdateInput> & DiningUncheckedUpdateInput) | (Without<...> & DiningUpdateInput)'.
+app/api/admin/dining/route.ts(44,17): error TS2353: Object literal may only specify known properties, and 'menuUrl' does not exist in type '(Without<DiningCreateInput, DiningUncheckedCreateInput> & DiningUncheckedCreateInput) | (Without<...> & DiningCreateInput)'.
+app/api/admin/social-stats/route.ts(17,39): error TS2551: Property 'siteSetting' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'. Did you mean 'siteSettings'?
+app/api/admin/social-stats/route.ts(23,42): error TS7006: Parameter 's' implicitly has an 'any' type.
+app/api/admin/social-stats/route.ts(24,41): error TS7006: Parameter 's' implicitly has an 'any' type.
+app/api/admin/social-stats/route.ts(25,43): error TS7006: Parameter 's' implicitly has an 'any' type.
+app/api/booking/vpos-callback/[provider]/route.ts(90,77): error TS2345: Argument of type '{ status: string; id: string; createdAt: Date; updatedAt: Date; children: number; currency: string; checkIn: Date; nights: number; adults: number; checkOut: Date; guestName: string; ... 13 more ...; elektraStatus: string | null; }' is not assignable to parameter of type '{ referenceId: string; checkIn: Date; checkOut: Date; roomType: string; roomTypeId: number; nights: number; adults: number; children: number; childAges: string | null; guestName: string; ... 5 more ...; paidAmount: number; }'.
+  Property 'paidAmount' is missing in type '{ status: string; id: string; createdAt: Date; updatedAt: Date; children: number; currency: string; checkIn: Date; nights: number; adults: number; checkOut: Date; guestName: string; ... 13 more ...; elektraStatus: string | null; }' but required in type '{ referenceId: string; checkIn: Date; checkOut: Date; roomType: string; roomTypeId: number; nights: number; adults: number; children: number; childAges: string | null; guestName: string; ... 5 more ...; paidAmount: number; }'.
+app/api/booking/vpos-callback/[provider]/route.ts(95,25): error TS2322: Type '{ success: boolean; pmsId?: string | undefined; errorMessage?: string | undefined; }' is not assignable to type 'string | NullableStringFieldUpdateOperationsInput | null | undefined'.
+lib/services/elektra-cache.ts(214,26): error TS2339: Property 'elektraAvailability' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+lib/services/elektra-cache.ts(221,30): error TS2339: Property 'elektraAvailability' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+lib/services/elektra-cache.ts(246,26): error TS2339: Property 'elektraCountry' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+lib/services/elektra-cache.ts(248,30): error TS2339: Property 'elektraCountry' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+lib/services/elektra-cache.ts(377,41): error TS2339: Property 'elektraAvailability' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+lib/services/elektra-cache.ts(402,34): error TS2339: Property 'elektraAvailability' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+lib/services/elektra-cache.ts(431,46): error TS2339: Property 'elektraCountry' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.
+lib/services/elektra-cache.ts(440,30): error TS2339: Property 'elektraCountry' does not exist on type 'PrismaClient<PrismaClientOptions, never, DefaultArgs>'.

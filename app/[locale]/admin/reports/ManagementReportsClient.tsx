@@ -570,7 +570,7 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
                         { key: 'dashboard' as const, icon: LayoutDashboard, label: t.dashboard },
                         { key: 'channels' as const, icon: Share2, label: t.channelDistribution },
                         { key: 'agencies' as const, icon: Users, label: t.managementReports.agencyReport },
-                        { key: 'country' as const, icon: Globe, label: t.guestNationality },
+                        { key: 'country' as const, icon: Globe, label: t.guestCountry },
                         { key: 'market' as const, icon: Store, label: t.managementReports.market },
                     ].map(tab => (
                         <button key={tab.key} onClick={() => setActiveReport(tab.key)} className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${activeReport === tab.key ? 'bg-cyan-600 text-white shadow-lg shadow-cyan-600/20' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5'}`}>
@@ -1138,7 +1138,7 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Pie Chart */}
                         <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm p-6">
-                            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">{t.guestNationality} — {t.managementReports.revenueShare}</h3>
+                            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">{t.guestCountry} — {t.managementReports.revenueShare}</h3>
                             <div className="h-72">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <PieChart>
@@ -1173,7 +1173,7 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
                     {/* Full Country Table */}
                     <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-200 dark:border-white/10 overflow-hidden shadow-sm">
                         <div className="p-4 border-b border-slate-200 dark:border-white/10">
-                            <h3 className="text-lg font-bold text-slate-900 dark:text-white">{t.guestNationality} {t.managementReports.details} — {currentYear}</h3>
+                            <h3 className="text-lg font-bold text-slate-900 dark:text-white">{t.guestCountry} {t.managementReports.details} — {currentYear}</h3>
                             <p className="text-xs text-slate-500 mt-1">{t.managementReports.total} {nationalityData.length}</p>
                         </div>
                         <div className="overflow-x-auto">
@@ -1181,7 +1181,7 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
                                 <thead className="bg-slate-50 dark:bg-[#0f172a]">
                                     <tr className="text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400 font-bold">
                                         <th className="p-3 text-left">#</th>
-                                        <th className="p-3 text-left">{t.guestNationality}</th>
+                                        <th className="p-3 text-left">{t.guestCountry}</th>
                                         <th className="p-3 text-right">{t.managementReports.resCount}</th>
                                         <th className="p-3 text-right">RN</th>
                                         <th className="p-3 text-right">{t.roomRevenue} (€)</th>

@@ -14,15 +14,9 @@ export async function GET(request: Request) {
         const action = searchParams.get('action') || 'all'
 
         // Retrieve stored tokens for Meta
-        const settings = await prisma.siteSetting.findMany({
-            where: {
-                key: { in: ['meta_fb_page_id', 'meta_ig_account_id', 'meta_graph_access_token'] }
-            }
-        })
-
-        const FB_PAGE_ID = settings.find(s => s.key === 'meta_fb_page_id')?.value
-        const IG_ACC_ID = settings.find(s => s.key === 'meta_ig_account_id')?.value
-        const GRAPH_TOKEN = settings.find(s => s.key === 'meta_graph_access_token')?.value
+        const FB_PAGE_ID = process.env.META_FB_PAGE_ID
+        const IG_ACC_ID = process.env.META_IG_ACCOUNT_ID
+        const GRAPH_TOKEN = process.env.META_GRAPH_ACCESS_TOKEN
 
         let responsePayload: any = {}
 

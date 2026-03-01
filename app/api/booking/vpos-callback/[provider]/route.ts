@@ -5,10 +5,10 @@ import { ElektraService } from '@/lib/services/elektra'
 export const dynamic = 'force-dynamic'
 
 // Disabling CSRF check for this webhook
-export async function POST(req: Request, { params }: { params: { provider: string } }) {
+export async function POST(req: Request, { params }: { params: Promise<{ provider: string }> }) {
     try {
         const formData = await req.formData()
-        const provider = params.provider
+        const { provider } = await params
 
         let orderId = ''
         let status = 'failed'
@@ -87,12 +87,16 @@ export async function POST(req: Request, { params }: { params: { provider: strin
 
             // Push to Elektra PMS
             try {
-                const elektraResId = await ElektraService.createReservation(booking)
+                // Pass paidAmount to the service
+                const elektraResult = await ElektraService.createReservation({
+                    ...booking,
+                    paidAmount: amount || booking.totalPrice
+                })
                 await prisma.booking.update({
                     where: { id: booking.id },
                     data: {
-                        elektraStatus: 'synced',
-                        elektraResId: elektraResId || 'unknown'
+                        elektraStatus: elektraResult.success ? 'synced' : 'failed',
+                        elektraResId: elektraResult.pmsId || 'unknown'
                     }
                 })
             } catch (err) {

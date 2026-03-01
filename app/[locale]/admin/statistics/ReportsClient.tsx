@@ -215,7 +215,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
 
         data = data.filter(r => {
             const dateValue = r[dateField]
-            const saleDate = r.saleDate || r.lastUpdate?.slice(0, 10);
+            const saleDate = r.saleDate || (r as any).lastUpdate?.slice(0, 10);
 
             const matchesStart = targetStart ? dateValue >= targetStart : true
             const matchesEnd = targetEnd ? dateValue <= targetEnd : true

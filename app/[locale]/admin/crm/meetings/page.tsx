@@ -6,10 +6,11 @@ export const metadata = {
 }
 
 export default async function MeetingsPage({
-    params: { locale }
+    params
 }: {
-    params: { locale: string }
+    params: Promise<{ locale: string }>
 }) {
-    const t = await getAdminTranslations(locale)
+    const { locale } = await params
+    const t = await getAdminTranslations(locale as any)
     return <MeetingsClient locale={locale} t={t} />
 }

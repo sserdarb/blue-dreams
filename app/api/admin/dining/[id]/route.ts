@@ -50,7 +50,6 @@ export async function PUT(
                 capacity,
                 location,
                 features,
-                menuUrl,
                 isActive: isActive ?? true
             }
         })

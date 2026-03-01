@@ -15,14 +15,8 @@ export async function GET(request: Request) {
         const action = searchParams.get('action') || 'stats'
 
         // 1. Fetch configured token from Settings
-        const settings = await prisma.siteSetting.findMany({
-            where: {
-                key: { in: ['google_ads_refresh_token', 'google_ads_customer_id'] }
-            }
-        })
-
-        const REFRESH_TOKEN = settings.find(s => s.key === 'google_ads_refresh_token')?.value
-        const CUSTOMER_ID = settings.find(s => s.key === 'google_ads_customer_id')?.value
+        const REFRESH_TOKEN = process.env.GOOGLE_ADS_REFRESH_TOKEN
+        const CUSTOMER_ID = process.env.GOOGLE_ADS_CUSTOMER_ID
 
         if (!REFRESH_TOKEN || !CUSTOMER_ID) {
             return NextResponse.json({ error: 'Config missing', requiresAuth: true }, { status: 401 })

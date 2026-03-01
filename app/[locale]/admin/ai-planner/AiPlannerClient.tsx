@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { Card } from '@/components/ui/card'
-import { Sparkles, Image as ImageIcon, Calendar, Languages, Hash, Send, Copy, Check, Loader2, MessageSquareText } from 'lucide-react'
+import { Sparkles, Image as ImageIcon, Calendar, Languages, Hash, Send, Copy, Check, Loader2, MessageSquareText, X } from 'lucide-react'
 
 const TONES = ['Lüks ve Profesyonel', 'Samimi ve Aile Dostu', 'Heyecanlı ve Enerjik', 'Romantik', 'Doğayla İç İçe']
 const LANGUAGES = [

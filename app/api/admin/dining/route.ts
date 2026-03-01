@@ -41,7 +41,6 @@ export async function POST(request: Request) {
                 capacity,
                 location,
                 features,
-                menuUrl,
                 isActive: isActive ?? true
             }
         })

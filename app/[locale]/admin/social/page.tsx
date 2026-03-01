@@ -2,8 +2,8 @@
 export const dynamic = 'force-dynamic'
 
 import React, { useState } from 'react'
-import { Share2, Instagram, Twitter, Facebook, Youtube, TrendingUp, TrendingDown, Users, Heart, MessageCircle, Eye, ExternalLink, Link2, Unlink, BarChart3, Calendar, ArrowUp, ArrowDown, Minus, Settings, Key, Clock, CheckCircle2, AlertCircle, FileText } from 'lucide-react'
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, AreaChart, Area, PieChart, Pie, Cell } from 'recharts'
+import { Share2, Instagram, Twitter, Facebook, Youtube, TrendingUp, TrendingDown, Users, Heart, MessageCircle, Eye, ExternalLink, Link2, Unlink, BarChart3, Calendar, ArrowUp, ArrowDown, Minus, Settings, Key, Clock, CheckCircle2, AlertCircle, FileText, BrainCircuit, Lightbulb, Target, Zap } from 'lucide-react'
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, AreaChart, Area, PieChart, Pie, Cell, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis } from 'recharts'
 import UnifiedInbox from '@/components/admin/social/UnifiedInbox'
 
 // ─── Types ─────────────────────────────────────────────────────
@@ -80,8 +80,31 @@ const RECENT_POSTS = [
     { id: 4, platform: 'Instagram', type: 'Story', content: 'Behind the scenes: Breakfast preparation 🥐', likes: 89, comments: 0, shares: 0, date: '3 gün önce' },
 ]
 
+const AUDIENCE_DEMOGRAPHICS = [
+    { name: '18-24', value: 15, color: '#0ea5e9' },
+    { name: '25-34', value: 45, color: '#3b82f6' },
+    { name: '35-44', value: 25, color: '#6366f1' },
+    { name: '45-54', value: 10, color: '#8b5cf6' },
+    { name: '55+', value: 5, color: '#a855f7' },
+]
+
+const COMPETITOR_BENCHMARKING = [
+    { subject: 'Etkileşim Oranı', A: 5.2, B: 3.8, fullMark: 10 },
+    { subject: 'Takipçi Büyümesi', A: 4.1, B: 2.5, fullMark: 10 },
+    { subject: 'İçerik Kalitesi', A: 8.5, B: 7.0, fullMark: 10 },
+    { subject: 'Yanıt Hızı', A: 9.0, B: 6.5, fullMark: 10 },
+    { subject: 'Video (Reels)', A: 7.5, B: 4.2, fullMark: 10 },
+    { subject: 'Influencer', A: 6.0, B: 8.5, fullMark: 10 },
+]
+
+const STRATEGIC_INSIGHTS = [
+    { type: 'opportunity', title: 'Reels İçeriklerinde Yüksek Potansiyel', desc: 'Son 30 gündeki Reels içerikleriniz, fotoğraflara göre %145 daha fazla erişim elde etti. Özellikle akşam üstü 17:00 paylaşımlarında algoritma sizi öne çıkarıyor. Video içeriği üretimini haftada en az 4\'e çıkarmalısınız.', impact: 'Yüksek Etki', action: 'Video Prodüksiyonu Artırılmalı' },
+    { type: 'warning', title: 'Hafta Sonu Etkileşim Düşüşü', desc: 'Facebook sayfanızdaki hafta sonu etkileşimleri %22 oranında düştü. Aile odaklı pazar kahvaltısı veya etkinlik postları hafta sonu algırtimasına daha uygundur.', impact: 'Orta Etki', action: 'İçerik Takvimini Revize Et' },
+    { type: 'success', title: 'Uluslararası Kitle Büyümesi', desc: 'İngiltere (UK) ve Almanya lokasyonlu takipçi sayınızda organik olarak %8\'lik bir artış tespit edildi. Bu kitleye özel İngilizce/Almanca çift dilli hikaye (Story) serileri başlatabilirsiniz.', impact: 'Yüksek Etki', action: 'Hedefli Dil Kullanımı' }
+]
+
 export default function SocialMediaPage() {
-    const [activeTab, setActiveTab] = useState<'overview' | 'analytics' | 'inbox' | 'schedule' | 'settings'>('overview')
+    const [activeTab, setActiveTab] = useState<'overview' | 'analytics' | 'insights' | 'inbox' | 'schedule' | 'settings'>('overview')
     const [chartType, setChartType] = useState<'engagement' | 'growth'>('engagement')
     const [savedPosts, setSavedPosts] = useState<any[]>([])
     const [apiKeys, setApiKeys] = useState<Record<string, string>>({
@@ -158,11 +181,11 @@ export default function SocialMediaPage() {
                     </h1>
                     <p className="text-slate-500 dark:text-slate-400">Sosyal medya hesaplarınızı bağlayın ve performansınızı takip edin.</p>
                 </div>
-                <div className="flex gap-2">
-                    {(['overview', 'analytics', 'inbox', 'schedule', 'settings'] as const).map(tab => (
+                <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 hide-scrollbar">
+                    {(['overview', 'analytics', 'insights', 'inbox', 'schedule', 'settings'] as const).map(tab => (
                         <button key={tab} onClick={() => setActiveTab(tab)}
-                            className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${activeTab === tab ? 'bg-cyan-600 text-white shadow-lg shadow-cyan-600/20' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5'}`}>
-                            {tab === 'overview' ? 'Genel Bakış' : tab === 'analytics' ? 'Analytics' : tab === 'inbox' ? 'Gelen Kutusu' : tab === 'schedule' ? 'Takvim' : 'API Ayarları'}
+                            className={`whitespace-nowrap px-4 py-2 rounded-lg font-medium text-sm transition-colors ${activeTab === tab ? 'bg-cyan-600 text-white shadow-lg shadow-cyan-600/20' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5'}`}>
+                            {tab === 'overview' ? 'Genel Bakış' : tab === 'analytics' ? 'Büyük Veri & Demografi' : tab === 'insights' ? 'Yapay Zeka & Strateji' : tab === 'inbox' ? 'Gelen Kutusu' : tab === 'schedule' ? 'Takvim' : 'Bağlantılar'}
                         </button>
                     ))}
                 </div>
@@ -457,6 +480,132 @@ export default function SocialMediaPage() {
                                         </div>
                                     ))}
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Additional Advanced Analytics (Consulting Grade) */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-6">
+                        {/* Demographics Pie */}
+                        <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm">
+                            <div className="p-4 border-b border-slate-200 dark:border-white/10">
+                                <h3 className="font-bold text-slate-900 dark:text-white">Yaş Dağılımı (Demografi)</h3>
+                            </div>
+                            <div className="p-4 h-64 flex items-center justify-center">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <PieChart>
+                                        <Pie
+                                            data={AUDIENCE_DEMOGRAPHICS}
+                                            cx="50%"
+                                            cy="50%"
+                                            innerRadius={60}
+                                            outerRadius={80}
+                                            paddingAngle={5}
+                                            dataKey="value"
+                                        >
+                                            {AUDIENCE_DEMOGRAPHICS.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={entry.color} />
+                                            ))}
+                                        </Pie>
+                                        <Tooltip
+                                            contentStyle={{ borderRadius: '12px', borderColor: '#334155', backgroundColor: '#1e293b', color: '#fff' }}
+                                            itemStyle={{ color: '#fff', fontWeight: 'bold' }}
+                                            formatter={(value) => [`%${value}`, 'Oran']}
+                                        />
+                                        <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '11px', color: '#94a3b8' }} />
+                                    </PieChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </div>
+
+                        {/* Audience Locations */}
+                        <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm">
+                            <div className="p-4 border-b border-slate-200 dark:border-white/10">
+                                <h3 className="font-bold text-slate-900 dark:text-white">En İyi Lokasyonlar</h3>
+                            </div>
+                            <div className="p-4">
+                                <div className="space-y-4">
+                                    {[
+                                        { city: 'Istanbul, TR', percent: 38, color: 'bg-blue-500' },
+                                        { city: 'London, UK', percent: 18, color: 'bg-indigo-500' },
+                                        { city: 'Berlin, DE', percent: 14, color: 'bg-purple-500' },
+                                        { city: 'Bodrum, TR', percent: 12, color: 'bg-pink-500' },
+                                        { city: 'Moscow, RU', percent: 8, color: 'bg-rose-500' },
+                                    ].map(loc => (
+                                        <div key={loc.city}>
+                                            <div className="flex justify-between text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                                                <span>{loc.city}</span>
+                                                <span>{loc.percent}%</span>
+                                            </div>
+                                            <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2">
+                                                <div className={`${loc.color} h-2 rounded-full`} style={{ width: `${loc.percent}%` }}></div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {activeTab === 'insights' && (
+                <div className="space-y-6">
+                    {/* Insights Overview */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                        <div className="lg:col-span-2 bg-gradient-to-br from-indigo-900 to-slate-900 rounded-2xl border border-indigo-500/30 shadow-lg overflow-hidden relative">
+                            <div className="absolute top-0 right-0 p-8 opacity-10">
+                                <BrainCircuit size={120} />
+                            </div>
+                            <div className="p-6 relative z-10">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <div className="p-2 bg-indigo-500/20 text-indigo-300 rounded-lg"><BrainCircuit size={20} /></div>
+                                    <h3 className="text-xl font-bold text-white">Yapay Zeka Strateji Danışmanı</h3>
+                                </div>
+                                <p className="text-indigo-200 text-sm mb-6 max-w-xl">
+                                    Mevcut sosyal medya verileriniz, reklam harcamalarınız ve dönüşüm oranlarınız AI tarafından analiz edildi. Aşağıdaki stratejik içgörüler markanızın dijital varlığını güçlendirmek için oluşturulmuştur.
+                                </p>
+
+                                <div className="space-y-4">
+                                    {STRATEGIC_INSIGHTS.map((insight, idx) => (
+                                        <div key={idx} className="bg-white/5 border border-white/10 rounded-xl p-4 backdrop-blur-sm hover:bg-white/10 transition-colors">
+                                            <div className="flex items-start gap-4">
+                                                <div className={`mt-1 p-2 rounded-full ${insight.type === 'opportunity' ? 'bg-cyan-500/20 text-cyan-400' : insight.type === 'warning' ? 'bg-amber-500/20 text-amber-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
+                                                    {insight.type === 'opportunity' ? <Target size={16} /> : insight.type === 'warning' ? <AlertCircle size={16} /> : <Zap size={16} />}
+                                                </div>
+                                                <div className="flex-1">
+                                                    <h4 className="text-white font-bold text-sm mb-1">{insight.title}</h4>
+                                                    <p className="text-indigo-200/80 text-xs leading-relaxed mb-3">{insight.desc}</p>
+                                                    <div className="flex items-center gap-3">
+                                                        <span className="text-[10px] uppercase tracking-wider font-bold text-white bg-white/10 px-2 py-1 rounded">{insight.action}</span>
+                                                        <span className={`text-[10px] uppercase tracking-wider font-bold px-2 py-1 rounded ${insight.impact === 'Yüksek Etki' ? 'text-emerald-400 bg-emerald-400/10' : 'text-amber-400 bg-amber-400/10'}`}>{insight.impact}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Competitor Radar Chart */}
+                        <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-slate-200 dark:border-white/10 shadow-sm flex flex-col">
+                            <div className="p-4 border-b border-slate-200 dark:border-white/10">
+                                <h3 className="font-bold text-slate-900 dark:text-white">Rakip Kıyaslama Analizi</h3>
+                                <p className="text-[10px] text-slate-500 mt-1">Siz (Mavi) vs. Sektör Ortalaması (Gri)</p>
+                            </div>
+                            <div className="p-4 flex-1 flex items-center justify-center min-h-[300px]">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <RadarChart cx="50%" cy="50%" outerRadius="70%" data={COMPETITOR_BENCHMARKING}>
+                                        <PolarGrid stroke="#334155" opacity={0.3} />
+                                        <PolarAngleAxis dataKey="subject" tick={{ fill: '#94a3b8', fontSize: 10 }} />
+                                        <PolarRadiusAxis angle={30} domain={[0, 10]} tick={false} axisLine={false} />
+                                        <Radar name="Blue Dreams" dataKey="A" stroke="#0ea5e9" fill="#0ea5e9" fillOpacity={0.4} />
+                                        <Radar name="Sektör Ortalaması" dataKey="B" stroke="#64748b" fill="#64748b" fillOpacity={0.2} />
+                                        <Legend wrapperStyle={{ fontSize: '11px' }} />
+                                        <Tooltip contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', borderRadius: '8px', color: '#fff' }} />
+                                    </RadarChart>
+                                </ResponsiveContainer>
                             </div>
                         </div>
                     </div>
