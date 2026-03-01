@@ -5,6 +5,16 @@ export async function register() {
     // Only run auto-refresh in Node.js runtime (not edge)
     if (process.env.NEXT_RUNTIME === 'nodejs') {
 
+        // --- Global Error Catcher Mechanism ---
+        process.on('uncaughtException', (err) => {
+            console.error('[Global Error Catcher] Uncaught Exception:', err);
+        });
+
+        process.on('unhandledRejection', (reason, promise) => {
+            console.error('[Global Error Catcher] Unhandled Rejection at:', promise, 'reason:', reason);
+        });
+        // --------------------------------------
+
         // Delay first refresh by 10 seconds to let the server warm up
         setTimeout(async () => {
             try {
