@@ -53,3 +53,5 @@ next-env.d.ts
 # Log/output files
 *.txt
 container_pkg.json
+get_refresh_token.js
+*.traineddata

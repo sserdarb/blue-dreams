@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { X, Send, Sparkles, Mic, MicOff, RefreshCw, ChevronRight, Phone, MapPin, ArrowLeft, ArrowRight, Download, Share2, BedDouble, Users, Scan, CheckCircle2, Plane, Car, Map, Check, Star, Volume2, StopCircle, CalendarDays, TrendingUp, ExternalLink, UtensilsCrossed, Waves, Shield, Loader2, Search } from 'lucide-react'
 import { createSession, sendMessage, getSessionMessagesSince } from '@/app/actions/chat'
+import MeetingFormMessage from './MeetingFormMessage'
 
 // TTS Helper
 const speakText = (text: string, lang: string = 'tr-TR') => {
@@ -1180,6 +1181,7 @@ export function BlueConciergeFull({ isOpen, onClose, locale = 'tr' }: BlueConcie
                                             {msg.uiPayload.type === 'dining' && <DiningWidget onInteract={handleSend} locale={locale} />}
                                             {msg.uiPayload.type === 'spa' && <SpaWidget onInteract={handleSend} locale={locale} />}
                                             {msg.uiPayload.type === 'meeting' && <MeetingWidget onInteract={handleSend} locale={locale} />}
+                                            {msg.uiPayload.type === 'meeting_form' && <MeetingFormMessage />}
                                         </div>
                                     )}
 

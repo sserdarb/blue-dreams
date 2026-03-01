@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic'
 import React, { useState } from 'react'
 import { Share2, Instagram, Twitter, Facebook, Youtube, TrendingUp, TrendingDown, Users, Heart, MessageCircle, Eye, ExternalLink, Link2, Unlink, BarChart3, Calendar, ArrowUp, ArrowDown, Minus, Settings, Key, Clock, CheckCircle2, AlertCircle, FileText } from 'lucide-react'
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, AreaChart, Area, PieChart, Pie, Cell } from 'recharts'
+import UnifiedInbox from '@/components/admin/social/UnifiedInbox'
 
 // ─── Types ─────────────────────────────────────────────────────
 interface SocialAccount {
@@ -80,7 +81,7 @@ const RECENT_POSTS = [
 ]
 
 export default function SocialMediaPage() {
-    const [activeTab, setActiveTab] = useState<'overview' | 'analytics' | 'schedule' | 'settings'>('overview')
+    const [activeTab, setActiveTab] = useState<'overview' | 'analytics' | 'inbox' | 'schedule' | 'settings'>('overview')
     const [chartType, setChartType] = useState<'engagement' | 'growth'>('engagement')
     const [savedPosts, setSavedPosts] = useState<any[]>([])
     const [apiKeys, setApiKeys] = useState<Record<string, string>>({
@@ -158,10 +159,10 @@ export default function SocialMediaPage() {
                     <p className="text-slate-500 dark:text-slate-400">Sosyal medya hesaplarınızı bağlayın ve performansınızı takip edin.</p>
                 </div>
                 <div className="flex gap-2">
-                    {(['overview', 'analytics', 'schedule', 'settings'] as const).map(tab => (
+                    {(['overview', 'analytics', 'inbox', 'schedule', 'settings'] as const).map(tab => (
                         <button key={tab} onClick={() => setActiveTab(tab)}
                             className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${activeTab === tab ? 'bg-cyan-600 text-white shadow-lg shadow-cyan-600/20' : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-white/5'}`}>
-                            {tab === 'overview' ? 'Genel Bakış' : tab === 'analytics' ? 'Analytics' : tab === 'schedule' ? 'Takvim' : 'API Ayarları'}
+                            {tab === 'overview' ? 'Genel Bakış' : tab === 'analytics' ? 'Analytics' : tab === 'inbox' ? 'Gelen Kutusu' : tab === 'schedule' ? 'Takvim' : 'API Ayarları'}
                         </button>
                     ))}
                 </div>
@@ -460,6 +461,10 @@ export default function SocialMediaPage() {
                         </div>
                     </div>
                 </div>
+            )}
+
+            {activeTab === 'inbox' && (
+                <UnifiedInbox />
             )}
 
             {activeTab === 'schedule' && (

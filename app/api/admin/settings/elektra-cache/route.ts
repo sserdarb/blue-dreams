@@ -27,6 +27,12 @@ export async function POST(request: Request) {
             return NextResponse.json({ success: true, status })
         }
 
+        if (action === 'refresh_year' && typeof body.year === 'number') {
+            await ElektraCache.refreshYear(body.year)
+            const status = await ElektraCache.getStatus()
+            return NextResponse.json({ success: true, status })
+        }
+
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
     } catch (error) {
         return NextResponse.json({ error: 'Failed to update cache settings' }, { status: 500 })

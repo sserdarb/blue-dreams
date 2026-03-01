@@ -32,8 +32,8 @@ const renderUiTool: FunctionDeclaration = {
         properties: {
             componentType: {
                 type: Type.STRING,
-                enum: ["rooms", "location", "contact", "reviews", "amenities", "dining", "spa", "room_detail", "transfer_form", "meeting", "booking_form"],
-                description: "The type of UI widget to render. ALWAYS use this tool to show visual content."
+                enum: ["rooms", "location", "contact", "reviews", "amenities", "dining", "spa", "room_detail", "transfer_form", "meeting", "meeting_form", "booking_form"],
+                description: "The type of UI widget to render. ALWAYS use this tool to show visual content or forms."
             },
             detailId: {
                 type: Type.STRING,
@@ -180,9 +180,10 @@ export async function POST(request: Request) {
 
     KATI ETKİLEŞİM KURALLARI (BUNLARA KESİNLİKLE UY):
     1. ARACI ZORUNLU KULLAN: Kullanıcı senden odalar, fiyatlar, restoranlar, spa, toplantı gibi konularda bilgi istediğinde SADECE DÜZ METİN YAZMA. Mutlaka \`render_ui\` aracını veya \`check_room_availability\` aracını ÇAĞIR.
-    2. FİYAT SORGULAMASI: Müsaitlik, fiyat veya rezervasyon sorulduğunda ASLA geçiştiren düz metin cevapları verme. HER ZAMAN zımni veya açık bir tarih aralığı bularak (yoksa bugünden itibaren 3 gece varsayarak) \`check_room_availability\` aracını çağır. 
-    3. SATIŞ ODAKLILIK: Fiyat aracını çağırdıktan sonra döneceğin metinde "Hemen rezervasyon yapabilirsiniz" veya "Sizi rezervasyon ekranına yönlendiriyorum" gibi net yönlendirmeler kullan. Fiyat sıfır (0) gelse bile bu, özel bir fiyat olduğu anlamına gelebilir.
-    4. GÖRSEL ŞÖLEN: Misafir "Odaları göster" derse \`render_ui\` ile \`rooms\` widget'ını çağır. Düz yazı ile odayı anlatıp bırakma.
+    2. GÖRSEL KULLANIMI YASAKTIR: Sohbette markdown ile dışarıdan rastgele veya uydurma görsel (<img> veya ![]) EKLEME. Görsel göstermek istersen SADECE \`render_ui\` aracını kullan (Örn: componentType="rooms"). Asla sahte/alakasız fotoğraf URL'si uydurma. Verdiğin tüm içerikler resmi factsheet ile BİREBİR uyumlu olmalıdır.
+    3. FİYAT SORGULAMASI: Müsaitlik, fiyat veya rezervasyon sorulduğunda ASLA geçiştiren düz metin cevapları verme. HER ZAMAN zımni veya açık bir tarih aralığı bularak \`check_room_availability\` aracını çağır. 
+    4. TOPLANTI / ZİYAFET (MICE): Kullanıcı otelde toplantı, düğün, kongre veya etkinlik düzenlemek isterse \`render_ui\` aracını kullanarak \`componentType="meeting_form"\` ÇAĞIR. Böylece taleplerini resmi olarak alabiliriz.
+    5. SATIŞ ODAKLILIK: Müsait olan araçları kullanarak misafiri doğrudan aksiyona (rezervasyon, form doldurma) yönlendir.
 
     OTEL BİLGİLERİ (GÜNCEL):
     

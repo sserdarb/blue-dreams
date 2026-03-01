@@ -7,6 +7,8 @@ export default function ElektraSettingsForm() {
     const [status, setStatus] = useState<any>(null)
     const [loading, setLoading] = useState(true)
     const [refreshing, setRefreshing] = useState(false)
+    const [syncingYear, setSyncingYear] = useState(false)
+    const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear() - 1)
     const [ttl, setTtl] = useState<number>(30)
 
     const fetchStatus = async () => {
@@ -39,6 +41,25 @@ export default function ElektraSettingsForm() {
             console.error('Failed to refresh cache', error)
         } finally {
             setRefreshing(false)
+        }
+    }
+
+    const handleSyncYear = async () => {
+        if (!confirm(`${selectedYear} yılına ait tüm veriler senkronize edilecek. Bu işlem uzun sürebilir. Onaylıyor musunuz?`)) return
+        setSyncingYear(true)
+        try {
+            await fetch('/api/admin/settings/elektra-cache', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'refresh_year', year: selectedYear })
+            })
+            await fetchStatus()
+            alert('Geçmiş yıl senkronizasyonu tamamlandı!')
+        } catch (error) {
+            console.error('Failed to sync year', error)
+            alert('Senkronizasyon sırasında hata oluştu.')
+        } finally {
+            setSyncingYear(false)
         }
     }
 
@@ -140,6 +161,40 @@ export default function ElektraSettingsForm() {
                         {refreshing ? 'Çekiliyor...' : 'Şimdi Senkronize Et'}
                     </button>
                 </div>
+            </div>
+
+            {/* Historical Data Sync Section */}
+            <div className="border-t border-slate-200 dark:border-white/10 pt-6 mt-6">
+                <h3 className="text-sm font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
+                    <Database size={16} className="text-slate-400" /> Geçmiş Yıl Verilerini Arşivle
+                </h3>
+                <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/20 rounded-lg p-4 flex flex-col sm:flex-row items-end sm:items-center justify-between gap-4">
+                    <div className="flex-1 w-full relative">
+                        <label className="block text-xs font-semibold text-amber-800 dark:text-amber-400 uppercase tracking-widest mb-1">Senkronize Edilecek Yıl</label>
+                        <select
+                            value={selectedYear}
+                            onChange={e => setSelectedYear(Number(e.target.value))}
+                            className="w-full bg-white dark:bg-[#0f172a] border border-amber-200 dark:border-white/10 rounded-lg px-4 py-2 text-sm text-slate-800 dark:text-white outline-none focus:border-amber-500 transition-colors appearance-none"
+                        >
+                            {[...Array(5)].map((_, i) => {
+                                const yr = new Date().getFullYear() - i;
+                                return <option key={yr} value={yr}>{yr}</option>
+                            })}
+                        </select>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={handleSyncYear}
+                        disabled={syncingYear}
+                        className="bg-amber-600 hover:bg-amber-700 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 whitespace-nowrap disabled:opacity-50 w-full sm:w-auto"
+                    >
+                        <RefreshCcw size={16} className={syncingYear ? 'animate-spin' : ''} />
+                        {syncingYear ? 'Arşivleniyor...' : 'Yılı Arşivle'}
+                    </button>
+                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-3">
+                    Geçmiş yıllara ait veriler kalıcı olarak veritabanına kaydedilir ve raporlarda kullanılmak üzere saklanır. Bu işlem Elektra PMS API'sine yoğun istek atabilir, lütfen tamamlanmasını bekleyin.
+                </p>
             </div>
         </div>
     )

@@ -200,6 +200,68 @@ export const ElektraCache = {
     },
 
     /**
+     * Fetch and cache historical data for an entire year.
+     * Unlike `refresh`, this explicitly loads distant past data without
+     * excluding "today/future" explicitly - it's meant for archival.
+     */
+    async refreshYear(year: number): Promise<void> {
+        console.log(`[ElektraCache] Syncing historical data for year ${year}...`)
+        const startMs = Date.now()
+
+        const fromDate = new Date(year, 0, 1)
+        const toDate = new Date(year, 11, 31)
+
+        try {
+            const allReservations = await ElektraService.getReservations(fromDate, toDate)
+
+            for (const res of allReservations) {
+                await prisma.elektraReservation.upsert({
+                    where: { id: res.id },
+                    update: {
+                        voucherNo: res.voucherNo,
+                        agency: res.agency,
+                        channel: res.channel,
+                        boardType: res.boardType,
+                        roomType: res.roomType,
+                        checkIn: new Date(res.checkIn),
+                        checkOut: new Date(res.checkOut),
+                        totalPrice: res.totalPrice,
+                        paidPrice: res.paidPrice,
+                        currency: res.currency,
+                        status: res.status,
+                        roomCount: res.roomCount,
+                        country: res.country,
+                        bookedAt: new Date(res.lastUpdate),
+                    },
+                    create: {
+                        id: res.id,
+                        voucherNo: res.voucherNo,
+                        agency: res.agency,
+                        channel: res.channel,
+                        boardType: res.boardType,
+                        roomType: res.roomType,
+                        checkIn: new Date(res.checkIn),
+                        checkOut: new Date(res.checkOut),
+                        totalPrice: res.totalPrice,
+                        paidPrice: res.paidPrice,
+                        currency: res.currency,
+                        status: res.status,
+                        roomCount: res.roomCount,
+                        adults: 2,
+                        children: 0,
+                        country: res.country,
+                        bookedAt: new Date(res.lastUpdate),
+                    }
+                })
+            }
+            console.log(`[ElektraCache] Archived ${allReservations.length} reservations for ${year} in ${Date.now() - startMs}ms`)
+        } catch (e) {
+            console.error(`[ElektraCache] Year ${year} Archive Error:`, e)
+            throw e
+        }
+    },
+
+    /**
      * Get cache status for admin dashboard
      */
     async getStatus(): Promise<CacheStatus> {

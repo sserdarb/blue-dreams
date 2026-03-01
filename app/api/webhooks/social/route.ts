@@ -11,8 +11,7 @@ async function saveMessage(platform: string, phone: string, content: string, dir
         const guest = await prisma.guestProfile.findFirst({
             where: {
                 OR: [
-                    { phone: { contains: phone.replace(/^\+/, '') } },
-                    { socialIds: { contains: phone } }
+                    { phone: { contains: phone.replace(/^\+/, '') } }
                 ]
             }
         });

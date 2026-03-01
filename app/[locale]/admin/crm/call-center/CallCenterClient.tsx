@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import {
-    PhoneCall, Users, Clock, Loader2, ArrowUpRight, BarChart2, CheckCircle2, XCircle, TrendingUp
+    PhoneCall, Users, Clock, Loader2, ArrowUpRight, BarChart2, CheckCircle2, XCircle, TrendingUp, Settings2
 } from 'lucide-react'
 import { AdminTranslations } from '@/lib/admin-translations'
 import {
@@ -11,6 +11,8 @@ import {
 } from 'recharts'
 import DashboardFilter from '@/components/admin/DashboardFilter'
 import { useSearchParams } from 'next/navigation'
+import FormulaEditorModal, { FormulaData } from '@/components/admin/reports/FormulaEditorModal'
+import { evaluateFormula } from '@/lib/utils/formula'
 
 interface Props {
     locale: string
@@ -47,6 +49,10 @@ export default function CallCenterClient({ locale, t }: Props) {
     const [hourlyTrend, setHourlyTrend] = useState<HourlyTrend[]>([])
     const [dailyTrend, setDailyTrend] = useState<DailyTrend[]>([])
 
+    // Formula State
+    const [isFormulaEditorOpen, setIsFormulaEditorOpen] = useState(false)
+    const [formulas, setFormulas] = useState<Record<string, FormulaData>>({})
+
     const searchParams = useSearchParams()
     const fromDate = searchParams.get('from')
     const toDate = searchParams.get('to')
@@ -56,8 +62,21 @@ export default function CallCenterClient({ locale, t }: Props) {
         try {
             let url = `/api/admin/asisia/call-center`
             const params = new URLSearchParams()
-            if (fromDate) params.append('start', fromDate)
-            if (toDate) params.append('end', toDate)
+
+            if (fromDate) {
+                params.append('start', fromDate)
+            } else {
+                const d = new Date()
+                d.setDate(d.getDate() - 7)
+                params.append('start', d.toISOString().split('T')[0])
+            }
+
+            if (toDate) {
+                params.append('end', toDate)
+            } else {
+                params.append('end', new Date().toISOString().split('T')[0])
+            }
+
             if (params.toString()) url += `?${params.toString()}`
 
             const res = await fetch(url)
@@ -76,6 +95,18 @@ export default function CallCenterClient({ locale, t }: Props) {
 
     useEffect(() => {
         fetchAnalysisData()
+
+        // Fetch Formulas
+        fetch('/api/admin/formulas?reportId=call-center')
+            .then(res => res.json())
+            .then(data => {
+                if (data.success && data.formulas) {
+                    const map: Record<string, FormulaData> = {}
+                    data.formulas.forEach((f: FormulaData) => { map[f.metricName] = f })
+                    setFormulas(map)
+                }
+            })
+            .catch(err => console.error("Error fetching formulas", err))
     }, [fetchAnalysisData])
 
     // Derive Merged Agent View
@@ -92,19 +123,38 @@ export default function CallCenterClient({ locale, t }: Props) {
 
             const opps = convs?.TotalOpportunities || 0
             const sales = convs?.ConvertedSales || 0
-            const convRate = opps > 0 ? ((sales / opps) * 100).toFixed(1) : '0.0'
+            const totalCalls = calls?.TotalCalls || 0
+            const totalSeconds = calls?.TotalSeconds || 0
+
+            const variables = {
+                opportunities: opps,
+                sales: sales,
+                total_calls: totalCalls,
+                total_seconds: totalSeconds,
+            }
+
+            let finalConvRate = opps > 0 ? ((sales / opps) * 100) : 0
+            if (formulas["Conversion Rate"]?.expression) {
+                finalConvRate = evaluateFormula(formulas["Conversion Rate"].expression, variables)
+            }
+
+            let finalAht = totalCalls > 0 ? (totalSeconds / totalCalls) : 0 // Average Handle Time in seconds
+            if (formulas["AHT"]?.expression) {
+                finalAht = evaluateFormula(formulas["AHT"].expression, variables)
+            }
 
             return {
                 name,
                 extension: calls?.AgentExtension || '-',
-                totalCalls: calls?.TotalCalls || 0,
-                totalMinutes: calls ? Math.round(calls.TotalSeconds / 60) : 0,
+                totalCalls,
+                totalMinutes: Math.round(totalSeconds / 60),
+                aht: Math.round(finalAht),
                 opportunities: opps,
                 sales,
-                conversionRate: parseFloat(convRate)
+                conversionRate: parseFloat(finalConvRate.toFixed(1))
             }
         }).sort((a, b) => b.totalCalls - a.totalCalls)
-    }, [callStats, conversionStats]);
+    }, [callStats, conversionStats, formulas]);
 
     return (
         <div className="space-y-6">
@@ -118,8 +168,26 @@ export default function CallCenterClient({ locale, t }: Props) {
                         <p className="text-sm text-slate-500">Asisia PMS üzerinden canlı çağrı hacmi ve teklif dönüşüm oranları (CR)</p>
                     </div>
                 </div>
-                <DashboardFilter />
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => setIsFormulaEditorOpen(true)}
+                        className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+                    >
+                        <Settings2 size={16} />
+                        Formül Düzenle
+                    </button>
+                    <DashboardFilter />
+                </div>
             </div>
+
+            <FormulaEditorModal
+                reportId="call-center"
+                isOpen={isFormulaEditorOpen}
+                onClose={() => setIsFormulaEditorOpen(false)}
+                currentFormulas={formulas}
+                onSave={(newFormulas) => setFormulas(newFormulas)}
+                availableVariables={['opportunities', 'sales', 'total_calls', 'total_seconds']}
+            />
 
             {loading ? (
                 <div className="flex justify-center items-center h-64">
@@ -182,11 +250,12 @@ export default function CallCenterClient({ locale, t }: Props) {
                                         <tr>
                                             <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-300">Temsilci</th>
                                             <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-300">Dahili / SIP</th>
-                                            <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-300">Karşılanan Çağrı</th>
-                                            <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-300">Konuşma (Dk)</th>
-                                            <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-300">Toplam Teklif</th>
-                                            <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-300">Dönüşen (Satış)</th>
-                                            <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-300">CR (Dönüşüm %)</th>
+                                            <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-300">Çağrı Hacmi</th>
+                                            <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-300">AHT (Ortalama Çağrı)</th>
+                                            <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-300">Toplam Konuşma</th>
+                                            <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-300">Gönderilen Teklif</th>
+                                            <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-300">Kapalı Satış (CR)</th>
+                                            <th className="px-6 py-4 font-semibold text-slate-600 dark:text-slate-300">Dönüşüm Oranı</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
@@ -197,6 +266,11 @@ export default function CallCenterClient({ locale, t }: Props) {
                                                 <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">{agent.name}</td>
                                                 <td className="px-6 py-4 text-slate-500"><code>{agent.extension}</code></td>
                                                 <td className="px-6 py-4">{agent.totalCalls.toLocaleString('tr-TR')}</td>
+                                                <td className="px-6 py-4">
+                                                    <span className="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-md text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                                                        {Math.floor(agent.aht / 60)}m {agent.aht % 60}s
+                                                    </span>
+                                                </td>
                                                 <td className="px-6 py-4">{agent.totalMinutes.toLocaleString('tr-TR')} Dk</td>
                                                 <td className="px-6 py-4 text-amber-600 font-medium">{agent.opportunities}</td>
                                                 <td className="px-6 py-4 text-emerald-600 font-medium">{agent.sales}</td>

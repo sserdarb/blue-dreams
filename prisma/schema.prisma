@@ -7,6 +7,20 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model MeetingRequest {
+  id          String    @id @default(uuid())
+  contactName String
+  email       String
+  phone       String?
+  companyName String?
+  eventDate   DateTime?
+  attendees   Int?
+  description String?
+  status      String    @default("pending") // pending, contacted, closed
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
 model Page {
   id              String   @id @default(uuid())
   slug            String
@@ -778,4 +792,17 @@ model PaymentInstallmentRate {
   commissionRate Float // Yüzdelik, örn 4.5
 
   @@unique([paymentSettingsId, installments])
+}
+
+model ReportFormula {
+  id         String   @id @default(cuid())
+  reportId   String // unique identifier for the report/chart
+  metricName String // specific metric within that report (e.g., 'AHT', 'Revenue')
+  expression String // the actual formula string, e.g. '(revenue / rooms_sold) * 1.1'
+  isGlobal   Boolean  @default(false) // true if applied to all users, false if personal
+  userId     String? // null if global
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([reportId, metricName, userId])
 }
