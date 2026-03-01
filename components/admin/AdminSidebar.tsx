@@ -40,7 +40,8 @@ import {
     GitBranch,
     Mail,
     Crosshair,
-    PhoneCall
+    PhoneCall,
+    Inbox
 } from 'lucide-react'
 import { AdminTranslations } from '@/lib/admin-translations'
 import { useTheme } from '@/components/admin/ThemeProvider'
@@ -107,6 +108,7 @@ export default function AdminSidebar({ locale, t, userRole: propRole = 'admin', 
                 { id: 'nav-social', href: '/social', label: t.socialMedia, icon: Share2 },
                 { id: 'nav-content-gen', href: '/ai-planner', label: t.contentCreator, icon: Sparkles },
                 { id: 'nav-competitors', href: '/competitors', label: 'Rakip Analizi', icon: Crosshair },
+                { id: 'nav-inbox', href: '/inbox', label: 'Mesajlaşma', icon: Inbox },
             ]
         },
         {

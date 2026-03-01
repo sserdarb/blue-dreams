@@ -91,6 +91,11 @@ export const MODULE_REGISTRY: ModuleDefinition[] = [
         href: '/competitors', dataSource: 'local', defaultEnabled: true,
         description: 'Rakip otellerin metrik ve analiz takibi',
     },
+    {
+        id: 'nav-inbox', label: 'Mesajlaşma', section: 'section-satis',
+        href: '/inbox', dataSource: 'local', defaultEnabled: true,
+        description: 'WhatsApp, Instagram ve Facebook mesajlarını tek bir arayüzde birleştiren omnichannel gelen kutusu',
+    },
 
     // ── Finans & Tedarik ──
     {
