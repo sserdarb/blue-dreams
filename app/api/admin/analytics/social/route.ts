@@ -21,9 +21,13 @@ export async function GET() {
             })
         }
 
-        const results = {
-            facebook: null as any,
-            instagram: null as any,
+        const results: {
+            facebook: any,
+            instagram: any,
+            error?: string
+        } = {
+            facebook: null,
+            instagram: null,
         }
 
         // 1. Fetch Facebook Page Data
@@ -40,7 +44,9 @@ export async function GET() {
                     engagement: fbData.engagement?.count || 0
                 }
             } else {
-                console.warn('[Meta API] Failed to fetch FB Page data', await fbResponse.text())
+                const errData = await fbResponse.json()
+                console.warn('[Meta API] Failed to fetch FB Page data:', errData)
+                results.error = errData.error?.message || 'FB API Error'
             }
         }
 
@@ -73,8 +79,16 @@ export async function GET() {
                     recentEngagement: engagementSum
                 }
             } else {
-                console.warn('[Meta API] Failed to fetch IG Account data', await igResponse.text())
+                const errData = await igResponse.json()
+                console.warn('[Meta API] Failed to fetch IG Account data:', errData)
+                if (!results.error) results.error = errData.error?.message || 'IG API Error'
             }
+        }
+
+        if (results.error) {
+            return NextResponse.json({
+                error: `Meta API Hatası: ${results.error} (Lütfen token'ınızı yenileyin)`
+            }, { status: 401 })
         }
 
         if (!results.facebook && !results.instagram) {

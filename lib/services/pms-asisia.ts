@@ -193,3 +193,94 @@ export async function fetchCallCenterStats(startDate?: string, endDate?: string)
     }
 }
 
+export async function fetchPickupStats(startDate: string, endDate: string) {
+    let pool;
+    try {
+        pool = await sql.connect(asisiaConfig);
+
+        // Pickup: reservations created (or cancelled) within exactly this timeframe
+        const pickupQuery = await pool.request().query(`
+            SELECT TOP 500
+                r.RESNO as ResNo,
+                r.CREATIONDATE as CreationDate,
+                b.DATE1 as CheckIn,
+                b.TOTAL as TotalPrice,
+                b.CURCODE as Currency,
+                p.FULLNAME as GuestName,
+                r.STATUS as Status
+            FROM REQUEST r
+            JOIN VW_BASKET_INFO b ON r.ID = b.REQUESTID
+            JOIN PERSON p ON r.PERSONID = p.ID
+            WHERE r.CREATIONDATE >= '${startDate} 00:00:00' 
+              AND r.CREATIONDATE <= '${endDate} 23:59:59'
+            ORDER BY r.CREATIONDATE DESC
+        `);
+
+        const allPickups = pickupQuery.recordset || [];
+
+        let newRes = 0;
+        let cancelledRes = 0;
+        let totalRevenue = 0;
+
+        const details = allPickups.map(row => {
+            const isCancelled = row.Status?.toUpperCase().includes('CANCEL');
+            if (isCancelled) {
+                cancelledRes++;
+            } else {
+                newRes++;
+                totalRevenue += row.TotalPrice || 0;
+            }
+            return {
+                resNo: row.ResNo,
+                creationDate: row.CreationDate,
+                checkIn: row.CheckIn,
+                guestName: row.GuestName,
+                price: row.TotalPrice,
+                currency: row.Currency,
+                isCancelled
+            };
+        });
+
+        // Group by day for the chart
+        const dailyPickup: Record<string, { new: number, cancelled: number }> = {};
+
+        details.forEach(res => {
+            // creationDate is a Date object or string from DB
+            const dayObj = new Date(res.creationDate);
+            // shift offset to get local YYYY-MM-DD safely
+            const day = new Date(dayObj.getTime() - dayObj.getTimezoneOffset() * 60000).toISOString().split('T')[0];
+
+            if (!dailyPickup[day]) dailyPickup[day] = { new: 0, cancelled: 0 };
+            if (res.isCancelled) {
+                dailyPickup[day].cancelled++;
+            } else {
+                dailyPickup[day].new++;
+            }
+        });
+
+        const dailyTrend = Object.keys(dailyPickup).sort().map(date => ({
+            date,
+            new: dailyPickup[date].new,
+            cancelled: dailyPickup[date].cancelled
+        }));
+
+        return {
+            newReservations: newRes,
+            cancelledReservations: cancelledRes,
+            netPickup: newRes - cancelledRes,
+            revenue: totalRevenue,
+            dailyTrend,
+            recentPickups: details.slice(0, 10), // Top 10 latest
+            majorImpacts: details.filter(x => !x.isCancelled).sort((a, b) => (b.price || 0) - (a.price || 0)).slice(0, 5) // Top 5 highest value
+        };
+    } catch (error) {
+        console.error('[ASISIA PMS] Pickup Stats Error:', error);
+        return {
+            newReservations: 0, cancelledReservations: 0, netPickup: 0, revenue: 0,
+            dailyTrend: [], recentPickups: [], majorImpacts: []
+        };
+    } finally {
+        if (pool) pool.close();
+    }
+}
+

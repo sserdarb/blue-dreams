@@ -49,11 +49,15 @@ export default function LiveTrafficSocialWidget() {
             // Social media
             try {
                 const socialRes = await fetch('/api/admin/analytics/social')
-                if (socialRes.ok) {
-                    const sData = await socialRes.json()
-                    if (sData.success) setSocial(sData.data)
+                const sData = await socialRes.json()
+                if (socialRes.ok && sData.success) {
+                    setSocial(sData.data)
+                } else if (sData.error) {
+                    setSocial({ error: sData.error })
                 }
-            } catch { /* Social not configured */ }
+            } catch (err: any) {
+                setSocial({ error: err?.message || 'API Hatası' })
+            }
 
         } catch (error) {
             console.error('Error fetching live widgets', error)
@@ -135,7 +139,11 @@ export default function LiveTrafficSocialWidget() {
                         <h3 className="text-lg font-bold text-slate-900 dark:text-white">Sosyal Medya</h3>
                     </div>
                     {loading ? <RefreshCw size={14} className="animate-spin text-slate-400" /> : (
-                        social?.instagram || social?.facebook ? (
+                        social?.error ? (
+                            <span title={social.error} className="text-[10px] bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 px-2 py-0.5 rounded-full truncate max-w-[200px] cursor-help">
+                                Hata: {social.error}
+                            </span>
+                        ) : social?.instagram || social?.facebook ? (
                             <span className="text-xs bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full flex items-center gap-1">
                                 <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
                                 Meta Canlı
