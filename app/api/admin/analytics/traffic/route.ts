@@ -4,7 +4,10 @@ import { prisma } from '@/lib/prisma'
 
 function getClient(clientEmail: string, privateKey: string) {
     // Fix newlines in Vercel/Coolify
-    const formattedKey = privateKey.replace(/\\n/g, '\n')
+    // It's possible the var comes as a literal "\n" string instead of actual newlines.
+    const formattedKey = typeof privateKey === 'string'
+        ? privateKey.replace(/\\n/g, '\n')
+        : privateKey
 
     return new BetaAnalyticsDataClient({
         credentials: {

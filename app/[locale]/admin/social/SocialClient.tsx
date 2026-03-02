@@ -110,6 +110,8 @@ export default function SocialClient() {
         }
     }
 
+    const [draftLanguage, setDraftLanguage] = useState<string>('tr') // Added state for language
+
     const generateDraft = async (topic: Topic) => {
         setGeneratingDraft(topic.id)
         try {
@@ -119,7 +121,8 @@ export default function SocialClient() {
                 body: JSON.stringify({
                     topicId: topic.id,
                     topic: topic.topic,
-                    description: topic.description
+                    description: topic.description,
+                    language: draftLanguage // Pass selected language
                 })
             })
 
@@ -291,14 +294,29 @@ export default function SocialClient() {
                                     )}
 
                                     {topic.status === 'approved' && !topic.postDraftId && (
-                                        <button
-                                            onClick={() => generateDraft(topic)}
-                                            disabled={generatingDraft === topic.id}
-                                            className="w-full flex justify-center items-center gap-2 py-2 mt-4 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-md text-sm font-medium transition-colors disabled:opacity-50"
-                                        >
-                                            {generatingDraft === topic.id ? <Loader2 size={16} className="animate-spin" /> : <PenTool size={16} />}
-                                            İçerik Taslağı Üret
-                                        </button>
+                                        <div className="mt-4 border-t border-slate-100 dark:border-slate-700 pt-4">
+                                            <div className="flex gap-2 mb-2 items-center">
+                                                <label className="text-xs font-medium text-slate-500">Üretim Dili:</label>
+                                                <select
+                                                    className="text-sm border border-slate-200 dark:border-slate-700 rounded-md px-2 py-1 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+                                                    value={draftLanguage}
+                                                    onChange={(e) => setDraftLanguage(e.target.value)}
+                                                >
+                                                    <option value="tr">Türkçe (Turkish)</option>
+                                                    <option value="en">İngilizce (English)</option>
+                                                    <option value="de">Almanca (German)</option>
+                                                    <option value="ru">Rusça (Russian)</option>
+                                                </select>
+                                            </div>
+                                            <button
+                                                onClick={() => generateDraft(topic)}
+                                                disabled={generatingDraft === topic.id}
+                                                className="w-full flex justify-center items-center gap-2 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-md text-sm font-medium transition-colors disabled:opacity-50"
+                                            >
+                                                {generatingDraft === topic.id ? <Loader2 size={16} className="animate-spin" /> : <PenTool size={16} />}
+                                                İçerik Taslağı Üret
+                                            </button>
+                                        </div>
                                     )}
 
                                     {topic.postDraftId && (

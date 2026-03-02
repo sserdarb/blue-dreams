@@ -4,13 +4,18 @@ import { GoogleGenAI } from '@google/genai'
 
 export async function POST(req: NextRequest) {
     try {
-        const { topicId, topic, description } = await req.json()
+        const { topicId, topic, description, language } = await req.json()
 
         if (!topic || !description) {
             return NextResponse.json({ error: 'Missing topic or description' }, { status: 400 })
         }
 
         const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
+
+        let languagePrompt = "Türkçe (Turkish)"
+        if (language === 'en') languagePrompt = "İngilizce (English)"
+        else if (language === 'de') languagePrompt = "Almanca (German)"
+        else if (language === 'ru') languagePrompt = "Rusça (Russian)"
 
         const prompt = `
       Aşağıdaki onaylanmış konu (topic) ve açıklama (description) için Instagram ve Facebook sayfalarımızda paylaşılacak tek bir gönderi metni (caption) hazırla.
@@ -24,7 +29,7 @@ export async function POST(req: NextRequest) {
       - Emojileri dozunda ve profesyonelce ekle.
       - Sonuna en fazla 5-6 tane uygun hashtag ekle (örnek: #BlueDreamsResort #Bodrum #LüksTatil).
       - Metin sadece gönderi metninden ibaret olsun (Fazladan "İşte metniniz" gibi giriş cümleleri olmasın).
-      - Metin Türkçe olmalıdır.
+      - İÇERİK DİLİ KESİNLİKLE ŞU OLMALIDIR: ${languagePrompt}
     `
 
         const response = await ai.models.generateContent({
