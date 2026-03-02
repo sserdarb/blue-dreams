@@ -224,12 +224,13 @@ function resolveCountry(guest: Record<string, unknown>, countryMap: Map<number, 
     // 2. Try direct country string
     const nat = guest['country'] as string
     if (nat && nat !== 'Unknown' && nat.length > 1) return nat
-    // 3. Try country string
-    const country = guest['country'] as string
-    if (country && country !== 'Unknown' && country.length > 1) return country
-    // 4. Try country-name
-    const countryName = guest['country-name'] as string
-    if (countryName && countryName.length > 1) return countryName
+    // Try various other location identifiers found in Elektra API iterations
+    const genericFields = ['country', 'country-name', 'nationality', 'client-country', 'guest-country'];
+    for (const f of genericFields) {
+        if (guest[f] && typeof guest[f] === 'string' && (guest[f] as string).length > 1 && guest[f] !== 'Unknown') {
+            return guest[f] as string;
+        }
+    }
     return 'Unknown'
 }
 
@@ -335,7 +336,7 @@ async function getJwt(): Promise<string> {
 
 // ─── Real API Calls ────────────────────────────────────────────
 
-async function fetchAvailability(fromDate: string, toDate: string, currency: string = 'TRY'): Promise<RoomAvailability[]> {
+async function fetchAvailability(fromDate: string, toDate: string, currency: string = 'TRY', agency?: string): Promise<RoomAvailability[]> {
     const jwt = await getJwt()
 
     const url = new URL(`${API_BASE}/hotel/${HOTEL_ID}/availability`)
@@ -344,8 +345,8 @@ async function fetchAvailability(fromDate: string, toDate: string, currency: str
     url.searchParams.set('todate', toDate)
     url.searchParams.set('adult', '2')
     url.searchParams.set('child', '0')
-    const agency = currency === 'TRY' ? 'HOTELWEB TL' : 'HOTELWEB EUR'
-    url.searchParams.set('agency', agency)
+    const finalAgency = agency || (currency === 'TRY' ? 'HOTELWEB TL' : 'HOTELWEB EUR')
+    url.searchParams.set('agency', finalAgency)
 
     const res = await fetch(url.toString(), {
         headers: {
@@ -373,12 +374,16 @@ async function fetchAvailability(fromDate: string, toDate: string, currency: str
     }))
 }
 
-async function fetchReservations(fromDate: string, toDate: string, status: string = 'Reservation'): Promise<Reservation[]> {
+async function fetchReservations(fromDateStr: string, toDateStr: string, status: string = 'Reservation'): Promise<Reservation[]> {
     const jwt = await getJwt()
     const countryMap = await fetchCountries()
 
-    // Date format: yyyy-MM-dd (simple date works)
-    const url = `${API_BASE}/hotel/${HOTEL_ID}/reservation-list?from-check-in=${fromDate}&to-check-in=${toDate}&reservation-status=${encodeURIComponent(status)}`
+    // Date format: yyyy-MM-dd HH:mm:ss (Elektra requires full time)
+    // If input is just yyyy-MM-dd, append the time
+    const fromDate = fromDateStr.length === 10 ? `${fromDateStr} 00:00:00` : fromDateStr
+    const toDate = toDateStr.length === 10 ? `${toDateStr} 23:59:59` : toDateStr
+
+    const url = `${API_BASE}/hotel/${HOTEL_ID}/reservation-list?from-check-in=${encodeURIComponent(fromDate)}&to-check-in=${encodeURIComponent(toDate)}&reservation-status=${encodeURIComponent(status)}`
 
     const res = await fetch(url, {
         headers: {
@@ -494,11 +499,11 @@ export const ElektraService = {
 
     // ─── Availability ───────────────────────────────────────
 
-    async getAvailability(startDate: Date, endDate: Date, currency?: string): Promise<RoomAvailability[]> {
+    async getAvailability(startDate: Date, endDate: Date, currency?: string, agency?: string): Promise<RoomAvailability[]> {
         const from = startDate.toISOString().split('T')[0]
         const to = endDate.toISOString().split('T')[0]
         try {
-            return await fetchAvailability(from, to, currency)
+            return await fetchAvailability(from, to, currency, agency)
         } catch (err) {
             console.error('[Elektra] Availability error:', err)
             return []

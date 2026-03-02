@@ -6,6 +6,9 @@ export async function GET(request: Request) {
         const { searchParams } = new URL(request.url)
         const checkIn = searchParams.get('checkIn')
         const checkOut = searchParams.get('checkOut')
+        const locale = searchParams.get('locale') || 'tr'
+        const currency = locale === 'tr' ? 'TRY' : 'EUR'
+        const agency = locale === 'tr' ? 'hotelweb-tl' : 'hotelweb'
         const adults = parseInt(searchParams.get('adults') || '2')
         const children = parseInt(searchParams.get('children') || '0')
 
@@ -18,7 +21,7 @@ export async function GET(request: Request) {
 
         // Main availability
         const availability = await BookingService.getAvailability(
-            checkIn, checkOut, adults, children
+            checkIn, checkOut, adults, children, currency, agency
         )
 
         // Alternative dates: check ±1, ±2, ±3 day shifts
@@ -43,7 +46,7 @@ export async function GET(request: Request) {
 
             try {
                 const altAvailability = await BookingService.getAvailability(
-                    altCheckInStr, altCheckOutStr, adults, children
+                    altCheckInStr, altCheckOutStr, adults, children, currency, agency
                 )
 
                 // Find the cheapest available room

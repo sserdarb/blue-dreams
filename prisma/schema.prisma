@@ -806,3 +806,34 @@ model ReportFormula {
 
   @@unique([reportId, metricName, userId])
 }
+
+// ===== Competitor Analysis Models =====
+
+model CompetitorPrice {
+  id             String   @id @default(uuid())
+  competitorName String // e.g. "Duja Bodrum"
+  checkInDate    DateTime // The date of the stay
+  price          Float
+  currency       String   @default("EUR")
+  fetchedAt      DateTime @default(now())
+
+  @@index([competitorName])
+  @@index([checkInDate])
+  @@index([fetchedAt])
+}
+
+// ===== Dashboard Settings Model =====
+
+model DashboardWidgetConfig {
+  id       String  @id @default(uuid())
+  userId   String? // null if global config
+  isGlobal Boolean @default(false)
+
+  // Stored as JSON string array/object of widget configs
+  config String @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, isGlobal])
+}

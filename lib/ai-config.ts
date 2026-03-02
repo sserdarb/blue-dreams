@@ -3,6 +3,9 @@ import { prisma } from '@/lib/prisma'
 // Default model — gemini-2.5-flash (latest, fastest, most available)
 export const GEMINI_MODEL = 'gemini-2.5-flash'
 
+// Fallback Gemini model — gemini-1.5-pro (older but different quota pool)
+export const GEMINI_15_MODEL = 'gemini-1.5-pro'
+
 // REST API model path (for routes using raw fetch instead of SDK)
 export const GEMINI_REST_MODEL = 'gemini-2.5-flash'
 
@@ -103,3 +106,23 @@ export async function getAlternativeKey(exhaustedKey: string, locale = 'tr'): Pr
 
 // Legacy export for backward compat (env var only, synchronous)
 export const GEMINI_API_KEY = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY || ''
+
+export const GROK_MODEL = 'grok-2-latest'
+export const GROK_API_KEY = process.env.GROK_API_KEY || ''
+
+export async function getGrokApiKey(locale = 'tr'): Promise<{ key: string; source: string }> {
+    if (process.env.GROK_API_KEY) {
+        return { key: process.env.GROK_API_KEY, source: 'env' }
+    }
+    return { key: '', source: 'hardcoded removed' }
+}
+
+export const ZHIPU_MODEL = 'glm-4-flash'
+export const ZHIPU_API_KEY = process.env.ZHIPU_API_KEY || ''
+
+export async function getZhipuApiKey(locale = 'tr'): Promise<{ key: string; source: string }> {
+    if (process.env.ZHIPU_API_KEY) {
+        return { key: process.env.ZHIPU_API_KEY, source: 'env' }
+    }
+    return { key: '', source: 'hardcoded removed' }
+}

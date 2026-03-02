@@ -1,15 +1,16 @@
 import { NextResponse } from 'next/server'
 import { GoogleGenAI, Type, FunctionDeclaration } from "@google/genai"
+import OpenAI from "openai"
 import { prisma } from '@/lib/prisma'
 import { fetchSheetData, extractSheetId } from '@/lib/services/google-sheets'
-import { getGeminiApiKey, GEMINI_MODEL } from '@/lib/ai-config'
+import { getGeminiApiKey, GEMINI_MODEL, GEMINI_15_MODEL, GROK_API_KEY, GROK_MODEL, ZHIPU_API_KEY, ZHIPU_MODEL } from '@/lib/ai-config'
 import { ElektraService } from '@/lib/services/elektra'
 import { FACTSHEET_TR } from '@/lib/factsheet'
 import { fetchBodrumAttractions, fetchBodrumEvents } from '@/lib/services/serpapi'
 import fs from 'fs'
 import path from 'path'
 
-// Tool Definitions
+// Tool Definitions (Gemini format)
 const priceCheckTool: FunctionDeclaration = {
     name: "check_room_availability",
     description: "Checks real-time room prices and availability from the hotel's PMS for specific dates. Always use this when a user asks about prices, rates, or availability.",
@@ -48,6 +49,42 @@ const renderUiTool: FunctionDeclaration = {
     }
 }
 
+// OpenAI-format tools (for Grok/Zhipu fallback)
+const openaiTools = [
+    {
+        type: "function" as const,
+        function: {
+            name: "check_room_availability",
+            description: "Checks real-time room prices and availability from the hotel's PMS for specific dates.",
+            parameters: {
+                type: "object",
+                properties: {
+                    checkInDate: { type: "string", description: "Check-in date in YYYY-MM-DD format" },
+                    checkOutDate: { type: "string", description: "Check-out date in YYYY-MM-DD format" },
+                    adults: { type: "number", description: "Number of adults" }
+                },
+                required: ["checkInDate", "adults"]
+            }
+        }
+    },
+    {
+        type: "function" as const,
+        function: {
+            name: "render_ui",
+            description: "Renders a specific visual UI component.",
+            parameters: {
+                type: "object",
+                properties: {
+                    componentType: { type: "string", enum: ["rooms", "location", "contact", "reviews", "amenities", "dining", "spa", "room_detail", "transfer_form", "meeting", "meeting_form", "booking_form"], description: "The type of UI widget to render." },
+                    detailId: { type: "string", description: "Optional item ID" },
+                    message: { type: "string", description: "Response text to display above the widget." }
+                },
+                required: ["componentType", "message"]
+            }
+        }
+    }
+]
+
 async function getContextData(locale: string) {
     try {
         const [rooms, dining, meeting, amenities, settings] = await Promise.all([
@@ -58,7 +95,6 @@ async function getContextData(locale: string) {
             prisma.aiSettings.findFirst({ where: { language: locale } }).catch(() => null)
         ])
 
-        // Fetch Google Sheets data if configured
         let sheetContext = ''
         const sheetId = (settings as any)?.googleSheetId
         if (sheetId) {
@@ -122,56 +158,21 @@ async function getLocalGuideContext() {
 }
 
 // Safely extract text from Gemini response
-function extractResponseText(response: any): string {
+function extractGeminiText(response: any): string {
     try {
-        // New SDK: response.text is a string property
         if (typeof response.text === 'string') return response.text
-        // Old SDK: response.text() is a method
         if (typeof response.text === 'function') return response.text()
-        // Fallback: dig into candidates
         if (response.candidates?.[0]?.content?.parts?.[0]?.text) {
             return response.candidates[0].content.parts[0].text
         }
         return ""
     } catch (e) {
-        console.error('[AI Chat] Text extraction error:', e)
-        // If text extraction throws (e.g. function call only response), return empty
         return ""
     }
 }
 
-export async function POST(request: Request) {
-    console.log('[AI Chat] POST handler called at', new Date().toISOString())
-    try {
-        const body = await request.json()
-        console.log('[AI Chat] Request body received, locale:', body?.locale, 'messages:', body?.messages?.length)
-        const { messages, locale = 'tr' } = body
-
-        if (!messages || !Array.isArray(messages) || messages.length === 0) {
-            return NextResponse.json({ error: 'Mesaj gerekli' }, { status: 400 })
-        }
-
-        // 1. Fetch Dynamic Content from DB
-        const [context, localGuideContext] = await Promise.all([
-            getContextData(locale),
-            getLocalGuideContext()
-        ])
-
-        // 3-tier API key: DB settings → env var → empty
-        const { key: apiKey, source: keySource } = await getGeminiApiKey(locale)
-        console.log(`[AI Chat] Using API key from ${keySource}`)
-
-        if (!apiKey) {
-            console.error('[AI Chat] No API key configured in any source')
-            return NextResponse.json({
-                text: "Üzgünüm, AI servisi şu anda yapılandırılmamış. Lütfen yöneticinize başvurun.",
-                uiPayload: null,
-                data: null
-            })
-        }
-
-        // 2. Construct System Prompt
-        let systemPrompt = context.settings?.systemPrompt || `Sen Blue Dreams Resort'un dijital misafir asistanı "Blue Concierge"sin.
+function buildSystemPrompt(context: any, localGuideContext: string) {
+    let systemPrompt = context.settings?.systemPrompt || `Sen Blue Dreams Resort'un dijital misafir asistanı "Blue Concierge"sin.
 
     KURUMSAL KİMLİK & GÖREV:
     - SADECE otel misafirlerine (potansiyel veya konaklayan) hizmet verirsin.
@@ -203,26 +204,98 @@ export async function POST(request: Request) {
     - Torba, Bodrum. Havalimanı 25km, Bodrum Merkez 10km. Özel plaj, iskele.
     `
 
-        // Append Google Sheets knowledge if available
-        if (context.sheetContext) {
-            systemPrompt += `\n\nEKSPERT BİLGİSİ (Google Sheets SSS):\n${context.sheetContext}\n`
+    if (context.sheetContext) {
+        systemPrompt += `\n\nEKSPERT BİLGİSİ (Google Sheets SSS):\n${context.sheetContext}\n`
+    }
+    if (localGuideContext) {
+        systemPrompt += `\n\n${localGuideContext}\n(Bodrum gezilecek yerler ve etkinlikler sorulduğunda yukarıdaki SerpAPI ile admin onaylı olan bu listeyi kullan, güzelce anlat ve mutlaka yol tarifi için sunduğun lokasyonun linkini tavsiye et.)\n`
+    }
+    systemPrompt += `\n\nRESMİ FACTSHEET BİLGİLERİ:\n${FACTSHEET_TR}\n`
+    return systemPrompt
+}
+
+// ─── Primary: Gemini ────────────────────────────────────────────────────
+async function tryGemini(apiKey: string, systemPrompt: string, chatHistory: any[], model: string = GEMINI_MODEL) {
+    const ai = new GoogleGenAI({ apiKey })
+    const geminiHistory = chatHistory.map((m: any) => ({
+        role: m.role === 'model' ? 'model' : 'user',
+        parts: [{ text: String(m.text || m.content) }]
+    }))
+
+    const response = await ai.models.generateContent({
+        model,
+        contents: geminiHistory,
+        config: {
+            systemInstruction: systemPrompt,
+            tools: [{ functionDeclarations: [priceCheckTool, renderUiTool] }],
+        }
+    })
+
+    // Return normalized result
+    const calls = response.functionCalls
+    return {
+        text: extractGeminiText(response),
+        toolCalls: calls ? calls.map(c => ({ name: c.name, args: c.args || {} })) : null,
+        provider: 'gemini'
+    }
+}
+
+// ─── Fallback: OpenAI-compatible (Grok or Zhipu) ───────────────────────
+async function tryOpenAICompat(apiKey: string, baseURL: string, model: string, providerName: string, systemPrompt: string, chatHistory: any[]) {
+    const openai = new OpenAI({ apiKey, baseURL })
+    const messages = [
+        { role: 'system' as const, content: systemPrompt },
+        ...chatHistory.map((m: any) => ({
+            role: (m.role === 'model' || m.role === 'assistant' ? 'assistant' : 'user') as 'assistant' | 'user',
+            content: String(m.text || m.content)
+        }))
+    ]
+
+    const response = await openai.chat.completions.create({
+        model,
+        messages,
+        tools: openaiTools,
+        tool_choice: "auto"
+    })
+
+    const msg = response.choices[0]?.message
+    let toolCalls = null
+    if (msg?.tool_calls && msg.tool_calls.length > 0) {
+        toolCalls = msg.tool_calls.map((tc: any) => {
+            let args: Record<string, any> = {}
+            try { args = JSON.parse(tc.function?.arguments || "{}") } catch { }
+            return { name: tc.function?.name, args }
+        })
+    }
+
+    return {
+        text: msg?.content || '',
+        toolCalls,
+        provider: providerName
+    }
+}
+
+export async function POST(request: Request) {
+    console.log('[AI Chat] POST handler called at', new Date().toISOString())
+    try {
+        const body = await request.json()
+        console.log('[AI Chat] Request body received, locale:', body?.locale, 'messages:', body?.messages?.length)
+        const { messages, locale = 'tr' } = body
+
+        if (!messages || !Array.isArray(messages) || messages.length === 0) {
+            return NextResponse.json({ error: 'Mesaj gerekli' }, { status: 400 })
         }
 
-        // Append Local Guide Knowledge
-        if (localGuideContext) {
-            systemPrompt += `\n\n${localGuideContext}\n(Bodrum gezilecek yerler ve etkinlikler sorulduğunda yukarıdaki SerpAPI ile admin onaylı olan bu listeyi kullan, güzelce anlat ve mutlaka yol tarifi için sunduğun lokasyonun linkini tavsiye et.)\n`
-        }
+        // 1. Fetch Dynamic Content from DB
+        const [context, localGuideContext] = await Promise.all([
+            getContextData(locale),
+            getLocalGuideContext()
+        ])
 
-        // Append Factsheet knowledge
-        systemPrompt += `\n\nRESMİ FACTSHEET BİLGİLERİ:\n${FACTSHEET_TR}\n`
+        const systemPrompt = buildSystemPrompt(context, localGuideContext)
 
-        // Transform messages: ensure valid roles and text
         const chatHistory = messages
             .filter((m: any) => m.text && m.text.trim())
-            .map((m: any) => ({
-                role: m.role === 'model' ? 'model' : 'user',
-                parts: [{ text: String(m.text) }]
-            }))
 
         if (chatHistory.length === 0) {
             return NextResponse.json({
@@ -232,73 +305,72 @@ export async function POST(request: Request) {
             })
         }
 
-        // 3. Generate Content with retry + key rotation on 429
-        const MAX_RETRIES = 3
-        let response: any = null
-        let currentApiKey = apiKey
-        let lastError: any = null
+        // 2. Multi-provider AI call with fallback chain: Gemini → Grok → Zhipu
+        let aiResult: { text: string; toolCalls: any[] | null; provider: string } | null = null
+        const providers: { name: string; fn: () => Promise<any> }[] = []
 
-        for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+        // Primary: Gemini 2.5 Flash
+        const { key: geminiKey } = await getGeminiApiKey(locale)
+        if (geminiKey) {
+            providers.push({
+                name: 'Gemini-2.5-Flash',
+                fn: () => tryGemini(geminiKey, systemPrompt, chatHistory, GEMINI_MODEL)
+            })
+            // Fallback: Gemini 1.5 Pro (different quota pool)
+            providers.push({
+                name: 'Gemini-1.5-Pro',
+                fn: () => tryGemini(geminiKey, systemPrompt, chatHistory, GEMINI_15_MODEL)
+            })
+        }
+
+        // Fallback 1: Grok
+        if (GROK_API_KEY) {
+            providers.push({
+                name: 'Grok',
+                fn: () => tryOpenAICompat(GROK_API_KEY, 'https://api.x.ai/v1', GROK_MODEL, 'grok', systemPrompt, chatHistory)
+            })
+        }
+
+        // Fallback 2: Zhipu GLM
+        if (ZHIPU_API_KEY) {
+            providers.push({
+                name: 'Zhipu',
+                fn: () => tryOpenAICompat(ZHIPU_API_KEY, 'https://open.bigmodel.cn/api/paas/v4/', ZHIPU_MODEL, 'zhipu', systemPrompt, chatHistory)
+            })
+        }
+
+        for (const provider of providers) {
             try {
-                const ai = new GoogleGenAI({ apiKey: currentApiKey })
-                console.log(`[AI Chat] Attempt ${attempt + 1}/${MAX_RETRIES + 1} with key ${currentApiKey.substring(0, 10)}...`)
-
-                response = await ai.models.generateContent({
-                    model: GEMINI_MODEL,
-                    contents: chatHistory,
-                    config: {
-                        systemInstruction: systemPrompt,
-                        tools: [{ functionDeclarations: [priceCheckTool, renderUiTool] }],
-                    }
-                })
-                break // Success — exit retry loop
+                console.log(`[AI Chat] Trying provider: ${provider.name}`)
+                aiResult = await provider.fn()
+                console.log(`[AI Chat] Success with ${provider.name}`)
+                break
             } catch (err: any) {
-                lastError = err
-                const errMsg = err?.message || ''
-                const is429 = errMsg.includes('429') || errMsg.includes('RESOURCE_EXHAUSTED') || errMsg.includes('quota')
-
-                if (is429 && attempt < MAX_RETRIES) {
-                    console.log(`[AI Chat] Key ${currentApiKey.substring(0, 10)}... quota exhausted, trying rotation...`)
-
-                    // Mark current key as exhausted and try alternative
-                    const { markKeyExhausted, getAlternativeKey } = await import('@/lib/ai-config')
-                    markKeyExhausted(currentApiKey)
-                    const alt = await getAlternativeKey(currentApiKey, locale)
-                    if (alt) {
-                        console.log(`[AI Chat] Rotated to ${alt.source} key: ${alt.key.substring(0, 10)}...`)
-                        currentApiKey = alt.key
-                    }
-
-                    // Exponential backoff: 2s, 4s, 8s
-                    const backoff = Math.pow(2, attempt + 1) * 1000
-                    console.log(`[AI Chat] Waiting ${backoff}ms before retry...`)
-                    await new Promise(r => setTimeout(r, backoff))
-                    continue
-                }
-
-                // Non-429 error or max retries reached — throw to outer catch
-                throw err
+                console.error(`[AI Chat] ${provider.name} failed:`, err.message)
+                // Continue to next provider
             }
         }
 
-        if (!response) {
-            throw lastError || new Error('No response after retries')
+        if (!aiResult) {
+            return NextResponse.json({
+                text: "AI servisi şu anda yoğun veya kullanım limitine ulaştı. Lütfen rezervasyon sayfamızı ziyaret edin veya daha sonra tekrar deneyin.",
+                uiPayload: { type: 'booking_form' },
+                data: null
+            })
         }
 
-        // 4. Handle Response & Tools
-        const calls = response.functionCalls
+        // 3. Handle Response & Tools
         let finalResponse = {
-            text: extractResponseText(response),
+            text: aiResult.text,
             uiPayload: null as any,
             data: null as any
         }
 
-        if (calls && calls.length > 0) {
-            const call = calls[0]
-            const args = (call.args || {}) as Record<string, any>
+        if (aiResult.toolCalls && aiResult.toolCalls.length > 0) {
+            const call = aiResult.toolCalls[0]
+            const args = call.args || {}
 
             if (call.name === 'check_room_availability') {
-                // Fetch REAL prices from Elektra PMS
                 const checkIn = args.checkInDate || new Date().toISOString().split('T')[0]
                 let checkOut = args.checkOutDate
                 if (!checkOut) {
@@ -310,7 +382,6 @@ export async function POST(request: Request) {
                 try {
                     const availability = await ElektraService.getAvailability(new Date(checkIn), new Date(checkOut), 'EUR')
 
-                    // Group by room type
                     const byRoom = new Map<string, { prices: number[]; basePrices: number[]; available: number; stopsell: boolean }>()
                     for (const item of availability) {
                         if (!byRoom.has(item.roomType)) {
@@ -352,8 +423,8 @@ export async function POST(request: Request) {
                 }
             }
             else if (call.name === 'render_ui') {
-                const { componentType, detailId, message } = args
-                finalResponse.text = message || "İşte detaylar:"
+                const { componentType, detailId, message: tMsg } = args
+                finalResponse.text = tMsg || "İşte detaylar:"
 
                 let payloadData = null
 
@@ -385,30 +456,19 @@ export async function POST(request: Request) {
             finalResponse.text = "Üzgünüm, isteğinizi anlayamadım. Lütfen tekrar deneyin."
         }
 
-        console.log('[AI Chat] Response ready, text length:', finalResponse.text?.length, 'hasUI:', !!finalResponse.uiPayload)
+        console.log('[AI Chat] Response ready, text length:', finalResponse.text?.length, 'hasUI:', !!finalResponse.uiPayload, 'provider:', aiResult.provider)
         return NextResponse.json(finalResponse)
 
     } catch (error: any) {
-        console.error('[AI Chat] Error:', error?.message || error)
+        console.error('[AI Chat] Outer error:', error?.message || error)
         console.error('[AI Chat] Stack:', error?.stack)
 
-        // Return user-friendly error with details for debugging
-        const errorMessage = error?.message || 'Bilinmeyen hata'
-        let userMessage = "Üzgünüm, bir hata oluştu. Lütfen tekrar deneyin."
-
-        if (errorMessage.includes('API_KEY') || errorMessage.includes('401') || errorMessage.includes('403') || errorMessage.includes('400')) {
-            userMessage = "AI Anahtarı Hatası (Süresi Dolmuş veya Geçersiz). Detaylar konsolda."
-        } else if (errorMessage.includes('429') || errorMessage.includes('quota') || errorMessage.includes('RESOURCE_EXHAUSTED')) {
-            userMessage = "AI servisi şu anda yoğun. Lütfen birkaç dakika sonra tekrar deneyin."
-        } else if (errorMessage.includes('SAFETY') || errorMessage.includes('blocked')) {
-            userMessage = "Güvenlik filtresi nedeniyle yanıt üretilemedi. Lütfen sorunuzu farklı şekilde sorun."
-        }
-
+        // Always return a friendly message, never expose raw errors
         return NextResponse.json({
-            text: userMessage,
+            text: "Üzgünüm, bir hata oluştu. Lütfen tekrar deneyin.",
             uiPayload: null,
             data: null,
-            _debug: errorMessage // Always expose error for debugging as requested
+            _debug: String(error?.message || error).slice(0, 200)
         })
     }
 }

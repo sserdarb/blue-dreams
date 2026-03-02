@@ -28,9 +28,9 @@ export async function POST(request: Request) {
         }
 
         if (action === 'refresh_year' && typeof body.year === 'number') {
-            await ElektraCache.refreshYear(body.year)
+            const count = await ElektraCache.refreshYear(body.year)
             const status = await ElektraCache.getStatus()
-            return NextResponse.json({ success: true, status })
+            return NextResponse.json({ success: true, status, count })
         }
 
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 })

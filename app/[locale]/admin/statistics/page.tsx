@@ -104,8 +104,8 @@ export default async function StatisticsPage({ params }: { params: Promise<{ loc
     // Previous Year for Comparison — fetch separately so failures don't block main data
     try {
         const prevYear = new Date().getFullYear() - 1
-        const prevStart = new Date(prevYear - 1, 10, 1)
-        const prevEnd = new Date(`${prevYear}-12-31`)
+        const prevStart = new Date(prevYear, 0, 1) // Jan 1st of prev year
+        const prevEnd = new Date(prevYear, 11, 31) // Dec 31st of prev year
         const rawComp = await ElektraService.getReservationsByBookingDate(prevStart, prevEnd)
 
         comparisonReservations = rawComp.map(r => ({

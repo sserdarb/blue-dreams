@@ -1,19 +1,12 @@
 import { NextResponse } from 'next/server'
 import { GoogleGenAI } from '@google/genai'
-
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || ''
+import OpenAI from 'openai'
+import { getGeminiApiKey, GEMINI_MODEL, GROK_API_KEY, GROK_MODEL, ZHIPU_API_KEY, ZHIPU_MODEL } from '@/lib/ai-config'
 
 export async function POST(request: Request) {
-    if (!GEMINI_API_KEY) {
-        return NextResponse.json({ error: 'GEMINI_API_KEY is missing' }, { status: 500 })
-    }
-
     try {
         const body = await request.json()
         const { topic, tone, language, dateInfo, keywords, imageContext } = body
-
-        // Initialize Gemini via the official SDK
-        const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY })
 
         let systemPrompt = `Sen lüks bir otel olan "Blue Dreams Resort & Spa" (Bodrum, Türkiye) için profesyonel bir sosyal medya yöneticisisin. 
 Marka Tone of Voice: Lüks, Aile Dostu, Davetkar, Zarif, Doğayla İç İçe, Eğlenceli.
@@ -27,24 +20,74 @@ Kullanılması İstenen Anahtar Kelimeler: ${keywords || 'Bodrum, Tatil, Lüks'}
 `
         let promptText = 'Lütfen bu bilgilere göre yaratıcı bir Instagram/Facebook gönderisi hazırla. Çıktıyı doğrudan kullanılabilecek şekide ver.'
 
-        // If vision context is provided (url or base64)
         if (imageContext) {
-            // Because we don't have the File API proxy natively in the App Router easily without uploading, 
-            // we will ask Gemini to generate text based on the visual description if provided,
-            // or we just pass the text context about the image.
             promptText += `\n\nAyrıca gönderiyi şu görseli düşünerek yaz: ${imageContext}`
         }
 
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: promptText,
-            config: {
-                systemInstruction: systemPrompt,
-                temperature: 0.7,
-            }
-        })
+        // Multi-provider fallback: Gemini → Grok → Zhipu
+        const providers: { name: string; fn: () => Promise<string> }[] = []
 
-        const textOutput = response.text
+        const { key: geminiKey } = await getGeminiApiKey('tr')
+        if (geminiKey) {
+            providers.push({
+                name: 'Gemini',
+                fn: async () => {
+                    const ai = new GoogleGenAI({ apiKey: geminiKey })
+                    const response = await ai.models.generateContent({
+                        model: GEMINI_MODEL,
+                        contents: promptText,
+                        config: { systemInstruction: systemPrompt, temperature: 0.7 }
+                    })
+                    return typeof response.text === 'string' ? response.text : ''
+                }
+            })
+        }
+
+        if (GROK_API_KEY) {
+            providers.push({
+                name: 'Grok',
+                fn: async () => {
+                    const openai = new OpenAI({ apiKey: GROK_API_KEY, baseURL: 'https://api.x.ai/v1' })
+                    const r = await openai.chat.completions.create({
+                        model: GROK_MODEL,
+                        messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: promptText }],
+                        temperature: 0.7,
+                    })
+                    return r.choices[0]?.message?.content || ''
+                }
+            })
+        }
+
+        if (ZHIPU_API_KEY) {
+            providers.push({
+                name: 'Zhipu',
+                fn: async () => {
+                    const openai = new OpenAI({ apiKey: ZHIPU_API_KEY, baseURL: 'https://open.bigmodel.cn/api/paas/v4/' })
+                    const r = await openai.chat.completions.create({
+                        model: ZHIPU_MODEL,
+                        messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: promptText }],
+                        temperature: 0.7,
+                    })
+                    return r.choices[0]?.message?.content || ''
+                }
+            })
+        }
+
+        let textOutput = ''
+        for (const provider of providers) {
+            try {
+                console.log(`[AI Planner] Trying ${provider.name}`)
+                textOutput = await provider.fn()
+                console.log(`[AI Planner] Success with ${provider.name}`)
+                break
+            } catch (err: any) {
+                console.error(`[AI Planner] ${provider.name} failed:`, err.message)
+            }
+        }
+
+        if (!textOutput) {
+            return NextResponse.json({ error: 'Tüm AI servisleri yanıt veremedi.' }, { status: 503 })
+        }
 
         return NextResponse.json({ text: textOutput })
 

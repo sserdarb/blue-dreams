@@ -226,7 +226,7 @@ export const ElektraCache = {
      * Unlike `refresh`, this explicitly loads distant past data without
      * excluding "today/future" explicitly - it's meant for archival.
      */
-    async refreshYear(year: number): Promise<void> {
+    async refreshYear(year: number): Promise<number> {
         console.log(`[ElektraCache] Syncing historical data for year ${year}...`)
         const startMs = Date.now()
 
@@ -277,6 +277,7 @@ export const ElektraCache = {
                 })
             }
             console.log(`[ElektraCache] Archived ${allReservations.length} reservations for ${year} in ${Date.now() - startMs}ms`)
+            return allReservations.length
         } catch (e) {
             console.error(`[ElektraCache] Year ${year} Archive Error:`, e)
             throw e

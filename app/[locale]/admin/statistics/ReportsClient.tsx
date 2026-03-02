@@ -134,6 +134,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
     const [dateBasis, setDateBasis] = useState<'sale' | 'stay'>('sale')
 
     const [widgetConfigs, setWidgetConfigs] = useState<WidgetConfig[]>(DEFAULT_ORDER)
+    const [formulaConfigs, setFormulaConfigs] = useState<Record<string, any>>({})
     const [draggedWidget, setDraggedWidget] = useState<string | null>(null)
     const [aiResults, setAiResults] = useState<Record<string, string>>({})
     const [aiLoading, setAiLoading] = useState<Record<string, boolean>>({})
@@ -146,7 +147,68 @@ export default function ReportsClient({ reservations, comparisonReservations = [
     const [widgetCatFilter, setWidgetCatFilter] = useState<WidgetCategory | 'all'>('all')
     const [widgetTypeFilter, setWidgetTypeFilter] = useState<'all' | 'chart' | 'data' | 'graph'>('all')
 
-    useEffect(() => { setWidgetConfigs(loadWidgetOrder()) }, [])
+    useEffect(() => {
+        const fetchDashboardConfig = async () => {
+            try {
+                // Fetch the config from our new endpoint
+                const res = await fetch('/api/admin/dashboard/config?global=false')
+                if (res.ok) {
+                    const data = await res.json()
+
+                    if (data && data.config) {
+                        const parsed = data.config as WidgetConfig[]
+                        const savedIds = new Set(parsed.map(w => w.id))
+                        const newWidgets = ALL_WIDGETS
+                            .filter(w => !savedIds.has(w.id))
+                            .map((w, i) => ({ id: w.id, visible: w.defaultVisible, order: parsed.length + i, size: w.defaultSize }))
+                        setWidgetConfigs([...parsed, ...newWidgets])
+                    }
+                }
+            } catch (err) {
+                console.error('Failed to load dashboard config from API', err)
+                setWidgetConfigs(loadWidgetOrder())
+            }
+
+            try {
+                // Fetch formulas
+                const formulaRes = await fetch('/api/admin/dashboard/formulas?global=false')
+                if (formulaRes.ok) {
+                    const formulaData = await formulaRes.json()
+                    if (formulaData && formulaData.formulas) {
+                        const newFormulaMap: Record<string, any> = {}
+                        formulaData.formulas.forEach((f: any) => {
+                            newFormulaMap[f.widgetId] = typeof f.config === 'string' ? JSON.parse(f.config) : f.config
+                        })
+                        setFormulaConfigs(newFormulaMap)
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to load formulas from API', e)
+            }
+        }
+
+        fetchDashboardConfig()
+    }, [])
+
+
+    const [isSaving, setIsSaving] = useState(false)
+
+    // ─── Save Widget Server Action ───
+    const saveWidgetOrderRemote = async (configs: WidgetConfig[], isGlobal: boolean = false) => {
+        saveWidgetOrder(configs) // Keep local as fallback and immediate UI feedback
+        setIsSaving(true)
+        try {
+            await fetch('/api/admin/dashboard/config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ config: configs, isGlobal })
+            })
+        } catch (err) {
+            console.error('Failed to save dashboard config to API', err)
+        } finally {
+            setIsSaving(false)
+        }
+    }
 
     // ─── Date Preset Handler ───
     const applyPreset = (key: string) => {
@@ -238,13 +300,13 @@ export default function ReportsClient({ reservations, comparisonReservations = [
         const [removed] = newConfigs.splice(di, 1)
         newConfigs.splice(ti, 0, removed)
         setWidgetConfigs(newConfigs)
-        saveWidgetOrder(newConfigs)
+        saveWidgetOrderRemote(newConfigs)
     }
 
     const toggleWidget = (id: string) => {
         const nc = widgetConfigs.map(w => w.id === id ? { ...w, visible: !w.visible } : w)
         setWidgetConfigs(nc)
-        saveWidgetOrder(nc)
+        saveWidgetOrderRemote(nc)
     }
 
     const cycleSize = (id: string) => {
@@ -256,7 +318,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
             return { ...w, size: next }
         })
         setWidgetConfigs(nc)
-        saveWidgetOrder(nc)
+        saveWidgetOrderRemote(nc)
     }
 
     const handlePdfExport = async () => {
@@ -335,16 +397,24 @@ export default function ReportsClient({ reservations, comparisonReservations = [
     // ─── Widget Renderers ───
 
     const renderKPIs = (data: Reservation[]) => {
-        const totalRev = data.reduce((sum, r) => sum + dp(r.totalPrice, r.currency), 0)
-        const totalRes = data.length
+        const config = formulaConfigs['kpi_cards'] || {}
+        const revMultiplier = config.revenueMultiplier || 1
+        const resMultiplier = config.reservationsMultiplier || 1
+        const adrMultiplier = config.adrMultiplier || 1
+        const targetAdrMultiplier = config.targetADR || 1.1
+
+        const totalRev = data.reduce((sum, r) => sum + dp(r.totalPrice, r.currency), 0) * revMultiplier
+        const totalRes = data.length * resMultiplier
         const totalNights = data.reduce((sum, r) => sum + r.nights * r.roomCount, 0)
-        const adr = totalNights > 0 ? totalRev / totalNights : 0
+        let adr = totalNights > 0 ? (totalRev / revMultiplier) / totalNights : 0
+        adr = adr * adrMultiplier
 
         // Comparison Metrics
-        const compRev = filteredComparison.reduce((sum, r) => sum + dp(r.totalPrice, r.currency), 0)
-        const compRes = filteredComparison.length
+        const compRev = filteredComparison.reduce((sum, r) => sum + dp(r.totalPrice, r.currency), 0) * revMultiplier
+        const compRes = filteredComparison.length * resMultiplier
         const compNights = filteredComparison.reduce((sum, r) => sum + r.nights * r.roomCount, 0)
-        const compAdr = compNights > 0 ? compRev / compNights : 0
+        let compAdr = compNights > 0 ? (compRev / revMultiplier) / compNights : 0
+        compAdr = compAdr * adrMultiplier
 
         const revGrowth = compRev > 0 ? ((totalRev - compRev) / compRev) * 100 : 0
         const resGrowth = compRes > 0 ? ((totalRes - compRes) / compRes) * 100 : 0
@@ -375,7 +445,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
                     <div className="absolute top-0 right-0 p-4 opacity-10"><Calendar size={48} /></div>
                     <p className="text-slate-500 dark:text-purple-100 text-sm font-medium">{t.totalReservations || 'Toplam Rez.'}</p>
                     <div className="flex items-baseline mt-1">
-                        <h3 className="text-3xl font-bold">{totalRes}</h3>
+                        <h3 className="text-3xl font-bold">{Math.round(totalRes)}</h3>
                         <Trend val={resGrowth} />
                     </div>
                     <div className="mt-2 text-xs bg-slate-100 dark:bg-white/20 inline-block px-2 py-1 rounded">Günlük Ort: {(totalRes / Math.max(1, Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / 86400000))).toFixed(1)}</div>
@@ -387,7 +457,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
                         <h3 className="text-3xl font-bold text-slate-900 dark:text-white">{fmtMoney(adr)}</h3>
                         <Trend val={adrGrowth} />
                     </div>
-                    <div className="mt-2 text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/30 inline-block px-2 py-1 rounded">Hedef: {fmtMoney(adr * 1.1)}</div>
+                    <div className="mt-2 text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/30 inline-block px-2 py-1 rounded">Hedef: {fmtMoney(adr * targetAdrMultiplier)}</div>
                 </div>
             </div>
         )
@@ -3885,6 +3955,27 @@ export default function ReportsClient({ reservations, comparisonReservations = [
                             ))}
                         </div>
 
+                        {/* Global Save Button */}
+                        <div className="flex bg-slate-100 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden ml-2">
+                            <button
+                                onClick={() => saveWidgetOrderRemote(widgetConfigs, false)}
+                                disabled={isSaving}
+                                className={`flex items-center gap-1.5 px-3 py-2.5 text-xs font-bold transition-all text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 ${isSaving ? 'opacity-50' : ''}`}
+                                title="Sadece Benim İçin Kaydet"
+                            >
+                                <span className="hidden sm:inline">Kişisel Kaydet</span>
+                            </button>
+                            <div className="w-px bg-slate-200 dark:bg-slate-700" />
+                            <button
+                                onClick={() => saveWidgetOrderRemote(widgetConfigs, true)}
+                                disabled={isSaving}
+                                className={`flex items-center gap-1.5 px-3 py-2.5 text-xs font-bold transition-all text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 ${isSaving ? 'opacity-50' : ''}`}
+                                title="Herkes İçin Varsayılan Yap"
+                            >
+                                <span className="hidden sm:inline">Global Kaydet</span>
+                            </button>
+                        </div>
+
                         {/* Auto AI Commentary */}
                         <button
                             onClick={autoInterpretAll}
@@ -4067,12 +4158,48 @@ export default function ReportsClient({ reservations, comparisonReservations = [
                                     <option value="3x1">Geniş (3×1)</option>
                                 </select>
                             </div>
+                            {(editingWidget.id === 'kpi_cards' || editingWidget.id === 'revenue_yoy') && (
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Özel Formül (JSON)</label>
+                                    <textarea
+                                        rows={3}
+                                        placeholder='{"targetADR": 150}'
+                                        className="w-full px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-mono text-xs focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                                        value={typeof formulaConfigs[editingWidget.id] === 'object' ? JSON.stringify(formulaConfigs[editingWidget.id]) : (formulaConfigs[editingWidget.id] || '')}
+                                        onChange={e => {
+                                            let val: any = e.target.value
+                                            try { val = JSON.parse(e.target.value) } catch (err) { }
+                                            setFormulaConfigs({ ...formulaConfigs, [editingWidget.id]: val })
+                                        }}
+                                    />
+                                    <p className="text-[10px] text-slate-500 mt-1">Metrik hedefleri ve çarpanları JSON formatında override edebilirsiniz.</p>
+                                </div>
+                            )}
                         </div>
                         <div className="p-4 bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 flex justify-end gap-2">
                             <button onClick={() => setEditingWidget(null)} className="px-4 py-2 text-sm font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg">{t.cancel || 'İptal'}</button>
-                            <button onClick={() => {
+                            <button onClick={async () => {
                                 const nc = widgetConfigs.map(w => w.id === editingWidget.id ? editingWidget : w)
-                                setWidgetConfigs(nc); saveWidgetOrder(nc); setEditingWidget(null)
+                                setWidgetConfigs(nc);
+                                saveWidgetOrderRemote(nc, false);
+                                setEditingWidget(null)
+
+                                // Save formulas
+                                try {
+                                    const formulasPayload = Object.keys(formulaConfigs).map(key => ({
+                                        widgetId: key,
+                                        config: formulaConfigs[key]
+                                    }))
+                                    if (formulasPayload.length > 0) {
+                                        await fetch('/api/admin/dashboard/formulas', {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ formulas: formulasPayload, isGlobal: false })
+                                        })
+                                    }
+                                } catch (e) {
+                                    console.error('Failed to save formula', e)
+                                }
                             }} className="px-4 py-2 text-sm font-bold bg-cyan-600 text-white rounded-lg hover:bg-cyan-500">{t.save || 'Kaydet'}</button>
                         </div>
                     </div>

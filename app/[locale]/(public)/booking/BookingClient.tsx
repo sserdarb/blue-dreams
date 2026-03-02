@@ -119,7 +119,7 @@ export default function BookingClient({ locale }: { locale: string }) {
     const [expMonth, setExpMonth] = useState('01')
     const [expYear, setExpYear] = useState('25')
     const [cvv, setCvv] = useState('')
-    const [showCalendar, setShowCalendar] = useState(false)
+    const [showCalendar, setShowCalendar] = useState(true) // Default to advanced calendar
     const [installment, setInstallment] = useState(1)
     const [cardProgram, setCardProgram] = useState('none') // 'none' | 'maximum' | 'bonus' | 'world'
 
@@ -152,7 +152,7 @@ export default function BookingClient({ locale }: { locale: string }) {
         setLoading(true)
         setResults(null)
         try {
-            const res = await fetch(`/api/booking?checkIn=${checkIn}&checkOut=${checkOut}&adults=${adults}&currency=EUR`)
+            const res = await fetch(`/api/public/availability?checkIn=${checkIn}&checkOut=${checkOut}&adults=${adults}&locale=${locale}`)
             if (res.ok) {
                 const data = await res.json()
                 setResults(data)

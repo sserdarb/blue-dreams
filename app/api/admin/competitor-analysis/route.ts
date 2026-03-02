@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { isAuthenticated } from '@/app/actions/auth';
 import { OpenAI } from 'openai';
 import { searchCompetitorsExa } from '@/lib/services/exa';
+import { prisma as db } from '@/lib/prisma';
 
 const SERPAPI_KEY = process.env.SERPAPI_KEY || '';
 
@@ -71,6 +72,24 @@ export async function GET(req: Request) {
             } else {
                 // If neither keys are provided or refresh=false, just send mock or lightweight data
                 results.push(generateFallback(comp.name, comp.type));
+            }
+        }
+
+        // Store into DB for historical analysis and tracking if a real lookup happened
+        if (refresh) {
+            for (const r of results) {
+                try {
+                    await db.competitorPrice.create({
+                        data: {
+                            competitorName: r.name,
+                            checkInDate: new Date(), // general snapshot for today
+                            price: r.priceEstimation,
+                            currency: 'TRY'
+                        }
+                    });
+                } catch (err) {
+                    console.error(`[CompetitorAnalysis] DB save failed for ${r.name}:`, err);
+                }
             }
         }
 

@@ -178,18 +178,18 @@ function OverviewTab({ a, t }: { a: any, t: any }) {
         </div>
         {/* Main Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <ChartCard title="{t.overview.monthlyRevVsBudget}">
+            <ChartCard title={t.overview.monthlyRevVsBudget}>
                 <DualBar data={a.monthlyRevenue.map((m: any) => {
                     const mi = m.monthIndex != null ? m.monthIndex + 1 : parseInt((m.month || '').split(' ')[0]) || 0
                     const bm = budgetMonths.find(b => b.month === mi)
                     return { month: m.month, actual: Math.round(m.revenue / EUR_RATE), budget: bm?.budget || 0 }
                 })} xKey="month" y1="actual" y2="budget" c1="#06b6d4" c2="#f59e0b" />
             </ChartCard>
-            <ChartCard title="{t.overview.channelDist}"><DonutChart data={a.channels} nameKey="channel" valueKey="share" /></ChartCard>
-            <ChartCard title="{t.overview.adrTrendMonthly}"><MiniLine data={a.adrTrend} xKey="date" yKey="revenue" color="#8b5cf6" /></ChartCard>
-            <ChartCard title="{t.overview.occupancyRate}"><MiniLine data={a.dailyOccupancy.slice(-60)} xKey="date" yKey="rate" color="#10b981" /></ChartCard>
-            <ChartCard title="{t.overview.nationalityDist}"><MiniPie data={a.countries.slice(0, 8)} nameKey="country" valueKey="count" /></ChartCard>
-            <ChartCard title="{t.overview.boardType}"><DonutChart data={a.boardTypeDist} nameKey="boardType" valueKey="count" /></ChartCard>
+            <ChartCard title={t.overview.channelDist}><DonutChart data={a.channels} nameKey="channel" valueKey="share" /></ChartCard>
+            <ChartCard title={t.overview.adrTrendMonthly}><MiniLine data={a.adrTrend} xKey="date" yKey="revenue" color="#8b5cf6" /></ChartCard>
+            <ChartCard title={t.overview.occupancyRate}><MiniLine data={a.dailyOccupancy.slice(-60)} xKey="date" yKey="rate" color="#10b981" /></ChartCard>
+            <ChartCard title={t.overview.nationalityDist}><MiniPie data={a.countries.slice(0, 8)} nameKey="country" valueKey="count" /></ChartCard>
+            <ChartCard title={t.overview.boardType}><DonutChart data={a.boardTypeDist} nameKey="boardType" valueKey="count" /></ChartCard>
         </div>
     </div>
 }
@@ -241,20 +241,20 @@ function RevenueTab({ a, t }: { a: any, t: any }) {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <ChartCard title="{t.revenue.r1}" span={2}><MiniLine data={a.dailyRevenue.slice(-90)} xKey="date" yKey="revenue" /></ChartCard>
-            <ChartCard title="{t.revenue.r2}"><MiniBar data={a.weeklyRevenue.slice(-20)} xKey="date" yKey="revenue" color="#8b5cf6" /></ChartCard>
-            <ChartCard title="R3: {t.overview.monthlyRevVsBudget} (€)">
+            <ChartCard title={t.revenue.r1} span={2}><MiniLine data={a.dailyRevenue.slice(-90)} xKey="date" yKey="revenue" /></ChartCard>
+            <ChartCard title={t.revenue.r2}><MiniBar data={a.weeklyRevenue.slice(-20)} xKey="date" yKey="revenue" color="#8b5cf6" /></ChartCard>
+            <ChartCard title={`R3: ${t.overview.monthlyRevVsBudget} (€)`}>
                 <DualBar data={monthlyWithBudget.map((m: any) => ({ month: m.month, actual: m.actualEUR, budget: m.budgetEUR }))} xKey="month" y1="actual" y2="budget" c1="#06b6d4" c2="#f59e0b" />
             </ChartCard>
-            <ChartCard title="{t.revenue.r5}" span={2}><ForecastChart data={a.revenueForecast.slice(-60)} /></ChartCard>
-            <ChartCard title="{t.revenue.r6}"><MiniLine data={a.revparTrend.slice(-60)} xKey="date" yKey="revenue" color="#10b981" /></ChartCard>
-            <ChartCard title="{t.revenue.r7}"><MiniLine data={a.adrTrend} xKey="date" yKey="revenue" color="#f59e0b" /></ChartCard>
-            <ChartCard title="{t.revenue.r8}"><DonutChart data={a.currencyBreakdown} nameKey="currency" valueKey="share" /></ChartCard>
-            <ChartCard title="{t.revenue.r9}"><DualBar data={a.totalVsPaid} xKey="month" y1="total" y2="paid" c1="#06b6d4" c2="#10b981" /></ChartCard>
-            <ChartCard title="{t.revenue.r10}" span={2}><HeatmapGrid data={a.revenueHeatmap} /></ChartCard>
+            <ChartCard title={t.revenue.r5} span={2}><ForecastChart data={a.revenueForecast.slice(-60)} /></ChartCard>
+            <ChartCard title={t.revenue.r6}><MiniLine data={a.revparTrend.slice(-60)} xKey="date" yKey="revenue" color="#10b981" /></ChartCard>
+            <ChartCard title={t.revenue.r7}><MiniLine data={a.adrTrend} xKey="date" yKey="revenue" color="#f59e0b" /></ChartCard>
+            <ChartCard title={t.revenue.r8}><DonutChart data={a.currencyBreakdown} nameKey="currency" valueKey="share" /></ChartCard>
+            <ChartCard title={t.revenue.r9}><DualBar data={a.totalVsPaid} xKey="month" y1="total" y2="paid" c1="#06b6d4" c2="#10b981" /></ChartCard>
+            <ChartCard title={t.revenue.r10} span={2}><HeatmapGrid data={a.revenueHeatmap} /></ChartCard>
         </div>
         {/* Revenue Table with Budget */}
-        <ChartCard title="{t.revenue.tableTitle}">
+        <ChartCard title={t.revenue.tableTitle}>
             <DataTable data={monthlyWithBudget} columns={[
                 { key: 'month', label: t.tableCols.month },
                 { key: 'count', label: t.tableCols.resCount, format: (v: number) => fmt(v) },
@@ -274,12 +274,12 @@ function OccupancyTab({ a, t }: { a: any, t: any }) {
     return <div className="space-y-6">
         <h2 className="text-lg font-bold text-cyan-400">{t.occupancy.title}</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <ChartCard title="R11: Günlük {t.overview.occupancyRate} (%)" span={2}><MiniLine data={a.dailyOccupancy.slice(-90)} xKey="date" yKey="rate" color="#10b981" /></ChartCard>
-            <ChartCard title="{t.occupancy.r12}"><ForecastChart data={a.occForecast.slice(-60)} /></ChartCard>
-            <ChartCard title="{t.occupancy.r13}"><MiniBar data={a.roomTypeOcc} xKey="roomType" yKey="count" color="#8b5cf6" /></ChartCard>
-            <ChartCard title="{t.occupancy.r14}"><MiniScatter data={a.occVsAdr} xKey="occupancy" yKey="adr" label="Ay bazlı" /></ChartCard>
-            <ChartCard title="{t.occupancy.r15}" ><HeatmapGrid data={a.occHeatmap} /></ChartCard>
-            <ChartCard title="{t.occupancy.r16}">
+            <ChartCard title={`R11: Günlük ${t.overview.occupancyRate} (%)`} span={2}><MiniLine data={a.dailyOccupancy.slice(-90)} xKey="date" yKey="rate" color="#10b981" /></ChartCard>
+            <ChartCard title={t.occupancy.r12}><ForecastChart data={a.occForecast.slice(-60)} /></ChartCard>
+            <ChartCard title={t.occupancy.r13}><MiniBar data={a.roomTypeOcc} xKey="roomType" yKey="count" color="#8b5cf6" /></ChartCard>
+            <ChartCard title={t.occupancy.r14}><MiniScatter data={a.occVsAdr} xKey="occupancy" yKey="adr" label="Ay bazlı" /></ChartCard>
+            <ChartCard title={t.occupancy.r15} ><HeatmapGrid data={a.occHeatmap} /></ChartCard>
+            <ChartCard title={t.occupancy.r16}>
                 <div className="grid grid-cols-2 gap-3">
                     {a.weekdayWeekend.map((w: any) => (
                         <div key={w.type} className="bg-slate-700/30 rounded-lg p-3 text-center">
@@ -291,10 +291,10 @@ function OccupancyTab({ a, t }: { a: any, t: any }) {
                     ))}
                 </div>
             </ChartCard>
-            <ChartCard title="{t.occupancy.r17}"><MiniBar data={a.seasonal} xKey="season" yKey="revenue" color="#f59e0b" /></ChartCard>
-            <ChartCard title="{t.occupancy.r18}" span={2}><MiniLine data={a.vacantLoss.slice(-60)} xKey="date" yKey="potentialLoss" color="#ef4444" /></ChartCard>
+            <ChartCard title={t.occupancy.r17}><MiniBar data={a.seasonal} xKey="season" yKey="revenue" color="#f59e0b" /></ChartCard>
+            <ChartCard title={t.occupancy.r18} span={2}><MiniLine data={a.vacantLoss.slice(-60)} xKey="date" yKey="potentialLoss" color="#ef4444" /></ChartCard>
         </div>
-        <ChartCard title="{t.occupancy.tableTitle}">
+        <ChartCard title={t.occupancy.tableTitle}>
             <DataTable data={a.roomTypeOcc} columns={[
                 { key: 'roomType', label: t.tableCols.roomType },
                 { key: 'count', label: t.tableCols.resCount, format: (v: number) => fmt(v) },
@@ -313,14 +313,14 @@ function ChannelsTab({ a, t }: { a: any, t: any }) {
     return <div className="space-y-6">
         <h2 className="text-lg font-bold text-cyan-400">{t.channels.title}</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <ChartCard title="R19: {t.overview.channelDist}"><DonutChart data={a.channels} nameKey="channel" valueKey="share" /></ChartCard>
-            <ChartCard title="{t.channels.r20}"><StackedBar data={a.channelRevTrend} xKey="month" keys={channelKeys} /></ChartCard>
-            <ChartCard title="{t.channels.r21}"><MiniBar data={a.channelADR} xKey="channel" yKey="adr" color="#8b5cf6" /></ChartCard>
-            <ChartCard title="{t.channels.r22}"><MiniArea data={a.channelPerfTrend} xKey="month" keys={channelKeys} /></ChartCard>
-            <ChartCard title="{t.channels.r23}"><DualBar data={a.otaVsDirect} xKey="month" y1="OTA" y2="Direct" c1="#f59e0b" c2="#10b981" /></ChartCard>
-            <ChartCard title="{t.channels.r25}" ><MiniArea data={a.channelMix} xKey="month" keys={channelKeys} /></ChartCard>
+            <ChartCard title={`R19: ${t.overview.channelDist}`}><DonutChart data={a.channels} nameKey="channel" valueKey="share" /></ChartCard>
+            <ChartCard title={t.channels.r20}><StackedBar data={a.channelRevTrend} xKey="month" keys={channelKeys} /></ChartCard>
+            <ChartCard title={t.channels.r21}><MiniBar data={a.channelADR} xKey="channel" yKey="adr" color="#8b5cf6" /></ChartCard>
+            <ChartCard title={t.channels.r22}><MiniArea data={a.channelPerfTrend} xKey="month" keys={channelKeys} /></ChartCard>
+            <ChartCard title={t.channels.r23}><DualBar data={a.otaVsDirect} xKey="month" y1="OTA" y2="Direct" c1="#f59e0b" c2="#10b981" /></ChartCard>
+            <ChartCard title={t.channels.r25} ><MiniArea data={a.channelMix} xKey="month" keys={channelKeys} /></ChartCard>
         </div>
-        <ChartCard title="{t.channels.r24}">
+        <ChartCard title={t.channels.r24}>
             <DataTable data={a.agencyRanking} columns={[
                 { key: 'agency', label: t.tableCols.agency },
                 { key: 'channel', label: t.tableCols.channel },
@@ -329,7 +329,7 @@ function ChannelsTab({ a, t }: { a: any, t: any }) {
                 { key: 'adr', label: t.tableCols.adrYtl, format: (v: number) => `₺${fmt(v)}` },
             ]} />
         </ChartCard>
-        <ChartCard title="{t.channels.tableTitle}">
+        <ChartCard title={t.channels.tableTitle}>
             <DataTable data={a.channels} columns={[
                 { key: 'channel', label: t.tableCols.channel },
                 { key: 'count', label: t.tableCols.resCount, format: (v: number) => fmt(v) },
@@ -348,15 +348,15 @@ function GuestsTab({ a, t }: { a: any, t: any }) {
     return <div className="space-y-6">
         <h2 className="text-lg font-bold text-cyan-400">{t.guests.title}</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <ChartCard title="R26: {t.overview.nationalityDist}"><DonutChart data={a.countries.slice(0, 10)} nameKey="country" valueKey="count" /></ChartCard>
-            <ChartCard title="{t.guests.r27}"><MiniBar data={a.revByCountry.slice(0, 10)} xKey="country" yKey="revenue" color="#f59e0b" /></ChartCard>
-            <ChartCard title="{t.guests.r28}"><MiniBar data={a.stayByCountry.slice(0, 10)} xKey="country" yKey="avgNights" color="#10b981" /></ChartCard>
-            <ChartCard title="{t.guests.r29}"><MiniArea data={a.natTrend} xKey="month" keys={topCountries} /></ChartCard>
-            <ChartCard title="{t.guests.r30}"><MiniBar data={a.guestSegments} xKey="segment" yKey="count" color="#8b5cf6" /></ChartCard>
-            <ChartCard title="{t.guests.r31}"><HeatmapGrid data={a.natChannelMatrix} /></ChartCard>
-            <ChartCard title="{t.guests.r32}"><MiniBar data={a.rateByCountry.slice(0, 10)} xKey="country" yKey="avgRate" color="#ec4899" /></ChartCard>
+            <ChartCard title={`R26: ${t.overview.nationalityDist}`}><DonutChart data={a.countries.slice(0, 10)} nameKey="country" valueKey="count" /></ChartCard>
+            <ChartCard title={t.guests.r27}><MiniBar data={a.revByCountry.slice(0, 10)} xKey="country" yKey="revenue" color="#f59e0b" /></ChartCard>
+            <ChartCard title={t.guests.r28}><MiniBar data={a.stayByCountry.slice(0, 10)} xKey="country" yKey="avgNights" color="#10b981" /></ChartCard>
+            <ChartCard title={t.guests.r29}><MiniArea data={a.natTrend} xKey="month" keys={topCountries} /></ChartCard>
+            <ChartCard title={t.guests.r30}><MiniBar data={a.guestSegments} xKey="segment" yKey="count" color="#8b5cf6" /></ChartCard>
+            <ChartCard title={t.guests.r31}><HeatmapGrid data={a.natChannelMatrix} /></ChartCard>
+            <ChartCard title={t.guests.r32}><MiniBar data={a.rateByCountry.slice(0, 10)} xKey="country" yKey="avgRate" color="#ec4899" /></ChartCard>
         </div>
-        <ChartCard title="{t.guests.tableTitle}">
+        <ChartCard title={t.guests.tableTitle}>
             <DataTable data={a.countries} columns={[
                 { key: 'country', label: t.tableCols.country },
                 { key: 'count', label: t.tableCols.resCount, format: (v: number) => fmt(v) },
@@ -374,23 +374,23 @@ function BookingTab({ a, t }: { a: any, t: any }) {
     return <div className="space-y-6">
         <h2 className="text-lg font-bold text-cyan-400">{t.booking.title}</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <ChartCard title="{t.booking.r33}"><MiniBar data={a.leadTime} xKey="range" yKey="count" color="#06b6d4" /></ChartCard>
-            <ChartCard title="{t.booking.r34}"><MiniBar data={a.bookingDay} xKey="day" yKey="count" color="#8b5cf6" /></ChartCard>
-            <ChartCard title="{t.booking.r35}"><MiniBar data={a.cancellation} xKey="month" yKey="rate" color="#ef4444" /></ChartCard>
-            <ChartCard title="{t.booking.r36}"><MiniLine data={a.avgStayTrend} xKey="month" yKey="avgNights" color="#10b981" /></ChartCard>
-            <ChartCard title="{t.booking.r37}"><DonutChart data={a.roomCountDist} nameKey="rooms" valueKey="count" /></ChartCard>
-            <ChartCard title="R38: {t.overview.boardType} Dağılımı"><DonutChart data={a.boardTypeDist} nameKey="boardType" valueKey="count" /></ChartCard>
-            <ChartCard title="{t.booking.r39}"><MiniBar data={a.roomTypePref} xKey="roomType" yKey="count" color="#f59e0b" /></ChartCard>
-            <ChartCard title="{t.booking.r40}"><MiniBar data={a.stayLengthDist} xKey="nights" yKey="count" color="#ec4899" /></ChartCard>
+            <ChartCard title={t.booking.r33}><MiniBar data={a.leadTime} xKey="range" yKey="count" color="#06b6d4" /></ChartCard>
+            <ChartCard title={t.booking.r34}><MiniBar data={a.bookingDay} xKey="day" yKey="count" color="#8b5cf6" /></ChartCard>
+            <ChartCard title={t.booking.r35}><MiniBar data={a.cancellation} xKey="month" yKey="rate" color="#ef4444" /></ChartCard>
+            <ChartCard title={t.booking.r36}><MiniLine data={a.avgStayTrend} xKey="month" yKey="avgNights" color="#10b981" /></ChartCard>
+            <ChartCard title={t.booking.r37}><DonutChart data={a.roomCountDist} nameKey="rooms" valueKey="count" /></ChartCard>
+            <ChartCard title={`R38: ${t.overview.boardType} Dağılımı`}><DonutChart data={a.boardTypeDist} nameKey="boardType" valueKey="count" /></ChartCard>
+            <ChartCard title={t.booking.r39}><MiniBar data={a.roomTypePref} xKey="roomType" yKey="count" color="#f59e0b" /></ChartCard>
+            <ChartCard title={t.booking.r40}><MiniBar data={a.stayLengthDist} xKey="nights" yKey="count" color="#ec4899" /></ChartCard>
         </div>
-        <ChartCard title="{t.booking.leadTimeTable}">
+        <ChartCard title={t.booking.leadTimeTable}>
             <DataTable data={a.leadTime} columns={[
                 { key: 'range', label: t.tableCols.durationRange },
                 { key: 'count', label: t.tableCols.resCountLong, format: (v: number) => fmt(v) },
                 { key: 'share', label: t.tableCols.share, format: (v: number) => `%${v}` },
             ]} />
         </ChartCard>
-        <ChartCard title="{t.booking.stayLengthTable}">
+        <ChartCard title={t.booking.stayLengthTable}>
             <DataTable data={a.stayLengthDist} columns={[
                 { key: 'nights', label: t.tableCols.duration },
                 { key: 'count', label: t.tableCols.resCountLong, format: (v: number) => fmt(v) },
@@ -415,11 +415,11 @@ function PerformanceTab({ a, t }: { a: any, t: any }) {
     return <div className="space-y-6">
         <h2 className="text-lg font-bold text-cyan-400">{t.performance.title}</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <ChartCard title="{t.performance.r41}"><MiniBar data={a.goppar} xKey="month" yKey="goppar" color="#10b981" /></ChartCard>
-            <ChartCard title="{t.performance.r42}"><MiniBar data={a.trevpar} xKey="month" yKey="trevpar" color="#06b6d4" /></ChartCard>
-            <ChartCard title="{t.performance.r46}"><MiniBar data={a.checkInDay} xKey="day" yKey="count" color="#8b5cf6" /></ChartCard>
-            <ChartCard title="{t.performance.r47}"><StackedBar data={a.priceSegTrend} xKey="month" keys={['ekonomik', 'orta', 'ust', 'premium', 'vip']} /></ChartCard>
-            <ChartCard title="{t.performance.r48}" span={2}>
+            <ChartCard title={t.performance.r41}><MiniBar data={a.goppar} xKey="month" yKey="goppar" color="#10b981" /></ChartCard>
+            <ChartCard title={t.performance.r42}><MiniBar data={a.trevpar} xKey="month" yKey="trevpar" color="#06b6d4" /></ChartCard>
+            <ChartCard title={t.performance.r46}><MiniBar data={a.checkInDay} xKey="day" yKey="count" color="#8b5cf6" /></ChartCard>
+            <ChartCard title={t.performance.r47}><StackedBar data={a.priceSegTrend} xKey="month" keys={['ekonomik', 'orta', 'ust', 'premium', 'vip']} /></ChartCard>
+            <ChartCard title={t.performance.r48} span={2}>
                 <DataTable data={perfWithBudget} columns={[
                     { key: 'month', label: t.tableCols.month },
                     { key: 'count', label: t.tableCols.resCount },
@@ -432,10 +432,10 @@ function PerformanceTab({ a, t }: { a: any, t: any }) {
                     { key: 'revpar', label: t.tableCols.revparYtl, format: (v: number) => `₺${fmt(v)}` },
                 ]} />
             </ChartCard>
-            <ChartCard title="{t.performance.r49}"><MiniLine data={a.revenueConc} xKey="percentile" yKey="revenueShare" color="#f59e0b" /></ChartCard>
-            <ChartCard title="{t.performance.r50}"><MiniBar data={a.rateTypeAnalysis.slice(0, 10)} xKey="rateType" yKey="revenue" color="#ec4899" /></ChartCard>
+            <ChartCard title={t.performance.r49}><MiniLine data={a.revenueConc} xKey="percentile" yKey="revenueShare" color="#f59e0b" /></ChartCard>
+            <ChartCard title={t.performance.r50}><MiniBar data={a.rateTypeAnalysis.slice(0, 10)} xKey="rateType" yKey="revenue" color="#ec4899" /></ChartCard>
         </div>
-        <ChartCard title="{t.performance.tableTitle}">
+        <ChartCard title={t.performance.tableTitle}>
             <DataTable data={a.rateTypeAnalysis} columns={[
                 { key: 'rateType', label: t.tableCols.rateType },
                 { key: 'count', label: t.tableCols.resCount, format: (v: number) => fmt(v) },
@@ -452,11 +452,11 @@ function ForecastTab({ a, t }: { a: any, t: any }) {
     return <div className="space-y-6">
         <h2 className="text-lg font-bold text-cyan-400">{t.forecast.title}</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <ChartCard title="{t.forecast.r5}" span={2}><ForecastChart data={a.revenueForecast.slice(-45)} /></ChartCard>
-            <ChartCard title="{t.forecast.r43}" span={2}><DualLine data={a.pace} xKey="label" y1="currentYear" y2="prevYear" c1="#06b6d4" c2="#f59e0b" /></ChartCard>
-            <ChartCard title="{t.forecast.r44}" span={2}><MiniBar data={a.pickup.slice(-60)} xKey="date" yKey="newBookings" color="#10b981" /></ChartCard>
-            <ChartCard title="{t.forecast.r12}"><ForecastChart data={a.occForecast.slice(-45)} /></ChartCard>
-            <ChartCard title="{t.forecast.seasonalComp}"><MiniBar data={a.seasonal} xKey="season" yKey="count" color="#8b5cf6" /></ChartCard>
+            <ChartCard title={t.forecast.r5} span={2}><ForecastChart data={a.revenueForecast.slice(-45)} /></ChartCard>
+            <ChartCard title={t.forecast.r43} span={2}><DualLine data={a.pace} xKey="label" y1="currentYear" y2="prevYear" c1="#06b6d4" c2="#f59e0b" /></ChartCard>
+            <ChartCard title={t.forecast.r44} span={2}><MiniBar data={a.pickup.slice(-60)} xKey="date" yKey="newBookings" color="#10b981" /></ChartCard>
+            <ChartCard title={t.forecast.r12}><ForecastChart data={a.occForecast.slice(-45)} /></ChartCard>
+            <ChartCard title={t.forecast.seasonalComp}><MiniBar data={a.seasonal} xKey="season" yKey="count" color="#8b5cf6" /></ChartCard>
         </div>
     </div>
 }
@@ -466,7 +466,7 @@ function ComparativeTab({ a, t }: { a: any, t: any }) {
     return <div className="space-y-6">
         <h2 className="text-lg font-bold text-cyan-400">{t.comparative.title}</h2>
         {/* YoY Table */}
-        <ChartCard title="{t.comparative.r4}">
+        <ChartCard title={t.comparative.r4}>
             <div className="overflow-auto"><table className="w-full text-sm"><thead><tr className="border-b border-slate-700"><th className="p-3 text-left text-slate-400">{t.comparative.metric}</th><th className="p-3 text-right text-slate-400">{t.comparative.thisSeason}</th><th className="p-3 text-right text-slate-400">{t.comparative.lastSeason}</th><th className="p-3 text-right text-slate-400">{t.comparative.change}</th><th className="p-3 text-right text-slate-400">%</th></tr></thead><tbody>
                 {a.yoy.map((y: any, i: number) => (
                     <tr key={i} className="border-b border-slate-700/50 hover:bg-slate-700/30">
@@ -480,10 +480,10 @@ function ComparativeTab({ a, t }: { a: any, t: any }) {
             </tbody></table></div>
         </ChartCard>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <ChartCard title="{t.comparative.paceComp}"><DualLine data={a.pace} xKey="label" y1="currentYear" y2="prevYear" /></ChartCard>
-            <ChartCard title="{t.comparative.seasonalRevComp}"><MiniBar data={a.seasonal} xKey="season" yKey="revenue" color="#f59e0b" /></ChartCard>
-            <ChartCard title="{t.comparative.channelAdrComp}"><MiniBar data={a.channelADR} xKey="channel" yKey="adr" color="#8b5cf6" /></ChartCard>
-            <ChartCard title="{t.comparative.roomTypeRevComp}"><MiniBar data={a.roomTypeOcc} xKey="roomType" yKey="revenue" color="#10b981" /></ChartCard>
+            <ChartCard title={t.comparative.paceComp}><DualLine data={a.pace} xKey="label" y1="currentYear" y2="prevYear" /></ChartCard>
+            <ChartCard title={t.comparative.seasonalRevComp}><MiniBar data={a.seasonal} xKey="season" yKey="revenue" color="#f59e0b" /></ChartCard>
+            <ChartCard title={t.comparative.channelAdrComp}><MiniBar data={a.channelADR} xKey="channel" yKey="adr" color="#8b5cf6" /></ChartCard>
+            <ChartCard title={t.comparative.roomTypeRevComp}><MiniBar data={a.roomTypeOcc} xKey="roomType" yKey="revenue" color="#10b981" /></ChartCard>
         </div>
     </div>
 }

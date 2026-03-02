@@ -127,6 +127,31 @@ export default function AdvancedBookingCalendar({
 
                 {/* Calendar Grid */}
                 <div className="p-6">
+                    {/* AI Suggestions Banner */}
+                    <div className="mb-6 p-4 bg-gradient-to-r from-blue-50/50 via-indigo-50/50 to-purple-50/50 dark:from-blue-900/10 dark:via-indigo-900/10 dark:to-purple-900/10 rounded-xl border border-blue-100/50 dark:border-blue-800/50 shadow-sm flex items-start gap-4 animate-in fade-in slide-in-from-top-4 duration-500">
+                        <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg shrink-0 mt-0.5 shadow-md">
+                            <Sparkles size={18} className="text-white" />
+                        </div>
+                        <div>
+                            <h4 className="font-bold text-slate-800 dark:text-blue-100 text-sm mb-1">
+                                Blue Concierge AI Önerisi ✨
+                            </h4>
+                            <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
+                                {days.filter(d => d.hasDiscount && d.available && new Date(d.date) >= new Date(today.toISOString().split('T')[0])).length > 0 ? (
+                                    <>
+                                        Bu ay <strong>{days.filter(d => d.hasDiscount && d.available && new Date(d.date) >= new Date(today.toISOString().split('T')[0])).length} farklı günde</strong> düşük doluluk nedeniyle özel fiyat fırsatları tespit ettim.
+                                        Takvimde <span className="inline-block px-1.5 py-0.5 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 rounded text-[10px] font-bold mx-1">İNDİRİM</span> etiketiyle işaretlediğim tarihleri seçerek daha avantajlı bir tatil planlayabilirsiniz!
+                                    </>
+                                ) : (
+                                    <>
+                                        Bu ay için özel fiyatlı gün görünmüyor ancak misafirlerimizin tatil için <strong>en çok tercih ettiği yoğun sezonlardan</strong> birini görüntülüyorsunuz.
+                                        İstediğiniz oda tipini kaçırmamak için erken rezervasyon yapmanızı tavsiye ederim!
+                                    </>
+                                )}
+                            </p>
+                        </div>
+                    </div>
+
                     <div className="grid grid-cols-7 gap-2 mb-2 text-center text-xs font-semibold text-slate-400 uppercase tracking-wider">
                         <div>Pzt</div><div>Sal</div><div>Çar</div><div>Per</div><div>Cum</div><div>Cmt</div><div>Paz</div>
                     </div>
@@ -145,7 +170,7 @@ export default function AdvancedBookingCalendar({
 
                             let bgClass = "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-blue-500 hover:shadow-md cursor-pointer"
                             if (isPast) bgClass = "bg-slate-50 dark:bg-slate-900/50 border-slate-100 dark:border-slate-800 opacity-50 cursor-not-allowed"
-                            if (isCheckIn || isCheckOut) bgClass = "bg-blue-500 border-blue-600 text-white shadow-lg scale-105 z-10 relative"
+                            else if (isCheckIn || isCheckOut) bgClass = "bg-blue-500 border-blue-600 text-white shadow-lg scale-105 z-10 relative"
                             else if (isBetween) bgClass = "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800"
                             else if (day.hasDiscount) bgClass = "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800 hover:border-emerald-500"
 

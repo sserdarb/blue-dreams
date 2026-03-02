@@ -1,22 +1,18 @@
 import { NextResponse } from 'next/server'
-import { getGeminiApiKey, GEMINI_REST_MODEL } from '@/lib/ai-config'
+import { GoogleGenAI } from '@google/genai'
+import OpenAI from "openai"
+import { getGeminiApiKey, GEMINI_MODEL, ZHIPU_API_KEY, ZHIPU_MODEL } from '@/lib/ai-config'
 
 export async function POST(request: Request) {
     try {
         const { sourceLocale, targetLocale, keys } = await request.json() as {
             sourceLocale: string
             targetLocale: string
-            keys: Record<string, string> // key -> source text
+            keys: Record<string, string>
         }
 
         if (!sourceLocale || !targetLocale || !keys || Object.keys(keys).length === 0) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
-        }
-
-        const { key: apiKey, source } = await getGeminiApiKey()
-        console.log(`[AI Translate] Using API key from ${source}`)
-        if (!apiKey) {
-            return NextResponse.json({ error: 'AI API key not configured' }, { status: 500 })
         }
 
         const LANG_NAMES: Record<string, string> = {
@@ -37,25 +33,58 @@ Rules:
 Source strings:
 ${JSON.stringify(keys, null, 2)}`
 
-        const res = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_REST_MODEL}:generateContent?key=${apiKey}`,
-            {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }] }],
-                    generationConfig: { maxOutputTokens: 4096, temperature: 0.3 }
-                })
-            }
-        )
+        // Multi-provider fallback: Gemini → Zhipu
+        const providers: { name: string; fn: () => Promise<string> }[] = []
 
-        if (!res.ok) {
-            console.error('[AI Translate] Gemini error:', res.status)
-            return NextResponse.json({ error: 'AI service error' }, { status: 502 })
+        const { key: geminiKey, source } = await getGeminiApiKey()
+        console.log(`[AI Translate] Using API key from ${source}`)
+
+        if (geminiKey) {
+            providers.push({
+                name: 'Gemini',
+                fn: async () => {
+                    const ai = new GoogleGenAI({ apiKey: geminiKey })
+                    const response = await ai.models.generateContent({
+                        model: GEMINI_MODEL,
+                        contents: prompt,
+                        config: { temperature: 0.3 }
+                    })
+                    return typeof response.text === 'string' ? response.text : ''
+                }
+            })
         }
 
-        const result = await res.json()
-        const text = result?.candidates?.[0]?.content?.parts?.[0]?.text || ''
+        if (ZHIPU_API_KEY) {
+            providers.push({
+                name: 'Zhipu',
+                fn: async () => {
+                    const openai = new OpenAI({ apiKey: ZHIPU_API_KEY, baseURL: 'https://open.bigmodel.cn/api/paas/v4/' })
+                    const r = await openai.chat.completions.create({
+                        model: ZHIPU_MODEL,
+                        messages: [{ role: 'user', content: prompt }],
+                        temperature: 0.3,
+                        max_tokens: 4096
+                    })
+                    return r.choices[0]?.message?.content || ''
+                }
+            })
+        }
+
+        let text = ''
+        for (const provider of providers) {
+            try {
+                console.log(`[AI Translate] Trying ${provider.name}`)
+                text = await provider.fn()
+                console.log(`[AI Translate] Success with ${provider.name}`)
+                break
+            } catch (err: any) {
+                console.error(`[AI Translate] ${provider.name} failed:`, err.message)
+            }
+        }
+
+        if (!text) {
+            return NextResponse.json({ error: 'Tüm AI servisleri yanıt veremedi.' }, { status: 503 })
+        }
 
         // Extract JSON from response
         const jsonMatch = text.match(/\{[\s\S]*\}/)

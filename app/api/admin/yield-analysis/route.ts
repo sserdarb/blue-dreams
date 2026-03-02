@@ -1,18 +1,13 @@
-// AI Yield Analysis — Gemini-powered pricing evaluation
+// AI Yield Analysis — Multi-provider with Gemini primary + Grok/Zhipu fallback
 import { NextResponse } from 'next/server'
 import { GoogleGenAI } from "@google/genai"
-import { getGeminiApiKey, GEMINI_MODEL } from '@/lib/ai-config'
+import OpenAI from "openai"
+import { getGeminiApiKey, GEMINI_MODEL, GROK_API_KEY, GROK_MODEL, ZHIPU_API_KEY, ZHIPU_MODEL } from '@/lib/ai-config'
 import { ScraperService } from '@/lib/services/scraper'
 
 export async function POST(request: Request) {
     try {
         const payload = await request.json()
-        const { key: apiKey, source } = await getGeminiApiKey()
-        console.log(`[Yield AI] Using API key from ${source}`)
-
-        if (!apiKey) {
-            return NextResponse.json({ error: 'API key not configured' }, { status: 500 })
-        }
 
         // Fetch External Market Data (Mock Scraper)
         const today = new Date().toISOString().split('T')[0]
@@ -67,20 +62,76 @@ export async function POST(request: Request) {
         Yanıtını profesyonel, veri odaklı ve maddeler halinde ver.
         `
 
-        const ai = new GoogleGenAI({ apiKey })
-        const response = await ai.models.generateContent({
-            model: GEMINI_MODEL,
-            contents: [{ role: 'user', parts: [{ text: prompt }] }],
-            config: {
-                temperature: 0.4, // More analytical/precise
-            }
-        })
+        // Multi-provider fallback: Gemini → Grok → Zhipu
+        const providers: { name: string; fn: () => Promise<string> }[] = []
 
-        const text = response.text ?? ''
+        const { key: geminiKey, source } = await getGeminiApiKey()
+        console.log(`[Yield AI] Using API key from ${source}`)
+
+        if (geminiKey) {
+            providers.push({
+                name: 'Gemini',
+                fn: async () => {
+                    const ai = new GoogleGenAI({ apiKey: geminiKey })
+                    const response = await ai.models.generateContent({
+                        model: GEMINI_MODEL,
+                        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+                        config: { temperature: 0.4 }
+                    })
+                    return typeof response.text === 'string' ? response.text : (response.text ?? '')
+                }
+            })
+        }
+
+        if (GROK_API_KEY) {
+            providers.push({
+                name: 'Grok',
+                fn: async () => {
+                    const openai = new OpenAI({ apiKey: GROK_API_KEY, baseURL: 'https://api.x.ai/v1' })
+                    const r = await openai.chat.completions.create({
+                        model: GROK_MODEL,
+                        messages: [{ role: 'user', content: prompt }],
+                        temperature: 0.4,
+                    })
+                    return r.choices[0]?.message?.content ?? ''
+                }
+            })
+        }
+
+        if (ZHIPU_API_KEY) {
+            providers.push({
+                name: 'Zhipu',
+                fn: async () => {
+                    const openai = new OpenAI({ apiKey: ZHIPU_API_KEY, baseURL: 'https://open.bigmodel.cn/api/paas/v4/' })
+                    const r = await openai.chat.completions.create({
+                        model: ZHIPU_MODEL,
+                        messages: [{ role: 'user', content: prompt }],
+                        temperature: 0.4,
+                    })
+                    return r.choices[0]?.message?.content ?? ''
+                }
+            })
+        }
+
+        let text = ''
+        for (const provider of providers) {
+            try {
+                console.log(`[Yield AI] Trying ${provider.name}`)
+                text = await provider.fn()
+                console.log(`[Yield AI] Success with ${provider.name}`)
+                break
+            } catch (err: any) {
+                console.error(`[Yield AI] ${provider.name} failed:`, err.message)
+            }
+        }
+
+        if (!text) {
+            text = 'AI analizi şu anda yapılamıyor. Tüm AI servisleri yanıt veremedi.'
+        }
 
         return NextResponse.json({
             analysis: text,
-            marketData // Send back raw market data for UI charts if needed
+            marketData
         })
 
     } catch (err: any) {

@@ -48,16 +48,42 @@ export default function ElektraSettingsForm() {
         if (!confirm(`${selectedYear} yılına ait tüm veriler senkronize edilecek. Bu işlem uzun sürebilir. Onaylıyor musunuz?`)) return
         setSyncingYear(true)
         try {
-            await fetch('/api/admin/settings/elektra-cache', {
+            const res = await fetch('/api/admin/settings/elektra-cache', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'refresh_year', year: selectedYear })
             })
+            const data = await res.json()
             await fetchStatus()
-            alert('Geçmiş yıl senkronizasyonu tamamlandı!')
+            alert(`${selectedYear} yılı senkronizasyonu tamamlandı! Veritabanına ${data.count || 0} kayıt başarıyla aktarıldı.`)
         } catch (error) {
             console.error('Failed to sync year', error)
             alert('Senkronizasyon sırasında hata oluştu.')
+        } finally {
+            setSyncingYear(false)
+        }
+    }
+
+    const handleSyncAllYears = async () => {
+        const currentYear = new Date().getFullYear();
+        if (!confirm(`2020 ile ${currentYear - 1} arasındaki tüm geçmiş yılların verileri sırayla senkronize edilecek. Bu işlem çok uzun sürebilir. Onaylıyor musunuz?`)) return
+        setSyncingYear(true)
+        try {
+            let totalCount = 0;
+            for (let y = 2020; y < currentYear; y++) {
+                const res = await fetch('/api/admin/settings/elektra-cache', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'refresh_year', year: y })
+                })
+                const data = await res.json()
+                if (data.count) totalCount += data.count;
+            }
+            await fetchStatus()
+            alert(`Tüm geçmiş yıl senkronizasyonları tamamlandı! Veritabanına toplam ${totalCount} kayıt başarıyla aktarıldı.`)
+        } catch (error) {
+            console.error('Failed to sync all years', error)
+            alert('Senkronizasyon sırasında hata oluştu. Veritabanına eksik kayıt aktarılmış olabilir.')
         } finally {
             setSyncingYear(false)
         }
@@ -182,15 +208,25 @@ export default function ElektraSettingsForm() {
                             })}
                         </select>
                     </div>
-                    <button
-                        type="button"
-                        onClick={handleSyncYear}
-                        disabled={syncingYear}
-                        className="bg-amber-600 hover:bg-amber-700 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 whitespace-nowrap disabled:opacity-50 w-full sm:w-auto"
-                    >
-                        <RefreshCcw size={16} className={syncingYear ? 'animate-spin' : ''} />
-                        {syncingYear ? 'Arşivleniyor...' : 'Yılı Arşivle'}
-                    </button>
+                    <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+                        <button
+                            type="button"
+                            onClick={handleSyncYear}
+                            disabled={syncingYear}
+                            className="bg-amber-600 hover:bg-amber-700 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 whitespace-nowrap disabled:opacity-50 flex-1 sm:flex-none"
+                        >
+                            <RefreshCcw size={16} className={syncingYear ? 'animate-spin' : ''} />
+                            {syncingYear ? 'Arşivleniyor...' : 'Seçili Yılı Arşivle'}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleSyncAllYears}
+                            disabled={syncingYear}
+                            className="bg-slate-800 hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 whitespace-nowrap disabled:opacity-50 flex-1 sm:flex-none"
+                        >
+                            {syncingYear ? 'İşleniyor...' : 'Tüm Geçmiş Yılları Al (2020+)'}
+                        </button>
+                    </div>
                 </div>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-3">
                     Geçmiş yıllara ait veriler kalıcı olarak veritabanına kaydedilir ve raporlarda kullanılmak üzere saklanır. Bu işlem Elektra PMS API'sine yoğun istek atabilir, lütfen tamamlanmasını bekleyin.

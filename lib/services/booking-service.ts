@@ -49,13 +49,16 @@ export class BookingService {
         checkOut: string,
         adults: number = 2,
         children: number = 0,
-        currency: string = 'TRY'
+        currency: string = 'TRY',
+        agency?: string
     ): Promise<RoomTypeAvailability[]> {
         try {
             // Fetch raw availability from Elektra
             const rawAvailability = await ElektraService.getAvailability(
                 new Date(checkIn),
-                new Date(checkOut)
+                new Date(checkOut),
+                currency,
+                agency
             )
 
             if (!rawAvailability || rawAvailability.length === 0) {

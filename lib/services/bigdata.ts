@@ -102,8 +102,8 @@ export const BigDataService = {
         // Current season reservations + previous year for comparison
         const [currentReservations, prevYearReservations, availability, occupancy, rates] = await Promise.all([
             ElektraService.getAllSeasonReservations().catch(() => [] as Reservation[]),
-            ElektraService.getReservationsByBookingDate(
-                new Date(year - 2, 10, 1), new Date(year - 1, 11, 31)
+            ElektraService.getReservationsByBookingDateForYear(
+                new Date(year - 2, 10, 1), new Date(year - 1, 11, 31), year - 1
             ).catch(() => [] as Reservation[]),
             ElektraService.getAvailability(
                 new Date(year, 0, 1), new Date(year, 11, 31)

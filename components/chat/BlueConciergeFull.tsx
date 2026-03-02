@@ -373,9 +373,9 @@ const ContactWidget = () => (
 // ─── Dining Widget ─────────────────────────────────────────
 const DINING_DATA = [
     { id: 'main', title: 'Ana Restoran', type: 'Açık Büfe', desc: 'Uluslararası mutfak, kahvaltı-öğle-akşam açık büfe', image: 'https://bluedreamsresort.com/wp-content/uploads/2025/07/MUR2661.jpg', hours: '07:00-22:00' },
-    { id: 'ala', title: 'A La Carte', type: 'Rezervasyonlu', desc: 'Özel menü seçenekleri ile à la carte deneyim', image: 'https://bluedreamsresort.com/wp-content/uploads/2025/07/MER00210.jpg', hours: '19:00-22:00' },
+    { id: 'ala', title: 'A La Carte', type: 'Rezervasyonlu', desc: 'Özel menü seçenekleri ile à la carte deneyim', image: 'https://bluedreamsresort.com/wp-content/uploads/2025/07/MUR2560.jpg', hours: '19:00-22:00' },
     { id: 'beach', title: 'Beach Bar & Restoran', type: 'Snack & İçecek', desc: 'Havuz ve deniz başında hafif atıştırmalıklar', image: 'https://bluedreamsresort.com/wp-content/uploads/2025/07/DJI_0233.jpg', hours: '10:00-18:00' },
-    { id: 'lobby', title: 'Lobby Bar', type: 'Bar', desc: 'Kokteyl ve canlı müzik eşliğinde keyif', image: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/ana-restaurant.jpg', hours: '16:00-01:00' },
+    { id: 'lobby', title: 'Lobby Bar', type: 'Bar', desc: 'Kokteyl ve canlı müzik eşliğinde keyif', image: 'https://bluedreamsresort.com/wp-content/uploads/2025/07/MUR2541.jpg', hours: '16:00-01:00' },
 ]
 
 const DiningWidget = ({ onInteract, locale = 'tr' }: { onInteract: (text: string) => void; locale?: string }) => (
@@ -1017,8 +1017,9 @@ export function BlueConciergeFull({ isOpen, onClose, locale = 'tr' }: BlueConcie
             setMessages(prev => [...prev, {
                 id: Date.now().toString(),
                 role: 'model',
-                text: 'Üzgünüm, şu anda bağlantı sorunu yaşıyorum. Lütfen daha sonra tekrar deneyin.',
-                data: { _topic: 'default' }
+                text: 'AI servisi şu anda yoğun. Lütfen daha sonra tekrar deneyiniz.',
+                data: { _topic: 'default' },
+                isFunctionCall: false
             }])
         } finally {
             setIsLoading(false)

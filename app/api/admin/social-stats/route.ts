@@ -13,10 +13,10 @@ export async function GET(request: Request) {
         const { searchParams } = new URL(request.url)
         const action = searchParams.get('action') || 'all'
 
-        // Retrieve stored tokens for Meta
-        const FB_PAGE_ID = process.env.META_FB_PAGE_ID
-        const IG_ACC_ID = process.env.META_IG_ACCOUNT_ID
-        const GRAPH_TOKEN = process.env.META_GRAPH_ACCESS_TOKEN
+        // Retrieve stored tokens for Meta (match actual .env key names)
+        const FB_PAGE_ID = process.env.FB_PAGE_ID
+        const IG_ACC_ID = process.env.IG_ACCOUNT_ID
+        const GRAPH_TOKEN = process.env.META_ACCESS_TOKEN
 
         let responsePayload: any = {}
 
