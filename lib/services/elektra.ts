@@ -378,10 +378,9 @@ async function fetchReservations(fromDateStr: string, toDateStr: string, status:
     const jwt = await getJwt()
     const countryMap = await fetchCountries()
 
-    // Date format: yyyy-MM-dd HH:mm:ss (Elektra requires full time)
-    // If input is just yyyy-MM-dd, append the time
-    const fromDate = fromDateStr.length === 10 ? `${fromDateStr} 00:00:00` : fromDateStr
-    const toDate = toDateStr.length === 10 ? `${toDateStr} 23:59:59` : toDateStr
+    // Date format for Elektra API should just be YYYY-MM-DD (time components and URL-encoded spaces cause HTTP 400)
+    const fromDate = fromDateStr.slice(0, 10)
+    const toDate = toDateStr.slice(0, 10)
 
     const url = `${API_BASE}/hotel/${HOTEL_ID}/reservation-list?from-check-in=${encodeURIComponent(fromDate)}&to-check-in=${encodeURIComponent(toDate)}&reservation-status=${encodeURIComponent(status)}`
 
