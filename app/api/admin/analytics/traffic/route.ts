@@ -20,7 +20,13 @@ function getClient(clientEmail: string, privateKey: string) {
 export async function GET(request: Request) {
     try {
         const db = prisma as any
-        const config = await db.analyticsConfig.findFirst()
+        let config: any = null
+        try {
+            config = await db.analyticsConfig?.findFirst?.()
+        } catch (configErr: any) {
+            // AnalyticsConfig table may not exist yet – fall through safely
+            console.warn('[GA4 API] AnalyticsConfig lookup failed (table may not exist):', configErr?.message)
+        }
 
         let propertyId = config?.gaPropertyId || process.env.GA_PROPERTY_ID
         let clientEmail = process.env.GA_CLIENT_EMAIL

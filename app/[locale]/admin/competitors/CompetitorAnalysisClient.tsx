@@ -3,12 +3,12 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import {
     Crosshair, Sparkles, Loader2, ArrowUpRight, ArrowDownRight,
-    Star, RefreshCw, BarChart2, TrendingUp, Presentation, Clock, Building2
+    Star, RefreshCw, BarChart2, TrendingUp, Presentation, Clock, Building2, X
 } from 'lucide-react'
 import { AdminTranslations } from '@/lib/admin-translations'
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-    LineChart, Line
+    LineChart, Line, ScatterChart, Scatter, ZAxis
 } from 'recharts'
 
 interface Props {
@@ -44,7 +44,16 @@ export default function CompetitorAnalysisClient({ locale, t }: Props) {
     const [activeTab, setActiveTab] = useState<'overview' | 'strategies' | 'reviews' | 'pricing' | 'brand'>('overview')
     const [trends, setTrends] = useState<{ pricingTrends: any[], reviewsTrends: any[], brandInterestTrends: any[] } | null>(null)
     const [market, setMarket] = useState<'domestic' | 'international'>('domestic')
-    const [selectedCompetitors, setSelectedCompetitors] = useState<string[]>(['Blue Dreams Resort', 'Duja Bodrum', 'La Blanche Resort', 'Samara Hotel Bodrum', 'Kefaluka Resort'])
+    const [selectedCompetitors, setSelectedCompetitors] = useState<string[]>(['Blue Dreams Resort', 'Duja Bodrum'])
+    const [dbCompetitors, setDbCompetitors] = useState<{ id: string, name: string }[]>([])
+    const [newCompName, setNewCompName] = useState('')
+
+    // Dates for booking sync
+    const defaultCheckIn = new Date().toISOString().split('T')[0]
+    const defaultCheckOut = new Date(Date.now() + 86400000).toISOString().split('T')[0]
+    const [checkIn, setCheckIn] = useState(defaultCheckIn)
+    const [checkOut, setCheckOut] = useState(defaultCheckOut)
+
     const [apifyLoading, setApifyLoading] = useState(false)
     const [apifyData, setApifyData] = useState<any[] | null>(null)
     const [apifySyncTime, setApifySyncTime] = useState<string | null>(null)
@@ -58,6 +67,16 @@ export default function CompetitorAnalysisClient({ locale, t }: Props) {
                 setCompetitors(data.competitors || [])
                 setAiInsights(data.analysis || null)
                 setLastSync(new Date().toLocaleString('tr-TR'))
+            }
+
+            // Fetch dynamic competitors from DB
+            const dbRes = await fetch('/api/admin/competitors/list')
+            if (dbRes.ok) {
+                const list = await dbRes.json()
+                if (Array.isArray(list) && list.length > 0) {
+                    setDbCompetitors(list)
+                    setSelectedCompetitors(list.map(c => c.name))
+                }
             }
 
             // Also fetch trends
@@ -80,7 +99,12 @@ export default function CompetitorAnalysisClient({ locale, t }: Props) {
             const res = await fetch('/api/admin/competitors/apify', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ currency: market === 'domestic' ? 'TRY' : 'EUR' })
+                body: JSON.stringify({
+                    currency: market === 'domestic' ? 'TRY' : 'EUR',
+                    checkIn,
+                    checkOut,
+                    competitors: selectedCompetitors
+                })
             });
             if (res.ok) {
                 const data = await res.json();
@@ -117,6 +141,23 @@ export default function CompetitorAnalysisClient({ locale, t }: Props) {
         return base;
     }, [trends, apifyData]);
 
+    // Compute scatter chart data (Price vs Rating)
+    const scatterData = React.useMemo(() => {
+        return filteredCompetitors.map(comp => {
+            let price = comp.priceEstimation || 0;
+            if (apifyData) {
+                const live = apifyData.find(a => a.name === comp.name);
+                if (live && live.livePrice > 0) price = live.livePrice;
+            }
+            return {
+                name: comp.name,
+                rating: comp.rating,
+                price: price,
+                reviews: comp.reviews
+            }
+        }).filter(d => d.price > 0);
+    }, [filteredCompetitors, apifyData]);
+
     return (
         <div className="space-y-6">
             {/* Header */}
@@ -134,22 +175,29 @@ export default function CompetitorAnalysisClient({ locale, t }: Props) {
                         </div>
                     </div>
                     <div className="flex gap-2">
-                        <button
-                            onClick={fetchApify}
-                            disabled={apifyLoading || loading}
-                            className="flex items-center gap-2 bg-indigo-100 hover:bg-indigo-200 dark:bg-indigo-900/30 dark:hover:bg-indigo-800 text-indigo-700 dark:text-indigo-300 font-medium px-4 py-2 rounded-xl transition-colors disabled:opacity-50"
-                        >
-                            {apifyLoading ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
-                            Apify (Booking) Canlı Fiyatlar
-                        </button>
-                        <button
-                            onClick={() => fetchAnalysisData(true)}
-                            disabled={loading || apifyLoading}
-                            className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-white font-medium px-4 py-2 rounded-xl transition-colors disabled:opacity-50"
-                        >
-                            {loading ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
-                            Tarihsel Verileri Senkronize Et
-                        </button>
+                        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                            <div className="flex gap-2 items-center">
+                                <input type="date" value={checkIn} onChange={e => setCheckIn(e.target.value)} className="border dark:border-slate-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-900" />
+                                <span className="text-muted-foreground">-</span>
+                                <input type="date" value={checkOut} onChange={e => setCheckOut(e.target.value)} className="border dark:border-slate-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-900" />
+                            </div>
+                            <button
+                                onClick={fetchApify}
+                                disabled={apifyLoading || loading}
+                                className="flex items-center gap-2 bg-indigo-100 hover:bg-indigo-200 dark:bg-indigo-900/30 dark:hover:bg-indigo-800 text-indigo-700 dark:text-indigo-300 font-medium px-4 py-2 rounded-xl transition-colors disabled:opacity-50"
+                            >
+                                {apifyLoading ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
+                                Apify Canlı Sorgu
+                            </button>
+                            <button
+                                onClick={() => fetchAnalysisData(true)}
+                                disabled={loading || apifyLoading}
+                                className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-white font-medium px-4 py-2 rounded-xl transition-colors disabled:opacity-50"
+                            >
+                                {loading ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
+                                Tarihsel Verileri Senkronize Et
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -162,7 +210,48 @@ export default function CompetitorAnalysisClient({ locale, t }: Props) {
                 <>
                     {/* Filters and Tabs */}
                     <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between pb-2">
-                        <div className="flex gap-2 overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
+                        <div className="flex flex-col gap-2">
+                            {/* Dynamic Competitor Management */}
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="text"
+                                    value={newCompName}
+                                    onChange={e => setNewCompName(e.target.value)}
+                                    placeholder="Yeni otel/rakip ekle..."
+                                    className="border dark:border-slate-700 rounded-lg px-3 py-1.5 text-sm w-48 bg-white dark:bg-slate-900"
+                                />
+                                <button
+                                    onClick={async () => {
+                                        if (!newCompName) return;
+                                        await fetch('/api/admin/competitors/list', { method: 'POST', body: JSON.stringify({ name: newCompName }) });
+                                        setNewCompName('');
+                                        fetchAnalysisData(true);
+                                    }}
+                                    className="bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 px-3 py-1.5 rounded-lg text-sm font-medium hover:opacity-90"
+                                >
+                                    Ekle
+                                </button>
+                            </div>
+
+                            <div className="flex gap-2 flex-wrap mt-2">
+                                {dbCompetitors.map(c => (
+                                    <div key={c.id} className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full text-xs font-medium">
+                                        {c.name}
+                                        <button
+                                            onClick={async () => {
+                                                await fetch(`/api/admin/competitors/list?id=${c.id}`, { method: 'DELETE' });
+                                                fetchAnalysisData(true);
+                                            }}
+                                            className="text-red-500 hover:text-red-700 ml-1 bg-white dark:bg-slate-900 rounded-full p-0.5"
+                                        >
+                                            <X size={12} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="flex gap-2 overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0 mt-4 md:mt-0">
                             {(['overview', 'strategies', 'reviews', 'pricing', 'brand'] as const).map(tab => (
                                 <button key={tab} onClick={() => setActiveTab(tab)}
                                     className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${activeTab === tab ? 'bg-cyan-600 text-white shadow-lg shadow-cyan-600/20' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 border border-slate-200 dark:border-slate-700'}`}>
@@ -392,27 +481,54 @@ export default function CompetitorAnalysisClient({ locale, t }: Props) {
                     )}
 
                     {/* Pricing Trend specific tab */}
-                    {activeTab === 'pricing' && trends && (
-                        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm min-h-[400px]">
-                            <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
-                                <TrendingUp size={18} className="text-emerald-500" />
-                                Gecelik Fiyat Trendi ({market === 'domestic' ? 'İç Pazar - TRY' : 'Dış Pazar - EUR'})
-                            </h3>
-                            <div className="h-80">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <LineChart data={pricingChartData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
-                                        <CartesianGrid strokeDasharray="3 3" vertical={false} strokeOpacity={0.2} />
-                                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11 }} />
-                                        <YAxis axisLine={false} tickLine={false} />
-                                        <Tooltip contentStyle={{ borderRadius: '12px', border: 'none' }} />
-                                        <Legend />
-                                        {selectedCompetitors.includes('Blue Dreams Resort') && <Line type="monotone" dataKey="Blue Dreams" stroke="#06b6d4" strokeWidth={3} dot={{ r: 4 }} />}
-                                        {selectedCompetitors.includes('Duja Bodrum') && <Line type="monotone" dataKey="Duja Bodrum" stroke="#8b5cf6" strokeWidth={2} dot={{ r: 4 }} />}
-                                        {selectedCompetitors.includes('La Blanche Resort') && <Line type="monotone" dataKey="La Blanche" stroke="#f59e0b" strokeWidth={2} dot={{ r: 4 }} />}
-                                        {selectedCompetitors.includes('Kefaluka Resort') && <Line type="monotone" dataKey="Kefaluka" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} />}
-                                        {selectedCompetitors.includes('Samara Hotel Bodrum') && <Line type="monotone" dataKey="Samara Bodrum" stroke="#ef4444" strokeWidth={2} dot={{ r: 4 }} />}
-                                    </LineChart>
-                                </ResponsiveContainer>
+                    {activeTab === 'pricing' && (
+                        <div className="space-y-6">
+                            {trends && (
+                                <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm min-h-[400px]">
+                                    <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+                                        <TrendingUp size={18} className="text-emerald-500" />
+                                        Gecelik Fiyat Trendi ({market === 'domestic' ? 'İç Pazar - TRY' : 'Dış Pazar - EUR'})
+                                    </h3>
+                                    <div className="h-80">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <LineChart data={pricingChartData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+                                                <CartesianGrid strokeDasharray="3 3" vertical={false} strokeOpacity={0.2} />
+                                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11 }} />
+                                                <YAxis axisLine={false} tickLine={false} />
+                                                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none' }} />
+                                                <Legend />
+                                                {selectedCompetitors.includes('Blue Dreams Resort') && <Line type="monotone" dataKey="Blue Dreams" stroke="#06b6d4" strokeWidth={3} dot={{ r: 4 }} />}
+                                                {selectedCompetitors.includes('Duja Bodrum') && <Line type="monotone" dataKey="Duja Bodrum" stroke="#8b5cf6" strokeWidth={2} dot={{ r: 4 }} />}
+                                                {selectedCompetitors.includes('La Blanche Resort') && <Line type="monotone" dataKey="La Blanche" stroke="#f59e0b" strokeWidth={2} dot={{ r: 4 }} />}
+                                                {selectedCompetitors.includes('Kefaluka Resort') && <Line type="monotone" dataKey="Kefaluka" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} />}
+                                                {selectedCompetitors.includes('Samara Hotel Bodrum') && <Line type="monotone" dataKey="Samara Bodrum" stroke="#ef4444" strokeWidth={2} dot={{ r: 4 }} />}
+                                            </LineChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm min-h-[400px]">
+                                <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+                                    <Crosshair size={18} className="text-orange-500" />
+                                    Fiyat / Değer Analizi (Scatter Map)
+                                </h3>
+                                <div className="h-80">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                                            <CartesianGrid strokeDasharray="3 3" vertical={false} strokeOpacity={0.2} />
+                                            <XAxis type="number" dataKey="price" name="Fiyat" unit={market === 'domestic' ? ' ₺' : ' €'} stroke="#8884d8" domain={['auto', 'auto']} tick={{ fontSize: 11 }} />
+                                            <YAxis type="number" dataKey="rating" name="Puan" stroke="#8884d8" domain={['dataMin - 0.5', 5]} tick={{ fontSize: 11 }} />
+                                            <ZAxis type="number" dataKey="reviews" range={[100, 1000]} name="Yorum Sayısı" />
+                                            <Tooltip cursor={{ strokeDasharray: '3 3' }} contentStyle={{ borderRadius: '12px', border: 'none' }} />
+                                            <Legend />
+                                            {scatterData.map((entry, index) => (
+                                                <Scatter key={`scatter-${index}`} name={entry.name} data={[entry]} fill={['#06b6d4', '#8b5cf6', '#f59e0b', '#ef4444', '#3b82f6', '#10b981', '#f43f5e'][index % 7]} />
+                                            ))}
+                                        </ScatterChart>
+                                    </ResponsiveContainer>
+                                </div>
+                                <p className="text-xs text-muted-foreground mt-4 text-center">Dikkat: Sol üst köşedekiler (Ucuz + Yüksek Puan) en tehlikeli fiyat/performans rakiplerini gösterir.</p>
                             </div>
                         </div>
                     )}

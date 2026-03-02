@@ -11,34 +11,39 @@ export default async function RoomsPage({ params }: { params: Promise<{ locale: 
     const { locale } = await params
     const page = await getPageBySlug('odalar', locale)
     const hasWidgets = page && page.widgets && page.widgets.length > 0
+    const hasRoomListWidget = hasWidgets && page.widgets.some((w: any) => w.type === 'room-list')
 
     // CMS widgets support: if admin created widgets for this page, render them.
-    // Otherwise fallback to static layout
+    // Always show fallback room cards if there is no 'room-list' widget among the CMS widgets.
     return (
         <div>
-            {hasWidgets ? (
+            {hasWidgets && (
                 <WidgetRenderer widgets={page.widgets.map(w => ({ id: w.id, type: w.type, data: w.data }))} />
-            ) : (
+            )}
+
+            {!hasRoomListWidget && (
                 <>
-                    {/* Fallback Hero Section */}
-                    <section className="relative h-[60vh] min-h-[400px] flex items-center justify-center overflow-hidden">
-                        <div
-                            className="absolute inset-0 bg-cover bg-center"
-                            style={{ backgroundImage: `url(${ROOM_TYPES[1]?.heroImage || ROOM_TYPES[0]?.heroImage})` }}
-                        />
-                        <div className="absolute inset-0 bg-black/50" />
-                        <div className="relative z-10 text-center text-white px-6">
-                            <p className="text-brand text-xs font-bold tracking-[0.3em] uppercase mb-4 animate-fadeIn">
-                                Blue Dreams Resort & Spa
-                            </p>
-                            <h1 className="text-5xl md:text-6xl font-serif mb-4">
-                                Odalar & Suitler
-                            </h1>
-                            <p className="text-lg text-white/80 max-w-2xl mx-auto">
-                                Bodrum&apos;un eşsiz manzarası eşliğinde, konfor ve lüksün buluştuğu oda seçeneklerimizi keşfedin.
-                            </p>
-                        </div>
-                    </section>
+                    {/* Fallback Hero Section - only if no CMS widgets at all */}
+                    {!hasWidgets && (
+                        <section className="relative h-[60vh] min-h-[400px] flex items-center justify-center overflow-hidden">
+                            <div
+                                className="absolute inset-0 bg-cover bg-center"
+                                style={{ backgroundImage: `url(${ROOM_TYPES[1]?.heroImage || ROOM_TYPES[0]?.heroImage})` }}
+                            />
+                            <div className="absolute inset-0 bg-black/50" />
+                            <div className="relative z-10 text-center text-white px-6">
+                                <p className="text-brand text-xs font-bold tracking-[0.3em] uppercase mb-4 animate-fadeIn">
+                                    Blue Dreams Resort & Spa
+                                </p>
+                                <h1 className="text-5xl md:text-6xl font-serif mb-4">
+                                    Odalar & Suitler
+                                </h1>
+                                <p className="text-lg text-white/80 max-w-2xl mx-auto">
+                                    Bodrum&apos;un eşsiz manzarası eşliğinde, konfor ve lüksün buluştuğu oda seçeneklerimizi keşfedin.
+                                </p>
+                            </div>
+                        </section>
+                    )}
 
                     {/* Fallback Room Cards */}
                     <section className="py-20 bg-white">

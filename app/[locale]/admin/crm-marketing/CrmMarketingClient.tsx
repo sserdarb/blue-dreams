@@ -27,12 +27,13 @@ interface EmailTpl { id: string; name: string; subject: string; htmlContent: str
 
 import GoogleAdsTab from './GoogleAdsTab'
 
-type Tab = 'guests' | 'segments' | 'campaigns' | 'emailTemplates' | 'inbox' | 'ads'
+type Tab = 'overview' | 'guests' | 'segments' | 'campaigns' | 'emailTemplates' | 'inbox' | 'ads'
 
 export default function CrmClient() {
-    const [tab, setTab] = useState<Tab>('guests')
+    const [tab, setTab] = useState<Tab>('overview')
 
     const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
+        { key: 'overview', label: 'Dashboard', icon: <BarChart3 size={16} /> },
         { key: 'guests', label: 'Misafir Veritabanı', icon: <Users size={16} /> },
         { key: 'segments', label: 'Segmentler', icon: <Target size={16} /> },
         { key: 'campaigns', label: 'Kampanyalar', icon: <Send size={16} /> },
@@ -62,12 +63,127 @@ export default function CrmClient() {
             </div>
 
             {/* Tab Content */}
+            {tab === 'overview' && <OverviewTab />}
             {tab === 'guests' && <GuestsTab />}
             {tab === 'segments' && <SegmentsTab />}
             {tab === 'campaigns' && <CampaignsTab />}
             {tab === 'emailTemplates' && <EmailTemplatesTab />}
             {tab === 'inbox' && <UnifiedInboxTab />}
             {tab === 'ads' && <GoogleAdsTab />}
+        </div>
+    )
+}
+
+// ═══════════════════════════════════════════════════════
+// ██ OVERVIEW / DASHBOARD TAB
+// ═══════════════════════════════════════════════════════
+function OverviewTab() {
+    const [data, setData] = useState<any>(null)
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        fetch('/api/admin/crm/overview')
+            .then(res => res.json())
+            .then(d => {
+                setData(d)
+                setLoading(false)
+            })
+            .catch(() => setLoading(false))
+    }, [])
+
+    if (loading) return <div className="p-12 flex justify-center items-center text-muted-foreground"><Loader2 className="animate-spin mr-2" /> Analiz Hesaplanıyor...</div>
+    if (!data) return <div className="p-12 text-center text-red-500">Veri alınamadı.</div>
+
+    return (
+        <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card className="p-6 bg-gradient-to-br from-blue-500/10 to-transparent border-blue-500/20">
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <p className="text-sm font-medium text-muted-foreground">Toplam Misafir</p>
+                            <h3 className="text-3xl font-bold mt-2">{data.stats.totalGuests.toLocaleString()}</h3>
+                        </div>
+                        <div className="p-3 bg-blue-500/20 rounded-lg text-blue-500"><Users size={24} /></div>
+                    </div>
+                </Card>
+                <Card className="p-6 bg-gradient-to-br from-emerald-500/10 to-transparent border-emerald-500/20">
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <p className="text-sm font-medium text-muted-foreground">LTV (Ort. Harcama)</p>
+                            <h3 className="text-3xl font-bold mt-2">€{Number(data.stats.avgRevenuePerGuest).toLocaleString('tr-TR')}</h3>
+                        </div>
+                        <div className="p-3 bg-emerald-500/20 rounded-lg text-emerald-500"><TrendingUp size={24} /></div>
+                    </div>
+                </Card>
+                <Card className="p-6 bg-gradient-to-br from-purple-500/10 to-transparent border-purple-500/20">
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <p className="text-sm font-medium text-muted-foreground">Toplam Konaklama</p>
+                            <h3 className="text-3xl font-bold mt-2">{data.stats.totalStays.toLocaleString()}</h3>
+                        </div>
+                        <div className="p-3 bg-purple-500/20 rounded-lg text-purple-500"><Globe size={24} /></div>
+                    </div>
+                </Card>
+                <Card className="p-6 bg-gradient-to-br from-orange-500/10 to-transparent border-orange-500/20">
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <p className="text-sm font-medium text-muted-foreground">Sadık Misafir (3+)</p>
+                            <h3 className="text-3xl font-bold mt-2">{data.segments.loyalGuests.toLocaleString()}</h3>
+                        </div>
+                        <div className="p-3 bg-orange-500/20 rounded-lg text-orange-500"><Target size={24} /></div>
+                    </div>
+                </Card>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <Card className="p-6 lg:col-span-2">
+                    <h3 className="text-lg font-bold mb-4 flex items-center gap-2"><BarChart3 size={20} className="text-blue-500" /> Kampanya ROI & Dönüşüm Hunisi</h3>
+                    <div className="space-y-4">
+                        {data.funnel.map((item: any, i: number) => {
+                            const maxVal = data.funnel[0].count || 1;
+                            const percentage = Math.round((item.count / maxVal) * 100);
+                            return (
+                                <div key={i} className="relative">
+                                    <div className="flex justify-between text-sm mb-1 font-medium">
+                                        <span>{item.step}</span>
+                                        <span>{item.count.toLocaleString()} ({percentage}%)</span>
+                                    </div>
+                                    <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3">
+                                        <div className={`h-3 rounded-full ${i === 3 ? 'bg-emerald-500' : 'bg-blue-500'}`} style={{ width: `${percentage}%` }}></div>
+                                    </div>
+                                </div>
+                            )
+                        })}
+                    </div>
+                </Card>
+
+                <Card className="p-6">
+                    <h3 className="text-lg font-bold mb-4 flex items-center gap-2"><Layers size={20} className="text-purple-500" /> Tahmini RFM Segmentleri</h3>
+                    <div className="space-y-4">
+                        <div className="p-4 rounded-xl border dark:border-slate-800 flex items-center justify-between">
+                            <div>
+                                <p className="font-semibold text-emerald-600 dark:text-emerald-400">Şampiyonlar</p>
+                                <p className="text-xs text-muted-foreground">3+ Kez gelen + Yüksek harcama</p>
+                            </div>
+                            <span className="text-lg font-bold">{data.segments.loyalGuests}</span>
+                        </div>
+                        <div className="p-4 rounded-xl border dark:border-slate-800 flex items-center justify-between">
+                            <div>
+                                <p className="font-semibold text-orange-600 dark:text-orange-400">Uyuyan Devler</p>
+                                <p className="text-xs text-muted-foreground">Eski gelenler (Churn Riski)</p>
+                            </div>
+                            <span className="text-lg font-bold">{data.segments.churnRisk}</span>
+                        </div>
+                        <div className="p-4 rounded-xl border dark:border-slate-800 flex items-center justify-between">
+                            <div>
+                                <p className="font-semibold text-blue-600 dark:text-blue-400">Yüksek Harcayanlar</p>
+                                <p className="text-xs text-muted-foreground">€5K+ toplam gelir</p>
+                            </div>
+                            <span className="text-lg font-bold">{data.segments.highSpenders}</span>
+                        </div>
+                    </div>
+                </Card>
+            </div>
         </div>
     )
 }
