@@ -4,7 +4,9 @@ import OpenAI from "openai"
 import { prisma } from '@/lib/prisma'
 import { fetchSheetData, extractSheetId } from '@/lib/services/google-sheets'
 import { getGeminiApiKey, GEMINI_MODEL, GEMINI_15_MODEL, GROK_API_KEY, GROK_MODEL, ZHIPU_API_KEY, ZHIPU_MODEL } from '@/lib/ai-config'
+import { headers } from 'next/headers'
 import { ElektraService } from '@/lib/services/elektra'
+import { BookingService } from '@/lib/services/booking-service'
 import { FACTSHEET_TR } from '@/lib/factsheet'
 import { fetchBodrumAttractions, fetchBodrumEvents } from '@/lib/services/serpapi'
 import fs from 'fs'
@@ -397,30 +399,21 @@ export async function POST(request: Request) {
                 }
 
                 try {
-                    const availability = await ElektraService.getAvailability(new Date(checkIn), new Date(checkOut), 'EUR')
+                    const currency = locale === 'tr' ? 'TRY' : 'EUR'
+                    const agency = locale === 'tr' ? 'hotelweb-tl' : 'hotelweb'
 
-                    const byRoom = new Map<string, { prices: number[]; basePrices: number[]; available: number; stopsell: boolean }>()
-                    for (const item of availability) {
-                        if (!byRoom.has(item.roomType)) {
-                            byRoom.set(item.roomType, { prices: [], basePrices: [], available: 0, stopsell: false })
-                        }
-                        const r = byRoom.get(item.roomType)!
-                        if (item.discountedPrice || item.basePrice) {
-                            r.prices.push(item.discountedPrice || item.basePrice || 0)
-                            r.basePrices.push(item.basePrice || 0)
-                        }
-                        r.available += item.availableCount
-                        if (item.stopsell) r.stopsell = true
-                    }
+                    const availability = await BookingService.getAvailability(
+                        checkIn, checkOut, 2, 0, currency, agency
+                    )
 
-                    const rooms = Array.from(byRoom.entries()).map(([name, data]) => ({
-                        name,
-                        minPrice: data.prices.length > 0 ? Math.round(Math.min(...data.prices)) : 0,
-                        avgPrice: data.prices.length > 0 ? Math.round(data.prices.reduce((s, p) => s + p, 0) / data.prices.length) : 0,
-                        maxBasePrice: data.basePrices.length > 0 ? Math.round(Math.max(...data.basePrices)) : 0,
-                        hasDiscount: data.prices.some((p, i) => p < data.basePrices[i]),
-                        available: data.available > 0 && !data.stopsell,
-                        currency: 'EUR'
+                    const rooms = availability.filter((a: any) => a.isAvailable).map((item: any) => ({
+                        name: item.roomType,
+                        minPrice: Math.round(item.totalPrice),
+                        avgPrice: Math.round(item.avgPricePerNight),
+                        maxBasePrice: Math.round(item.totalPrice), // Simplified since BookingService handles discounts internally
+                        hasDiscount: false,
+                        available: true,
+                        currency: currency
                     }))
 
                     finalResponse.text = args.message || "İşte seçtiğiniz tarihler için güncel oda fiyatları:"
@@ -428,9 +421,9 @@ export async function POST(request: Request) {
                     finalResponse.data = {
                         checkIn,
                         checkOut,
-                        rooms: rooms.length > 0 ? rooms : [{ name: 'Standart Oda', available: true, minPrice: 0, hasDiscount: false, currency: 'EUR' }],
-                        source: 'elektra',
-                        bookingUrl: `/tr/booking?arrival=${checkIn}&departure=${checkOut}`
+                        rooms: rooms.length > 0 ? rooms : [{ name: 'Standart Oda', available: true, minPrice: 0, hasDiscount: false, currency: currency }],
+                        source: agency,
+                        bookingUrl: `/${locale}/booking?arrival=${checkIn}&departure=${checkOut}`
                     }
                 } catch (err) {
                     console.error('[AI Chat] Elektra pricing error:', err)

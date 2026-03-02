@@ -310,7 +310,7 @@ export default function BookingClient({ locale }: { locale: string }) {
             <div className="max-w-5xl mx-auto px-4 py-12">
                 {step === 'results' && results && (
                     <div className="space-y-6">
-                        {results.rooms.length > 0 ? (
+                        {results.rooms && results.rooms.length > 0 ? (
                             <>
                                 <div className="text-center mb-8">
                                     <p className="text-blue-200/60 text-sm">
