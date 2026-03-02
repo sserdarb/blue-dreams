@@ -87,12 +87,14 @@ const openaiTools = [
 
 async function getContextData(locale: string) {
     try {
-        const [rooms, dining, meeting, amenities, settings] = await Promise.all([
+        const [rooms, dining, meeting, amenities, settings, bodrumEvents, bodrumInfo] = await Promise.all([
             prisma.room.findMany({ where: { locale }, orderBy: { order: 'asc' } }).catch(() => []),
             prisma.dining.findMany({ where: { locale }, orderBy: { order: 'asc' } }).catch(() => []),
             prisma.meetingRoom.findMany({ where: { locale }, orderBy: { order: 'asc' } }).catch(() => []),
             prisma.amenity.findMany({ where: { locale }, orderBy: { order: 'asc' } }).catch(() => []),
-            prisma.aiSettings.findFirst({ where: { language: locale } }).catch(() => null)
+            prisma.aiSettings.findFirst({ where: { language: locale } }).catch(() => null),
+            prisma.bodrumEvent.findMany({ where: { isActive: true }, orderBy: { createdAt: 'desc' }, take: 30 }).catch(() => []),
+            prisma.bodrumInfo.findMany({ where: { locale: locale === 'en' ? 'tr' : locale }, orderBy: { order: 'asc' } }).catch(() => [])
         ])
 
         let sheetContext = ''
@@ -108,10 +110,10 @@ async function getContextData(locale: string) {
             }
         }
 
-        return { rooms, dining, meeting, amenities, settings, sheetContext }
+        return { rooms, dining, meeting, amenities, settings, sheetContext, bodrumEvents, bodrumInfo }
     } catch (error) {
         console.error('[AI Chat] DB context fetch error:', error)
-        return { rooms: [], dining: [], meeting: [], amenities: [], settings: null, sheetContext: '' }
+        return { rooms: [], dining: [], meeting: [], amenities: [], settings: null, sheetContext: '', bodrumEvents: [], bodrumInfo: [] }
     }
 }
 
@@ -210,6 +212,21 @@ function buildSystemPrompt(context: any, localGuideContext: string) {
     if (localGuideContext) {
         systemPrompt += `\n\n${localGuideContext}\n(Bodrum gezilecek yerler ve etkinlikler sorulduğunda yukarıdaki SerpAPI ile admin onaylı olan bu listeyi kullan, güzelce anlat ve mutlaka yol tarifi için sunduğun lokasyonun linkini tavsiye et.)\n`
     }
+
+    // Bodrum DB-sourced events & info
+    if (context.bodrumEvents?.length > 0) {
+        systemPrompt += `\n\nGÜNCEL BODRUM ETKİNLİKLERİ (DB):\n`
+        context.bodrumEvents.forEach((e: any) => {
+            systemPrompt += `- ${e.title} (${e.category})${e.location ? `, Yer: ${e.location}` : ''}${e.sourceUrl ? ` [Link: ${e.sourceUrl}]` : ''}\n`
+        })
+    }
+    if (context.bodrumInfo?.length > 0) {
+        systemPrompt += `\n\nBODRUM YEREL BİLGİLER (DB):\n`
+        context.bodrumInfo.forEach((i: any) => {
+            systemPrompt += `### ${i.title} (${i.category})\n${i.content}\n\n`
+        })
+    }
+
     systemPrompt += `\n\nRESMİ FACTSHEET BİLGİLERİ:\n${FACTSHEET_TR}\n`
     return systemPrompt
 }

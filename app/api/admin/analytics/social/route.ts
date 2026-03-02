@@ -87,14 +87,16 @@ export async function GET() {
 
         if (results.error) {
             return NextResponse.json({
+                success: false,
                 error: `Meta API Hatası: ${results.error} (Lütfen token'ınızı yenileyin)`
-            }, { status: 401 })
+            }, { status: 200 })
         }
 
         if (!results.facebook && !results.instagram) {
             return NextResponse.json({
+                success: false,
                 error: 'Could not fetch data for either Facebook or Instagram. Verify your IDs and Token.'
-            }, { status: 400 })
+            }, { status: 200 })
         }
 
         return NextResponse.json({

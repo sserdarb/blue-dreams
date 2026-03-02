@@ -624,6 +624,40 @@ model GuestProfile {
   @@index([email])
 }
 
+// ===== SOCIAL MEDIA AI CONTENT CREATOR =====
+
+model SocialTopicSuggestion {
+  id           String   @id @default(uuid())
+  topic        String
+  description  String
+  source       String   @default("ai") // "ai", "competitor", "trend"
+  status       String   @default("pending") // "pending", "approved", "rejected"
+  rejectionRsn String?
+  postDraftId  String? // Links to SocialMediaPost if approved
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([status])
+}
+
+model SocialMediaPost {
+  id             String    @id @default(uuid())
+  topicId        String? // Link back to SocialTopicSuggestion if origin
+  content        String
+  mediaUrls      String    @default("[]") // JSON array of urls from file manager
+  platforms      String    @default("[\"facebook\",\"instagram\"]") // Array of targets
+  status         String    @default("draft") // "draft", "scheduled", "published", "failed"
+  scheduledFor   DateTime?
+  publishedAt    DateTime?
+  platformPostId String? // IDs returned from Meta API (JSON mapping)
+  errorMsg       String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([status])
+  @@index([scheduledFor])
+}
+
 model MarketingSegment {
   id          String               @id @default(uuid())
   name        String
@@ -874,4 +908,41 @@ model DashboardWidgetConfig {
   updatedAt DateTime @updatedAt
 
   @@unique([userId, isGlobal])
+}
+
+// ===== Bodrum Local Events & Info =====
+
+model BodrumEvent {
+  id          String    @id @default(uuid())
+  title       String
+  description String?
+  category    String    @default("event") // event, festival, concert, exhibition, sports
+  source      String    @default("bodrum.bel.tr") // bodrum.bel.tr, gobodrum.com.tr
+  sourceUrl   String?
+  eventDate   DateTime?
+  endDate     DateTime?
+  location    String?
+  imageUrl    String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([category])
+  @@index([eventDate])
+  @@index([source])
+}
+
+model BodrumInfo {
+  id        String   @id @default(uuid())
+  category  String // transportation, accommodation, dining, nightlife, attractions, shopping, festivals, emergency, weather, general
+  title     String
+  content   String   @db.Text
+  source    String   @default("gezimanya.com") // gezimanya.com, gobodrum.com.tr, wikipedia
+  locale    String   @default("tr")
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([category, title, locale])
+  @@index([category])
 }

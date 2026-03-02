@@ -27,16 +27,16 @@ export async function GET(req: NextRequest) {
                     ]
                 },
                 orderBy: {
-                    isGlobal: 'asc' // User-specific override global if same widgetId
+                    isGlobal: 'asc' // User-specific override global if same key
                 }
             })
 
-            // Deduplicate by widgetId, preferring user-specific
+            // Deduplicate by reportId + metricName, preferring user-specific
             const formulaMap = new Map()
             for (const f of formulas) {
-                // Because order is ascending (isGlobal: false comes first conceptually, but boolean false is less than true in some DBs. Let's do it manually)
-                if (!f.isGlobal || !formulaMap.has(f.widgetId)) {
-                    formulaMap.set(f.widgetId, f)
+                const key = `${f.reportId}_${f.metricName}`
+                if (!f.isGlobal || !formulaMap.has(key)) {
+                    formulaMap.set(key, f)
                 }
             }
             formulas = Array.from(formulaMap.values())
@@ -64,16 +64,15 @@ export async function POST(req: NextRequest) {
 
         // In a real app we might use a transaction here
         for (const f of formulas) {
-            const { widgetId, config } = f
+            const { reportId, metricName, expression } = f
 
-            if (!widgetId) continue
-
-            const configString = typeof config === 'string' ? config : JSON.stringify(config)
+            if (!reportId || !metricName || !expression) continue
 
             // Upsert
             const existingRecord = await prisma.reportFormula.findFirst({
                 where: {
-                    widgetId,
+                    reportId: reportId,
+                    metricName: metricName,
                     isGlobal: isGlobal,
                     userId: isGlobal ? null : userId
                 }
@@ -83,15 +82,16 @@ export async function POST(req: NextRequest) {
             if (existingRecord) {
                 updatedRecord = await prisma.reportFormula.update({
                     where: { id: existingRecord.id },
-                    data: { config: configString, updatedAt: new Date() }
+                    data: { expression, updatedAt: new Date() }
                 })
             } else {
                 updatedRecord = await prisma.reportFormula.create({
                     data: {
-                        widgetId,
+                        reportId: reportId,
+                        metricName: metricName,
+                        expression: expression,
                         isGlobal,
-                        userId: isGlobal ? null : userId,
-                        config: configString
+                        userId: isGlobal ? null : userId
                     }
                 })
             }

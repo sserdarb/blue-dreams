@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Calendar, Users, ChevronDown, ArrowRight, Phone, Facebook, Instagram, Youtube, X, Loader2, TrendingDown, Star, Sparkles, Search } from 'lucide-react'
+import { Calendar, Users, ChevronDown, Check, CreditCard, Shield, Clock, ArrowRight, Star, X, MapPin, Loader2, Sparkles, CheckCircle, TrendingDown, Search, Phone, Facebook, Instagram, Youtube } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 
 const WhatsAppIcon = ({ size = 16, className = "" }: { size?: number, className?: string }) => (
@@ -35,6 +35,39 @@ interface AlternativeDate {
     avgPerNightEur: number
     savings: number
     savingsAmount: number
+}
+
+const ROOM_INFO: Record<string, { image: string, size: string, capacity: number, features: string[] }> = {
+    'Deluxe Room': {
+        image: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/Deluxe-Room-1.jpg',
+        size: '25-28m²',
+        capacity: 2,
+        features: ['Deniz veya Bahçe Manzarası', 'Balkon', 'Minibar', 'Duşakabin', 'LED TV']
+    },
+    'Club Family Room': {
+        image: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/Club-Family-Room-1.jpg',
+        size: '35m²',
+        capacity: 4,
+        features: ['2 Yatak Odası', 'Deniz veya Bahçe Manzarası', 'Balkon', 'Minibar', 'Çocuklara Özel Alan']
+    },
+    'Deluxe Family Room': {
+        image: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/Deluxe-Family-Room-1.jpg',
+        size: '40m²',
+        capacity: 4,
+        features: ['Geniş Çift Yatak Odası', 'Deniz Manzarası', 'Geniş Balkon', 'Premium Set', 'Çift Minibar']
+    },
+    'Club Room': {
+        image: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/Club-Room-1.jpg',
+        size: '20-22m²',
+        capacity: 2,
+        features: ['Bahçe Manzarası', 'Balkon', 'Minibar', 'Duşakabin', 'Rahat Tasarım']
+    },
+    'Superior Room': {
+        image: 'https://bluedreamsresort.com/wp-content/uploads/2025/07/DJI_0302.jpg',
+        size: '30m²',
+        capacity: 3,
+        features: ['Panoramik Deniz Manzarası', 'Geniş Teras', 'Özel İkramlar', 'Premium Banyo', 'Jakuzi Seçeneği']
+    },
 }
 
 export default function BookingWidget({ inline = false }: { inline?: boolean }) {
@@ -162,10 +195,10 @@ export default function BookingWidget({ inline = false }: { inline?: boolean }) 
     const formatPriceEur = (price: number) => new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(price)
 
     const t = {
-        tr: { checkin: 'Giriş', checkout: 'Çıkış', guest: 'Misafir', search: 'Müsaitlik Ara', book: 'Rezervasyon Yap', adults: 'Yetişkin', children: 'Çocuk', perNight: '/gece', total: 'Toplam', noRooms: 'Seçilen tarihlerde müsait oda bulunamadı.', altTitle: 'Alternatif Tarihler', save: 'tasarruf', bestPrice: 'En İyi Fiyat' },
-        en: { checkin: 'Check-in', checkout: 'Check-out', guest: 'Guests', search: 'Check Availability', book: 'Book Now', adults: 'Adults', children: 'Children', perNight: '/night', total: 'Total', noRooms: 'No rooms available for selected dates.', altTitle: 'Alternative Dates', save: 'save', bestPrice: 'Best Price' },
-        de: { checkin: 'Anreise', checkout: 'Abreise', guest: 'Gäste', search: 'Verfügbarkeit', book: 'Jetzt Buchen', adults: 'Erwachsene', children: 'Kinder', perNight: '/Nacht', total: 'Gesamt', noRooms: 'Keine Zimmer verfügbar.', altTitle: 'Alternative Termine', save: 'sparen', bestPrice: 'Bester Preis' },
-        ru: { checkin: 'Заезд', checkout: 'Выезд', guest: 'Гости', search: 'Проверить', book: 'Забронировать', adults: 'Взрослых', children: 'дети', perNight: '/ночь', total: 'Итого', noRooms: 'Нет свободных номеров.', altTitle: 'Альтернативные даты', save: 'экономия', bestPrice: 'Лучшая цена' },
+        tr: { checkin: 'Giriş', checkout: 'Çıkış', guest: 'Misafir', search: 'Müsaitlik Ara', book: 'Rezervasyon Yap', adults: 'Yetişkin', children: 'Çocuk', perNight: '/gece', total: 'Toplam', noRooms: 'Seçilen tarihlerde müsait oda bulunamadı.', altTitle: 'Alternatif Tarihler', save: 'tasarruf', bestPrice: 'En İyi Fiyat', roomFeatures: 'Oda Özellikleri' },
+        en: { checkin: 'Check-in', checkout: 'Check-out', guest: 'Guests', search: 'Check Availability', book: 'Book Now', adults: 'Adults', children: 'Children', perNight: '/night', total: 'Total', noRooms: 'No rooms available for selected dates.', altTitle: 'Alternative Dates', save: 'save', bestPrice: 'Best Price', roomFeatures: 'Room Features' },
+        de: { checkin: 'Anreise', checkout: 'Abreise', guest: 'Gäste', search: 'Verfügbarkeit', book: 'Jetzt Buchen', adults: 'Erwachsene', children: 'Kinder', perNight: '/Nacht', total: 'Gesamt', noRooms: 'Keine Zimmer verfügbar.', altTitle: 'Alternative Termine', save: 'sparen', bestPrice: 'Bester Preis', roomFeatures: 'Zimmerausstattung' },
+        ru: { checkin: 'Заезд', checkout: 'Выезд', guest: 'Гости', search: 'Проверить', book: 'Забронировать', adults: 'Взрослых', children: 'дети', perNight: '/ночь', total: 'Итого', noRooms: 'Нет свободных номеров.', altTitle: 'Альтернативные даты', save: 'экономия', bestPrice: 'Лучшая цена', roomFeatures: 'Особенности номера' },
     }
     const texts = t[locale as keyof typeof t] || t.tr
 
@@ -176,57 +209,143 @@ export default function BookingWidget({ inline = false }: { inline?: boolean }) 
         <>
             {/* Results Panel */}
             {showResults && (
-                <div className={`${inline ? 'mt-4 border rounded-xl' : 'fixed bottom-[62px] md:bottom-[56px] left-0 right-0 z-[39] shadow-[0_-10px_40px_rgba(0,0,0,0.15)]'} bg-white/98 backdrop-blur-lg border-t border-gray-100 transition-all duration-500 max-h-[60vh] overflow-y-auto ${isVisible ? (inline ? 'opacity-100' : 'translate-y-0 opacity-100') : (inline ? 'hidden' : 'translate-y-full opacity-0')}`}>
-                    <div className="container mx-auto px-4 py-4">
-                        <div className="flex items-center justify-between mb-3">
-                            <h3 className="font-bold text-gray-800 text-sm flex items-center gap-2">
-                                <Calendar size={16} className="text-brand" />
-                                {formatDate(checkIn)} — {formatDate(checkOut)} · {guests} {texts.adults}{kids !== '0' ? `, ${kids} ${texts.children}` : ''}
+                <div className={`${inline ? 'mt-4 border rounded-xl' : 'fixed bottom-[62px] md:bottom-[56px] left-0 right-0 z-[39] shadow-[0_-10px_40px_rgba(0,0,0,0.15)]'} bg-white/98 backdrop-blur-lg border-t border-gray-100 transition-all duration-500 max-h-[85vh] overflow-y-auto ${isVisible ? (inline ? 'opacity-100' : 'translate-y-0 opacity-100') : (inline ? 'hidden' : 'translate-y-full opacity-0')}`}>
+                    <div className="container mx-auto px-4 py-6 max-w-6xl">
+                        <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
+                            <h3 className="font-bold text-gray-800 text-lg flex items-center gap-2">
+                                <Calendar size={20} className="text-brand" />
+                                {formatDate(checkIn)} — {formatDate(checkOut)}
+                                <span className="text-gray-400 font-normal">·</span>
+                                <span className="font-normal text-gray-600">{guests} {texts.adults}{kids !== '0' ? `, ${kids} ${texts.children}` : ''}</span>
                             </h3>
-                            <button onClick={() => setShowResults(false)} className="p-1 text-gray-400 hover:text-gray-600"><X size={18} /></button>
+                            <button onClick={() => setShowResults(false)} className="p-2 text-gray-400 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"><X size={18} /></button>
                         </div>
 
                         {loading ? (
-                            <div className="flex items-center justify-center py-8 gap-3 text-gray-500">
-                                <Loader2 size={20} className="animate-spin" />
-                                <span className="text-sm">{texts.search}...</span>
+                            <div className="flex flex-col items-center justify-center py-12 gap-4 text-brand">
+                                <Loader2 size={32} className="animate-spin" />
+                                <span className="text-lg font-medium">{texts.search}...</span>
                             </div>
                         ) : error ? (
-                            <p className="text-sm text-red-500 py-4 text-center">{error}</p>
+                            <div className="bg-red-50 text-red-600 p-4 rounded-xl text-center font-medium my-8">
+                                {error}
+                            </div>
                         ) : (
                             <>
-                                {/* Room Results */}
+                                {/* Blue Concierge AI Summary */}
+                                {results.filter(r => r.isAvailable).length > 0 && (
+                                    <div className="mb-8 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-xl p-5 shadow-sm flex flex-col md:flex-row items-start md:items-center gap-4 relative overflow-hidden">
+                                        <div className="absolute top-0 right-0 p-8 bg-white/20 blur-2xl rounded-full"></div>
+                                        <div className="bg-gradient-to-br from-blue-500 to-indigo-600 w-12 h-12 rounded-full flex items-center justify-center text-white shrink-0 shadow-md z-10">
+                                            <Sparkles size={24} />
+                                        </div>
+                                        <div className="z-10">
+                                            <h4 className="font-bold text-indigo-900 mb-1 flex items-center gap-2">
+                                                Blue Concierge Analizi
+                                                <span className="text-[10px] uppercase font-bold tracking-wider bg-white/50 text-indigo-600 px-2 py-0.5 rounded-full border border-indigo-100">AI</span>
+                                            </h4>
+                                            <p className="text-sm text-indigo-800 leading-relaxed">
+                                                {locale === 'tr' ? (
+                                                    alternatives.length > 0 && alternatives[0].savings > 0
+                                                        ? `Girdiğiniz tarihler ({${formatDate(checkIn)} - ${formatDate(checkOut)}}) için en uygun odamız **${results.find(r => r.isAvailable)?.roomType}** (${formatPrice(results.find(r => r.isAvailable)?.totalPrice || 0)}). Ancak, seyahatinizi **${formatDate(alternatives[0].checkIn)} - ${formatDate(alternatives[0].checkOut)}** aralığına kaydırırsanız, **%${alternatives[0].savings} tasarruf** (${formatPrice(alternatives[0].savingsAmount)}) edebilirsiniz!`
+                                                        : `Girdiğiniz tarihler için **en iyi fiyat avantajı** şu an aktif. Seçimlerinize göre **${results.find(r => r.isAvailable)?.roomType}** en ideal konaklama deneyimini sunuyor. Lüks ve rahatlığın tadını çıkarın!`
+                                                ) : (
+                                                    alternatives.length > 0 && alternatives[0].savings > 0
+                                                        ? `For your selected dates, the best option is **${results.find(r => r.isAvailable)?.roomType}**. However, you can save **${alternatives[0].savings}%** by shifting your stay to **${formatDate(alternatives[0].checkIn)} - ${formatDate(alternatives[0].checkOut)}**!`
+                                                        : `You have found the **best available rate** for these dates. The **${results.find(r => r.isAvailable)?.roomType}** offers an ideal balance of luxury and comfort for your stay.`
+                                                )}
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Room Results Grid with Images */}
                                 {results.filter(r => r.isAvailable).length === 0 ? (
-                                    <p className="text-sm text-gray-500 py-4 text-center">{texts.noRooms}</p>
+                                    <div className="text-center py-12 bg-gray-50 rounded-2xl border border-gray-100 my-8">
+                                        <p className="text-gray-500 mb-4">{texts.noRooms}</p>
+                                        <button onClick={() => {
+                                            if (alternatives.length > 0) handleAlternativeSearch(alternatives[0])
+                                        }} className="px-6 py-2 bg-brand text-white rounded-lg hover:bg-brand-dark transition-colors font-medium">
+                                            {locale === 'tr' ? 'Alternatif Tarihleri Gör' : 'View Alternative Dates'}
+                                        </button>
+                                    </div>
                                 ) : (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
-                                        {results.filter(r => r.isAvailable).map((room, i) => (
-                                            <div key={i} className="bg-gray-50 rounded-xl p-4 border border-gray-100 hover:border-brand/30 hover:shadow-md transition-all group">
-                                                <div className="flex items-start justify-between">
-                                                    <div>
-                                                        <h4 className="font-semibold text-gray-800 text-sm">{room.roomType}</h4>
-                                                        <p className="text-xs text-gray-500 mt-0.5">{room.nights} {locale === 'tr' ? 'gece' : 'nights'}</p>
-                                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                                        {results.filter(r => r.isAvailable).map((room, i) => {
+                                            const info = ROOM_INFO[room.roomType] || {
+                                                image: 'https://bluedreamsresort.com/wp-content/uploads/2023/03/Deluxe-Room-1.jpg',
+                                                size: '25m²',
+                                                capacity: 2,
+                                                features: ['Klima', 'Wi-Fi', 'Minibar']
+                                            }
+
+                                            return (
+                                                <div key={i} className="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-xl transition-all group flex flex-col h-full relative">
                                                     {i === 0 && (
-                                                        <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
-                                                            <Star size={10} /> {texts.bestPrice}
-                                                        </span>
+                                                        <div className="absolute top-4 left-4 z-10 bg-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1">
+                                                            <Star size={12} fill="currentColor" /> {texts.bestPrice}
+                                                        </div>
                                                     )}
-                                                </div>
-                                                <div className="mt-3 flex items-end justify-between">
-                                                    <div>
-                                                        <p className="text-lg font-bold text-gray-900">{formatPrice(room.avgPricePerNight)} <span className="text-xs font-normal text-gray-500">{texts.perNight}</span></p>
-                                                        <p className="text-xs text-gray-400">{formatPriceEur(room.avgPricePerNightEur)}{texts.perNight} · {texts.total}: {formatPrice(room.totalPrice)}</p>
+
+                                                    {/* Room Image */}
+                                                    <div className="relative h-56 overflow-hidden">
+                                                        <div className="absolute inset-0 bg-gray-900/10 group-hover:bg-transparent transition-colors z-0"></div>
+                                                        <img
+                                                            src={info.image}
+                                                            alt={room.roomType}
+                                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                                                        />
                                                     </div>
-                                                    <button
-                                                        onClick={() => handleBookDirect(room)}
-                                                        className="px-4 py-2 bg-brand hover:bg-brand-dark text-white text-xs font-bold rounded-lg transition-all hover:-translate-y-0.5 shadow-md hover:shadow-lg uppercase tracking-wide"
-                                                    >
-                                                        {texts.book}
-                                                    </button>
+
+                                                    <div className="p-5 flex-1 flex flex-col">
+                                                        <div className="flex justify-between items-start mb-2">
+                                                            <h4 className="font-bold text-gray-900 text-lg leading-tight">{room.roomType}</h4>
+                                                        </div>
+
+                                                        {/* Room Meta */}
+                                                        <div className="flex items-center gap-3 text-sm text-gray-600 mb-4 bg-gray-50 px-3 py-2 rounded-lg">
+                                                            <span className="flex items-center gap-1.5"><Users size={16} className="text-brand" /> Max: {info.capacity}</span>
+                                                            <span className="w-1 h-1 rounded-full bg-gray-300"></span>
+                                                            <span>{info.size}</span>
+                                                        </div>
+
+                                                        {/* Features List */}
+                                                        <div className="mb-6 flex-1">
+                                                            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">{texts.roomFeatures}</p>
+                                                            <ul className="grid grid-cols-2 gap-y-2 gap-x-1">
+                                                                {info.features.slice(0, 4).map((feature, idx) => (
+                                                                    <li key={idx} className="text-[11px] text-gray-600 flex items-start gap-1.5">
+                                                                        <CheckCircle size={12} className="text-emerald-500 mt-0.5 shrink-0" />
+                                                                        <span className="leading-tight">{feature}</span>
+                                                                    </li>
+                                                                ))}
+                                                            </ul>
+                                                        </div>
+
+                                                        {/* Pricing and CTA */}
+                                                        <div className="pt-4 border-t border-gray-100 flex flex-col mt-auto pb-1">
+                                                            <div className="flex justify-between items-end mb-4">
+                                                                <div>
+                                                                    <p className="text-xs text-gray-500">{room.nights} {locale === 'tr' ? 'gece' : 'nights'} toplamı</p>
+                                                                    <p className="text-2xl font-bold text-gray-900">{formatPrice(room.totalPrice)}</p>
+                                                                    <p className="text-sm font-medium text-gray-400">{formatPrice(room.avgPricePerNight)}<span className="text-xs font-normal">{texts.perNight}</span></p>
+                                                                </div>
+                                                                <div className="text-right">
+                                                                    <p className="text-sm font-medium text-gray-400">{formatPriceEur(room.totalPriceEur)}</p>
+                                                                    <p className="text-xs text-gray-400">{formatPriceEur(room.avgPricePerNightEur)}{texts.perNight}</p>
+                                                                </div>
+                                                            </div>
+                                                            <button
+                                                                onClick={() => handleBookDirect(room)}
+                                                                className="w-full py-3 bg-brand hover:bg-brand-dark text-white font-bold rounded-xl transition-all hover:-translate-y-1 shadow-[0_10px_20px_rgba(0,51,102,0.2)] active:scale-95 uppercase tracking-wide flex items-center justify-center gap-2"
+                                                            >
+                                                                {texts.book} <ArrowRight size={16} />
+                                                            </button>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        ))}
+                                            )
+                                        })}
                                     </div>
                                 )}
 

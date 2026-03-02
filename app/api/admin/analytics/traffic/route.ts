@@ -51,7 +51,7 @@ export async function GET(request: Request) {
                 data: [],
                 totals: { users: 0, pageViews: 0, sessions: 0, averageBounceRate: 0 },
                 error: 'Google Analytics API kimlik bilgileri eksik. Lütfen Ayarlar sekmesinden yapılandırın veya .env dosyanızı kontrol edin.'
-            }, { status: 400 })
+            }, { status: 200 })
         }
 
         // Optional date range from query string, defaults to last 30 days
