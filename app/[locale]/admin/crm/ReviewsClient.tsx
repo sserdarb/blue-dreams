@@ -57,9 +57,7 @@ interface ReviewsClientProps {
 }
 
 export default function ReviewsClient({ initialReviews, comparisonReviews = [], metrics: initialMetrics, error }: ReviewsClientProps) {
-    if (error) {
-        return <ModuleOffline moduleName="CRM & Misafir İlişkileri" dataSource="elektra" offlineReason={error} />
-    }
+    // Early return moved below to prevent React Hook count mismatch (Error #310)
 
     const [reviews] = useState<GuestReview[]>(initialReviews)
     const contentRef = useRef<HTMLDivElement>(null)
@@ -230,7 +228,10 @@ export default function ReviewsClient({ initialReviews, comparisonReviews = [], 
         )
     }
 
-
+    // Handled after hooks to avoid React Error #310
+    if (error) {
+        return <ModuleOffline moduleName="CRM & Misafir İlişkileri" dataSource="elektra" offlineReason={error} />
+    }
 
     return (
         <div ref={contentRef} className="space-y-6">
