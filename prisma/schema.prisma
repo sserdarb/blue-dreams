@@ -7,6 +7,44 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ===== Channel Manager & Elektra PMS Cache =====
+
+model ElektraProperty {
+  id        String   @id @default(uuid())
+  hotelId   Int      @unique
+  name      String
+  updatedAt DateTime @updatedAt
+}
+
+model ElektraChannelLog {
+  id        String   @id @default(uuid())
+  type      String // "price", "availability", "restriction", "reservation"
+  payload   String // JSON representation
+  status    String   @default("success") // "success", "error"
+  errorMsg  String?
+  createdAt DateTime @default(now())
+
+  @@index([type, createdAt])
+}
+
+model ElektraRoomInventory {
+  id              String   @id @default(uuid())
+  date            DateTime // Target date
+  roomTypeId      Int
+  roomTypeCode    String?
+  availableCount  Int      @default(0)
+  basePrice       Float    @default(0)
+  currency        String   @default("EUR")
+  stopsell        Boolean  @default(false)
+  minStay         Int      @default(1)
+  closedToArrival Boolean  @default(false)
+  closedToDepart  Boolean  @default(false)
+  updatedAt       DateTime @updatedAt
+
+  @@unique([date, roomTypeId])
+  @@index([date])
+}
+
 model MeetingRequest {
   id          String    @id @default(uuid())
   contactName String
