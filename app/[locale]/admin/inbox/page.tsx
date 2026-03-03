@@ -96,6 +96,11 @@ export default function InboxPage() {
                     (a, b) => new Date(b.lastMessageTime).getTime() - new Date(a.lastMessageTime).getTime()
                 )
                 setConversations(sorted)
+
+                // Auto-sync from Meta if no messages found
+                if (sorted.length === 0) {
+                    syncMeta()
+                }
             }
         } catch (err) {
             console.error('Mesajlar yüklenemedi:', err)
@@ -103,6 +108,30 @@ export default function InboxPage() {
             setLoading(false)
         }
     }, [])
+
+    const [syncing, setSyncing] = useState(false)
+    const [syncResult, setSyncResult] = useState<string | null>(null)
+
+    const syncMeta = async () => {
+        setSyncing(true)
+        setSyncResult(null)
+        try {
+            const res = await fetch('/api/admin/crm/social/sync', { method: 'POST' })
+            const data = await res.json()
+            if (data.success) {
+                setSyncResult(`✅ ${data.message}`)
+                // Refresh messages after sync
+                await fetchMessages()
+            } else {
+                setSyncResult(`⚠️ ${data.error || 'Senkronizasyon başarısız'}`)
+            }
+        } catch (err: any) {
+            setSyncResult(`❌ ${err.message}`)
+        } finally {
+            setSyncing(false)
+            setTimeout(() => setSyncResult(null), 5000)
+        }
+    }
 
     useEffect(() => { fetchMessages() }, [fetchMessages])
 
@@ -183,14 +212,29 @@ export default function InboxPage() {
                         <Badge className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{totalUnread} yeni</Badge>
                     )}
                 </div>
-                <button
-                    onClick={fetchMessages}
-                    disabled={loading}
-                    className="flex items-center gap-2 px-3 py-2 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 rounded-lg text-sm text-slate-600 dark:text-slate-300 transition-colors"
-                >
-                    <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-                    Yenile
-                </button>
+                <div className="flex items-center gap-2">
+                    {syncResult && (
+                        <span className="text-xs px-2 py-1 rounded-lg bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300">
+                            {syncResult}
+                        </span>
+                    )}
+                    <button
+                        onClick={syncMeta}
+                        disabled={syncing}
+                        className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 disabled:opacity-50 rounded-lg text-sm text-white transition-all"
+                    >
+                        <Instagram size={14} className={syncing ? 'animate-spin' : ''} />
+                        {syncing ? 'Senkronize...' : 'Meta Sync'}
+                    </button>
+                    <button
+                        onClick={fetchMessages}
+                        disabled={loading}
+                        className="flex items-center gap-2 px-3 py-2 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 rounded-lg text-sm text-slate-600 dark:text-slate-300 transition-colors"
+                    >
+                        <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+                        Yenile
+                    </button>
+                </div>
             </div>
 
             {/* Main Layout */}

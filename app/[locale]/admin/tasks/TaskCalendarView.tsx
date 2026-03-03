@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useMemo, useState } from 'react'
-import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react'
+import React, { useMemo, useState, useCallback } from 'react'
+import { ChevronLeft, ChevronRight, Calendar, GripVertical } from 'lucide-react'
 
 interface Task {
     id: string; title: string; status: string; priority: string
@@ -12,14 +12,22 @@ const STATUS_DOT: Record<string, string> = {
     todo: 'bg-slate-400', in_progress: 'bg-blue-500', review: 'bg-amber-500', done: 'bg-emerald-500', cancelled: 'bg-red-500'
 }
 
+const PRIORITY_BORDER: Record<string, string> = {
+    urgent: 'border-l-2 border-l-red-500', high: 'border-l-2 border-l-orange-500',
+    medium: 'border-l-2 border-l-yellow-500', low: 'border-l-2 border-l-slate-300'
+}
+
 interface TaskCalendarViewProps {
     tasks: Task[]
     onTaskClick?: (task: Task) => void
     onDayClick?: (date: Date) => void
+    onTaskReschedule?: (taskId: string, newDate: string) => void
 }
 
-export default function TaskCalendarView({ tasks, onTaskClick, onDayClick }: TaskCalendarViewProps) {
+export default function TaskCalendarView({ tasks, onTaskClick, onDayClick, onTaskReschedule }: TaskCalendarViewProps) {
     const [currentMonth, setCurrentMonth] = useState(new Date())
+    const [draggedTask, setDraggedTask] = useState<Task | null>(null)
+    const [dropTarget, setDropTarget] = useState<string | null>(null)
 
     const { days, firstDayOfWeek } = useMemo(() => {
         const year = currentMonth.getFullYear()
@@ -29,10 +37,9 @@ export default function TaskCalendarView({ tasks, onTaskClick, onDayClick }: Tas
 
         const d = []
         for (let i = 1; i <= daysInMonth; i++) d.push(new Date(year, month, i))
-        return { days: d, firstDayOfWeek: firstDay === 0 ? 6 : firstDay - 1 } // Monday-start
+        return { days: d, firstDayOfWeek: firstDay === 0 ? 6 : firstDay - 1 }
     }, [currentMonth])
 
-    // Group tasks by date
     const tasksByDate = useMemo(() => {
         const map: Record<string, Task[]> = {}
         tasks.forEach(t => {
@@ -50,6 +57,43 @@ export default function TaskCalendarView({ tasks, onTaskClick, onDayClick }: Tas
         setCurrentMonth(next)
     }
 
+    // ─── Drag & Drop Handlers ───
+    const handleDragStart = useCallback((e: React.DragEvent, task: Task) => {
+        e.stopPropagation()
+        setDraggedTask(task)
+        e.dataTransfer.effectAllowed = 'move'
+        e.dataTransfer.setData('text/plain', task.id)
+        // Make drag ghost semi-transparent
+        const el = e.currentTarget as HTMLElement
+        el.style.opacity = '0.5'
+    }, [])
+
+    const handleDragEnd = useCallback((e: React.DragEvent) => {
+        const el = e.currentTarget as HTMLElement
+        el.style.opacity = '1'
+        setDraggedTask(null)
+        setDropTarget(null)
+    }, [])
+
+    const handleDragOver = useCallback((e: React.DragEvent, dateKey: string) => {
+        e.preventDefault()
+        e.dataTransfer.dropEffect = 'move'
+        setDropTarget(dateKey)
+    }, [])
+
+    const handleDragLeave = useCallback(() => {
+        setDropTarget(null)
+    }, [])
+
+    const handleDrop = useCallback((e: React.DragEvent, dateKey: string) => {
+        e.preventDefault()
+        setDropTarget(null)
+        if (draggedTask && onTaskReschedule) {
+            onTaskReschedule(draggedTask.id, dateKey)
+        }
+        setDraggedTask(null)
+    }, [draggedTask, onTaskReschedule])
+
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     const dayNames = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz']
@@ -61,10 +105,17 @@ export default function TaskCalendarView({ tasks, onTaskClick, onDayClick }: Tas
                 <button onClick={() => navigate(-1)} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">
                     <ChevronLeft size={18} className="text-slate-500" />
                 </button>
-                <h3 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                    <Calendar size={18} className="text-cyan-500" />
-                    {currentMonth.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' })}
-                </h3>
+                <div className="flex items-center gap-3">
+                    <h3 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                        <Calendar size={18} className="text-cyan-500" />
+                        {currentMonth.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' })}
+                    </h3>
+                    {onTaskReschedule && (
+                        <span className="text-[10px] bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 px-2 py-0.5 rounded-full">
+                            Sürükle & Bırak Aktif
+                        </span>
+                    )}
+                </div>
                 <button onClick={() => navigate(1)} className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">
                     <ChevronRight size={18} className="text-slate-500" />
                 </button>
@@ -91,12 +142,16 @@ export default function TaskCalendarView({ tasks, onTaskClick, onDayClick }: Tas
                     const dayTasks = tasksByDate[key] || []
                     const isToday = day.getTime() === today.getTime()
                     const isWeekend = day.getDay() === 0 || day.getDay() === 6
+                    const isDropping = dropTarget === key
 
                     return (
                         <div
                             key={key}
-                            className={`min-h-[100px] border-r border-b border-slate-100 dark:border-slate-700/30 p-1.5 cursor-pointer transition-colors hover:bg-slate-50 dark:hover:bg-slate-700/20 ${isWeekend ? 'bg-slate-50/80 dark:bg-slate-800/30' : ''} ${isToday ? 'bg-cyan-50 dark:bg-cyan-950/20' : ''}`}
+                            className={`min-h-[100px] border-r border-b border-slate-100 dark:border-slate-700/30 p-1.5 cursor-pointer transition-all hover:bg-slate-50 dark:hover:bg-slate-700/20 ${isWeekend ? 'bg-slate-50/80 dark:bg-slate-800/30' : ''} ${isToday ? 'bg-cyan-50 dark:bg-cyan-950/20' : ''} ${isDropping ? 'bg-cyan-100 dark:bg-cyan-900/30 ring-2 ring-cyan-400 ring-inset' : ''}`}
                             onClick={() => onDayClick?.(day)}
+                            onDragOver={(e) => handleDragOver(e, key)}
+                            onDragLeave={handleDragLeave}
+                            onDrop={(e) => handleDrop(e, key)}
                         >
                             <span className={`text-xs font-bold inline-flex items-center justify-center w-6 h-6 rounded-full ${isToday ? 'bg-cyan-600 text-white' : 'text-slate-500 dark:text-slate-400'}`}>
                                 {day.getDate()}
@@ -106,11 +161,17 @@ export default function TaskCalendarView({ tasks, onTaskClick, onDayClick }: Tas
                                 {dayTasks.slice(0, 3).map(task => (
                                     <div
                                         key={task.id}
-                                        className="flex items-center gap-1 px-1 py-0.5 rounded text-[10px] cursor-pointer hover:bg-white dark:hover:bg-slate-700 transition-colors"
+                                        draggable={!!onTaskReschedule}
+                                        onDragStart={(e) => handleDragStart(e, task)}
+                                        onDragEnd={handleDragEnd}
+                                        className={`flex items-center gap-1 px-1 py-0.5 rounded text-[10px] cursor-grab active:cursor-grabbing hover:bg-white dark:hover:bg-slate-700 transition-colors ${PRIORITY_BORDER[task.priority] || ''}`}
                                         onClick={(e) => { e.stopPropagation(); onTaskClick?.(task) }}
                                     >
                                         <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${STATUS_DOT[task.status]}`} />
                                         <span className="truncate text-slate-600 dark:text-slate-300 font-medium">{task.title}</span>
+                                        {onTaskReschedule && (
+                                            <GripVertical size={10} className="text-slate-300 flex-shrink-0 ml-auto opacity-0 group-hover:opacity-100" />
+                                        )}
                                     </div>
                                 ))}
                                 {dayTasks.length > 3 && (
