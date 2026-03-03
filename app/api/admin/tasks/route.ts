@@ -33,6 +33,9 @@ export async function GET(request: NextRequest) {
                 department: true,
                 comments: { orderBy: { createdAt: 'desc' }, take: 1 },
                 _count: { select: { comments: true, attachments: true } },
+                dependencies: { include: { targetTask: { select: { id: true, title: true, status: true } } } },
+                dependents: { include: { sourceTask: { select: { id: true, title: true, status: true } } } },
+                timeEntries: { orderBy: { startTime: 'desc' }, take: 5 },
             },
             orderBy: [{ order: 'asc' }, { createdAt: 'desc' }],
         })

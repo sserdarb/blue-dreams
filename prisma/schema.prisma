@@ -474,6 +474,7 @@ model Task {
   description  String?
   status       String           @default("todo") // todo, in_progress, review, done, cancelled
   priority     String           @default("medium") // low, medium, high, urgent
+  startDate    DateTime?
   dueDate      DateTime?
   departmentId String?
   department   Department?      @relation(fields: [departmentId], references: [id])
@@ -486,16 +487,54 @@ model Task {
   sourceRef    String? // Email message ID or reference
   order        Int              @default(0)
   estimatedMin Int? // Estimated minutes
+  posX         Float? // React Flow X position
+  posY         Float? // React Flow Y position
+  color        String? // Custom color for Gantt/Flow
   completedAt  DateTime?
   createdAt    DateTime         @default(now())
   updatedAt    DateTime         @updatedAt
   comments     TaskComment[]
   attachments  TaskAttachment[]
+  dependencies TaskDependency[] @relation("DependencySource") // tasks that this task depends on
+  dependents   TaskDependency[] @relation("DependencyTarget") // tasks that depend on this task
+  timeEntries  TimeEntry[]
 
   @@index([status])
   @@index([assigneeId])
   @@index([departmentId])
   @@index([dueDate])
+}
+
+// ─── Task Dependencies (React Flow edges) ───
+model TaskDependency {
+  id           String   @id @default(uuid())
+  sourceTaskId String
+  sourceTask   Task     @relation("DependencySource", fields: [sourceTaskId], references: [id], onDelete: Cascade)
+  targetTaskId String
+  targetTask   Task     @relation("DependencyTarget", fields: [targetTaskId], references: [id], onDelete: Cascade)
+  type         String   @default("finish_to_start") // finish_to_start, start_to_start, finish_to_finish
+  createdAt    DateTime @default(now())
+
+  @@unique([sourceTaskId, targetTaskId])
+  @@index([sourceTaskId])
+  @@index([targetTaskId])
+}
+
+// ─── Time Tracking Entries ───
+model TimeEntry {
+  id        String    @id @default(uuid())
+  taskId    String
+  task      Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  userId    String // AdminUser.id
+  startTime DateTime
+  endTime   DateTime?
+  duration  Int? // Duration in minutes (auto-calculated or manual)
+  billable  Boolean   @default(true)
+  note      String?
+  createdAt DateTime  @default(now())
+
+  @@index([taskId])
+  @@index([userId])
 }
 
 model TaskComment {

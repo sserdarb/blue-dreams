@@ -1,15 +1,22 @@
 'use client'
 export const dynamic = 'force-dynamic'
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react'
 import { useParams } from 'next/navigation'
 import {
     Plus, Search, Filter, CheckSquare, Clock, AlertTriangle, ArrowUpRight,
     MoreHorizontal, MessageSquare, Paperclip, Calendar, User, Building2,
     ChevronDown, X, Save, Sparkles, GripVertical, LayoutList, Columns3,
-    Flag, Tag, GitBranch, Mail, Bell, RefreshCw, Trash2, Edit2
+    Flag, Tag, GitBranch, Mail, Bell, RefreshCw, Trash2, Edit2,
+    Network, GanttChart, CalendarDays, Users
 } from 'lucide-react'
 import { getAdminTranslations, AdminTranslations, AdminLocale } from '@/lib/admin-translations'
+
+// Lazy-load heavy view components
+const TaskFlowView = lazy(() => import('./TaskFlowView'))
+const TaskGanttView = lazy(() => import('./TaskGanttView'))
+const TaskCalendarView = lazy(() => import('./TaskCalendarView'))
+const ResourceCapacityWidget = lazy(() => import('./ResourceCapacityWidget'))
 
 // ─── Types ───
 interface Task {
@@ -51,7 +58,7 @@ export default function TasksPage() {
     const [tasks, setTasks] = useState<Task[]>([])
     const [departments, setDepartments] = useState<Department[]>([])
     const [loading, setLoading] = useState(true)
-    const [viewMode, setViewMode] = useState<'kanban' | 'list' | 'gantt' | 'workflow'>('kanban')
+    const [viewMode, setViewMode] = useState<'kanban' | 'list' | 'diagram' | 'gantt' | 'calendar'>('kanban')
     const [filterDept, setFilterDept] = useState('')
     const [filterPriority, setFilterPriority] = useState('')
     const [searchTerm, setSearchTerm] = useState('')
@@ -144,22 +151,18 @@ export default function TasksPage() {
                             {(t as any).tasks || 'Görevler'}
                         </h1>
                         <div className="flex bg-slate-100 dark:bg-slate-900 rounded-lg overflow-hidden">
-                            <button onClick={() => setViewMode('kanban')}
-                                className={`px-3 py-1.5 text-xs font-bold flex items-center gap-1 transition-all ${viewMode === 'kanban' ? 'bg-cyan-600 text-white' : 'text-slate-500'}`}>
-                                <Columns3 size={14} /> Kanban
-                            </button>
-                            <button onClick={() => setViewMode('list')}
-                                className={`px-3 py-1.5 text-xs font-bold flex items-center gap-1 transition-all ${viewMode === 'list' ? 'bg-cyan-600 text-white' : 'text-slate-500'}`}>
-                                <LayoutList size={14} /> Liste
-                            </button>
-                            <button onClick={() => setViewMode('gantt')}
-                                className={`px-3 py-1.5 text-xs font-bold flex items-center gap-1 transition-all ${viewMode === 'gantt' ? 'bg-cyan-600 text-white' : 'text-slate-500'}`}>
-                                <Calendar size={14} /> Gantt (Planlama)
-                            </button>
-                            <button onClick={() => { window.location.href = `/${locale}/admin/tasks/workflows` }}
-                                className={`px-3 py-1.5 text-xs font-bold flex items-center gap-1 transition-all text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700`}>
-                                <GitBranch size={14} /> İş Akışları
-                            </button>
+                            {([
+                                { key: 'kanban', label: 'Kanban', icon: Columns3 },
+                                { key: 'list', label: 'Liste', icon: LayoutList },
+                                { key: 'diagram', label: 'Diyagram', icon: Network },
+                                { key: 'gantt', label: 'Gantt', icon: GanttChart },
+                                { key: 'calendar', label: 'Takvim', icon: CalendarDays },
+                            ] as const).map(v => (
+                                <button key={v.key} onClick={() => setViewMode(v.key)}
+                                    className={`px-3 py-1.5 text-xs font-bold flex items-center gap-1 transition-all ${viewMode === v.key ? 'bg-cyan-600 text-white' : 'text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700'}`}>
+                                    <v.icon size={14} /> {v.label}
+                                </button>
+                            ))}
                         </div>
                     </div>
 
@@ -326,79 +329,60 @@ export default function TasksPage() {
                 </div>
             )}
 
-            {/* Gantt / Planning View */}
-            {viewMode === 'gantt' && (
-                <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm overflow-x-auto">
-                    <div className="min-w-[800px]">
-                        <div className="flex items-center gap-4 mb-6 border-b border-slate-200 dark:border-slate-700 pb-4">
-                            <Calendar className="text-cyan-500" size={24} />
-                            <div>
-                                <h3 className="text-lg font-bold text-slate-900 dark:text-white">Proje Planlama (Gantt)</h3>
-                                <p className="text-sm text-slate-500">Operasyon, Pazarlama ve Sistem Geliştirme Zaman Çizelgesi</p>
-                            </div>
-                        </div>
-
-                        {filtered.length === 0 ? (
-                            <div className="text-center py-12 text-slate-400">
-                                <Calendar className="mx-auto mb-2 text-slate-300" size={40} />
-                                <p className="font-medium">Planlanmış görev bulunamadı</p>
-                            </div>
-                        ) : (
-                            <div className="space-y-4">
-                                {/* Header / Time markers placeholder */}
-                                <div className="flex border-b border-slate-100 dark:border-slate-700 pb-2 text-xs font-bold text-slate-400">
-                                    <div className="w-1/4">Görev / Proje Odak</div>
-                                    <div className="w-3/4 flex justify-between px-2">
-                                        <span>Bugün</span>
-                                        <span>+1 Hafta</span>
-                                        <span>+2 Hafta</span>
-                                        <span>+1 Ay</span>
-                                    </div>
-                                </div>
-                                {filtered.map((task, idx) => {
-                                    // Calculate relative bar position based on dates
-                                    const createdDate = new Date(task.createdAt);
-                                    const dueDate = task.dueDate ? new Date(task.dueDate) : new Date(Date.now() + 86400000 * 7);
-
-                                    const now = new Date();
-                                    const diffCreated = Math.max(0, (now.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24));
-                                    const diffDue = Math.max(1, (dueDate.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24));
-
-                                    // Limit lengths for UI consistency
-                                    const displayWidth = Math.min(100, Math.max(10, diffDue * 3));
-                                    const displayMargin = 0; // Simplified for visual demonstration
-
-                                    const s = STATUSES.find(s => s.key === task.status)
-
-                                    return (
-                                        <div key={task.id} className="flex items-center group">
-                                            <div className="w-1/4 pr-4">
-                                                <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{task.title}</p>
-                                                <p className="text-[10px] text-slate-500 truncate">{task.department?.name || 'Genel'}</p>
-                                            </div>
-                                            <div className="w-3/4 bg-slate-50 dark:bg-slate-900/50 rounded-lg h-10 relative flex items-center px-2">
-                                                {/* Connecting timeline track */}
-                                                <div className="absolute inset-x-2 top-1/2 -translate-y-1/2 h-0.5 bg-slate-200 dark:bg-slate-700" />
-
-                                                {/* Task Bar */}
-                                                <div
-                                                    className={`absolute h-6 rounded-md shadow-sm z-10 flex items-center px-2 ${s?.color || 'bg-cyan-500'} cursor-pointer hover:ring-2 ring-white/50 transition-all`}
-                                                    style={{ width: `${displayWidth}%`, left: `${displayMargin}%` }}
-                                                    onClick={() => setEditingTask(task)}
-                                                    title={`Bitiş: ${dueDate.toLocaleDateString('tr-TR')} - Atanan: ${task.assignee?.name || 'Atanmamış'}`}
-                                                >
-                                                    <span className="text-[10px] text-white font-bold truncate">
-                                                        {task.assignee ? task.assignee.name.split(' ')[0] : '...'}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )
-                                })}
-                            </div>
-                        )}
+            {/* Diagram View (React Flow) */}
+            {viewMode === 'diagram' && (
+                <div className="flex gap-4">
+                    <div className="flex-1">
+                        <Suspense fallback={<div className="h-96 flex items-center justify-center text-slate-400"><Clock className="animate-spin" /> Yükleniyor…</div>}>
+                            <TaskFlowView
+                                tasks={filtered}
+                                onTaskClick={(task) => setEditingTask(task as any)}
+                                onDependencyCreate={async (sourceId, targetId) => {
+                                    await fetch('/api/admin/tasks/dependencies', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ sourceTaskId: sourceId, targetTaskId: targetId }),
+                                    })
+                                }}
+                                onPositionUpdate={async (taskId, x, y) => {
+                                    await fetch(`/api/admin/tasks/${taskId}`, {
+                                        method: 'PUT',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ posX: x, posY: y }),
+                                    })
+                                }}
+                            />
+                        </Suspense>
+                    </div>
+                    <div className="w-[280px] hidden xl:block">
+                        <Suspense fallback={null}>
+                            <ResourceCapacityWidget />
+                        </Suspense>
                     </div>
                 </div>
+            )}
+
+            {/* Gantt View */}
+            {viewMode === 'gantt' && (
+                <Suspense fallback={<div className="h-96 flex items-center justify-center text-slate-400"><Clock className="animate-spin" /> Yükleniyor…</div>}>
+                    <TaskGanttView
+                        tasks={filtered}
+                        onTaskClick={(task) => setEditingTask(task as any)}
+                    />
+                </Suspense>
+            )}
+
+            {/* Calendar View */}
+            {viewMode === 'calendar' && (
+                <Suspense fallback={<div className="h-96 flex items-center justify-center text-slate-400"><Clock className="animate-spin" /> Yükleniyor…</div>}>
+                    <TaskCalendarView
+                        tasks={filtered}
+                        onTaskClick={(task) => setEditingTask(task as any)}
+                        onDayClick={(date) => {
+                            setShowCreateModal(true)
+                        }}
+                    />
+                </Suspense>
             )}
 
             {/* Create/Edit Modal */}
