@@ -9,9 +9,10 @@ const BASE_URL = `https://graph.facebook.com/${META_API_VERSION}`
 
 export async function GET() {
     try {
-        const accessToken = process.env.META_ACCESS_TOKEN
-        const fbPageId = process.env.FB_PAGE_ID
-        const igAccountId = process.env.IG_ACCOUNT_ID
+        // Ortam değişkenleri
+        const accessToken = process.env.META_ACCESS_TOKEN || "EAAeyAgqUYnQBQ5n1wczEEMUM5STILvNSAOG65uWwXbYAk100kzWsjEANi4lCmCy59qW9kGNWhlVNpufteKOzYgcbjT6UpekLI3jKLCf1JD0K0zVFjFZA5Dsm0ZCs2ZAsnufeU7qh3qOogymvQZCwtMktZBA8dd1TN8nWQp2po0w1PA6y3Er9tLbiousXZAFwyi11b8sSEBJplcRZBcZCZCVISx46mclYRcAlgZCuzw";
+        const fbPageId = process.env.FB_PAGE_ID;
+        const igAccountId = process.env.IG_ACCOUNT_ID;
 
         if (!accessToken) {
             return NextResponse.json({

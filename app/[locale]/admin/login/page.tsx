@@ -1,7 +1,7 @@
 'use client'
 export const dynamic = 'force-dynamic';
 
-import { useFormState } from 'react-dom';
+import { useActionState } from 'react';
 import { login } from '@/app/actions/auth';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState, useCallback, useRef } from 'react';
@@ -156,7 +156,7 @@ export default function LoginPage() {
     return { success: false, error: result.error || 'Giriş başarısız' };
   }
 
-  const [state, formAction] = useFormState(handleLogin, initialState);
+  const [state, formAction] = useActionState(handleLogin, initialState);
 
   useEffect(() => {
     if (state.success) {

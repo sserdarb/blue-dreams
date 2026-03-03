@@ -8,7 +8,7 @@ import { prisma } from '@/lib/prisma'
  */
 export async function getPageBySlug(slug: string, locale: string) {
   try {
-    const page = await prisma.page.findUnique({
+    let page = await prisma.page.findUnique({
       where: {
         slug_locale: { slug, locale },
       },
@@ -19,7 +19,67 @@ export async function getPageBySlug(slug: string, locale: string) {
       },
     })
 
-    if (!page) return null
+    if (!page) {
+      if (process.env.NODE_ENV !== 'production' || process.env.DATABASE_URL?.includes('dummy')) {
+        console.warn(`⚠️ Page not found in DB for [${slug} - ${locale}]. Generating fallback from seed data.`);
+        try {
+          const helpersPath = require('path').join(process.cwd(), 'prisma', 'seed-helpers.js');
+          const pagesPath = require('path').join(process.cwd(), 'prisma', 'seed-pages.js');
+          let widgets = null;
+
+          if (slug === 'home') {
+            const { homeWidgets } = require(helpersPath);
+            widgets = homeWidgets(locale);
+          } else {
+            const seedPages = require(pagesPath);
+            const slugMap: Record<string, Function> = {
+              'hakkimizda': seedPages.aboutWidgets,
+              'about': seedPages.aboutWidgets,
+              'odalar': seedPages.roomsWidgets,
+              'rooms': seedPages.roomsWidgets,
+              'restoran': seedPages.restaurantWidgets,
+              'restaurant': seedPages.restaurantWidgets,
+              'spa': seedPages.spaWidgets,
+              'iletisim': seedPages.contactWidgets,
+              'contact': seedPages.contactWidgets,
+              'dugun-davet': seedPages.weddingWidgets,
+              'wedding': seedPages.weddingWidgets,
+              'galeri': seedPages.galleryWidgets,
+              'gallery': seedPages.galleryWidgets,
+              'toplanti-salonu': seedPages.meetingWidgets,
+              'bodrum': seedPages.bodrumWidgets
+            };
+            if (slugMap[slug]) {
+              widgets = slugMap[slug](locale);
+            }
+          }
+
+          if (widgets) {
+            // we generated fallback widgets
+            page = {
+              id: `fallback-${slug}`,
+              slug,
+              locale,
+              title: `Fallback ${slug}`,
+              metaDescription: '',
+              createdAt: new Date(),
+              updatedAt: new Date(),
+              widgets: widgets.map((w: any, i: number) => ({
+                id: `fallback-${slug}-w-${i}`,
+                type: w.type,
+                data: w.data,
+                order: w.order || i,
+                pageId: `fallback-${slug}`
+              }))
+            } as any;
+          }
+        } catch (e) {
+          console.error("Failed to load fallback for", slug, e);
+        }
+      }
+
+      if (!page) return null;
+    }
 
     // Hydrate local-guide widgets with dynamic SerpApi data
     const hasLocalGuide = page.widgets.some(w => w.type === 'local-guide')

@@ -5,14 +5,17 @@ import { prisma } from '@/lib/prisma'
 function getClient(clientEmail: string, privateKey: string) {
     // Fix newlines in Vercel/Coolify
     // It's possible the var comes as a literal "\n" string instead of actual newlines.
-    const formattedKey = typeof privateKey === 'string'
-        ? privateKey.replace(/\\n/g, '\n')
-        : privateKey
+    // Decode handling string escapes safely
+    let formattedKey: string = privateKey;
+    if (typeof formattedKey === "string") {
+        formattedKey = formattedKey.replace(/\\n/g, "\n").replace(/"/g, "");
+        formattedKey = formattedKey.replace("-----BEGIN PRIVATE KEY-----", "-----BEGIN PRIVATE KEY-----XNXN").replace("-----END PRIVATE KEY-----", "XNXN-----END PRIVATE KEY-----").replace(/XNXN/g, "\n").replace(/\n+/g, "\n");
+    }
 
     return new BetaAnalyticsDataClient({
         credentials: {
             client_email: clientEmail,
-            private_key: formattedKey
+            private_key: formattedKey,
         }
     })
 }
