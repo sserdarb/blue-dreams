@@ -90,17 +90,16 @@ export async function POST(request: NextRequest) {
             include: { department: true },
         })
 
-        // Create notification for assignee
+        // Create notification for assignee (in-app + email)
         if (assigneeId && assigneeId !== creatorId) {
-            await prisma.notification.create({
-                data: {
-                    userId: assigneeId,
-                    type: 'task_assigned',
-                    title: 'Yeni Görev Atandı',
-                    message: `"${title}" görevi size atandı.`,
-                    link: `/tasks?id=${task.id}`,
-                },
-            })
+            try {
+                const { notifyTaskAssignment } = await import('@/lib/notifications')
+                await notifyTaskAssignment(assigneeId, {
+                    id: task.id, title: task.title, priority: task.priority, dueDate: task.dueDate
+                })
+            } catch (notifErr) {
+                console.warn('[Tasks] Notification failed (non-blocking):', notifErr)
+            }
         }
 
         return NextResponse.json(task)
