@@ -86,7 +86,7 @@ export async function GET(request: Request) {
             console.warn('[GA4 API] AnalyticsConfig lookup failed (table may not exist):', configErr?.message)
         }
 
-        let propertyId = config?.gaPropertyId || process.env.GA_PROPERTY_ID
+        let propertyId = process.env.GA_PROPERTY_ID || config?.gaPropertyId
         let clientEmail = process.env.GA_CLIENT_EMAIL
         let privateKey = process.env.GA_PRIVATE_KEY
 
