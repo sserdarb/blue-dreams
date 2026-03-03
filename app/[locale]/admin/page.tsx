@@ -8,6 +8,7 @@ import { ChannelTrendChart } from '@/components/admin/charts/ChannelTrendChart'
 import { ReviewTrendChart } from '@/components/admin/charts/ReviewTrendChart'
 import DashboardFilter from '@/components/admin/DashboardFilter'
 import DashboardPickupWidget from '@/components/admin/DashboardPickupWidget'
+import DashboardLastReservationsWidget from '@/components/admin/DashboardLastReservationsWidget'
 import ModuleOffline from '@/components/admin/ModuleOffline'
 import LiveTrafficSocialWidget from '@/components/admin/LiveTrafficSocialWidget'
 import { getAdminTranslations, type AdminLocale } from '@/lib/admin-translations'
@@ -32,10 +33,10 @@ export default async function AdminDashboard({
   if (from) startDate = new Date(from)
 
   try {
-    const [salesData, stats, , reviews, asisiaStats, pickupStats] = await Promise.all([
+    const [salesData, stats, recentReservations, reviews, asisiaStats, pickupStats] = await Promise.all([
       ElektraService.getSalesData(startDate, endDate),
       ElektraService.getDailyStats(),
-      ElektraService.getRecentReservations(5),
+      ElektraService.getRecentReservations(10),
       ElektraService.getGuestReviews(startDate, endDate),
       fetchDashboardStats(startDate.toISOString().split('T')[0], endDate.toISOString().split('T')[0]),
       fetchPickupStats(startDate.toISOString().split('T')[0], endDate.toISOString().split('T')[0])
@@ -112,6 +113,10 @@ export default async function AdminDashboard({
 
         {/* PICKUP WIDGET */}
         <DashboardPickupWidget data={pickupStats} />
+
+        {/* SON REZERVASYONLAR (ADR PERFORMANSI İLE BİRLİKTE) */}
+        <DashboardLastReservationsWidget reservations={recentReservations} locale={locale} />
+
 
         {/* TREND CHARTS GRID */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

@@ -487,7 +487,7 @@ export default function CompetitorAnalysisClient({ locale, t }: Props) {
                                 <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm min-h-[400px]">
                                     <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
                                         <TrendingUp size={18} className="text-emerald-500" />
-                                        Gecelik Fiyat Trendi ({market === 'domestic' ? 'İç Pazar - TRY' : 'Dış Pazar - EUR'})
+                                        Gecelik Fiyat Trendi ({market === 'domestic' ? 'İç Pazar - TRY' : 'Dış Pazar - EUR'}) - <span className="text-xs text-slate-500 ml-1">Konaklama: {new Date(checkIn).toLocaleDateString('tr-TR')} - {new Date(checkOut).toLocaleDateString('tr-TR')}</span>
                                     </h3>
                                     <div className="h-80">
                                         <ResponsiveContainer width="100%" height="100%">
@@ -530,6 +530,76 @@ export default function CompetitorAnalysisClient({ locale, t }: Props) {
                                 </div>
                                 <p className="text-xs text-muted-foreground mt-4 text-center">Dikkat: Sol üst köşedekiler (Ucuz + Yüksek Puan) en tehlikeli fiyat/performans rakiplerini gösterir.</p>
                             </div>
+
+                            {/* Price Volatility Table */}
+                            {trends && trends.pricingTrends.length > 1 && (
+                                <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm">
+                                    <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                                        <BarChart2 size={18} className="text-rose-500" />
+                                        Fiyat Volatilitesi (Geçmiş Dönem Analizi)
+                                    </h3>
+                                    <p className="text-xs text-slate-500 mb-4">Rakiplerin fiyatlarını ne sıklıkla ve ne kadar değiştirdiğini gösteren analiz tablosu.</p>
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-sm">
+                                            <thead>
+                                                <tr className="border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/30">
+                                                    <th className="px-4 py-2.5 text-left text-xs font-bold text-slate-500 uppercase">Otel</th>
+                                                    <th className="px-4 py-2.5 text-right text-xs font-bold text-slate-500 uppercase">Min Fiyat</th>
+                                                    <th className="px-4 py-2.5 text-right text-xs font-bold text-slate-500 uppercase">Max Fiyat</th>
+                                                    <th className="px-4 py-2.5 text-right text-xs font-bold text-slate-500 uppercase">Ortalama</th>
+                                                    <th className="px-4 py-2.5 text-right text-xs font-bold text-slate-500 uppercase">Değişim Oranı</th>
+                                                    <th className="px-4 py-2.5 text-center text-xs font-bold text-slate-500 uppercase">Volatilite</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
+                                                {(() => {
+                                                    const competitorKeys = ['Blue Dreams', 'Duja Bodrum', 'La Blanche', 'Samara Bodrum', 'Kefaluka']
+                                                    const colors = ['#06b6d4', '#8b5cf6', '#f59e0b', '#ef4444', '#3b82f6']
+                                                    return competitorKeys.map((key, ci) => {
+                                                        const prices = trends.pricingTrends
+                                                            .map(t => t[key])
+                                                            .filter((v): v is number => typeof v === 'number' && v > 0)
+                                                        if (prices.length < 2) return null
+
+                                                        const min = Math.min(...prices)
+                                                        const max = Math.max(...prices)
+                                                        const avg = prices.reduce((s, v) => s + v, 0) / prices.length
+                                                        const range = max - min
+                                                        const changePct = ((range / avg) * 100).toFixed(1)
+                                                        const volatility = range / avg
+                                                        const volLabel = volatility > 0.3 ? 'Yüksek' : volatility > 0.15 ? 'Orta' : 'Düşük'
+                                                        const volColor = volatility > 0.3 ? 'text-red-600 bg-red-50 dark:bg-red-900/20' : volatility > 0.15 ? 'text-amber-600 bg-amber-50 dark:bg-amber-900/20' : 'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20'
+                                                        const currency = market === 'domestic' ? '₺' : '€'
+
+                                                        return (
+                                                            <tr key={key} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                                                                <td className="px-4 py-3">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: colors[ci] }} />
+                                                                        <span className="font-medium text-slate-900 dark:text-white">{key}</span>
+                                                                    </div>
+                                                                </td>
+                                                                <td className="px-4 py-3 text-right font-mono text-slate-700 dark:text-slate-300">{currency}{min.toLocaleString('tr-TR')}</td>
+                                                                <td className="px-4 py-3 text-right font-mono text-slate-700 dark:text-slate-300">{currency}{max.toLocaleString('tr-TR')}</td>
+                                                                <td className="px-4 py-3 text-right font-mono font-bold text-slate-900 dark:text-white">{currency}{Math.round(avg).toLocaleString('tr-TR')}</td>
+                                                                <td className="px-4 py-3 text-right font-mono">
+                                                                    <span className={volatility > 0.15 ? 'text-rose-600 font-bold' : 'text-slate-500'}>±{changePct}%</span>
+                                                                </td>
+                                                                <td className="px-4 py-3 text-center">
+                                                                    <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-bold ${volColor}`}>
+                                                                        {volLabel}
+                                                                    </span>
+                                                                </td>
+                                                            </tr>
+                                                        )
+                                                    }).filter(Boolean)
+                                                })()}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <p className="text-[10px] text-slate-400 mt-3">Volatilite = (Max - Min) / Ortalama. Yüksek volatilite, rakibin fiyat stratejisini sıkça değiştirdiğine işaret eder.</p>
+                                </div>
+                            )}
                         </div>
                     )}
 

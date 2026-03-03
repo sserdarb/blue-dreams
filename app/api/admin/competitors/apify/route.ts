@@ -65,17 +65,28 @@ export async function POST(req: Request) {
         if (!isAuthed) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
         const body = await req.json();
-        const { date = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], currency = "EUR" } = body;
+        const { checkIn, checkOut, currency = "EUR", competitors = [] } = body;
 
+        let date = checkIn || new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
         let d = new Date(date);
-        let checkoutDate = new Date(d.getTime() + 1 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        let checkoutDate = checkOut || new Date(d.getTime() + 1 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
-        // Fetch all competitors in parallel or sequentially based on Apify limits. 
-        // Using Promise.all for parallelism.
+        let targetCompetitors = COMPETITORS;
+        if (competitors && competitors.length > 0) {
+            targetCompetitors = COMPETITORS.filter(c => competitors.includes(c.name));
+            // Add dynamic competitors if not in hardcoded list
+            for (const name of competitors) {
+                if (!targetCompetitors.find(c => c.name === name)) {
+                    targetCompetitors.push({ name, search: `${name} Bodrum` });
+                }
+            }
+        }
+
+        // Fetch all competitors in parallel
         console.log(`[Apify] Starting scraping job for ${date} to ${checkoutDate} in ${currency}`);
 
         const results = await Promise.all(
-            COMPETITORS.map(comp => fetchCompetitorPrice(comp, date, checkoutDate, currency))
+            targetCompetitors.map(comp => fetchCompetitorPrice(comp, date, checkoutDate, currency))
         );
 
         // Store into DB for historical analysis and tracking

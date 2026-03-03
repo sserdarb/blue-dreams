@@ -44,6 +44,7 @@ async function getCachedReservations() {
             roomCount: r.roomCount,
             status: r.status,
             saleDate: r.lastUpdate.slice(0, 10),
+            country: r.country,
         }))
         return { reservations, lastUpdated: new Date().toISOString(), error: null }
     } catch (err) {

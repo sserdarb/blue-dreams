@@ -51,7 +51,7 @@ export default function TasksPage() {
     const [tasks, setTasks] = useState<Task[]>([])
     const [departments, setDepartments] = useState<Department[]>([])
     const [loading, setLoading] = useState(true)
-    const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban')
+    const [viewMode, setViewMode] = useState<'kanban' | 'list' | 'gantt' | 'workflow'>('kanban')
     const [filterDept, setFilterDept] = useState('')
     const [filterPriority, setFilterPriority] = useState('')
     const [searchTerm, setSearchTerm] = useState('')
@@ -151,6 +151,14 @@ export default function TasksPage() {
                             <button onClick={() => setViewMode('list')}
                                 className={`px-3 py-1.5 text-xs font-bold flex items-center gap-1 transition-all ${viewMode === 'list' ? 'bg-cyan-600 text-white' : 'text-slate-500'}`}>
                                 <LayoutList size={14} /> Liste
+                            </button>
+                            <button onClick={() => setViewMode('gantt')}
+                                className={`px-3 py-1.5 text-xs font-bold flex items-center gap-1 transition-all ${viewMode === 'gantt' ? 'bg-cyan-600 text-white' : 'text-slate-500'}`}>
+                                <Calendar size={14} /> Gantt (Planlama)
+                            </button>
+                            <button onClick={() => { window.location.href = `/${locale}/admin/tasks/workflows` }}
+                                className={`px-3 py-1.5 text-xs font-bold flex items-center gap-1 transition-all text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700`}>
+                                <GitBranch size={14} /> İş Akışları
                             </button>
                         </div>
                     </div>
@@ -315,6 +323,81 @@ export default function TasksPage() {
                             <p className="font-medium">Henüz görev yok</p>
                         </div>
                     )}
+                </div>
+            )}
+
+            {/* Gantt / Planning View */}
+            {viewMode === 'gantt' && (
+                <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 shadow-sm overflow-x-auto">
+                    <div className="min-w-[800px]">
+                        <div className="flex items-center gap-4 mb-6 border-b border-slate-200 dark:border-slate-700 pb-4">
+                            <Calendar className="text-cyan-500" size={24} />
+                            <div>
+                                <h3 className="text-lg font-bold text-slate-900 dark:text-white">Proje Planlama (Gantt)</h3>
+                                <p className="text-sm text-slate-500">Operasyon, Pazarlama ve Sistem Geliştirme Zaman Çizelgesi</p>
+                            </div>
+                        </div>
+
+                        {filtered.length === 0 ? (
+                            <div className="text-center py-12 text-slate-400">
+                                <Calendar className="mx-auto mb-2 text-slate-300" size={40} />
+                                <p className="font-medium">Planlanmış görev bulunamadı</p>
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                {/* Header / Time markers placeholder */}
+                                <div className="flex border-b border-slate-100 dark:border-slate-700 pb-2 text-xs font-bold text-slate-400">
+                                    <div className="w-1/4">Görev / Proje Odak</div>
+                                    <div className="w-3/4 flex justify-between px-2">
+                                        <span>Bugün</span>
+                                        <span>+1 Hafta</span>
+                                        <span>+2 Hafta</span>
+                                        <span>+1 Ay</span>
+                                    </div>
+                                </div>
+                                {filtered.map((task, idx) => {
+                                    // Calculate relative bar position based on dates
+                                    const createdDate = new Date(task.createdAt);
+                                    const dueDate = task.dueDate ? new Date(task.dueDate) : new Date(Date.now() + 86400000 * 7);
+
+                                    const now = new Date();
+                                    const diffCreated = Math.max(0, (now.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24));
+                                    const diffDue = Math.max(1, (dueDate.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24));
+
+                                    // Limit lengths for UI consistency
+                                    const displayWidth = Math.min(100, Math.max(10, diffDue * 3));
+                                    const displayMargin = 0; // Simplified for visual demonstration
+
+                                    const s = STATUSES.find(s => s.key === task.status)
+
+                                    return (
+                                        <div key={task.id} className="flex items-center group">
+                                            <div className="w-1/4 pr-4">
+                                                <p className="text-sm font-bold text-slate-900 dark:text-white truncate">{task.title}</p>
+                                                <p className="text-[10px] text-slate-500 truncate">{task.department?.name || 'Genel'}</p>
+                                            </div>
+                                            <div className="w-3/4 bg-slate-50 dark:bg-slate-900/50 rounded-lg h-10 relative flex items-center px-2">
+                                                {/* Connecting timeline track */}
+                                                <div className="absolute inset-x-2 top-1/2 -translate-y-1/2 h-0.5 bg-slate-200 dark:bg-slate-700" />
+
+                                                {/* Task Bar */}
+                                                <div
+                                                    className={`absolute h-6 rounded-md shadow-sm z-10 flex items-center px-2 ${s?.color || 'bg-cyan-500'} cursor-pointer hover:ring-2 ring-white/50 transition-all`}
+                                                    style={{ width: `${displayWidth}%`, left: `${displayMargin}%` }}
+                                                    onClick={() => setEditingTask(task)}
+                                                    title={`Bitiş: ${dueDate.toLocaleDateString('tr-TR')} - Atanan: ${task.assignee?.name || 'Atanmamış'}`}
+                                                >
+                                                    <span className="text-[10px] text-white font-bold truncate">
+                                                        {task.assignee ? task.assignee.name.split(' ')[0] : '...'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        )}
+                    </div>
                 </div>
             )}
 

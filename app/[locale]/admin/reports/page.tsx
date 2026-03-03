@@ -17,13 +17,14 @@ export default async function ManagementReportsPage({
     searchParams,
 }: {
     params: Promise<{ locale: string }>
-    searchParams: Promise<{ group?: string }>
+    searchParams: Promise<{ group?: string, year?: string }>
 }) {
     const { locale } = await params
-    const { group = 'management' } = await searchParams
+    const { group = 'management', year } = await searchParams
     const t = getAdminTranslations(locale as AdminLocale)
 
-    const currentYear = new Date().getFullYear()
+    // Season transition logic: if the user specifies a year use it, else default to 2025 (active selling season)
+    const currentYear = year ? parseInt(year) : (new Date().getFullYear() === 2024 ? 2025 : new Date().getFullYear())
     const prevYear = currentYear - 1
     const taxRates = await getTaxSettings()
 

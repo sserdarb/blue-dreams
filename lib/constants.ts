@@ -35,6 +35,10 @@ export function getNavItems(locale: string): NavItem[] {
             contact: 'İletişim',
             bodrum: 'Bodrum Rehberi',
             kidsClub: 'Çocuk Kulübü',
+            kvkk: 'KVKK & Gizlilik',
+            sustainability: 'Sürdürülebilirlik',
+            sports: 'Spor & Aktivite',
+            booking: 'Rezervasyon'
         },
         en: {
             about: 'About Us',
@@ -47,6 +51,10 @@ export function getNavItems(locale: string): NavItem[] {
             contact: 'Contact',
             bodrum: 'Bodrum Guide',
             kidsClub: 'Kids Club',
+            kvkk: 'Privacy Policy',
+            sustainability: 'Sustainability',
+            sports: 'Sports & Activities',
+            booking: 'Booking'
         },
         de: {
             about: 'Über Uns',
@@ -59,6 +67,10 @@ export function getNavItems(locale: string): NavItem[] {
             contact: 'Kontakt',
             bodrum: 'Bodrum Reiseführer',
             kidsClub: 'Kinderclub',
+            kvkk: 'Datenschutzrichtlinie',
+            sustainability: 'Nachhaltigkeit',
+            sports: 'Sport & Aktivitäten',
+            booking: 'Reservierung'
         },
         ru: {
             about: 'О нас',
@@ -71,6 +83,10 @@ export function getNavItems(locale: string): NavItem[] {
             contact: 'Контакт',
             bodrum: 'Гид по Бодруму',
             kidsClub: 'Детский клуб',
+            kvkk: 'Политика конфиденциальности',
+            sustainability: 'Устойчивое развитие',
+            sports: 'Спорт и Активности',
+            booking: 'Бронирование'
         },
     }
 
@@ -81,26 +97,34 @@ export function getNavItems(locale: string): NavItem[] {
         { label: t.rooms, href: `/${l}/odalar` },
         { label: t.dining, href: `/${l}/restoran` },
         { label: t.spa, href: `/${l}/spa` },
+        { label: t.sports, href: `/${l}/spor` },
         { label: t.meeting, href: `/${l}/toplanti-salonu` },
         { label: t.wedding, href: `/${l}/dugun-davet` },
+        { label: t.kidsClub, href: `/${l}/cocuk-kulubu` },
+        { label: t.bodrum, href: `/${l}/bodrum` },
+        { label: t.sustainability, href: `/${l}/surdurulebilirlik` },
         { label: t.gallery, href: `/${l}/galeri` },
         { label: t.contact, href: `/${l}/iletisim` },
-        { label: t.bodrum, href: `/${l}/bodrum` },
-        { label: t.kidsClub, href: `/${l}/cocuk-kulubu` },
+        { label: t.booking, href: `/${l}/booking` },
+        { label: t.kvkk, href: `/${l}/kvkk` },
     ]
 }
 
-// Keep NAV_ITEMS for backward compatibility
 export const NAV_ITEMS: NavItem[] = [
     { label: 'Hakkımızda', href: '/tr/hakkimizda' },
     { label: 'Odalar', href: '/tr/odalar' },
     { label: 'Restoran & Barlar', href: '/tr/restoran' },
     { label: 'Spa & Wellness', href: '/tr/spa' },
+    { label: 'Spor & Aktivite', href: '/tr/spor' },
     { label: 'Toplantı & Etkinlik', href: '/tr/toplanti-salonu' },
     { label: 'Düğün & Davet', href: '/tr/dugun-davet' },
+    { label: 'Çocuk Kulübü', href: '/tr/cocuk-kulubu' },
+    { label: 'Bodrum Rehberi', href: '/tr/bodrum' },
+    { label: 'Sürdürülebilirlik', href: '/tr/surdurulebilirlik' },
     { label: 'Galeri', href: '/tr/galeri' },
     { label: 'İletişim', href: '/tr/iletisim' },
-    { label: 'Çocuk Kulübü', href: '/tr/cocuk-kulubu' },
+    { label: 'Rezervasyon', href: '/tr/booking' },
+    { label: 'KVKK & Gizlilik', href: '/tr/kvkk' },
 ]
 
 export const ROOMS: Room[] = [

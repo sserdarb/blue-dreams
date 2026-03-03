@@ -23,6 +23,11 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
         footerCopyright: settings.footerCopyright ?? undefined,
         headerStyle: settings.headerStyle ?? undefined,
         googleMapsApiKey: settings.googleMapsApiKey ?? undefined,
+        marketingEnabled: settings.marketingEnabled ?? false,
+        googleAnalyticsId: settings.googleAnalyticsId ?? undefined,
+        metaPixelId: settings.metaPixelId ?? undefined,
+        googleAdsTag: settings.googleAdsTag ?? undefined,
+        tiktokPixelId: settings.tiktokPixelId ?? undefined,
     }
 
     return (

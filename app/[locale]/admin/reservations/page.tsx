@@ -27,7 +27,8 @@ export default async function ReservationsPage({ searchParams }: { searchParams:
         // Use getReservationsByBookingDateForYear for current year
         // This fetches the full year's check-in range, then filters by reservationDate
         // → removes the 1-month limit that getAllSeasonReservations imposed
-        const currentYear = bookingStart.getFullYear()
+        // Default to at least 2025 since current bookings are mostly for 2025 season
+        const currentYear = Math.max(bookingStart.getFullYear(), 2025)
         const reservations = await ElektraService.getReservationsByBookingDateForYear(bookingStart, bookingEnd, currentYear)
 
         initialData = reservations

@@ -98,6 +98,7 @@ export default function AdminSidebar({ locale, t, userRole: propRole = 'admin', 
             items: [
                 { id: 'nav-reservations', href: '/reservations', label: t.reservations, icon: Calendar },
                 { id: 'nav-yield', href: '/yield', label: t.yieldManagement, icon: TrendingUp },
+                { id: 'nav-channel', href: '/channel-manager', label: 'Kanal Yöneticisi', icon: Globe },
                 { id: 'nav-extras', href: '/extras', label: t.extras, icon: ShoppingBag },
                 { id: 'nav-crm', href: '/crm', label: 'CRM (Misafir İlişk)', icon: PieChart },
                 { id: 'nav-call-center', href: '/crm/call-center', label: 'Çağrı Merkezi', icon: PhoneCall },
@@ -229,8 +230,16 @@ export default function AdminSidebar({ locale, t, userRole: propRole = 'admin', 
                         .map((section, sectionIdx) => {
                             // Filter items by module state
                             const visibleItems = section.items.filter(item => {
-                                // Settings always visible
-                                if (item.id === 'nav-settings') return true
+                                // Settings and essential sections always visible
+                                const alwaysVisible = [
+                                    'nav-settings',
+                                    'nav-channel',
+                                    'nav-crm-marketing',
+                                    'nav-competitors',
+                                    'nav-inbox',
+                                    'nav-social'
+                                ]
+                                if (alwaysVisible.includes(item.id)) return true
                                 return enabledModules.includes(item.id)
                             })
                             // Hide empty sections

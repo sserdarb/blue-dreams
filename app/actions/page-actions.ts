@@ -81,6 +81,45 @@ export async function getPageBySlug(slug: string, locale: string) {
       }
     }
 
+    // Hydrate room-list widget with real mapped DB rooms
+    const hasRoomList = page.widgets.some(w => w.type === 'room-list')
+    if (hasRoomList) {
+      const dbRooms = await prisma.room.findMany({
+        where: { locale },
+        orderBy: { order: 'asc' },
+      })
+      if (dbRooms && dbRooms.length > 0) {
+        page.widgets = page.widgets.map(w => {
+          if (w.type === 'room-list') {
+            let data = w.data as any
+            if (typeof data === 'string') {
+              try { data = JSON.parse(data) } catch (e) { data = {} }
+            }
+
+            // Re-map DB rooms to expected properties
+            data.rooms = dbRooms.map(r => ({
+              slug: r.id, // we use DB id as unique identifier
+              title: r.title,
+              subtitle: r.size ? `Odalar • ${r.size}` : 'Oda',
+              description: r.description,
+              heroImage: r.image, // required by RoomListWidget fallback mode
+              imageUrl: r.image,  // required by data-driven mode
+              size: r.size,
+              view: r.view,
+              capacity: r.capacity
+            }))
+
+            if (typeof w.data === 'string') {
+              w.data = JSON.stringify(data)
+            } else {
+              w.data = data
+            }
+          }
+          return w
+        }) as typeof page.widgets
+      }
+    }
+
     return page
   } catch (error) {
     console.error(`Error fetching page "${slug}" for locale "${locale}":`, error)

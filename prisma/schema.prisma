@@ -149,9 +149,9 @@ model Media {
 // ===== CMS Models =====
 
 model SiteSettings {
-  id               String   @id @default(uuid())
-  locale           String   @unique
-  siteName         String   @default("Blue Dreams Resort")
+  id               String  @id @default(uuid())
+  locale           String  @unique
+  siteName         String  @default("Blue Dreams Resort")
   logo             String? // URL to logo image
   favicon          String? // URL to favicon
   phone            String?
@@ -160,10 +160,20 @@ model SiteSettings {
   socialLinks      String? // JSON: { facebook, instagram, twitter, youtube }
   footerText       String?
   footerCopyright  String?
-  headerStyle      String   @default("default") // default, transparent, dark
+  headerStyle      String? // e.g. "transparent", "solid"
+  googleMapsApiKey String?
+
+  // Satış - Pazarlama Ayarları
+  marketingEnabled  Boolean @default(false)
+  googleAnalyticsId String?
+  metaPixelId       String?
+  metaAccessToken   String?
+  googleAdsTag      String?
+  googleAdsToken    String?
+  tiktokPixelId     String?
+
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
-  googleMapsApiKey String?
   // Tax rates (configurable from admin panel)
   vatAccommodation Float    @default(10) // Accommodation KDV %
   taxAccommodation Float    @default(2) // Konaklama vergisi %
@@ -953,4 +963,14 @@ model BodrumInfo {
 
   @@unique([category, title, locale])
   @@index([category])
+}
+
+model MarketingConfig {
+  id                String   @id @default(uuid())
+  metaPixelId       String?
+  metaApiToken      String?
+  googleAdsId       String?
+  googleAnalyticsId String?
+  tiktokPixelId     String?
+  updatedAt         DateTime @updatedAt
 }

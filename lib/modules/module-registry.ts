@@ -44,6 +44,11 @@ export const MODULE_REGISTRY: ModuleDefinition[] = [
 
     // ── Satış & Pazarlama ──
     {
+        id: 'nav-channel', label: 'Kanal Yöneticisi', section: 'section-satis',
+        href: '/channel-manager', dataSource: 'local', defaultEnabled: true,
+        description: 'Online seyahat acenteleri (OTA) ve satış kanalları yönetimi',
+    },
+    {
         id: 'nav-reservations', label: 'Rezervasyonlar', section: 'section-satis',
         href: '/reservations', dataSource: 'elektra', defaultEnabled: true,
         description: 'Rezervasyon listesi, yıllık karşılaştırma, kanal ve acente bazlı analiz',

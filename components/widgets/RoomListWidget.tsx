@@ -1,5 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
+import { useParams } from 'next/navigation'
 import { ROOM_TYPES } from '@/lib/content'
 
 export function RoomListWidget({ data }: { data: any }) {
@@ -24,7 +25,8 @@ export function RoomListWidget({ data }: { data: any }) {
             // Fallback object uses 'heroImage' instead of 'imageUrl'
             const imgSource = isFallback ? room.heroImage : room.imageUrl
             // Fallback object uses 'slug' for link, whereas cms might not provide a link or uses id
-            const linkHref = isFallback ? `/tr/odalar/${room.slug}` : `#`
+            const { locale = 'tr' } = useParams()
+            const linkHref = isFallback ? `/${locale}/odalar/${room.slug}` : `#`
 
             return (
               <Link

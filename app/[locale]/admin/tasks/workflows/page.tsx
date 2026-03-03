@@ -21,7 +21,6 @@ interface Workflow {
     createdAt: string; steps: WorkflowStep[]
 }
 
-// ─── Preset Workflow Templates ───
 const AI_TEMPLATES = [
     {
         name: 'Misafir Şikayeti', icon: '😤', desc: 'Şikayet alma → analiz → çözüm → takip', steps: [
@@ -41,12 +40,30 @@ const AI_TEMPLATES = [
         ]
     },
     {
-        name: 'Etkinlik Organizasyonu', icon: '🎉', desc: 'Planlama → hazırlık → uygulama → değerlendirme', steps: [
-            { title: 'Etkinlik Planı', description: 'Tarih, saat, katılımcı sayısı, bütçe belirle', duration: 60 },
-            { title: 'Mekan & Tedarik', description: 'Salon hazırlığı, müzik, dekorasyon, ikram', duration: 120 },
-            { title: 'Personel Görevlendirme', description: 'Ekip atama ve brifing', duration: 30 },
-            { title: 'Etkinlik Yürütme', description: 'Canlı koordinasyon ve misafir karşılama', duration: 180 },
-            { title: 'Sonrası Değerlendirme', description: 'Geri bildirim toplama ve rapor', duration: 30 },
+        name: 'Sistem Geliştirme', icon: '💻', desc: 'Analiz → geliştirme → test → canlı', steps: [
+            { title: 'Gereksinim Analizi', description: 'Yeni özellik için teknik ve iş gereksinimlerini topla', duration: 120 },
+            { title: 'Geliştirme & Kodlama', description: 'Yazılım ekibi tarafından modülün kodlanması', duration: 480 },
+            { title: 'Test ve QA', description: 'Birim testleri ve kalite güvence kontrolleri', duration: 120 },
+            { title: 'Canlıya Alım', description: 'Güncellemenin production ortamına taşınması', duration: 60 },
+            { title: 'Dokümantasyon', description: 'Sistem kullanma kılavuzunu güncelle', duration: 60 },
+        ]
+    },
+    {
+        name: 'Pazarlama Kampanyası', icon: '🚀', desc: 'Planlama → içerik → yayın → raporlama', steps: [
+            { title: 'Pazar & Rakip Araştırması', description: 'Kampanya dönemi için rakip analizi yap', duration: 60 },
+            { title: 'Kreatif Tasarım & İçerik', description: 'Görsel hazırlığı ve reklam metni (copywriting)', duration: 180 },
+            { title: 'Bütçe & Hedef Kitle', description: 'Platformlarda (Meta, Google) hedeflemeleri ayarla', duration: 60 },
+            { title: 'Yayına Alma', description: 'Reklamları başlat ve A/B testlerini yapılandır', duration: 30 },
+            { title: 'Performans Optimizasyonu', description: 'Kampanya sonuçlarını analiz et ve raporla', duration: 60 },
+        ]
+    },
+    {
+        name: 'B2B Kurumsal Satış', icon: '🤝', desc: 'Lead → teklif → müzakere → sözleşme', steps: [
+            { title: 'Potansiyel Müşteri Analizi', description: 'Kurumsal firmanın konaklama ve etkinlik ihtiyacını belirle', duration: 60 },
+            { title: 'Özel Teklif Hazırlama', description: 'İhtiyaca uygun fiyatlandırma modeli ve teklif dokümanı', duration: 120 },
+            { title: 'Sunum ve Müzakere', description: 'Müşteri ile toplantı ve şartların görüşülmesi', duration: 90 },
+            { title: 'Sözleşme Onayı', description: 'Hukuki kontroller ve ıslak imza süreçleri', duration: 120 },
+            { title: 'Otel Onboarding', description: 'Grubun/Firmanın operasyon ekibine devredilmesi', duration: 60 },
         ]
     },
     {
