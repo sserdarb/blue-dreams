@@ -705,6 +705,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
     }
 
     const renderADR = (data: Reservation[]) => {
+        // Current Year ADR by month
         const monthly: Record<string, { revenue: number; nights: number }> = {}
         data.forEach(r => {
             const m = r.saleDate.slice(0, 7)
@@ -712,19 +713,54 @@ export default function ReportsClient({ reservations, comparisonReservations = [
             monthly[m].revenue += dp(r.totalPrice, r.currency)
             monthly[m].nights += r.nights * r.roomCount
         })
-        const mData = Object.entries(monthly).sort(([a], [b]) => a.localeCompare(b)).map(([month, d]) => ({
-            month: month.slice(5), adr: d.nights > 0 ? Math.round(d.revenue / d.nights) : 0
-        }))
-        const maxAdr = Math.max(...mData.map(m => m.adr), 1)
+
+        // Previous Year ADR by month
+        const compMonthly: Record<string, { revenue: number; nights: number }> = {}
+        filteredComparison.forEach(r => {
+            const m = r.saleDate.slice(0, 7)
+            if (!compMonthly[m]) compMonthly[m] = { revenue: 0, nights: 0 }
+            compMonthly[m].revenue += dp(r.totalPrice, r.currency)
+            compMonthly[m].nights += r.nights * r.roomCount
+        })
+
+        // Align months
+        const allKeys = new Set<string>()
+        Object.keys(monthly).forEach(k => allKeys.add(k.slice(5)))
+        Object.keys(compMonthly).forEach(k => allKeys.add(k.slice(5)))
+
+        const mData = Array.from(allKeys).sort().map(month => {
+            const thisKey = Object.keys(monthly).find(k => k.endsWith(month))
+            const thisAdr = thisKey && monthly[thisKey].nights > 0 ? Math.round(monthly[thisKey].revenue / monthly[thisKey].nights) : 0
+
+            const lastKey = Object.keys(compMonthly).find(k => k.endsWith(month))
+            const lastAdr = lastKey && compMonthly[lastKey].nights > 0 ? Math.round(compMonthly[lastKey].revenue / compMonthly[lastKey].nights) : 0
+
+            const change = lastAdr > 0 ? ((thisAdr - lastAdr) / lastAdr) * 100 : 0
+            return { month, adr: thisAdr, lastAdr, change }
+        })
+
+        const maxAdr = Math.max(...mData.map(m => Math.max(m.adr, m.lastAdr)), 1)
+        const hasPrev = filteredComparison.length > 0
+
         return (
             <div className="space-y-2 mt-2">
                 {mData.map((d, i) => (
-                    <div key={i} className="flex items-center gap-3">
-                        <span className="text-xs w-8 text-slate-500">{d.month}</span>
-                        <div className="flex-1 h-3 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                            <div className="h-full bg-gradient-to-r from-orange-500 to-amber-400 rounded-full" style={{ width: `${(d.adr / maxAdr) * 100}%` }} />
+                    <div key={i} className="group">
+                        <div className="flex items-center gap-3">
+                            <span className="text-xs w-8 text-slate-500 font-medium">{d.month}</span>
+                            <div className="flex-1 relative">
+                                {hasPrev && d.lastAdr > 0 && (
+                                    <div className="absolute h-3 bg-slate-300/30 dark:bg-slate-600/30 rounded-full" style={{ width: `${(d.lastAdr / maxAdr) * 100}%` }} />
+                                )}
+                                <div className="h-3 bg-gradient-to-r from-orange-500 to-amber-400 rounded-full relative z-10" style={{ width: `${(d.adr / maxAdr) * 100}%` }} />
+                            </div>
+                            <span className="text-sm font-bold text-slate-900 dark:text-white w-20 text-right">{fmtMoney(d.adr)}</span>
+                            {hasPrev && (
+                                <span className={`text-[10px] font-medium w-12 text-right ${d.change >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                                    {d.lastAdr > 0 ? `${d.change >= 0 ? '↑' : '↓'}${Math.abs(d.change).toFixed(0)}%` : '—'}
+                                </span>
+                            )}
                         </div>
-                        <span className="text-sm font-bold text-slate-900 dark:text-white w-20 text-right">{fmtMoney(d.adr)}</span>
                     </div>
                 ))}
             </div>
@@ -732,22 +768,59 @@ export default function ReportsClient({ reservations, comparisonReservations = [
     }
 
     const renderNationality = (data: Reservation[]) => {
+        // Current year
         const nations: Record<string, number> = {}
         data.forEach(r => {
             const nat = r.country || 'Bilinmiyor'
             if (nat) nations[nat] = (nations[nat] || 0) + 1
         })
-        const nData = Object.entries(nations).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count).slice(0, 10)
+
+        // Previous year
+        const prevNations: Record<string, number> = {}
+        filteredComparison.forEach(r => {
+            const nat = r.country || 'Bilinmiyor'
+            if (nat) prevNations[nat] = (prevNations[nat] || 0) + 1
+        })
+
+        const nData = Object.entries(nations)
+            .map(([name, count]) => ({
+                name,
+                count,
+                prevCount: prevNations[name] || 0,
+                change: prevNations[name] ? ((count - prevNations[name]) / prevNations[name]) * 100 : 100
+            }))
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 10)
+
         const total = data.length || 1
+        const maxCount = Math.max(...nData.map(n => n.count), 1)
         const colors = ['#06b6d4', '#8b5cf6', '#f59e0b', '#10b981', '#ec4899', '#3b82f6', '#ef4444', '#14b8a6', '#f97316', '#6366f1']
+        const hasPrevData = filteredComparison.length > 0
+
         return (
-            <div className="space-y-2 mt-2">
+            <div className="space-y-2.5 mt-2">
                 {nData.map((n, i) => (
-                    <div key={i} className="flex items-center gap-3">
-                        <Flag size={12} style={{ color: colors[i % colors.length] }} />
-                        <span className="text-sm text-slate-600 dark:text-slate-300 flex-1">{n.name}</span>
-                        <span className="text-sm font-bold text-slate-900 dark:text-white">{n.count}</span>
-                        <span className="text-xs text-slate-500">{((n.count / total) * 100).toFixed(1)}%</span>
+                    <div key={i} className="group">
+                        <div className="flex items-center gap-2">
+                            <Flag size={12} style={{ color: colors[i % colors.length] }} />
+                            <span className="text-sm text-slate-600 dark:text-slate-300 flex-1 truncate">{n.name}</span>
+                            <span className="text-sm font-bold text-slate-900 dark:text-white">{n.count}</span>
+                            <span className="text-xs text-slate-500 w-12 text-right">{((n.count / total) * 100).toFixed(1)}%</span>
+                            {hasPrevData && (
+                                <span className={`text-[10px] font-medium w-14 text-right ${n.change >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                                    {n.change >= 0 ? '↑' : '↓'}{Math.abs(n.change).toFixed(0)}%
+                                </span>
+                            )}
+                        </div>
+                        <div className="flex items-center gap-1 mt-0.5 ml-5">
+                            <div className="flex-1 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden relative">
+                                {hasPrevData && n.prevCount > 0 && (
+                                    <div className="absolute h-full bg-slate-400/30 dark:bg-slate-500/30 rounded-full" style={{ width: `${(n.prevCount / maxCount) * 100}%` }} />
+                                )}
+                                <div className="h-full rounded-full relative z-10" style={{ width: `${(n.count / maxCount) * 100}%`, backgroundColor: colors[i % colors.length] }} />
+                            </div>
+                            {hasPrevData && <span className="text-[9px] text-slate-400 w-8 text-right">{n.prevCount}</span>}
+                        </div>
                     </div>
                 ))}
             </div>
