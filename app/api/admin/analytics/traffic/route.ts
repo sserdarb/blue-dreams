@@ -2,10 +2,60 @@ import { NextResponse } from 'next/server'
 import { BetaAnalyticsDataClient } from '@google-analytics/data'
 import { prisma } from '@/lib/prisma'
 
+// ─── Demo Data for Analytics Traffic ────────────────────────────────────
+function getAnalyticsDemoData() {
+    const days = 30
+    const data = []
+    const now = new Date()
+    for (let i = days; i >= 0; i--) {
+        const d = new Date(now)
+        d.setDate(d.getDate() - i)
+        const dateStr = d.toISOString().split('T')[0]
+        const baseUsers = 120 + Math.floor(Math.random() * 80)
+        data.push({
+            date: dateStr,
+            users: baseUsers,
+            pageViews: baseUsers * 3 + Math.floor(Math.random() * 100),
+            sessions: baseUsers + Math.floor(Math.random() * 40),
+            bounceRate: (35 + Math.random() * 15).toFixed(2)
+        })
+    }
+    return {
+        success: true, demo: true,
+        data, traffic: data,
+        channels: [
+            { name: 'Organic Search', value: 1840 },
+            { name: 'Direct', value: 1250 },
+            { name: 'Social', value: 620 },
+            { name: 'Referral', value: 340 },
+            { name: 'Email', value: 180 }
+        ],
+        countries: [
+            { name: 'Turkey', users: 2100, percentage: 42 },
+            { name: 'Germany', users: 980, percentage: 20 },
+            { name: 'United Kingdom', users: 650, percentage: 13 },
+            { name: 'Russia', users: 520, percentage: 10 },
+            { name: 'Netherlands', users: 380, percentage: 8 }
+        ],
+        totals: {
+            users: data.reduce((a, c) => a + c.users, 0),
+            pageViews: data.reduce((a, c) => a + c.pageViews, 0),
+            sessions: data.reduce((a, c) => a + c.sessions, 0),
+            averageBounceRate: '42.50'
+        }
+    }
+}
+
+async function isDemoMode(key: string): Promise<boolean> {
+    if (process.env[`DEMO_MODE_${key.toUpperCase()}`] === 'true') return true
+    try {
+        const db = prisma as any
+        const setting = await db.siteSetting?.findUnique?.({ where: { key: `demo_mode_${key}` } })
+        return setting?.value === 'true'
+    } catch { return false }
+}
+
 function getClient(clientEmail: string, privateKey: string) {
-    // Fix newlines in Vercel/Coolify
-    // It's possible the var comes as a literal "\n" string instead of actual newlines.
-    // Decode handling string escapes safely
     let formattedKey: string = privateKey;
     if (typeof formattedKey === "string") {
         formattedKey = formattedKey.replace(/\\n/g, "\n").replace(/"/g, "");
@@ -22,6 +72,11 @@ function getClient(clientEmail: string, privateKey: string) {
 
 export async function GET(request: Request) {
     try {
+        // Check demo mode
+        const { searchParams } = new URL(request.url)
+        if (searchParams.get('demo') === 'true' || await isDemoMode('analytics')) {
+            return NextResponse.json(getAnalyticsDemoData())
+        }
         const db = prisma as any
         let config: any = null
         try {
@@ -67,7 +122,6 @@ export async function GET(request: Request) {
         }
 
         // Optional date range from query string, defaults to last 30 days
-        const { searchParams } = new URL(request.url)
         const startDate = searchParams.get('startDate') || '30daysAgo'
         const endDate = searchParams.get('endDate') || 'today'
 

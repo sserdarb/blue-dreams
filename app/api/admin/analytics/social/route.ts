@@ -1,18 +1,51 @@
 import { NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
 
-// ─── Meta Graph API Service ───────────────────────────────────────────
-// Fetches social media insights (Followers, Engagement) from Facebook and Instagram
-// Requires: META_ACCESS_TOKEN, FB_PAGE_ID, IG_ACCOUNT_ID in .env
-
+// ─── Meta Graph API + Demo Data Service ─────────────────────────────────
 const META_API_VERSION = 'v19.0'
 const BASE_URL = `https://graph.facebook.com/${META_API_VERSION}`
 
-export async function GET() {
+// ─── Demo data for when real API is unavailable ─────────────────────────
+function getDemoData() {
+    return {
+        success: true,
+        demo: true,
+        data: {
+            facebook: {
+                followers: 28450,
+                newLikes: 342,
+                engagement: 1856
+            },
+            instagram: {
+                username: 'bluedreamsresort',
+                followers: 45200,
+                posts: 892,
+                recentEngagement: 12340
+            }
+        }
+    }
+}
+
+async function isDemoMode(): Promise<boolean> {
+    if (process.env.DEMO_MODE_SOCIAL === 'true') return true
     try {
-        // Ortam değişkenleri
-        const accessToken = process.env.META_ACCESS_TOKEN || "EAAeyAgqUYnQBQ21pvMF6pbHvCuD30IcmpuyfImYpnAmdzKZCKQHhkL6DZB4pScvtbFyLZAfQdwMDrHykz1frVtFJLhPGqpU9zDhnkLrSEI4VGqlYzp7vBwadB1rIjvhdOZChb6gnwMc8MyZBe1fiQ4CHNIErFdKh2H153cCO8ynRZCLFlNs4ghK8122FdGZBQZDZD";
-        const fbPageId = process.env.FB_PAGE_ID;
-        const igAccountId = process.env.IG_ACCOUNT_ID;
+        const db = prisma as any
+        const setting = await db.siteSetting?.findUnique?.({ where: { key: 'demo_mode_social' } })
+        return setting?.value === 'true'
+    } catch { return false }
+}
+
+export async function GET(request: Request) {
+    try {
+        // Check demo mode
+        const { searchParams } = new URL(request.url)
+        if (searchParams.get('demo') === 'true' || await isDemoMode()) {
+            return NextResponse.json(getDemoData())
+        }
+
+        const accessToken = process.env.META_ACCESS_TOKEN
+        const fbPageId = process.env.FB_PAGE_ID
+        const igAccountId = process.env.IG_ACCOUNT_ID
 
         if (!accessToken) {
             return NextResponse.json({
@@ -22,19 +55,15 @@ export async function GET() {
             })
         }
 
-        const results: {
-            facebook: any,
-            instagram: any,
-            error?: string
-        } = {
+        const results: { facebook: any, instagram: any, error?: string } = {
             facebook: null,
             instagram: null,
         }
 
-        // 1. Fetch Facebook Page Data
+        // 1. Fetch Facebook Page Data (removed 'engagement' field — unsupported for page tokens)
         if (fbPageId) {
             const fbResponse = await fetch(
-                `${BASE_URL}/${fbPageId}?fields=fan_count,followers_count,engagement,new_like_count&access_token=${accessToken}`
+                `${BASE_URL}/${fbPageId}?fields=fan_count,followers_count,new_like_count,talking_about_count&access_token=${accessToken}`
             )
 
             if (fbResponse.ok) {
@@ -42,11 +71,11 @@ export async function GET() {
                 results.facebook = {
                     followers: fbData.followers_count || fbData.fan_count || 0,
                     newLikes: fbData.new_like_count || 0,
-                    engagement: fbData.engagement?.count || 0
+                    engagement: fbData.talking_about_count || 0
                 }
             } else {
                 const errData = await fbResponse.json()
-                console.warn('[Meta API] Failed to fetch FB Page data:', errData)
+                console.warn('[Meta API] FB error:', errData.error?.message)
                 results.error = errData.error?.message || 'FB API Error'
             }
         }
@@ -60,7 +89,6 @@ export async function GET() {
             if (igResponse.ok) {
                 const igData = await igResponse.json()
 
-                // Also fetch some recent media engagement to calculate an average engagement rate
                 const mediaResponse = await fetch(
                     `${BASE_URL}/${igAccountId}/media?fields=like_count,comments_count&limit=10&access_token=${accessToken}`
                 )
@@ -81,7 +109,7 @@ export async function GET() {
                 }
             } else {
                 const errData = await igResponse.json()
-                console.warn('[Meta API] Failed to fetch IG Account data:', errData)
+                console.warn('[Meta API] IG error:', errData.error?.message)
                 if (!results.error) results.error = errData.error?.message || 'IG API Error'
             }
         }
@@ -89,21 +117,19 @@ export async function GET() {
         if (results.error) {
             return NextResponse.json({
                 success: false,
-                error: `Meta API Hatası: ${results.error} (Lütfen token'ınızı yenileyin)`
+                error: `Meta API Hatası: ${results.error}`,
+                hint: 'Hata devam ederse Ayarlar > Demo Modu\'nu açabilirsiniz.'
             }, { status: 200 })
         }
 
         if (!results.facebook && !results.instagram) {
             return NextResponse.json({
                 success: false,
-                error: 'Could not fetch data for either Facebook or Instagram. Verify your IDs and Token.'
+                error: 'Facebook veya Instagram verisi alınamadı. ID ve Token bilgilerini kontrol edin.'
             }, { status: 200 })
         }
 
-        return NextResponse.json({
-            success: true,
-            data: results
-        })
+        return NextResponse.json({ success: true, data: results })
 
     } catch (error: any) {
         console.error('[Meta Graph API Route Error]', error)

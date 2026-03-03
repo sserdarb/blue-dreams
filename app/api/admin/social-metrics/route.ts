@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
 
-// ─── Social Metrics API ────────────────────────────────────────────────
-// Comprehensive Meta Graph API endpoint for social media analytics
-// Returns follower trends, engagement rates, audience insights, page insights
-
+// ─── Social Metrics API + Demo Data ────────────────────────────────────
 const META_API_VERSION = 'v19.0'
 const BASE = `https://graph.facebook.com/${META_API_VERSION}`
 
@@ -11,7 +9,55 @@ function getToken() {
     return process.env.META_ACCESS_TOKEN || ''
 }
 
+// ─── Demo data for Social Metrics ───────────────────────────────────────
+function getSocialMetricsDemoData() {
+    const posts = Array.from({ length: 15 }, (_, i) => {
+        const d = new Date(); d.setDate(d.getDate() - i * 2)
+        const likes = 80 + Math.floor(Math.random() * 200)
+        const comments = 5 + Math.floor(Math.random() * 30)
+        return {
+            id: `demo_${i}`, caption: ['Bodrum günbatımı 🌅', 'Havuz keyfi ☀️', 'Restoran menümüz 🍽️', 'Spa & Wellness 💆', 'Aktiviteler 🏊'][i % 5],
+            type: ['IMAGE', 'CAROUSEL_ALBUM', 'VIDEO'][i % 3], mediaUrl: null,
+            timestamp: d.toISOString(), likes, comments, engagement: likes + comments,
+            permalink: '#'
+        }
+    })
+    const totalEng = posts.reduce((s, p) => s + p.engagement, 0)
+    return {
+        success: true, demo: true,
+        overview: {
+            facebook: { name: 'Blue Dreams Resort', followers: 28450, fans: 27800, newLikes: 342, talkingAbout: 156, wereHere: 8920, link: '#', picture: null },
+            instagram: { name: 'Blue Dreams Resort', username: 'bluedreamsresort', followers: 45200, following: 420, posts: 892, profilePicture: null, bio: 'Bodrum\'un en güzel tatil deneyimi 🌊' }
+        },
+        engagement: {
+            rate: 3.8, avgLikes: Math.round(posts.reduce((s, p) => s + p.likes, 0) / posts.length),
+            avgComments: Math.round(posts.reduce((s, p) => s + p.comments, 0) / posts.length),
+            totalEngagement: totalEng,
+            bestPost: posts[0],
+            byType: [{ type: 'IMAGE', count: 5, avgEngagement: 180 }, { type: 'CAROUSEL_ALBUM', count: 5, avgEngagement: 220 }, { type: 'VIDEO', count: 5, avgEngagement: 310 }]
+        },
+        recentPosts: posts,
+        fbInsights: { page_impressions: Array.from({ length: 28 }, (_, i) => ({ date: new Date(Date.now() - i * 86400000).toISOString().split('T')[0], value: 800 + Math.floor(Math.random() * 400) })) },
+        igInsights: { reach: 12400, impressions: 34500, profile_views: 2100 },
+        fetchedAt: new Date().toISOString()
+    }
+}
+
+async function isDemoMode(): Promise<boolean> {
+    if (process.env.DEMO_MODE_SOCIAL === 'true') return true
+    try {
+        const db = prisma as any
+        const setting = await db.siteSetting?.findUnique?.({ where: { key: 'demo_mode_social' } })
+        return setting?.value === 'true'
+    } catch { return false }
+}
+
 export async function GET(request: Request) {
+    const { searchParams } = new URL(request.url)
+    if (searchParams.get('demo') === 'true' || await isDemoMode()) {
+        return NextResponse.json(getSocialMetricsDemoData())
+    }
+
     const token = getToken()
     const fbPageId = process.env.FB_PAGE_ID
     const igAccountId = process.env.IG_ACCOUNT_ID
