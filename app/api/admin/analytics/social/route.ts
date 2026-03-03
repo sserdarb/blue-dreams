@@ -10,7 +10,7 @@ const BASE_URL = `https://graph.facebook.com/${META_API_VERSION}`
 export async function GET() {
     try {
         // Ortam değişkenleri
-        const accessToken = process.env.META_ACCESS_TOKEN || "EAAeyAgqUYnQBQ5n1wczEEMUM5STILvNSAOG65uWwXbYAk100kzWsjEANi4lCmCy59qW9kGNWhlVNpufteKOzYgcbjT6UpekLI3jKLCf1JD0K0zVFjFZA5Dsm0ZCs2ZAsnufeU7qh3qOogymvQZCwtMktZBA8dd1TN8nWQp2po0w1PA6y3Er9tLbiousXZAFwyi11b8sSEBJplcRZBcZCZCVISx46mclYRcAlgZCuzw";
+        const accessToken = process.env.META_ACCESS_TOKEN || "EAAeyAgqUYnQBQ21pvMF6pbHvCuD30IcmpuyfImYpnAmdzKZCKQHhkL6DZB4pScvtbFyLZAfQdwMDrHykz1frVtFJLhPGqpU9zDhnkLrSEI4VGqlYzp7vBwadB1rIjvhdOZChb6gnwMc8MyZBe1fiQ4CHNIErFdKh2H153cCO8ynRZCLFlNs4ghK8122FdGZBQZDZD";
         const fbPageId = process.env.FB_PAGE_ID;
         const igAccountId = process.env.IG_ACCOUNT_ID;
 
