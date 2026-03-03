@@ -87,6 +87,11 @@ export const MODULE_REGISTRY: ModuleDefinition[] = [
         description: 'Sosyal medya hesap yönetimi ve paylaşım takvimi',
     },
     {
+        id: 'nav-social-metrics', label: 'Social Metrics', section: 'section-satis',
+        href: '/social/metrics', dataSource: 'local', defaultEnabled: true,
+        description: 'Kapsamlı sosyal medya analitik paneli: etkileşim, kitle, gönderi performansı ve rakip karşılaştırma',
+    },
+    {
         id: 'nav-content-gen', label: 'İçerik Üretici', section: 'section-satis',
         href: '/social/content', dataSource: 'none', defaultEnabled: true,
         description: 'AI içerik üretici, tasarım aracı, video düzenleyici',
