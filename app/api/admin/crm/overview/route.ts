@@ -1,53 +1,66 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { ElektraService } from '@/lib/services/elektra'
 
 export async function GET() {
     try {
-        const [totalGuests, totalStaysData, revenueData] = await Promise.all([
-            prisma.guestProfile.count(),
-            prisma.guestProfile.aggregate({ _sum: { totalStays: true } }),
-            prisma.guestProfile.aggregate({ _sum: { totalRevenue: true } }),
-        ])
+        // Use Elektra reservation data as the real CRM data source
+        const today = new Date()
+        const yearStart = new Date(today.getFullYear(), 0, 1)
+        const fromStr = yearStart.toISOString().split('T')[0]
+        const toStr = today.toISOString().split('T')[0]
 
-        const totalRevenue = revenueData._sum.totalRevenue || 0
-        const totalStays = totalStaysData._sum.totalStays || 0
+        let totalGuests = 0
+        let totalRevenue = 0
+        let totalStays = 0
+        let loyalGuests = 0
+        let highSpenders = 0
+        let churnRisk = 0
 
-        // In a real large DB, pulling all rows could be slow. 
-        // Here we'll pull minimal data for a fast client-side RFM aggregation or do it via DB grouping.
-        // For simplicity and to show predictive AI segments, we'll pull specific segments.
-        const oneYearAgo = new Date()
-        oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1)
+        try {
+            const reservations = await ElektraService.getReservations(fromStr, toStr, 'Reservation')
+            const rates = await ElektraService.getExchangeRates()
 
-        const twoYearsAgo = new Date()
-        twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2)
+            // Unique guest tracking
+            const guestMap = new Map<string, { stays: number; revenue: number; lastDate: string }>()
 
-        const [loyalGuests, churnRisk, highSpenders] = await Promise.all([
-            // Loyal (3+ visits)
-            prisma.guestProfile.count({ where: { totalStays: { gte: 3 } } }),
-            // Churn risk (no visit in last 2 years but multiple visits before)
-            prisma.guestProfile.count({ where: { lastCheckIn: { lt: twoYearsAgo }, totalStays: { gt: 1 } } }),
-            // High Spenders (> 5000 EUR/TRY approx)
-            prisma.guestProfile.count({ where: { totalRevenue: { gte: 5000 } } })
-        ])
+            for (const r of reservations) {
+                const key = `${r.name || ''}_${r.surname || ''}_${r.country || ''}`.toLowerCase()
+                const existing = guestMap.get(key)
+                const revEur = r.currency === 'EUR' ? r.totalPrice :
+                    r.currency === 'USD' ? r.totalPrice * (rates.EUR_TO_TRY / rates.USD_TO_TRY) :
+                        r.totalPrice / rates.EUR_TO_TRY
 
-        // Mock funnel data for Campaign ROI (since real tracking would require pixel/attribution logic)
-        const recentCampaigns = await prisma.marketingCampaign.findMany({
-            take: 5,
-            orderBy: { createdAt: 'desc' },
-            select: { name: true, totalSent: true, totalDelivered: true, totalFailed: true }
-        })
+                if (existing) {
+                    existing.stays += 1
+                    existing.revenue += revEur
+                    if (r.checkIn > existing.lastDate) existing.lastDate = r.checkIn
+                } else {
+                    guestMap.set(key, { stays: 1, revenue: revEur, lastDate: r.checkIn })
+                }
+                totalRevenue += revEur
+                totalStays += 1
+            }
 
-        const funnelData = [
-            { step: 'Gönderilen', count: recentCampaigns.reduce((a, c) => a + c.totalSent, 0) },
-            { step: 'Ulaşan', count: recentCampaigns.reduce((a, c) => a + c.totalDelivered, 0) },
-            { step: 'Tıklayan', count: Math.floor(recentCampaigns.reduce((a, c) => a + c.totalDelivered, 0) * 0.15) },
-            { step: 'Dönüşüm (Rezervasyon)', count: Math.floor(recentCampaigns.reduce((a, c) => a + c.totalDelivered, 0) * 0.03) }
-        ]
+            totalGuests = guestMap.size
+
+            // Segment calculation
+            const sixMonthsAgo = new Date()
+            sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6)
+            const sixMonthsStr = sixMonthsAgo.toISOString().split('T')[0]
+
+            for (const [, g] of guestMap) {
+                if (g.stays >= 3) loyalGuests++
+                if (g.revenue > 5000) highSpenders++
+                if (g.lastDate < sixMonthsStr && g.stays > 1) churnRisk++
+            }
+        } catch (err) {
+            console.error('[CRM Overview] Elektra fetch error:', err)
+        }
 
         return NextResponse.json({
             stats: {
                 totalGuests,
-                totalRevenue,
+                totalRevenue: Math.round(totalRevenue),
                 totalStays,
                 avgRevenuePerGuest: totalGuests > 0 ? (totalRevenue / totalGuests).toFixed(2) : 0,
             },
@@ -56,10 +69,15 @@ export async function GET() {
                 churnRisk,
                 highSpenders,
             },
-            funnel: funnelData,
-            recentCampaigns
+            funnel: [
+                { step: 'Toplam Misafir', count: totalGuests },
+                { step: 'Tekrar Gelen', count: loyalGuests },
+                { step: 'Yüksek Harcama', count: highSpenders },
+                { step: 'Kayıp Riski', count: churnRisk },
+            ],
+            recentCampaigns: []
         })
-    } catch (e) {
+    } catch (e: any) {
         console.error('[CRM Overview]', e)
         return NextResponse.json({ error: 'Failed to load overview data' }, { status: 500 })
     }

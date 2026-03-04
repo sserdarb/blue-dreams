@@ -50,6 +50,7 @@ export default function AnalyticsPage() {
     const [countriesData, setCountriesData] = useState<any[]>([])
     const [totalsData, setTotalsData] = useState<any>({ users: 0, sessions: 0, bounceRate: 0, duration: '0m 0s' })
     const [hasRealData, setHasRealData] = useState(false)
+    const [realtimeUsers, setRealtimeUsers] = useState<number>(0)
 
     useEffect(() => {
         const loadSettings = async () => {
@@ -78,9 +79,13 @@ export default function AnalyticsPage() {
                         users: data.totals?.users || 0,
                         sessions: data.totals?.sessions || 0,
                         bounceRate: data.totals?.averageBounceRate || 0,
-                        duration: '2m 15s' // Mock fallback for duration since GA4 logic is complex
+                        duration: data.totals?.avgSessionDuration || '0m 0s'
                     })
                     setHasRealData(true)
+                    // Set realtime from API if available
+                    if (data.realtime?.activeUsers) {
+                        setRealtimeUsers(data.realtime.activeUsers)
+                    }
                 } else if (!data.success && data.error) {
                     setApiError(data.error)
                     setHasRealData(false)
@@ -321,7 +326,7 @@ export default function AnalyticsPage() {
                         <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl p-8 text-center text-white relative overflow-hidden">
                             <div className="absolute top-0 right-0 p-32 bg-white/5 rounded-full blur-3xl -mr-16 -mt-16"></div>
                             <p className="text-blue-100 font-medium text-lg uppercase tracking-wider mb-2">Right Now</p>
-                            <h2 className="text-6xl font-bold mb-4">42</h2>
+                            <h2 className="text-6xl font-bold mb-4">{realtimeUsers}</h2>
                             <p className="text-blue-200">Active users on site</p>
                             <div className="mt-8 flex justify-center gap-1">
                                 {[...Array(5)].map((_, i) => (

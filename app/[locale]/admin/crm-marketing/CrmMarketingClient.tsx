@@ -88,7 +88,13 @@ function OverviewTab() {
         fetch('/api/admin/crm/overview')
             .then(res => res.json())
             .then(d => {
-                setData(d)
+                // Ensure default structure even if API returns partial data
+                setData({
+                    stats: d.stats || { totalGuests: 0, totalRevenue: 0, totalStays: 0, avgRevenuePerGuest: 0 },
+                    segments: d.segments || { loyalGuests: 0, churnRisk: 0, highSpenders: 0 },
+                    funnel: d.funnel || [],
+                    recentCampaigns: d.recentCampaigns || []
+                })
                 setLoading(false)
             })
             .catch(() => setLoading(false))
