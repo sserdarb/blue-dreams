@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { EncryptionUtils } from '@/lib/utils/encryption'
 
 const db = prisma as any
 
@@ -11,7 +12,7 @@ export async function GET() {
                 gaId: config.gaId || '',
                 gtmId: config.gtmId || '',
                 fbPixelId: config.fbPixelId || '',
-                gaApiSecret: config.gaApiSecret || '',
+                gaApiSecret: config.gaApiSecret ? EncryptionUtils.decrypt(config.gaApiSecret) : '',
                 gaPropertyId: config.gaPropertyId || '',
                 gaServiceKey: config.gaServiceKey ? '***configured***' : '',
                 googleClientId: config.googleClientId || '',
@@ -42,7 +43,7 @@ export async function POST(request: Request) {
             gaId: settings.gaId || null,
             gtmId: settings.gtmId || null,
             fbPixelId: settings.fbPixelId || null,
-            gaApiSecret: settings.gaApiSecret || null,
+            gaApiSecret: settings.gaApiSecret ? EncryptionUtils.encrypt(settings.gaApiSecret) : null,
             gaPropertyId: settings.gaPropertyId || null,
             googleClientId: settings.googleClientId || null,
             useGaApi: settings.useGaApi || false,
@@ -50,7 +51,7 @@ export async function POST(request: Request) {
 
         // Only update service key if a new one is provided (not the masked value)
         if (settings.gaServiceKey && settings.gaServiceKey !== '***configured***') {
-            data.gaServiceKey = settings.gaServiceKey
+            data.gaServiceKey = EncryptionUtils.encrypt(settings.gaServiceKey)
         }
 
         if (existing) {

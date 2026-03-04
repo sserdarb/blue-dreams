@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { EncryptionUtils } from '@/lib/utils/encryption'
 
 // Helper: get date N days ago
 function daysAgo(n: number): Date {
@@ -142,9 +143,10 @@ async function getGA4Analytics(config: any) {
             return null
         }
 
-        // Decode service account key
+        // Decode service account key (decrypt first, then base64 decode)
+        const decryptedKey = EncryptionUtils.decrypt(config.gaServiceKey)
         const serviceKeyJson = JSON.parse(
-            Buffer.from(config.gaServiceKey, 'base64').toString('utf-8')
+            Buffer.from(decryptedKey, 'base64').toString('utf-8')
         )
 
         // Create JWT for Google API auth

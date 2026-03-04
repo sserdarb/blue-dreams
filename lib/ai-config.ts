@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { EncryptionUtils } from '@/lib/utils/encryption'
 
 // Default model — gemini-2.5-flash (latest, fastest, most available)
 export const GEMINI_MODEL = 'gemini-2.5-flash'
@@ -46,8 +47,11 @@ export async function getGeminiApiKey(locale = 'tr'): Promise<{ key: string; sou
             where: { language: locale },
             select: { apiKey: true }
         })
-        if (settings?.apiKey && !exhaustedKeys.has(settings.apiKey)) {
-            return { key: settings.apiKey, source: 'database' }
+        if (settings?.apiKey) {
+            const decryptedKey = EncryptionUtils.decrypt(settings.apiKey)
+            if (decryptedKey && !exhaustedKeys.has(decryptedKey)) {
+                return { key: decryptedKey, source: 'database' }
+            }
         }
     } catch (e) {
         // DB might not be ready yet, fall through
@@ -67,7 +71,7 @@ export async function getGeminiApiKey(locale = 'tr'): Promise<{ key: string; sou
             select: { apiKey: true }
         })
         if (settings?.apiKey) {
-            return { key: settings.apiKey, source: 'database (exhausted)' }
+            return { key: EncryptionUtils.decrypt(settings.apiKey), source: 'database (exhausted)' }
         }
     } catch { }
 

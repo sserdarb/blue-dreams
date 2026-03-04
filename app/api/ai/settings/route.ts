@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { EncryptionUtils } from '@/lib/utils/encryption'
 
 function maskApiKey(key: string | null | undefined): string {
     if (!key) return ''
@@ -21,11 +22,14 @@ export async function GET(request: Request) {
             return NextResponse.json({ systemPrompt: '', tone: 'friendly', apiKeyMasked: '' })
         }
 
+        // Decrypt key before masking
+        const rawApiKey = settings.apiKey ? EncryptionUtils.decrypt(settings.apiKey) : ''
+
         // Never expose real API key — only send masked version
         return NextResponse.json({
             ...settings,
             apiKey: undefined,
-            apiKeyMasked: maskApiKey(settings.apiKey),
+            apiKeyMasked: maskApiKey(rawApiKey),
             googleSheetId: settings.googleSheetId || ''
         })
     } catch (error) {
@@ -41,7 +45,7 @@ export async function POST(request: Request) {
         // Build update data — only include apiKey if a new one was provided
         const updateData: any = { systemPrompt, tone }
         if (apiKey && apiKey.trim()) {
-            updateData.apiKey = apiKey.trim()
+            updateData.apiKey = EncryptionUtils.encrypt(apiKey.trim())
         }
         if (googleSheetId !== undefined) {
             updateData.googleSheetId = googleSheetId?.trim() || null
@@ -62,17 +66,19 @@ export async function POST(request: Request) {
                     systemPrompt,
                     language,
                     tone,
-                    apiKey: apiKey?.trim() || '',
+                    apiKey: apiKey && apiKey.trim() ? EncryptionUtils.encrypt(apiKey.trim()) : '',
                     googleSheetId: googleSheetId?.trim() || null
                 }
             })
         }
 
+        const rawApiKey = settings.apiKey ? EncryptionUtils.decrypt(settings.apiKey) : ''
+
         // Return with masked key
         return NextResponse.json({
             ...settings,
             apiKey: undefined,
-            apiKeyMasked: maskApiKey(settings.apiKey),
+            apiKeyMasked: maskApiKey(rawApiKey),
             googleSheetId: settings.googleSheetId || ''
         })
 

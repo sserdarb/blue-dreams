@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { BetaAnalyticsDataClient } from '@google-analytics/data'
 import { prisma } from '@/lib/prisma'
+import { EncryptionUtils } from '@/lib/utils/encryption'
 
 // ─── Demo Data for Analytics Traffic ────────────────────────────────────
 function getAnalyticsDemoData() {
@@ -91,8 +92,12 @@ export async function GET(request: Request) {
         let privateKey = process.env.GA_PRIVATE_KEY
 
         if (config?.gaServiceKey) {
+            // First decrypt (EncryptionUtils safely returns original if not encrypted)
+            const decryptedKey = EncryptionUtils.decrypt(config.gaServiceKey)
+
             try {
-                const serviceAccount = JSON.parse(config.gaServiceKey)
+                // Try parsing directly (in case it was saved as JSON)
+                const serviceAccount = JSON.parse(decryptedKey)
                 if (serviceAccount.client_email && serviceAccount.private_key) {
                     clientEmail = serviceAccount.client_email
                     privateKey = serviceAccount.private_key
@@ -100,7 +105,7 @@ export async function GET(request: Request) {
             } catch (e) {
                 // If it's pure Base64, try decoding
                 try {
-                    const decoded = Buffer.from(config.gaServiceKey, 'base64').toString('utf-8')
+                    const decoded = Buffer.from(decryptedKey, 'base64').toString('utf-8')
                     const serviceAccount = JSON.parse(decoded)
                     if (serviceAccount.client_email && serviceAccount.private_key) {
                         clientEmail = serviceAccount.client_email
