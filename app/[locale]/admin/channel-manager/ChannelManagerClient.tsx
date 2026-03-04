@@ -7,7 +7,7 @@ import {
     Globe, Settings, RefreshCw, AlertCircle, CheckCircle2,
     CalendarDays, BarChart3, Link as LinkIcon, ArrowRightLeft,
     Search, Filter, Plus, FileText, ChevronRight, TrendingUp,
-    DollarSign, BedDouble, Users, AlertTriangle
+    DollarSign, BedDouble, Users, AlertTriangle, X, Save
 } from 'lucide-react'
 
 interface PriceEntry {
@@ -57,6 +57,11 @@ export default function ChannelManagerClient() {
     const [isSyncing, setIsSyncing] = useState(false)
     const [currency, setCurrency] = useState('EUR')
 
+    // Price Edit Modal State
+    const [editingCell, setEditingCell] = useState<{ date: string, type: string, entry: PriceEntry } | null>(null)
+    const [editPrice, setEditPrice] = useState('')
+    const [isSaving, setIsSaving] = useState(false)
+
     const fetchData = useCallback(async () => {
         try {
             setLoading(true)
@@ -81,6 +86,48 @@ export default function ChannelManagerClient() {
         setIsSyncing(true)
         await fetchData()
         setIsSyncing(false)
+    }
+
+    const handleSavePrice = async () => {
+        if (!editingCell) return
+        setIsSaving(true)
+        try {
+            const res = await fetch('/api/admin/channel-manager/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    date: editingCell.date,
+                    roomType: editingCell.type,
+                    roomTypeId: editingCell.entry.roomTypeId,
+                    basePrice: parseFloat(editPrice),
+                    currency,
+                    action: 'update_price'
+                })
+            })
+            if (res.ok) {
+                // Update local state to reflect change without full refetch
+                setData(prev => {
+                    if (!prev) return prev
+                    const newCalendar = { ...prev.priceCalendar }
+                    if (newCalendar[editingCell.date]) {
+                        const idx = newCalendar[editingCell.date].findIndex(e => e.roomType === editingCell.type)
+                        if (idx !== -1) {
+                            newCalendar[editingCell.date][idx].basePrice = parseFloat(editPrice)
+                            newCalendar[editingCell.date][idx].discountedPrice = null // Reset discount if base changed manually
+                        }
+                    }
+                    return { ...prev, priceCalendar: newCalendar }
+                })
+                setEditingCell(null)
+            } else {
+                alert('Fiyat güncellenemedi.')
+            }
+        } catch (e) {
+            console.error(e)
+            alert('Ağ hatası oluştu.')
+        } finally {
+            setIsSaving(false)
+        }
     }
 
     const sortedDates = data?.priceCalendar ? Object.keys(data.priceCalendar).sort() : []
@@ -294,7 +341,15 @@ export default function ChannelManagerClient() {
                                                             const entry = entries.find(e => e.roomType === rt)
                                                             if (!entry) return <td key={rt} className="p-3 text-center text-slate-300">—</td>
                                                             return (
-                                                                <td key={rt} className="p-3 text-center">
+                                                                <td
+                                                                    key={rt}
+                                                                    className="p-3 text-center cursor-pointer group relative"
+                                                                    onClick={() => {
+                                                                        setEditingCell({ date, type: rt, entry })
+                                                                        setEditPrice((entry.discountedPrice || entry.basePrice || 0).toString())
+                                                                    }}
+                                                                >
+                                                                    <div className="absolute inset-0 border-2 border-transparent group-hover:border-blue-400 rounded transition-colors" />
                                                                     {entry.stopsell ? (
                                                                         <Badge variant="outline" className="bg-red-50 text-red-600 border-red-200 text-[10px]">
                                                                             <AlertTriangle size={10} className="mr-1" /> STOPSELL
@@ -434,6 +489,64 @@ export default function ChannelManagerClient() {
                         </Card>
                     )}
                 </>
+            )}
+
+            {/* Price Edit Modal */}
+            {editingCell && (
+                <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+                    <Card className="max-w-md w-full p-6 shadow-2xl">
+                        <div className="flex justify-between items-start mb-6">
+                            <div>
+                                <h3 className="text-lg font-bold">Fiyat Güncelle</h3>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                    {new Date(editingCell.date).toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric' })} — {editingCell.type}
+                                </p>
+                            </div>
+                            <button onClick={() => setEditingCell(null)} className="text-slate-400 hover:text-slate-600">
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium mb-1">Mevcut Müsaitlik</label>
+                                <div className="text-lg font-bold text-amber-500">{editingCell.entry.available} oda kaldı</div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-1">Yeni Fiyat ({currency})</label>
+                                <div className="relative">
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <span className="text-slate-500">{currency === 'EUR' ? '€' : currency === 'USD' ? '$' : '₺'}</span>
+                                    </div>
+                                    <input
+                                        type="number"
+                                        className="w-full pl-8 pr-3 py-2 rounded-lg border dark:border-slate-700 bg-white dark:bg-slate-900"
+                                        value={editPrice}
+                                        onChange={e => setEditPrice(e.target.value)}
+                                        autoFocus
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-end gap-3 mt-8">
+                            <button
+                                onClick={() => setEditingCell(null)}
+                                className="px-4 py-2 rounded-lg text-sm font-medium bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition"
+                            >
+                                İptal
+                            </button>
+                            <button
+                                onClick={handleSavePrice}
+                                disabled={isSaving || !editPrice}
+                                className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition disabled:opacity-50"
+                            >
+                                {isSaving ? <RefreshCw size={16} className="animate-spin" /> : <Save size={16} />}
+                                PMS'e Gönder
+                            </button>
+                        </div>
+                    </Card>
+                </div>
             )}
         </div>
     )
