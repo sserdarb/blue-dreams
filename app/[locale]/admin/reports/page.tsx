@@ -48,6 +48,12 @@ export default async function ManagementReportsPage({
         ])
 
         console.log(`[Reports] CY reservations: ${currentYearRes.length}, PY reservations: ${prevYearRes.length}`)
+        if (prevYearRes.length > 0) {
+            const sample = prevYearRes.slice(0, 3)
+            console.log(`[Reports] PY sample: ${JSON.stringify(sample.map(r => ({ id: r.id, checkIn: r.checkIn, nights: r.nights, roomCount: r.roomCount, totalPrice: r.totalPrice, currency: r.currency, status: r.status })))}`)
+        } else {
+            console.log(`[Reports] WARNING: PY has ZERO reservations for year ${prevYear}!`)
+        }
 
         const serialized = {
             currentYear,
