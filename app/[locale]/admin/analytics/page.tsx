@@ -1,12 +1,12 @@
 'use client'
 export const dynamic = 'force-dynamic'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import {
     BarChart3, Save, Check, AlertCircle, ExternalLink,
     Eye, EyeOff, ToggleLeft, ToggleRight, Key, Settings,
     Activity, Users, Clock, Globe, ArrowUpRight, ArrowDownRight,
-    Map
+    Map, Monitor, Smartphone, Tablet
 } from 'lucide-react'
 import {
     LineChart, Line, AreaChart, Area, BarChart, Bar,
@@ -31,6 +31,104 @@ interface AnalyticsSettings {
 // Removed mock data in favor of API data
 
 const COLORS = ['#0891b2', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6']
+
+function RealtimeTab({ realtimeUsers, setRealtimeUsers }: { realtimeUsers: number; setRealtimeUsers: (n: number) => void }) {
+    const [countries, setCountries] = useState<any[]>([])
+    const [pages, setPages] = useState<any[]>([])
+    const [devices, setDevices] = useState<any[]>([])
+
+    const fetchRealtime = useCallback(async () => {
+        try {
+            const res = await fetch('/api/admin/analytics/realtime')
+            const data = await res.json()
+            if (data.success) {
+                setRealtimeUsers(data.activeUsers || 0)
+                setCountries(data.countries || [])
+                setPages(data.pages || [])
+                setDevices(data.devices || [])
+            }
+        } catch { /* silent */ }
+    }, [setRealtimeUsers])
+
+    useEffect(() => {
+        fetchRealtime()
+        const interval = setInterval(fetchRealtime, 10000)
+        return () => clearInterval(interval)
+    }, [fetchRealtime])
+
+    const deviceIcon = (d: string) => {
+        if (d === 'mobile') return <Smartphone size={16} />
+        if (d === 'tablet') return <Tablet size={16} />
+        return <Monitor size={16} />
+    }
+
+    return (
+        <div className="space-y-6 animate-fade-in">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl p-8 text-center text-white relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-32 bg-white/5 rounded-full blur-3xl -mr-16 -mt-16"></div>
+                    <p className="text-blue-100 font-medium text-lg uppercase tracking-wider mb-2">Right Now</p>
+                    <h2 className="text-6xl font-bold mb-4">{realtimeUsers}</h2>
+                    <p className="text-blue-200">Active users on site</p>
+                    <div className="mt-6 flex justify-center gap-1">
+                        {[...Array(5)].map((_, i) => (
+                            <div key={i} className="w-1 h-8 bg-white/20 rounded-full animate-pulse" style={{ animationDelay: `${i * 0.2}s` }}></div>
+                        ))}
+                    </div>
+                    <p className="text-xs text-blue-300 mt-4">Her 10 saniyede güncellenir</p>
+                </div>
+
+                {/* Devices */}
+                <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Cihaz Dağılımı</h3>
+                    <div className="space-y-3">
+                        {devices.map((d, i) => (
+                            <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-white/5">
+                                <div className="text-cyan-500">{deviceIcon(d.device)}</div>
+                                <span className="text-slate-900 dark:text-white font-medium capitalize flex-1">{d.device}</span>
+                                <span className="text-lg font-bold text-cyan-500">{d.users}</span>
+                            </div>
+                        ))}
+                        {devices.length === 0 && <p className="text-slate-500 text-sm">Veri yükleniyor...</p>}
+                    </div>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Countries */}
+                <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Aktif Ülkeler</h3>
+                    <div className="space-y-2">
+                        {countries.map((c, i) => (
+                            <div key={i} className="flex items-center justify-between py-2 border-b border-slate-100 dark:border-white/5 last:border-0">
+                                <div className="flex items-center gap-2">
+                                    <Globe size={14} className="text-slate-500" />
+                                    <span className="text-slate-900 dark:text-white">{c.country}</span>
+                                </div>
+                                <span className="font-bold text-cyan-500">{c.users}</span>
+                            </div>
+                        ))}
+                        {countries.length === 0 && <p className="text-slate-500 text-sm">Veri yükleniyor...</p>}
+                    </div>
+                </div>
+
+                {/* Pages */}
+                <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Popüler Sayfalar</h3>
+                    <div className="space-y-2">
+                        {pages.map((p, i) => (
+                            <div key={i} className="flex items-center justify-between py-2 border-b border-slate-100 dark:border-white/5 last:border-0">
+                                <span className="text-slate-900 dark:text-white text-sm truncate max-w-[250px]">{p.page}</span>
+                                <span className="font-bold text-cyan-500">{p.users}</span>
+                            </div>
+                        ))}
+                        {pages.length === 0 && <p className="text-slate-500 text-sm">Veri yükleniyor...</p>}
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
+}
 
 export default function AnalyticsPage() {
     const [settings, setSettings] = useState<AnalyticsSettings>({
@@ -321,25 +419,7 @@ export default function AnalyticsPage() {
             )}
 
             {activeTab === 'realtime' && (
-                <div className="space-y-6 animate-fade-in">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl p-8 text-center text-white relative overflow-hidden">
-                            <div className="absolute top-0 right-0 p-32 bg-white/5 rounded-full blur-3xl -mr-16 -mt-16"></div>
-                            <p className="text-blue-100 font-medium text-lg uppercase tracking-wider mb-2">Right Now</p>
-                            <h2 className="text-6xl font-bold mb-4">{realtimeUsers}</h2>
-                            <p className="text-blue-200">Active users on site</p>
-                            <div className="mt-8 flex justify-center gap-1">
-                                {[...Array(5)].map((_, i) => (
-                                    <div key={i} className="w-1 h-8 bg-white/20 rounded-full animate-pulse" style={{ animationDelay: `${i * 0.2}s` }}></div>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6">
-                            <RecentVisitors />
-                        </div>
-                    </div>
-                </div>
+                <RealtimeTab realtimeUsers={realtimeUsers} setRealtimeUsers={setRealtimeUsers} />
             )}
 
             {activeTab === 'demographics' && (

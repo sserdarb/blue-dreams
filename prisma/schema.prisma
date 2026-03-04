@@ -1019,3 +1019,11 @@ model MarketingConfig {
   tiktokPixelId     String?
   updatedAt         DateTime @updatedAt
 }
+
+// ===== Site Setting (Key-Value for demo mode toggles etc.) =====
+
+model SiteSetting {
+  id    String @id @default(uuid())
+  key   String @unique
+  value String
+}
