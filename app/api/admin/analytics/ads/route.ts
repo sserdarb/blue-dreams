@@ -45,7 +45,8 @@ async function getGoogleAdsAccessToken() {
 export async function GET() {
     try {
         const metaToken = process.env.META_ACCESS_TOKEN
-        const fbAdAccountId = process.env.FB_AD_ACCOUNT_ID
+        // Support both old and new env var names for the Ads Account ID
+        const fbAdAccountId = process.env.META_ADS_ACCOUNT_ID || process.env.FB_AD_ACCOUNT_ID
         const googleDevToken = process.env.GOOGLE_ADS_DEVELOPER_TOKEN
         const googleCustomerId = process.env.GOOGLE_ADS_CUSTOMER_ID?.replace(/-/g, '') // remove dashes
 
