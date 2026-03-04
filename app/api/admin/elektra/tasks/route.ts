@@ -1,88 +1,60 @@
 import { NextResponse } from 'next/server'
+import { ElektraService } from '@/lib/services/elektra'
 
-// ─── Elektra API Task/Housekeeping Endpoint Discovery ──────────
-// Probes the Elektra PMS API for task management, housekeeping,
-// and guest request endpoints that may not be publicly documented
-
-const API_BASE = 'https://bookingapi.elektraweb.com'
-const HOTEL_ID = 33264
-
-async function getJwt(): Promise<string> {
-    const res = await fetch(`${API_BASE}/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            'hotel-id': HOTEL_ID,
-            'usercode': process.env.ELEKTRA_USER_CODE || 'asis',
-            'password': process.env.ELEKTRA_PASSWORD || ''
-        }),
-        cache: 'no-store'
-    })
-    if (!res.ok) throw new Error(`Login failed: ${res.status}`)
-    const data = await res.json()
-    if (!data.jwt) throw new Error('No JWT')
-    return data.jwt
-}
+const ELEKTRA_APP_ID = process.env.ELEKTRA_HOTEL_ID || '14264'
 
 export async function GET() {
-    const results: { endpoint: string; status: number; hasData: boolean; sample?: any }[] = []
-
     try {
-        const jwt = await getJwt()
+        const elektra = ElektraService.getInstance()
 
-        // Potential task/housekeeping endpoints to probe
-        const endpoints = [
-            `/hotel/${HOTEL_ID}/tasks`,
-            `/hotel/${HOTEL_ID}/task-list`,
-            `/hotel/${HOTEL_ID}/housekeeping`,
-            `/hotel/${HOTEL_ID}/housekeeping-list`,
-            `/hotel/${HOTEL_ID}/hk-status`,
-            `/hotel/${HOTEL_ID}/guest-requests`,
-            `/hotel/${HOTEL_ID}/guest-request-list`,
-            `/hotel/${HOTEL_ID}/complaints`,
-            `/hotel/${HOTEL_ID}/work-orders`,
-            `/hotel/${HOTEL_ID}/maintenance`,
-            `/hotel/${HOTEL_ID}/staff-tasks`,
-            `/hotel/${HOTEL_ID}/room-status`,
-            `/hotel/${HOTEL_ID}/room-status-list`,
-            `/hotel/${HOTEL_ID}/minibar`,
-            `/hotel/${HOTEL_ID}/lost-found`,
+        // Ensure token
+        await elektra.fetchCountries()
+        // Wait, fetchCountries handles its own login. Let's just trigger a login explicitly if needed.
+        // Actually, we can use any authenticated endpoint test logic.
+        const token = (elektra as any).token
+        if (!token) {
+            return NextResponse.json({ success: false, error: 'No token' }, { status: 401 })
+        }
+
+        const urlsToTest = [
+            `/hotel/${ELEKTRA_APP_ID}/tasks`,
+            `/hotel/${ELEKTRA_APP_ID}/housekeeping`,
+            `/hotel/${ELEKTRA_APP_ID}/room-status`,
+            `/hotel/${ELEKTRA_APP_ID}/guest-requests`,
+            `/hotel/${ELEKTRA_APP_ID}/maintenance`,
         ]
 
-        for (const ep of endpoints) {
+        const results: Record<string, any> = {}
+
+        for (const path of urlsToTest) {
             try {
-                const res = await fetch(`${API_BASE}${ep}`, {
-                    headers: { 'Authorization': `Bearer ${jwt}` },
-                    signal: AbortSignal.timeout(5000),
+                const res = await fetch(`https://bookingapi.elektraweb.com${path}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
                 })
-                const hasData = res.ok
-                let sample = null
-                if (res.ok) {
-                    try {
-                        const body = await res.json()
-                        sample = Array.isArray(body)
-                            ? { count: body.length, firstItem: body[0] ? Object.keys(body[0]) : [] }
-                            : { keys: Object.keys(body).slice(0, 10) }
-                    } catch { sample = 'non-JSON response' }
+
+                results[path] = {
+                    status: res.status,
+                    statusText: res.statusText,
+                    isJson: res.headers.get('content-type')?.includes('json')
                 }
-                results.push({ endpoint: ep, status: res.status, hasData, sample })
+
+                if (res.ok && results[path].isJson) {
+                    const data = await res.json()
+                    results[path].dataPreview = Array.isArray(data) ? data.slice(0, 2) : data
+                }
             } catch (err: any) {
-                results.push({ endpoint: ep, status: 0, hasData: false, sample: err.message })
+                results[path] = { error: err.message }
             }
         }
 
-        const available = results.filter(r => r.hasData)
         return NextResponse.json({
             success: true,
-            summary: `${available.length}/${results.length} endpoints responded with data`,
-            available,
-            unavailable: results.filter(r => !r.hasData),
+            results
         })
     } catch (error: any) {
-        return NextResponse.json({
-            success: false,
-            error: error.message,
-            results
-        }, { status: 500 })
+        return NextResponse.json(
+            { success: false, error: error.message },
+            { status: 500 }
+        )
     }
 }

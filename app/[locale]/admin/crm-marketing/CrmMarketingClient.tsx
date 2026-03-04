@@ -32,14 +32,14 @@ type Tab = 'overview' | 'guests' | 'segments' | 'campaigns' | 'emailTemplates' |
 export default function CrmClient() {
     const [tab, setTab] = useState<Tab>('overview')
 
-    const tabs: { key: Tab; label: string; icon: React.ReactNode }[] = [
-        { key: 'overview', label: 'Dashboard', icon: <BarChart3 size={16} /> },
-        { key: 'guests', label: 'Misafir Veritabanı', icon: <Users size={16} /> },
-        { key: 'segments', label: 'Segmentler', icon: <Target size={16} /> },
-        { key: 'campaigns', label: 'Kampanyalar', icon: <Send size={16} /> },
-        { key: 'emailTemplates', label: 'E-posta Şablonları', icon: <Mail size={16} /> },
-        { key: 'inbox', label: 'Merkezi Inbox', icon: <MessageSquare size={16} /> },
-        { key: 'ads', label: 'Google Ads', icon: <BarChart3 size={16} /> },
+    const tabs: { key: Tab; label: string; Icon: React.ElementType }[] = [
+        { key: 'overview', label: 'Dashboard', Icon: BarChart3 },
+        { key: 'guests', label: 'Misafir Veritabanı', Icon: Users },
+        { key: 'segments', label: 'Segmentler', Icon: Target },
+        { key: 'campaigns', label: 'Kampanyalar', Icon: Send },
+        { key: 'emailTemplates', label: 'E-posta Şablonları', Icon: Mail },
+        { key: 'inbox', label: 'Merkezi Inbox', Icon: MessageSquare },
+        { key: 'ads', label: 'Google Ads', Icon: BarChart3 },
     ]
 
     return (
@@ -54,12 +54,15 @@ export default function CrmClient() {
 
             {/* Tabs */}
             <div className="flex gap-1 bg-slate-100 dark:bg-slate-800/50 p-1 rounded-lg overflow-x-auto">
-                {tabs.map(t => (
-                    <button key={t.key} onClick={() => setTab(t.key)}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all whitespace-nowrap ${tab === t.key ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-slate-100 dark:bg-slate-800/50'}`}>
-                        {t.icon} {t.label}
-                    </button>
-                ))}
+                {tabs.map(t => {
+                    const Icon = t.Icon
+                    return (
+                        <button key={t.key} onClick={() => setTab(t.key)}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all whitespace-nowrap ${tab === t.key ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-slate-100 dark:bg-slate-800/50'}`}>
+                            <Icon size={16} /> {t.label}
+                        </button>
+                    )
+                })}
             </div>
 
             {/* Tab Content */}
@@ -304,16 +307,19 @@ function GuestsTab() {
             {/* Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {[
-                    { label: 'Toplam Misafir', value: total, icon: <Users size={16} /> },
-                    { label: 'Telefonu Var', value: guests.filter(g => g.phone).length, icon: <Phone size={16} /> },
-                    { label: 'Tekrar Gelen', value: guests.filter(g => g.totalStays > 1).length, icon: <TrendingUp size={16} /> },
-                    { label: 'Bu Ay Giriş', value: guests.filter(g => g.lastCheckIn && new Date(g.lastCheckIn).getMonth() === new Date().getMonth()).length, icon: <Calendar size={16} /> },
-                ].map((s, i) => (
-                    <Card key={i} className="p-3 flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-primary/10 text-primary">{s.icon}</div>
-                        <div><p className="text-2xl font-bold">{s.value}</p><p className="text-xs text-muted-foreground">{s.label}</p></div>
-                    </Card>
-                ))}
+                    { label: 'Toplam Misafir', value: total, Icon: Users },
+                    { label: 'Telefonu Var', value: guests.filter(g => g.phone).length, Icon: Phone },
+                    { label: 'Tekrar Gelen', value: guests.filter(g => g.totalStays > 1).length, Icon: TrendingUp },
+                    { label: 'Bu Ay Giriş', value: guests.filter(g => g.lastCheckIn && new Date(g.lastCheckIn).getMonth() === new Date().getMonth()).length, Icon: Calendar },
+                ].map((s, i) => {
+                    const Icon = s.Icon
+                    return (
+                        <Card key={i} className="p-3 flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-primary/10 text-primary"><Icon size={16} /></div>
+                            <div><p className="text-2xl font-bold">{s.value}</p><p className="text-xs text-muted-foreground">{s.label}</p></div>
+                        </Card>
+                    )
+                })}
             </div>
 
             {/* Table */}
@@ -570,7 +576,7 @@ function EmailTemplatesTab() {
     }
 
     const categoryLabels: Record<string, string> = { general: 'Genel', welcome: 'Hoşgeldin', promo: 'Promosyon', seasonal: 'Sezon', event: 'Etkinlik', feedback: 'Geri Bildirim' }
-    const categoryIcons: Record<string, React.ReactNode> = { general: <Mail size={14} />, welcome: <UserCheck size={14} />, promo: <Tag size={14} />, seasonal: <Calendar size={14} />, event: <BarChart3 size={14} />, feedback: <MessageCircle size={14} /> }
+    const categoryIcons: Record<string, React.ElementType> = { general: Mail, welcome: UserCheck, promo: Tag, seasonal: Calendar, event: BarChart3, feedback: MessageCircle }
 
     return (
         <div className="space-y-4">
@@ -604,7 +610,7 @@ function EmailTemplatesTab() {
                             <Card key={t.id} className="p-4 group hover:shadow-md transition">
                                 <div className="flex items-start justify-between">
                                     <div className="flex items-center gap-2">
-                                        {categoryIcons[t.category] || <Mail size={14} />}
+                                        {categoryIcons[t.category] ? React.createElement(categoryIcons[t.category], { size: 14 }) : <Mail size={14} />}
                                         <Badge variant="outline" className="text-xs">{categoryLabels[t.category] || t.category}</Badge>
                                     </div>
                                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition">
@@ -717,15 +723,18 @@ function UnifiedInboxTab() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-0">
                 <div className="flex gap-2">
                     {[
-                        { key: 'conversations' as const, label: 'Konuşmalar', icon: <MessageCircle size={14} /> },
-                        { key: 'messages' as const, label: 'Tüm Mesajlar', icon: <Inbox size={14} /> },
-                        { key: 'templates' as const, label: 'Hızlı Yanıtlar', icon: <Reply size={14} /> },
-                    ].map(t => (
-                        <button key={t.key} onClick={() => { setView(t.key); setSelectedPhone(null) }}
-                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm ${view === t.key ? 'bg-primary text-primary-foreground' : 'bg-slate-100 dark:bg-slate-800/50 hover:bg-slate-200 dark:bg-slate-800'}`}>
-                            {t.icon} {t.label}
-                        </button>
-                    ))}
+                        { key: 'conversations' as const, label: 'Konuşmalar', Icon: MessageCircle },
+                        { key: 'messages' as const, label: 'Tüm Mesajlar', Icon: Inbox },
+                        { key: 'templates' as const, label: 'Hızlı Yanıtlar', Icon: Reply },
+                    ].map(t => {
+                        const Icon = t.Icon
+                        return (
+                            <button key={t.key} onClick={() => { setView(t.key); setSelectedPhone(null) }}
+                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm ${view === t.key ? 'bg-primary text-primary-foreground' : 'bg-slate-100 dark:bg-slate-800/50 hover:bg-slate-200 dark:bg-slate-800'}`}>
+                                <Icon size={14} /> {t.label}
+                            </button>
+                        )
+                    })}
                 </div>
                 {view === 'templates' && (
                     <button onClick={() => setShowNewTemplate(!showNewTemplate)} className="flex items-center gap-1 px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-sm"><Plus size={14} /> Yeni Şablon</button>
