@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Poppins, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import AnalyticsScripts, { GTMNoScript } from "@/components/AnalyticsScripts";
+import { VisitorTracker } from "@/components/VisitorTracker";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -90,6 +91,7 @@ export default function RootLayout({
         className={`${poppins.variable} ${playfair.variable} antialiased font-sans`}
       >
         <GTMNoScript />
+        <VisitorTracker />
         {children}
       </body>
     </html>

@@ -6,7 +6,7 @@ import {
     BarChart3, Save, Check, AlertCircle, ExternalLink,
     Eye, EyeOff, ToggleLeft, ToggleRight, Key, Settings,
     Activity, Users, Clock, Globe, ArrowUpRight, ArrowDownRight,
-    Map, Monitor, Smartphone, Tablet
+    Map, Monitor, Smartphone, Tablet, MousePointer
 } from 'lucide-react'
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts'
 import { PlatformRadar } from '@/components/admin/analytics/PlatformRadar'
@@ -33,6 +33,7 @@ function RealtimeTab({ realtimeUsers, setRealtimeUsers }: { realtimeUsers: numbe
     const [countries, setCountries] = useState<any[]>([])
     const [pages, setPages] = useState<any[]>([])
     const [devices, setDevices] = useState<any[]>([])
+    const [activities, setActivities] = useState<any[]>([])
 
     const fetchRealtime = useCallback(async () => {
         try {
@@ -43,6 +44,12 @@ function RealtimeTab({ realtimeUsers, setRealtimeUsers }: { realtimeUsers: numbe
                 setCountries(data.countries || [])
                 setPages(data.pages || [])
                 setDevices(data.devices || [])
+            }
+
+            const visitorRes = await fetch('/api/admin/analytics/visitors')
+            const visitorData = await visitorRes.json()
+            if (visitorData.success) {
+                setActivities(visitorData.events || [])
             }
         } catch { /* silent */ }
     }, [setRealtimeUsers])
@@ -86,7 +93,8 @@ function RealtimeTab({ realtimeUsers, setRealtimeUsers }: { realtimeUsers: numbe
                                 <span className="text-lg font-bold text-cyan-500">{d.users}</span>
                             </div>
                         ))}
-                        {devices.length === 0 && <p className="text-slate-500 text-sm">Veri yükleniyor...</p>}
+                        {devices.length === 0 && realtimeUsers > 0 && <p className="text-slate-500 text-sm">Veri yükleniyor...</p>}
+                        {realtimeUsers === 0 && <p className="text-slate-500 text-sm">Şu an aktif ziyaretçi yok.</p>}
                     </div>
                 </div>
             </div>
@@ -105,7 +113,8 @@ function RealtimeTab({ realtimeUsers, setRealtimeUsers }: { realtimeUsers: numbe
                                 <span className="font-bold text-cyan-500">{c.users}</span>
                             </div>
                         ))}
-                        {countries.length === 0 && <p className="text-slate-500 text-sm">Veri yükleniyor...</p>}
+                        {countries.length === 0 && realtimeUsers > 0 && <p className="text-slate-500 text-sm">Veri yükleniyor...</p>}
+                        {realtimeUsers === 0 && <p className="text-slate-500 text-sm">Ülke verisi yok.</p>}
                     </div>
                 </div>
 
@@ -119,8 +128,81 @@ function RealtimeTab({ realtimeUsers, setRealtimeUsers }: { realtimeUsers: numbe
                                 <span className="font-bold text-cyan-500">{p.users}</span>
                             </div>
                         ))}
-                        {pages.length === 0 && <p className="text-slate-500 text-sm">Veri yükleniyor...</p>}
+                        {pages.length === 0 && realtimeUsers > 0 && <p className="text-slate-500 text-sm">Veri yükleniyor...</p>}
+                        {realtimeUsers === 0 && <p className="text-slate-500 text-sm">Sayfa verisi yok.</p>}
                     </div>
+                </div>
+            </div>
+
+            {/* Detailed Visitor Activity Log */}
+            <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6">
+                <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white">Canlı Ziyaretçi Hareketleri</h3>
+                    <div className="flex items-center gap-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-3 py-1.5 rounded-full">
+                        <Activity size={14} className="animate-pulse" />
+                        Gerçek Zamanlı Takip
+                    </div>
+                </div>
+
+                <div className="overflow-hidden border border-slate-200 dark:border-slate-800 rounded-lg">
+                    <table className="w-full text-left text-sm whitespace-nowrap">
+                        <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400">
+                            <tr>
+                                <th className="px-4 py-3 font-medium">Zaman</th>
+                                <th className="px-4 py-3 font-medium">İşlem Tipi</th>
+                                <th className="px-4 py-3 font-medium">Sayfa</th>
+                                <th className="px-4 py-3 font-medium">Detay / Etkileşim</th>
+                                <th className="px-4 py-3 font-medium">Ziyaretçi Kimliği</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                            {activities.length > 0 ? activities.map((act) => {
+                                const time = new Date(act.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+                                const meta = act.metadata ? JSON.parse(act.metadata) : {}
+                                return (
+                                    <tr key={act.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 text-slate-700 dark:text-slate-300">
+                                        <td className="px-4 py-3 font-mono text-xs text-slate-500">{time}</td>
+                                        <td className="px-4 py-3">
+                                            {act.eventType === 'page_view' ? (
+                                                <span className="inline-flex items-center gap-1.5 text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 rounded text-xs font-medium">
+                                                    <Eye size={12} />
+                                                    Sayfa Görüntüleme
+                                                </span>
+                                            ) : (
+                                                <span className="inline-flex items-center gap-1.5 text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-2 py-0.5 rounded text-xs font-medium">
+                                                    <MousePointer size={12} />
+                                                    Tıklama
+                                                </span>
+                                            )}
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            <div className="max-w-[200px] truncate" title={act.pageUrl}>
+                                                {new URL(act.pageUrl).pathname || '/'}
+                                            </div>
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            <div className="max-w-[200px] truncate text-xs">
+                                                {act.eventType === 'click' ? (
+                                                    <span className="font-medium text-slate-900 dark:text-white">"{act.elementId}" butonuna/linkine tıklandı</span>
+                                                ) : (
+                                                    <span className="text-slate-500">{meta.agent?.substring(0, 35)}...</span>
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td className="px-4 py-3 font-mono text-[10px] text-slate-400">
+                                            {act.visitorId.split('-')[0]}
+                                        </td>
+                                    </tr>
+                                )
+                            }) : (
+                                <tr>
+                                    <td colSpan={5} className="px-4 py-8 text-center text-slate-500 dark:text-slate-400 italic">
+                                        Henüz bir aktivite kaydedilmedi. Gezindikçe bu tablo otomatik dolacaktır.
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -138,7 +220,7 @@ export default function AnalyticsPage() {
     const [saved, setSaved] = useState(false)
     const [error, setError] = useState('')
     const [apiError, setApiError] = useState('')
-    const [activeTab, setActiveTab] = useState<'dashboard' | 'realtime' | 'demographics' | 'settings'>('dashboard')
+    const [activeTab, setActiveTab] = useState<'dashboard' | 'realtime' | 'demographics' | 'settings' | 'reklamlar'>('dashboard')
 
     const [trafficData, setTrafficData] = useState<any[]>([])
     const [channelsData, setChannelsData] = useState<any[]>([])

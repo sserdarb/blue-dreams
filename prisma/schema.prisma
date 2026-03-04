@@ -1027,3 +1027,17 @@ model SiteSetting {
   key   String @unique
   value String
 }
+
+model AnalyticsEvent {
+  id          String   @id @default(uuid())
+  visitorId   String
+  sessionId   String
+  eventType   String   // page_view, click, form_submit
+  pageUrl     String
+  elementId   String?
+  metadata    String?  // Custom context (browser, IP, etc.)
+  createdAt   DateTime @default(now())
+
+  @@index([visitorId])
+  @@index([createdAt])
+}
