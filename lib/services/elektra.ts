@@ -489,12 +489,87 @@ function computeOccupancy(availability: RoomAvailability[]): DailyOccupancy[] {
     return result.sort((a, b) => a.date.localeCompare(b.date))
 }
 
+// ─── Human Resources & PDKS Methods ────────────────────────────
+
+async function fetchEmployees(): Promise<any[]> {
+    const jwt = await getJwt()
+    const url = `${API_BASE}/hotel/${HOTEL_ID}/employees`
+
+    try {
+        const res = await fetch(url, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${jwt}`
+            },
+            next: { revalidate: 3600 }
+        })
+        if (!res.ok) return []
+        return await res.json()
+    } catch (err) {
+        console.error('[Elektra] Error fetching employees:', err)
+        return []
+    }
+}
+
+async function fetchAttendanceLogs(startDate?: string, endDate?: string): Promise<any[]> {
+    const jwt = await getJwt()
+    let url = `${API_BASE}/hotel/${HOTEL_ID}/attendance`
+    if (startDate && endDate) {
+        url += `?start=${startDate}&end=${endDate}`
+    }
+
+    try {
+        const res = await fetch(url, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${jwt}`
+            },
+            cache: 'no-store'
+        })
+        if (!res.ok) return []
+        return await res.json()
+    } catch (err) {
+        console.error('[Elektra] Error fetching attendance logs:', err)
+        return []
+    }
+}
+
+async function fetchHRRequests(): Promise<any[]> {
+    const jwt = await getJwt()
+    const url = `${API_BASE}/hotel/${HOTEL_ID}/hr-requests`
+
+    try {
+        const res = await fetch(url, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${jwt}`
+            },
+            cache: 'no-store'
+        })
+        if (!res.ok) return []
+        return await res.json()
+    } catch (err) {
+        console.error('[Elektra] Error fetching HR requests:', err)
+        return []
+    }
+}
+
 // ─── Exported Service ──────────────────────────────────────────
 
 export const ElektraService = {
     isDemoMode: false,
     isPartialLive: false,
     isFullyLive: true,
+
+    getAvailability: fetchAvailability,
+    getReservations: fetchReservations,
+    getExchangeRates: fetchExchangeRates,
+    getCountries: fetchCountries,
+    fetchTaskDefinitions,
+    createTask,
+    fetchEmployees,
+    fetchAttendanceLogs,
+    fetchHRRequests,
 
     // ─── Availability ───────────────────────────────────────
 

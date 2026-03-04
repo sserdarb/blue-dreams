@@ -45,7 +45,7 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
     try {
         const { id } = await context.params
         const body = await request.json()
-        const { title, description, status, priority, dueDate, departmentId, assigneeId, parentId, tags, estimatedMin, order } = body
+        const { title, description, status, priority, dueDate, departmentId, assigneeId, parentId, tags, estimatedMin, order, visibilityDepts, visibilityUsers, visibilityRoles } = body
 
         const existing = await prisma.task.findUnique({ where: { id } })
         if (!existing) return NextResponse.json({ error: 'Task not found' }, { status: 404 })
@@ -66,6 +66,9 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
         if (tags !== undefined) data.tags = tags ? JSON.stringify(tags) : null
         if (estimatedMin !== undefined) data.estimatedMin = estimatedMin
         if (order !== undefined) data.order = order
+        if (visibilityDepts !== undefined) data.visibilityDepts = visibilityDepts || null
+        if (visibilityUsers !== undefined) data.visibilityUsers = visibilityUsers || null
+        if (visibilityRoles !== undefined) data.visibilityRoles = visibilityRoles || null
 
         const task = await prisma.task.update({
             where: { id },

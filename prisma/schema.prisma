@@ -469,15 +469,15 @@ model Department {
 }
 
 model Task {
-  id           String           @id @default(uuid())
+  id           String      @id @default(uuid())
   title        String
   description  String?
-  status       String           @default("todo") // todo, in_progress, review, done, cancelled
-  priority     String           @default("medium") // low, medium, high, urgent
+  status       String      @default("todo") // todo, in_progress, review, done, cancelled
+  priority     String      @default("medium") // low, medium, high, urgent
   startDate    DateTime?
   dueDate      DateTime?
   departmentId String?
-  department   Department?      @relation(fields: [departmentId], references: [id])
+  department   Department? @relation(fields: [departmentId], references: [id])
   assigneeId   String? // AdminUser.id
   creatorId    String // AdminUser.id
   parentId     String? // Sub-task parent
@@ -485,11 +485,17 @@ model Task {
   tags         String? // JSON array
   sourceType   String? // manual, email, ai
   sourceRef    String? // Email message ID or reference
-  order        Int              @default(0)
+  order        Int         @default(0)
   estimatedMin Int? // Estimated minutes
   posX         Float? // React Flow X position
   posY         Float? // React Flow Y position
   color        String? // Custom color for Gantt/Flow
+
+  // Visibility and Access Control
+  visibilityDepts String? // Comma-separated department IDs
+  visibilityUsers String? // Comma-separated user IDs or emails
+  visibilityRoles String? // Comma-separated roles (e.g., 'ADMIN,MANAGER')
+
   completedAt  DateTime?
   createdAt    DateTime         @default(now())
   updatedAt    DateTime         @updatedAt

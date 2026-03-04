@@ -28,6 +28,9 @@ interface Task {
     sourceType?: string | null; order: number
     estimatedMin?: number | null; completedAt?: string | null
     createdAt: string; updatedAt: string
+    visibilityDepts?: string | null
+    visibilityUsers?: string | null
+    visibilityRoles?: string | null
     department?: { id: string; name: string; color: string } | null
     assignee?: { id: string; name: string; email: string } | null
     creator?: { id: string; name: string } | null
@@ -494,6 +497,10 @@ function TaskModal({ task, departments, t, onClose, onSave }: {
         dueDate: task?.dueDate ? task.dueDate.slice(0, 10) : '',
         estimatedMin: task?.estimatedMin || '',
         tags: task?.tags ? JSON.parse(task.tags).join(', ') : '',
+        // Visibility Settings (Comma separated IDs/Roles)
+        visibilityDepts: task?.visibilityDepts || '',
+        visibilityUsers: task?.visibilityUsers || '',
+        visibilityRoles: task?.visibilityRoles || '',
     })
     const [saving, setSaving] = useState(false)
     const [comments, setComments] = useState<{ id: string; content: string; author: { name: string }; createdAt: string }[]>([])
@@ -540,6 +547,9 @@ function TaskModal({ task, departments, t, onClose, onSave }: {
             dueDate: form.dueDate || null,
             departmentId: form.departmentId || null,
             assigneeId: form.assigneeId || null,
+            visibilityDepts: form.visibilityDepts || null,
+            visibilityUsers: form.visibilityUsers || null,
+            visibilityRoles: form.visibilityRoles || null,
         })
         setSaving(false)
     }
@@ -617,6 +627,29 @@ function TaskModal({ task, departments, t, onClose, onSave }: {
                             <label className="text-[10px] text-slate-500 uppercase font-bold mb-1 block">Etiketler</label>
                             <input type="text" value={form.tags} onChange={e => setForm(f => ({ ...f, tags: e.target.value }))}
                                 placeholder="tag1, tag2..." className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm" />
+                        </div>
+                    </div>
+
+                    {/* Visibility Restrictions */}
+                    <div className="bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-200 dark:border-slate-700 space-y-3">
+                        <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase">Görünürlük ve Erişim Yetkileri</h4>
+                        <p className="text-[10px] text-slate-500">Bu görevi kimlerin görebileceğini belirleyin. Boş bırakırsanız herkes görebilir.</p>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <div>
+                                <label className="text-[10px] text-slate-500 font-bold mb-1 block">Departmanlar (ID)</label>
+                                <input type="text" value={form.visibilityDepts} onChange={e => setForm(f => ({ ...f, visibilityDepts: e.target.value }))}
+                                    placeholder="örn. housekeeping, frontdesk" className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs" />
+                            </div>
+                            <div>
+                                <label className="text-[10px] text-slate-500 font-bold mb-1 block">Kullanıcılar (ID / Email)</label>
+                                <input type="text" value={form.visibilityUsers} onChange={e => setForm(f => ({ ...f, visibilityUsers: e.target.value }))}
+                                    placeholder="örn. ahmet@otel.com" className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs" />
+                            </div>
+                            <div>
+                                <label className="text-[10px] text-slate-500 font-bold mb-1 block">Yetki Seviyesi (Rol)</label>
+                                <input type="text" value={form.visibilityRoles} onChange={e => setForm(f => ({ ...f, visibilityRoles: e.target.value }))}
+                                    placeholder="örn. ADMIN, MANAGER" className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs" />
+                            </div>
                         </div>
                     </div>
 

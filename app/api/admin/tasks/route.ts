@@ -1,9 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { getSession } from '@/app/actions/auth'
 
 // GET /api/admin/tasks — List tasks with filters
 export async function GET(request: NextRequest) {
     try {
+        // Authenticate the user to enforce visibility rules
+        const session = await getSession()
+        const currentUserId = session?.userId as string | undefined
+        const currentUserRole = session?.role as string | undefined
+        const currentUserEmail = session?.email as string | undefined
+
+        // Fetch user department if available (assuming user might have a department assigned via a profile setting later, 
+        // for now we enforce via explicit roles or direct assignment fields if department integration isn't fully linked to AdminUser yet)
+
         const { searchParams } = new URL(request.url)
         const status = searchParams.get('status')
         const assigneeId = searchParams.get('assigneeId')
@@ -21,10 +31,36 @@ export async function GET(request: NextRequest) {
             where.parentId = parentId === '' ? null : parentId
         }
         if (search) {
-            where.OR = [
-                { title: { contains: search, mode: 'insensitive' } },
-                { description: { contains: search, mode: 'insensitive' } },
-            ]
+            where.AND = where.AND || []
+            where.AND.push({
+                OR: [
+                    { title: { contains: search, mode: 'insensitive' } },
+                    { description: { contains: search, mode: 'insensitive' } },
+                ]
+            })
+        }
+
+        // Apply strict Visibility logic only if the user is NOT a superadmin
+        if (currentUserId && currentUserRole !== 'superadmin') {
+            where.AND = where.AND || []
+            where.AND.push({
+                OR: [
+                    // Task has no visibility restrictions
+                    { visibilityDepts: null, visibilityUsers: null, visibilityRoles: null },
+                    { visibilityDepts: '', visibilityUsers: '', visibilityRoles: '' },
+
+                    // Explicit User Inclusion
+                    { visibilityUsers: { contains: currentUserId } },
+                    ...(currentUserEmail ? [{ visibilityUsers: { contains: currentUserEmail } }] : []),
+
+                    // Explicit Role Inclusion
+                    ...(currentUserRole ? [{ visibilityRoles: { contains: currentUserRole } }] : []),
+
+                    // Natural involvement bypasses restrictions
+                    { creatorId: currentUserId },
+                    { assigneeId: currentUserId }
+                ]
+            })
         }
 
         const tasks = await prisma.task.findMany({
@@ -64,7 +100,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json()
-        const { title, description, status, priority, dueDate, departmentId, assigneeId, creatorId, parentId, workflowId, tags, sourceType, sourceRef, estimatedMin } = body
+        const { title, description, status, priority, dueDate, departmentId, assigneeId, creatorId, parentId, workflowId, tags, sourceType, sourceRef, estimatedMin, visibilityDepts, visibilityUsers, visibilityRoles } = body
 
         if (!title || !creatorId) {
             return NextResponse.json({ error: 'title and creatorId are required' }, { status: 400 })
@@ -86,6 +122,9 @@ export async function POST(request: NextRequest) {
                 sourceType: sourceType || 'manual',
                 sourceRef: sourceRef || null,
                 estimatedMin: estimatedMin || null,
+                visibilityDepts: visibilityDepts || null,
+                visibilityUsers: visibilityUsers || null,
+                visibilityRoles: visibilityRoles || null,
             },
             include: { department: true },
         })
