@@ -7,6 +7,7 @@ import SettingsModuleManager from '@/components/admin/SettingsModuleManager'
 import TaxSettingsForm from '@/components/admin/TaxSettingsForm'
 import ElektraSettingsForm from '@/components/admin/ElektraSettingsForm'
 import { MarketingSettingsForm } from '@/components/admin/MarketingSettingsForm'
+import { DemoSettingsForm } from '@/components/admin/DemoSettingsForm'
 
 type MainTab = 'site' | 'modules' | 'tax' | 'elektra' | 'marketing'
 
@@ -95,16 +96,22 @@ export default function SettingsPageClient({ locale, initialSettings, taxRates }
 
             {/* Tab Content */}
             {mainTab === 'site' ? (
-                <div className="max-w-3xl">
-                    <div className="mb-8">
-                        <h1 className="text-3xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
-                            <Globe size={28} className="text-emerald-500" /> Site Ayarları
-                        </h1>
-                        <p className="text-slate-500 dark:text-slate-400 mt-1">
-                            <span className="font-medium">{locale.toUpperCase()}</span> için genel site ayarları
-                        </p>
+                <div className="max-w-3xl space-y-8">
+                    <div>
+                        <div className="mb-6">
+                            <h1 className="text-3xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
+                                <Globe size={28} className="text-emerald-500" /> Site Ayarları
+                            </h1>
+                            <p className="text-slate-500 dark:text-slate-400 mt-1">
+                                <span className="font-medium">{locale.toUpperCase()}</span> için genel site ayarları
+                            </p>
+                        </div>
+                        <SiteSettingsForm locale={locale} initialSettings={initialSettings} />
                     </div>
-                    <SiteSettingsForm locale={locale} initialSettings={initialSettings} />
+
+                    <div className="pt-8 border-t border-slate-200 dark:border-slate-800">
+                        <DemoSettingsForm />
+                    </div>
                 </div>
             ) : mainTab === 'marketing' ? (
                 <div className="max-w-3xl">

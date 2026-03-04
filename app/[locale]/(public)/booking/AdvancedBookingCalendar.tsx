@@ -92,13 +92,13 @@ export default function AdvancedBookingCalendar({
     const currencySymbol = currency === 'EUR' ? '€' : currency === 'USD' ? '$' : '₺'
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-            <div className="bg-white dark:bg-slate-900 w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 sm:p-6 overflow-y-auto">
+            <div className="bg-white dark:bg-slate-900 w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 my-auto">
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-100 dark:border-slate-800">
                     <div>
-                        <h2 className="text-xl font-bold text-slate-800 dark:text-white">Gelişmiş Fiyat Takvimi</h2>
-                        <p className="text-sm text-slate-500">Günlük en düşük fiyatları ve indirimli tarihleri görün.</p>
+                        <h2 className="text-lg sm:text-xl font-bold text-slate-800 dark:text-white">Gelişmiş Fiyat Takvimi</h2>
+                        <p className="text-xs sm:text-sm text-slate-500">Günlük en düşük fiyatları ve indirimli tarihleri görün.</p>
                     </div>
                     <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
                         <X size={20} className="text-slate-500" />
@@ -178,7 +178,7 @@ export default function AdvancedBookingCalendar({
                                 <div
                                     key={day.date}
                                     onClick={() => !isPast && handleDayClick(day.date)}
-                                    className={`h-24 p-2 rounded-xl border transition-all flex flex-col justify-between ${bgClass}`}
+                                    className={`h-20 sm:h-24 p-1 sm:p-2 rounded-xl border transition-all flex flex-col justify-between ${bgClass}`}
                                 >
                                     <div className="flex justify-between items-start">
                                         <span className={`text-sm font-semibold ${isCheckIn || isCheckOut ? 'text-white' : 'text-slate-700 dark:text-slate-300'}`}>
