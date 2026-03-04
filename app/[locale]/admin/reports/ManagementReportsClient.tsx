@@ -221,36 +221,54 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
         return Array.from(set).sort()
     }, [currentYearReservations, prevYearReservations])
 
-    // ─── YTD cutoff: same day-of-year in each year ─────────────────
-    const todayDayOfYear = useMemo(() => {
+    // ─── YTD cutoff: same date in each year ─────────────────
+    const ytdTarget = useMemo(() => {
         const now = new Date()
-        const start = new Date(now.getFullYear(), 0, 1)
-        return Math.ceil((now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24))
+        return { month: now.getMonth(), day: now.getDate() }
     }, [])
 
     const isWithinYtd = (reservationDate: string, year: number) => {
         if (!reservationDate) return true
-        const rd = new Date(reservationDate)
-        const yearStart = new Date(year, 0, 1)
-        const dayOfYear = Math.ceil((rd.getTime() - yearStart.getTime()) / (1000 * 60 * 60 * 24))
-        return dayOfYear <= todayDayOfYear
+        let rdStr = reservationDate
+        // Handle potential DD.MM.YYYY format from Elektra
+        if (rdStr.includes('.')) {
+            const parts = rdStr.split('T')[0].split('.')
+            if (parts.length === 3) rdStr = `${parts[2]}-${parts[1]}-${parts[0]}T00:00:00`
+        }
+
+        const rd = new Date(rdStr)
+        if (isNaN(rd.getTime())) return true // Fallback to true so we don't wrongly hide data
+
+        // If booked in a preceding calendar year (e.g. booked in 2024 for 2025 arrival)
+        if (rd.getFullYear() < year) return true
+
+        // If booked in the same calendar year, check if month/day is <= today's month/day
+        if (rd.getFullYear() === year) {
+            const m = rd.getMonth()
+            const d = rd.getDate()
+            if (m < ytdTarget.month) return true
+            if (m === ytdTarget.month && d <= ytdTarget.day) return true
+            return false
+        }
+
+        // If booked in a future year (unlikely), block it
+        return false
     }
 
-    // ─── Filtered reservations (market + YTD) ──────────────────────
     const filteredCY = useMemo(() => {
         let data = currentYearReservations
         if (marketFilter !== 'ALL') data = data.filter(r => (r.agency || 'Bilinmeyen') === marketFilter)
         if (ytdMode) data = data.filter(r => isWithinYtd(r.reservationDate, currentYear))
         return data
-    }, [currentYearReservations, marketFilter, ytdMode, currentYear, todayDayOfYear])
+    }, [currentYearReservations, marketFilter, ytdMode, currentYear, ytdTarget])
 
     const filteredPY = useMemo(() => {
         let data = prevYearReservations
         if (marketFilter !== 'ALL') data = data.filter(r => (r.agency || 'Bilinmeyen') === marketFilter)
-        // Kullanıcı Talebi: YoY karşılaştırma mantığı o güne kadar alınmış rezervasyonları kıyaslayacak şekilde düzeltildi (Pace)
-        data = data.filter(r => isWithinYtd(r.reservationDate, prevYear))
+        // YoY karşılaştırma: ytdMode aktifse önceki yılı da aynı ay/gün hesabıyla kesiyoruz
+        if (ytdMode) data = data.filter(r => isWithinYtd(r.reservationDate, prevYear))
         return data
-    }, [prevYearReservations, marketFilter, prevYear, todayDayOfYear])
+    }, [prevYearReservations, marketFilter, ytdMode, prevYear, ytdTarget])
 
     // Aggregate data (now using filtered)
     const cyMonth = useMemo(() => aggregateByMonth(filteredCY, exchangeRates, currentYear, monthNamesLocal, priceMode, totalTaxRate), [filteredCY, exchangeRates, currentYear, monthNamesLocal, priceMode, totalTaxRate])
@@ -407,47 +425,33 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
 
     // ─── YTD Calculation ──────────────────────────────────────
     const ytdStats = useMemo(() => {
-        const now = new Date()
-        const cm = now.getMonth() // 0-11
-        const cd = now.getDate()
-
-        const calc = (reservations: ReservationSlim[], year: number, applyYtdFilter: boolean) => {
+        // Calculate Pace metrics (using isWithinYtd to filter by reservation date)
+        const calc = (reservations: ReservationSlim[]) => {
             return reservations.reduce((acc, r) => {
-                const d = new Date(r.checkIn)
-                const month = d.getMonth()
-                const day = d.getDate()
+                const rn = r.nights * (r.roomCount || 1)
+                const revTry = toTRY(r.totalPrice, r.currency, exchangeRates, priceMode, totalTaxRate)
+                const revEur = tryToEur(revTry, exchangeRates)
 
-                if (!applyYtdFilter || (month < cm || (month === cm && day <= cd))) {
-                    const rn = r.nights * (r.roomCount || 1)
-                    const revTry = toTRY(r.totalPrice, r.currency, exchangeRates, priceMode, totalTaxRate)
-                    const revEur = tryToEur(revTry, exchangeRates)
-
-                    acc.rn += rn
-                    acc.rev += revTry
-                    acc.revEur += revEur
-                    acc.capacity += (r.roomCount || 1) * r.nights
-                }
+                acc.rn += rn
+                acc.rev += revTry
+                acc.revEur += revEur
+                // capacity needs to be global, not accumulated per reservation
                 return acc
-            }, { rn: 0, rev: 0, revEur: 0, capacity: 0 })
+            }, { rn: 0, rev: 0, revEur: 0 })
         }
 
-        const cy = calc(currentYearReservations, currentYear, true)
-        const py = calc(prevYearReservations, prevYear, false) // Kullanıcı Talebi: Geçen seneki konaklamalar YTD kesintisine tabi olmasın, tüm yılı kapsasın
+        const paceCY = calc(currentYearReservations.filter(r => isWithinYtd(r.reservationDate, currentYear)))
+        const pacePY = calc(prevYearReservations.filter(r => isWithinYtd(r.reservationDate, prevYear)))
 
-        // Calculate YTD Capacity (Total Rooms * Days passed in year) for current year
-        let daysPassed = cd
-        for (let i = 0; i < cm; i++) daysPassed += new Date(currentYear, i + 1, 0).getDate()
-        const capacityYTD = TOTAL_ROOMS * daysPassed
-
-        // Use full year capacity for previous year
-        const pyCapacity = TOTAL_ROOMS * (new Date(prevYear % 4 === 0 ? 366 : 365, 0, 0).getDate() || 365) // Just standard 365/366 days
-
+        // Determine capacity based on total days in the year
+        const cyCapacity = TOTAL_ROOMS * (new Date(currentYear % 4 === 0 ? 366 : 365, 0, 0).getDate() || 365)
+        const pyCapacity = TOTAL_ROOMS * (new Date(prevYear % 4 === 0 ? 366 : 365, 0, 0).getDate() || 365)
 
         return {
-            cy: { ...cy, occ: capacityYTD > 0 ? cy.rn / capacityYTD : 0 },
-            py: { ...py, occ: pyCapacity > 0 ? py.rn / pyCapacity : 0 }
+            cy: { ...paceCY, occ: cyCapacity > 0 ? paceCY.rn / cyCapacity : 0 },
+            py: { ...pacePY, occ: pyCapacity > 0 ? pacePY.rn / pyCapacity : 0 }
         }
-    }, [currentYearReservations, prevYearReservations, exchangeRates, currentYear, prevYear])
+    }, [currentYearReservations, prevYearReservations, exchangeRates, currentYear, prevYear, ytdTarget])
 
     const PIE_COLORS = ['#06b6d4', '#f59e0b', '#8b5cf6', '#10b981', '#ec4899', '#f97316', '#64748b', '#14b8a6', '#e11d48', '#6366f1']
 

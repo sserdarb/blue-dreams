@@ -97,13 +97,21 @@ function fmtPrice(n: number): string {
 
 export default function BookingWidget() {
     // Get tomorrow and day after as defaults
-    const tomorrow = new Date()
-    tomorrow.setDate(tomorrow.getDate() + 1)
-    const dayAfter = new Date()
-    dayAfter.setDate(dayAfter.getDate() + 4)
+    const today = new Date()
+    let defaultStart = new Date(today)
+    defaultStart.setDate(today.getDate() + 1)
 
-    const [checkIn, setCheckIn] = useState(tomorrow.toISOString().split('T')[0])
-    const [checkOut, setCheckOut] = useState(dayAfter.toISOString().split('T')[0])
+    // Ensure default date is at least May 1st of current year (since hotel opens May 1st)
+    const mayFirst = new Date(today.getFullYear(), 4, 1) // 4 = May
+    if (defaultStart < mayFirst) {
+        defaultStart = mayFirst
+    }
+
+    const defaultEnd = new Date(defaultStart)
+    defaultEnd.setDate(defaultStart.getDate() + 3)
+
+    const [checkIn, setCheckIn] = useState(defaultStart.toISOString().split('T')[0])
+    const [checkOut, setCheckOut] = useState(defaultEnd.toISOString().split('T')[0])
     const [adults, setAdults] = useState(2)
     const [children, setChildren] = useState(0)
     const [loading, setLoading] = useState(false)

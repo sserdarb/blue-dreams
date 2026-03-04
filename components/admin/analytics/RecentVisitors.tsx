@@ -1,6 +1,8 @@
 'use client';
 
 import { Globe, Clock, Smartphone, Monitor } from 'lucide-react';
+import { useParams } from 'next/navigation';
+import { getAdminTranslations, AdminLocale } from '@/lib/admin-translations';
 
 const visitors = [
     { id: 1, country: 'Germany', city: 'Berlin', device: 'mobile', time: '2m ago' },
@@ -11,15 +13,18 @@ const visitors = [
 ];
 
 export function RecentVisitors() {
+    const params = useParams();
+    const locale = (params.locale as AdminLocale) || 'tr';
+    const t = getAdminTranslations(locale).analyticsDashboard;
     return (
         <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border dark:border-slate-700 overflow-hidden">
             <div className="p-4 border-b dark:border-slate-700 flex justify-between items-center">
                 <h3 className="font-semibold text-slate-800 dark:text-white flex items-center gap-2">
                     <Globe className="text-cyan-500" size={18} />
-                    Recent Visitors
+                    {t.recentVisitors}
                 </h3>
                 <span className="text-xs font-mono text-green-500 bg-green-50 dark:bg-green-900/30 px-2 py-1 rounded-full animate-pulse">
-                    ● Live
+                    ● {t.liveIndicator}
                 </span>
             </div>
 

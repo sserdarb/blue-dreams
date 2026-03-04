@@ -26,7 +26,8 @@ export function RoomListWidget({ data }: { data: any }) {
             const imgSource = isFallback ? room.heroImage : room.imageUrl
             // Fallback object uses 'slug' for link, whereas cms might not provide a link or uses id
             const { locale = 'tr' } = useParams()
-            const linkHref = isFallback ? `/${locale}/odalar/${room.slug}` : `#`
+            const slugStr = room.slug || room.id;
+            const linkHref = slugStr ? `/${locale}/odalar/${slugStr}` : `#`
 
             return (
               <Link

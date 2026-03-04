@@ -117,198 +117,9 @@ const rng = seededRandom(daySeed)
 const randBetween = (min: number, max: number) => Math.round(min + rng() * (max - min))
 const randFloat = (min: number, max: number) => +(min + rng() * (max - min)).toFixed(2)
 
-// ─── Demo Data Generators ──────────────────────────────────────
-
-const DEPARTMENTS = [
-    { name: 'Oda Geliri', color: '#3b82f6', base: 45 },
-    { name: 'Yiyecek & İçecek', color: '#10b981', base: 30 },
-    { name: 'SPA & Wellness', color: '#8b5cf6', base: 8 },
-    { name: 'Toplantı & Etkinlik', color: '#f59e0b', base: 5 },
-    { name: 'Mini Bar', color: '#ec4899', base: 4 },
-    { name: 'Diğer', color: '#6b7280', base: 8 },
-]
-
-const EXPENSE_CATEGORIES = [
-    { name: 'Personel Giderleri', code: '770', base: 35 },
-    { name: 'Yiyecek & İçecek Maliyeti', code: '620', base: 22 },
-    { name: 'Enerji & Yakıt', code: '730', base: 12 },
-    { name: 'Bakım & Onarım', code: '740', base: 8 },
-    { name: 'Pazarlama', code: '760', base: 7 },
-    { name: 'Yönetim Giderleri', code: '750', base: 6 },
-    { name: 'Sigorta', code: '710', base: 3 },
-    { name: 'Amortisman', code: '720', base: 5 },
-    { name: 'Diğer', code: '780', base: 2 },
-]
-
-const PAYMENT_METHODS = [
-    { method: 'Kredi Kartı', color: '#3b82f6', base: 45 },
-    { method: 'Banka Havalesi/EFT', color: '#10b981', base: 25 },
-    { method: 'Nakit', color: '#f59e0b', base: 15 },
-    { method: 'Tur Operatörü', color: '#8b5cf6', base: 10 },
-    { method: 'Çek', color: '#ef4444', base: 5 },
-]
-
-const MONTHS = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara']
-
-// Season multipliers (resort peaks in summer)
-const SEASON_MULT = [0.15, 0.15, 0.25, 0.55, 0.75, 0.95, 1.0, 1.0, 0.85, 0.60, 0.20, 0.15]
-
-function generateMonthlyData(baseRevenue: number, baseExpense: number, year: number): MonthlyFinance[] {
-    const rngY = seededRandom(year * 100)
-    return MONTHS.map((month, i) => {
-        const mult = SEASON_MULT[i]
-        const rev = Math.round(baseRevenue * mult * (0.92 + rngY() * 0.16))
-        const exp = Math.round(baseExpense * mult * (0.90 + rngY() * 0.20))
-        return {
-            month,
-            revenue: rev,
-            expense: exp,
-            profit: rev - exp,
-            prevYearRevenue: 0,
-            prevYearExpense: 0,
-        }
-    })
-}
-
-function generateTrialBalance(): TrialBalanceRow[] {
-    const rows: TrialBalanceRow[] = []
-
-    // Revenue accounts (600-699)
-    const revenueAccounts = [
-        { accountCode: '600.01', accountName: 'Oda Gelifleri', group: 'Gelir' },
-        { accountCode: '600.02', accountName: 'Yiyecek Gelirleri', group: 'Gelir' },
-        { accountCode: '600.03', accountName: 'İçecek Gelirleri', group: 'Gelir' },
-        { accountCode: '600.04', accountName: 'SPA Gelirleri', group: 'Gelir' },
-        { accountCode: '600.05', accountName: 'Toplantı Gelirleri', group: 'Gelir' },
-        { accountCode: '600.06', accountName: 'Diğer Gelirler', group: 'Gelir' },
-    ]
-
-    // Expense accounts (700-799)
-    const expenseAccounts = [
-        { accountCode: '770.01', accountName: 'Personel Ücretleri', group: 'Gider' },
-        { accountCode: '770.02', accountName: 'SGK İşveren Payı', group: 'Gider' },
-        { accountCode: '620.01', accountName: 'Yiyecek Maliyeti', group: 'Gider' },
-        { accountCode: '620.02', accountName: 'İçecek Maliyeti', group: 'Gider' },
-        { accountCode: '730.01', accountName: 'Elektrik Gideri', group: 'Gider' },
-        { accountCode: '730.02', accountName: 'Doğalgaz Gideri', group: 'Gider' },
-        { accountCode: '740.01', accountName: 'Bakım Onarım', group: 'Gider' },
-        { accountCode: '760.01', accountName: 'Reklam & Pazarlama', group: 'Gider' },
-        { accountCode: '750.01', accountName: 'Genel Yönetim Gideri', group: 'Gider' },
-    ]
-
-    // Balance Sheet accounts
-    const balanceAccounts = [
-        { accountCode: '100.01', accountName: 'Kasa - TRY', group: 'Aktif' },
-        { accountCode: '102.01', accountName: 'Bankalar - TRY', group: 'Aktif' },
-        { accountCode: '102.02', accountName: 'Bankalar - EUR', group: 'Aktif' },
-        { accountCode: '120.01', accountName: 'Alıcılar', group: 'Aktif' },
-        { accountCode: '150.01', accountName: 'Stoklar', group: 'Aktif' },
-        { accountCode: '320.01', accountName: 'Satıcılar', group: 'Pasif' },
-        { accountCode: '335.01', accountName: 'Personele Borçlar', group: 'Pasif' },
-        { accountCode: '360.01', accountName: 'Vergi Borçları', group: 'Pasif' },
-    ]
-
-    for (const acc of revenueAccounts) {
-        const credit = randBetween(1500000, 8000000)
-        rows.push({ ...acc, debit: 0, credit, balance: -credit })
-    }
-    for (const acc of expenseAccounts) {
-        const debit = randBetween(500000, 3000000)
-        rows.push({ ...acc, debit, credit: 0, balance: debit })
-    }
-    for (const acc of balanceAccounts) {
-        const debit = randBetween(200000, 5000000)
-        const credit = randBetween(100000, 4000000)
-        rows.push({ ...acc, debit, credit, balance: debit - credit })
-    }
-
-    return rows
-}
-
-function generatePayments(date: string): PaymentRow[] {
-    const count = randBetween(15, 40)
-    const payments: PaymentRow[] = []
-    const methods = ['Kredi Kartı', 'Nakit', 'Havale/EFT', 'POS', 'Tur Operatörü']
-
-    for (let i = 0; i < count; i++) {
-        const isDebit = rng() > 0.3
-        const amount = randFloat(500, 50000)
-        payments.push({
-            date,
-            type: isDebit ? 'Payment Total' : 'Collected Advance',
-            info: `${methods[Math.floor(rng() * methods.length)]} - Misafir #${randBetween(1000, 9999)}`,
-            account: `${isDebit ? '108' : '340'}.${String(randBetween(1, 20)).padStart(4, '0')}`,
-            debit: isDebit ? amount : 0,
-            credit: isDebit ? 0 : amount,
-            currency: 'TRY',
-            currencyRate: 1,
-            paymentName: methods[Math.floor(rng() * methods.length)],
-            paymentCode: `108.${String(randBetween(1, 20)).padStart(4, '0')}`,
-        })
-    }
-    return payments
-}
-
-function generateRevenue(date: string): RevenueRow[] {
-    const rows: RevenueRow[] = []
-    const depts = [
-        { id: 58300, name: 'Room Oda Revenue', rev: 66953 },
-        { id: 58301, name: 'Food Yiyecek Revenue', rev: 66954 },
-        { id: 58302, name: 'Beverage İçecek Revenue', rev: 66955 },
-        { id: 58303, name: 'SPA Revenue', rev: 66956 },
-        { id: 58304, name: 'Minibar Revenue', rev: 66957 },
-    ]
-    for (const dept of depts) {
-        const credit = randFloat(5000, 80000)
-        rows.push({
-            date,
-            type: 'Revenue',
-            info: dept.name,
-            departmentId: dept.id,
-            revenueId: dept.rev,
-            account: '181.0001',
-            debit: 0,
-            credit,
-            currency: 'TRY',
-            currencyRate: 1,
-            expenseCode: null,
-            vat1Percent: 20,
-            vat2Percent: 0,
-        })
-    }
-    return rows
-}
-
-function generateInvoices(startDate: string, endDate: string): InvoiceSummary[] {
-    const invoices: InvoiceSummary[] = []
-    const vendors = [
-        'Metro Grossmarket', 'Özgür Et', 'Bodrum Hal', 'Efes Pilsen',
-        'Diversey', 'Özdilek', 'Enerjisa', 'Borusan Lojistik',
-        'Servis Bakım A.Ş.', 'Bodrum Balık', 'Muratbey Gıda',
-    ]
-    const count = randBetween(60, 120)
-    const start = new Date(startDate)
-    const end = new Date(endDate)
-    const range = end.getTime() - start.getTime()
-
-    for (let i = 0; i < count; i++) {
-        const d = new Date(start.getTime() + rng() * range)
-        invoices.push({
-            id: randBetween(3000000, 4000000),
-            uuid: `${randBetween(10000000, 99999999).toString(16)}-${randBetween(1000, 9999).toString(16)}-${randBetween(1000, 9999).toString(16)}-${randBetween(1000, 9999).toString(16)}-${randBetween(100000000000, 999999999999).toString(16)}`,
-            date: d.toISOString().split('T')[0],
-            accountName: vendors[Math.floor(rng() * vendors.length)],
-            accountCode: `320.${String(randBetween(1, 200)).padStart(4, '0')}`,
-            taxNumber: String(randBetween(10000000000, 99999999999)),
-            total: randFloat(1000, 150000),
-        })
-    }
-    return invoices.sort((a, b) => b.date.localeCompare(a.date))
-}
-
 // ─── Data Source Tracking ──────────────────────────────────────
 
-let currentDataSource: DataSource = 'demo'
+let currentDataSource: DataSource = 'live'
 
 // ─── Exported Service ──────────────────────────────────────────
 
@@ -353,8 +164,8 @@ export const FinanceService = {
                 console.warn('[Finance] Trial balance error:', (err as Error).message)
             }
         }
-        currentDataSource = 'demo'
-        return generateTrialBalance()
+        currentDataSource = 'live'
+        return []
     },
 
     // ── Daily Payments (Tahsilat) ────────────────────────────────
@@ -393,8 +204,8 @@ export const FinanceService = {
                 console.warn('[Finance] Payments error:', (err as Error).message)
             }
         }
-        currentDataSource = 'demo'
-        return generatePayments(date)
+        currentDataSource = 'live'
+        return []
     },
 
     // ── Daily Revenue (Gelir) ────────────────────────────────────
@@ -436,8 +247,8 @@ export const FinanceService = {
                 console.warn('[Finance] Revenue error:', (err as Error).message)
             }
         }
-        currentDataSource = 'demo'
-        return generateRevenue(date)
+        currentDataSource = 'live'
+        return []
     },
 
     // ── Invoice List (Fatura Listesi) ────────────────────────────
@@ -478,8 +289,8 @@ export const FinanceService = {
                 console.warn('[Finance] Invoice list error:', (err as Error).message)
             }
         }
-        currentDataSource = 'demo'
-        return generateInvoices(startDate, endDate)
+        currentDataSource = 'live'
+        return []
     },
 
     // ── Aggregated KPIs ──────────────────────────────────────────
@@ -515,8 +326,7 @@ export const FinanceService = {
         const prevTotal = prevInvoices.reduce((s, i) => s + i.total, 0)
         const expenseGrowth = prevTotal > 0 ? Math.round(((currentTotal - prevTotal) / prevTotal) * 100) : 0
 
-        // Revenue growth estimate
-        const revenueGrowth = randBetween(5, 18)
+        const revenueGrowth = 0
 
         return {
             totalRevenue,
@@ -525,7 +335,7 @@ export const FinanceService = {
             cashFlow: profit * 0.85,
             revenueGrowth,
             expenseGrowth,
-            collectionRate: randFloat(88, 96),
+            collectionRate: 0,
             invoiceCount: invoices.length,
         }
     },
@@ -557,89 +367,35 @@ export const FinanceService = {
             if (m >= 0 && m < 12) prevMonthlyRev[m] += r.totalPrice
         })
 
-        // Base annual values — 341 room ultra all-inclusive resort
-        // ~₺250M annual revenue, ~₺180M annual expense
-        const baseRevenue = 250_000_000 / 12
-        const baseExpense = 180_000_000 / 12
+        const MONTHS = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara']
 
-        const currentData = generateMonthlyData(baseRevenue, baseExpense, y)
-        const prevData = generateMonthlyData(baseRevenue * 0.85, baseExpense * 0.82, y - 1)
-
-        return currentData.map((m, i) => {
-            const realRev = currentMonthlyRev[i]
-            const realPrevRev = prevMonthlyRev[i]
-            // Fallback to generated if absolutely zero
-            const finalRev = realRev > 0 ? realRev : m.revenue
-            const finalPrevRev = realPrevRev > 0 ? realPrevRev : prevData[i].revenue
+        return MONTHS.map((month, i) => {
+            const realRev = currentMonthlyRev[i] || 0
+            const realPrevRev = prevMonthlyRev[i] || 0
 
             return {
-                ...m,
-                revenue: finalRev,
-                profit: finalRev - m.expense,
-                prevYearRevenue: finalPrevRev,
-                prevYearExpense: prevData[i].expense,
+                month,
+                revenue: realRev,
+                expense: 0,
+                profit: realRev,
+                prevYearRevenue: realPrevRev,
+                prevYearExpense: 0,
             }
         })
     },
 
     // ── Department Revenue Breakdown ─────────────────────────────
     async getDepartmentRevenue(): Promise<DepartmentRevenue[]> {
-        const totalRevenue = randBetween(20_000_000, 35_000_000)
-        let remaining = 100
-
-        return DEPARTMENTS.map((dept, i) => {
-            const pct = i === DEPARTMENTS.length - 1
-                ? remaining
-                : Math.round(dept.base * (0.9 + rng() * 0.2))
-            remaining -= pct
-            return {
-                department: dept.name,
-                revenue: Math.round(totalRevenue * pct / 100),
-                percentage: pct,
-                color: dept.color,
-            }
-        })
+        return []
     },
 
     // ── Payment Method Breakdown ─────────────────────────────────
     async getPaymentMethodBreakdown(): Promise<PaymentMethodBreakdown[]> {
-        const totalPayments = randBetween(15_000_000, 25_000_000)
-        const totalCount = randBetween(2000, 5000)
-        let remaining = 100
-
-        return PAYMENT_METHODS.map((pm, i) => {
-            const pct = i === PAYMENT_METHODS.length - 1
-                ? remaining
-                : Math.round(pm.base * (0.85 + rng() * 0.3))
-            remaining -= pct
-            return {
-                method: pm.method,
-                amount: Math.round(totalPayments * pct / 100),
-                count: Math.round(totalCount * pct / 100),
-                percentage: pct,
-                color: pm.color,
-            }
-        })
+        return []
     },
 
     // ── Expense Category Breakdown ───────────────────────────────
     async getExpenseBreakdown(): Promise<{ category: string; code: string; amount: number; percentage: number; color: string }[]> {
-        const totalExpense = randBetween(12_000_000, 20_000_000)
-        const colors = ['#ef4444', '#f97316', '#f59e0b', '#84cc16', '#22c55e', '#14b8a6', '#3b82f6', '#8b5cf6', '#6b7280']
-        let remaining = 100
-
-        return EXPENSE_CATEGORIES.map((cat, i) => {
-            const pct = i === EXPENSE_CATEGORIES.length - 1
-                ? remaining
-                : Math.round(cat.base * (0.88 + rng() * 0.24))
-            remaining -= pct
-            return {
-                category: cat.name,
-                code: cat.code,
-                amount: Math.round(totalExpense * pct / 100),
-                percentage: pct,
-                color: colors[i % colors.length],
-            }
-        })
+        return []
     },
 }

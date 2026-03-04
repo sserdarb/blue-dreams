@@ -1,20 +1,25 @@
 'use client';
 
 import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Tooltip, Legend } from 'recharts';
-
-const data = [
-    { subject: 'Reach', A: 120, B: 110, fullMark: 150 },
-    { subject: 'Conversion', A: 98, B: 130, fullMark: 150 },
-    { subject: 'Retention', A: 86, B: 130, fullMark: 150 },
-    { subject: 'Stickiness', A: 99, B: 100, fullMark: 150 },
-    { subject: 'Engagement', A: 85, B: 90, fullMark: 150 },
-    { subject: 'Revenue', A: 65, B: 85, fullMark: 150 },
-];
+import { useParams } from 'next/navigation';
+import { getAdminTranslations, AdminLocale } from '@/lib/admin-translations';
 
 export function PlatformRadar() {
+    const params = useParams();
+    const locale = (params.locale as AdminLocale) || 'tr';
+    const t = getAdminTranslations(locale).analyticsDashboard;
+
+    const data = [
+        { subject: t.reach, A: 120, B: 110, fullMark: 150 },
+        { subject: t.conversion, A: 98, B: 130, fullMark: 150 },
+        { subject: t.retention, A: 86, B: 130, fullMark: 150 },
+        { subject: t.stickiness, A: 99, B: 100, fullMark: 150 },
+        { subject: t.engagement, A: 85, B: 90, fullMark: 150 },
+        { subject: t.revenueKey, A: 65, B: 85, fullMark: 150 },
+    ];
     return (
         <div className="h-[300px] w-full bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm border dark:border-slate-700">
-            <h3 className="font-semibold text-slate-800 dark:text-white mb-4">Platform Synergy</h3>
+            <h3 className="font-semibold text-slate-800 dark:text-white mb-4">{t.platformSynergy}</h3>
             <ResponsiveContainer width="100%" height="100%">
                 <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data}>
                     <PolarGrid stroke="#e2e8f0" />

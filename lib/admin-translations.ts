@@ -305,6 +305,106 @@ const translations: Record<AdminLocale, AdminTranslations> = {
             budgetRealization: 'Bütçe Gerçekleşme',
             ofTarget: 'hedefin'
         },
+        analyticsDashboard: {
+            platformSynergy: 'Platform Sinerjisi',
+            reach: 'Erişim',
+            conversion: 'Dönüşüm',
+            retention: 'Elde Tutma',
+            stickiness: 'Bağlılık',
+            engagement: 'Etkileşim',
+            revenueKey: 'Gelir',
+            recentVisitors: 'Son Ziyaretçiler',
+            liveIndicator: 'Canlı',
+            aiInsightsTitle: 'AI İçgörüleri',
+            insight1Title: "Almanya'dan Gelen Trafik Artışı",
+            insight1Desc: "Alman ziyaretçiler bu hafta %25 arttı. Ana sayfaya daha fazla Almanca imkan eklemeyi düşünün.",
+            insight2Title: "Yüksek Mobil Hemen Çıkma Oranı",
+            insight2Desc: "Rezervasyon sayfasında mobil hemen çıkma oranı %65. Küçük ekranlarda düzen sorunları olup olmadığını kontrol edin.",
+            insight3Title: "Fırsat: Sonbahar Tatili",
+            insight3Desc: "'Eylül Tatili' aramaları yükselişte. İngiltere ve Türkiye pazarlarını hedefleyen bir kampanya başlatın.",
+            unifiedAdsTitle: 'Birleşik Reklam Performansı',
+            unifiedAdsSubtitle: 'Google Ads & Meta Ads Toplam Verileri',
+            today: 'Bugün',
+            last7d: 'Son 7 Gün',
+            last30d: 'Son 30 Gün',
+            thisYear: 'Bu Yıl',
+            totalSpend: 'Toplam Harcama',
+            totalClicks: 'Toplam Tıklama',
+            avgCpc: 'Ortalama TBM (CPC)',
+            avgCtr: 'Ortalama TO (CTR)',
+            platformSpendDist: 'Platform Harcama Dağılımı',
+            platformClickComp: 'Platform Tıklama Karşılaştırması',
+            metaAdsCampaigns: 'Meta Ads Kampanyaları',
+            googleAdsCampaigns: 'Google Ads Kampanyaları',
+            campaign: 'Kampanya',
+            spend: 'Harcama',
+            clicks: 'Tıklama',
+            conversions: 'Dönüşüm',
+            status: 'Durum',
+            dataNotFound: 'Veri bulunamadı',
+            adsFetchError: 'Reklam verileri alınırken hata oluştu.',
+            title: 'Analytics Dashboard',
+            subtitle: 'Ziyaretçi istatistikleri ve yapılandırma',
+            dashboard: 'Dashboard',
+            realtime: 'Gerçek Zamanlı (Real-time)',
+            ads: 'Reklamlar',
+            demographics: 'Demografi',
+            settings: 'Ayarlar',
+            rightNow: 'Şu An',
+            activeUsersOnSite: 'Sitedeki aktif kullanıcı',
+            updatesEvery10Sec: 'Her 10 saniyede güncellenir',
+            deviceDist: 'Cihaz Dağılımı',
+            loadingData: 'Veri yükleniyor...',
+            noActiveVisitor: 'Şu an aktif ziyaretçi yok.',
+            activeCountries: 'Aktif Ülkeler',
+            noCountryData: 'Ülke verisi yok.',
+            popularPages: 'Popüler Sayfalar',
+            noPageData: 'Sayfa verisi yok.',
+            liveVisitorActivity: 'Canlı Ziyaretçi Hareketleri',
+            realtimeTracking: 'Gerçek Zamanlı Takip',
+            time: 'Zaman',
+            actionType: 'İşlem Tipi',
+            page: 'Sayfa',
+            detailInteraction: 'Detay / Etkileşim',
+            visitorId: 'Ziyaretçi Kimliği',
+            pageView: 'Sayfa Görüntüleme',
+            click: 'Tıklama',
+            clickedOn: 'butonuna/linkine tıklandı',
+            noActivityYet: 'Henüz bir aktivite kaydedilmedi. Gezindikçe bu tablo otomatik dolacaktır.',
+            totalUsers: 'Toplam Kullanıcı',
+            sessions: 'Oturumlar',
+            bounceRate: 'Hemen Çıkma Oranı',
+            avgDuration: 'Ort. Süre',
+            vsLastPeriod: 'önceki döneme göre',
+            noAnalyticsData: 'Analitik Verisi Alınamadı',
+            noGaDataDesc: 'Görüntülenecek veri bulunamadı veya GA4 bağlantısı kurulamadı.',
+            trafficOverview: 'Trafik Özeti (30 Gün)',
+            usersKey: 'kullanıcı',
+            acquisitionChannels: 'Edinme Kanalları',
+            noLiveApiData: 'Canlı Veri Bulunamadı',
+            noLiveApiDataDesc: 'Google Analytics API\'den veri alınamadı. Lütfen Ayarlar sekmesinden gerçek GA4 Property ID ve Service Account JSON bilgilerinin dolu olduğundan emin olun veya sunucu .env değişkenlerini kontrol edin.',
+            topCountries: 'En İyi Ülkeler',
+            country: 'Ülke',
+            pctOfTotal: 'Toplamın %\'si',
+            noCountryFound: 'Ülke verisi bulunamadı',
+            configuration: 'Yapılandırma',
+            ga4MeasurementId: 'Google Analytics 4 Measurement ID',
+            requiredBasicTracking: 'Temel takip için gereklidir.',
+            gtmId: 'Google Tag Manager ID',
+            fbPixelId: 'Facebook Pixel ID',
+            googleClientId: 'Google Client ID (OAuth)',
+            advancedReportingAPI: 'Gelişmiş Raporlama (API)',
+            requiredForCharts: 'Bu gösterge tablosunda gerçek grafikleri göstermek için gereklidir.',
+            enabled: 'Etkin',
+            disabled: 'Devre Dışı',
+            ga4PropertyId: 'GA4 Property ID',
+            numericPropertyId: 'Sayısal Property ID (G-ID değil)',
+            serviceAccountJson: 'Service Account JSON (Base64)',
+            saveConfiguration: 'Yapılandırmayı Kaydet',
+            settingsSaved: 'Ayarlar Kaydedildi!',
+            saving: 'Kaydediliyor...',
+            loading: 'Yükleniyor...',
+        },
         // Time presets
         presetToday: 'Bugün',
         presetYesterday: 'Dün',
@@ -683,6 +783,106 @@ const translations: Record<AdminLocale, AdminTranslations> = {
             budgetRealization: 'Budget Realization',
             ofTarget: 'of target'
         },
+        analyticsDashboard: {
+            platformSynergy: 'Platform Synergy',
+            reach: 'Reach',
+            conversion: 'Conversion',
+            retention: 'Retention',
+            stickiness: 'Stickiness',
+            engagement: 'Engagement',
+            revenueKey: 'Revenue',
+            recentVisitors: 'Recent Visitors',
+            liveIndicator: 'Live',
+            aiInsightsTitle: 'AI Insights',
+            insight1Title: 'Traffic Surge from Germany',
+            insight1Desc: 'German visitors increased by 25% this week. Consider adding more German-language amenities to the homepage.',
+            insight2Title: 'High Mobile Bounce Rate',
+            insight2Desc: 'Mobile bounce rate is 65% on the booking page. Check for layout issues on smaller screens.',
+            insight3Title: 'Opportunity: Late Summer',
+            insight3Desc: "'September Holiday' searches are trending up. Launch a 'Late Summer' campaign targeting UK & TR markets.",
+            unifiedAdsTitle: 'Unified Ads Performance',
+            unifiedAdsSubtitle: 'Google Ads & Meta Ads Total Data',
+            today: 'Today',
+            last7d: 'Last 7 Days',
+            last30d: 'Last 30 Days',
+            thisYear: 'This Year',
+            totalSpend: 'Total Spend',
+            totalClicks: 'Total Clicks',
+            avgCpc: 'Average CPC',
+            avgCtr: 'Average CTR',
+            platformSpendDist: 'Platform Spend Distribution',
+            platformClickComp: 'Platform Click Comparison',
+            metaAdsCampaigns: 'Meta Ads Campaigns',
+            googleAdsCampaigns: 'Google Ads Campaigns',
+            campaign: 'Campaign',
+            spend: 'Spend',
+            clicks: 'Clicks',
+            conversions: 'Conversions',
+            status: 'Status',
+            dataNotFound: 'No data found',
+            adsFetchError: 'Error fetching ads data.',
+            title: 'Analytics Dashboard',
+            subtitle: 'Visitor statistics and configuration',
+            dashboard: 'Dashboard',
+            realtime: 'Real-time',
+            ads: 'Ads',
+            demographics: 'Demographics',
+            settings: 'Settings',
+            rightNow: 'Right Now',
+            activeUsersOnSite: 'Active users on site',
+            updatesEvery10Sec: 'Updates every 10 seconds',
+            deviceDist: 'Device Distribution',
+            loadingData: 'Loading data...',
+            noActiveVisitor: 'No active visitors right now.',
+            activeCountries: 'Active Countries',
+            noCountryData: 'No country data.',
+            popularPages: 'Popular Pages',
+            noPageData: 'No page data.',
+            liveVisitorActivity: 'Live Visitor Activity',
+            realtimeTracking: 'Real-time Tracking',
+            time: 'Time',
+            actionType: 'Action Type',
+            page: 'Page',
+            detailInteraction: 'Detail / Interaction',
+            visitorId: 'Visitor ID',
+            pageView: 'Page View',
+            click: 'Click',
+            clickedOn: 'button/link clicked',
+            noActivityYet: 'No activity recorded yet. This table will populate automatically as users navigate.',
+            totalUsers: 'Total Users',
+            sessions: 'Sessions',
+            bounceRate: 'Bounce Rate',
+            avgDuration: 'Avg. Duration',
+            vsLastPeriod: 'vs last period',
+            noAnalyticsData: 'Analytics Data Not Found',
+            noGaDataDesc: 'No data to display or GA4 connection failed.',
+            trafficOverview: 'Traffic Overview (30 Days)',
+            usersKey: 'users',
+            acquisitionChannels: 'Acquisition Channels',
+            noLiveApiData: 'No Live Data Found',
+            noLiveApiDataDesc: 'Could not fetch data from Google Analytics API. Please ensure real GA4 Property ID and Service Account JSON are filled in Settings, or check server .env variables.',
+            topCountries: 'Top Countries',
+            country: 'Country',
+            pctOfTotal: '% of Total',
+            noCountryFound: 'No country data found',
+            configuration: 'Configuration',
+            ga4MeasurementId: 'Google Analytics 4 Measurement ID',
+            requiredBasicTracking: 'Required for basic tracking.',
+            gtmId: 'Google Tag Manager ID',
+            fbPixelId: 'Facebook Pixel ID',
+            googleClientId: 'Google Client ID (OAuth)',
+            advancedReportingAPI: 'Advanced Reporting (API)',
+            requiredForCharts: 'Required to show real charts in this dashboard.',
+            enabled: 'Enabled',
+            disabled: 'Disabled',
+            ga4PropertyId: 'GA4 Property ID',
+            numericPropertyId: 'Numeric Property ID (Not G-ID)',
+            serviceAccountJson: 'Service Account JSON (Base64)',
+            saveConfiguration: 'Save Configuration',
+            settingsSaved: 'Settings Saved!',
+            saving: 'Saving...',
+            loading: 'Loading...',
+        },
         presetToday: 'Today',
         presetYesterday: 'Yesterday',
         aiInterpretAll: 'Interpret All',
@@ -1047,6 +1247,106 @@ const translations: Record<AdminLocale, AdminTranslations> = {
             budgetRealization: 'Budget-Realisierung',
             ofTarget: 'vom Ziel'
         },
+        analyticsDashboard: {
+            platformSynergy: 'Plattform-Synergie',
+            reach: 'Reichweite',
+            conversion: 'Konversion',
+            retention: 'Kundenbindung',
+            stickiness: 'Klebkraft',
+            engagement: 'Engagement',
+            revenueKey: 'Umsatz',
+            recentVisitors: 'Neueste Besucher',
+            liveIndicator: 'Live',
+            aiInsightsTitle: 'KI-Einblicke',
+            insight1Title: 'Anstieg des Datenverkehrs aus Deutschland',
+            insight1Desc: 'Die Zahl der deutschen Besucher ist diese Woche um 25 % gestiegen. Erwägen Sie die Aufnahme weiterer deutschsprachiger Einrichtungen auf die Startseite.',
+            insight2Title: 'Hohe mobile Absprungrate',
+            insight2Desc: 'Die mobile Absprungrate auf der Buchungsseite beträgt 65 %. Suchen Sie nach Layoutproblemen auf kleineren Bildschirmen.',
+            insight3Title: 'Gelegenheit: Spätsommer',
+            insight3Desc: "Suchanfragen nach 'Septemberurlaub' liegen im Trend. Starten Sie eine Spätsommer-Kampagne.",
+            unifiedAdsTitle: 'Einheitliche Anzeigenleistung',
+            unifiedAdsSubtitle: 'Gesamtdaten für Google Ads und Meta Ads',
+            today: 'Heute',
+            last7d: 'Letzte 7 Tage',
+            last30d: 'Letzte 30 Tage',
+            thisYear: 'Dieses Jahr',
+            totalSpend: 'Gesamtausgaben',
+            totalClicks: 'Gesamtklicks',
+            avgCpc: 'Durchschn. CPC',
+            avgCtr: 'Durchschn. CTR',
+            platformSpendDist: 'Kostenverteilung der Plattform',
+            platformClickComp: 'Klickvergleich der Plattform',
+            metaAdsCampaigns: 'Meta Ads Kampagnen',
+            googleAdsCampaigns: 'Google Ads Kampagnen',
+            campaign: 'Kampagne',
+            spend: 'Ausgaben',
+            clicks: 'Klicks',
+            conversions: 'Konversionen',
+            status: 'Status',
+            dataNotFound: 'Keine Daten gefunden',
+            adsFetchError: 'Fehler beim Abrufen.',
+            title: 'Analytics Dashboard',
+            subtitle: 'Ziyaretçi istatistikleri ve yapılandırma',
+            dashboard: 'Dashboard',
+            realtime: 'Gerçek Zamanlı (Real-time)',
+            ads: 'Reklamlar',
+            demographics: 'Demografi',
+            settings: 'Ayarlar',
+            rightNow: 'Şu An',
+            activeUsersOnSite: 'Sitedeki aktif kullanıcı',
+            updatesEvery10Sec: 'Her 10 saniyede güncellenir',
+            deviceDist: 'Cihaz Dağılımı',
+            loadingData: 'Veri yükleniyor...',
+            noActiveVisitor: 'Şu an aktif ziyaretçi yok.',
+            activeCountries: 'Aktif Ülkeler',
+            noCountryData: 'Ülke verisi yok.',
+            popularPages: 'Popüler Sayfalar',
+            noPageData: 'Sayfa verisi yok.',
+            liveVisitorActivity: 'Canlı Ziyaretçi Hareketleri',
+            realtimeTracking: 'Gerçek Zamanlı Takip',
+            time: 'Zaman',
+            actionType: 'İşlem Tipi',
+            page: 'Sayfa',
+            detailInteraction: 'Detay / Etkileşim',
+            visitorId: 'Ziyaretçi Kimliği',
+            pageView: 'Sayfa Görüntüleme',
+            click: 'Tıklama',
+            clickedOn: 'butonuna/linkine tıklandı',
+            noActivityYet: 'Henüz bir aktivite kaydedilmedi. Gezindikçe bu tablo otomatik dolacaktır.',
+            totalUsers: 'Toplam Kullanıcı',
+            sessions: 'Oturumlar',
+            bounceRate: 'Hemen Çıkma Oranı',
+            avgDuration: 'Ort. Süre',
+            vsLastPeriod: 'önceki döneme göre',
+            noAnalyticsData: 'Analitik Verisi Alınamadı',
+            noGaDataDesc: 'Görüntülenecek veri bulunamadı veya GA4 bağlantısı kurulamadı.',
+            trafficOverview: 'Trafik Özeti (30 Gün)',
+            usersKey: 'kullanıcı',
+            acquisitionChannels: 'Edinme Kanalları',
+            noLiveApiData: 'Canlı Veri Bulunamadı',
+            noLiveApiDataDesc: 'Google Analytics API\'den veri alınamadı. Lütfen Ayarlar sekmesinden gerçek GA4 Property ID ve Service Account JSON bilgilerinin dolu olduğundan emin olun veya sunucu .env değişkenlerini kontrol edin.',
+            topCountries: 'En İyi Ülkeler',
+            country: 'Ülke',
+            pctOfTotal: 'Toplamın %\'si',
+            noCountryFound: 'Ülke verisi bulunamadı',
+            configuration: 'Yapılandırma',
+            ga4MeasurementId: 'Google Analytics 4 Measurement ID',
+            requiredBasicTracking: 'Temel takip için gereklidir.',
+            gtmId: 'Google Tag Manager ID',
+            fbPixelId: 'Facebook Pixel ID',
+            googleClientId: 'Google Client ID (OAuth)',
+            advancedReportingAPI: 'Gelişmiş Raporlama (API)',
+            requiredForCharts: 'Bu gösterge tablosunda gerçek grafikleri göstermek için gereklidir.',
+            enabled: 'Etkin',
+            disabled: 'Devre Dışı',
+            ga4PropertyId: 'GA4 Property ID',
+            numericPropertyId: 'Sayısal Property ID (G-ID değil)',
+            serviceAccountJson: 'Service Account JSON (Base64)',
+            saveConfiguration: 'Yapılandırmayı Kaydet',
+            settingsSaved: 'Ayarlar Kaydedildi!',
+            saving: 'Kaydediliyor...',
+            loading: 'Yükleniyor...',
+        },
         presetToday: 'Heute',
         presetYesterday: 'Gestern',
         aiInterpretAll: 'Alle Interpretieren',
@@ -1410,6 +1710,106 @@ const translations: Record<AdminLocale, AdminTranslations> = {
             channelBudgetSplit: 'Распределение Бюджета По Каналам',
             budgetRealization: 'Реализация Бюджета',
             ofTarget: 'от цели'
+        },
+        analyticsDashboard: {
+            platformSynergy: 'Синергия Платформ',
+            reach: 'Охват',
+            conversion: 'Конверсия',
+            retention: 'Удержание',
+            stickiness: 'Прилипание',
+            engagement: 'Вовлеченность',
+            revenueKey: 'Доход',
+            recentVisitors: 'Недавние Посетители',
+            liveIndicator: 'В эфире',
+            aiInsightsTitle: 'Аналитика ИИ',
+            insight1Title: 'Рост трафика из Германии',
+            insight1Desc: 'Количество посетителей из Германии на этой неделе увеличилось на 25%. Подумайте о добавлении.',
+            insight2Title: 'Высокий показатель отказов на мобилках',
+            insight2Desc: 'Показатель отказов на мобильных устройствах на странице бронирования составляет 65%.',
+            insight3Title: 'Возможность: Бархатный сезон',
+            insight3Desc: "Поиск 'Сентябрьского отпуска' набирает популярность.",
+            unifiedAdsTitle: 'Единая эффективность рекламы',
+            unifiedAdsSubtitle: 'Общие данные Google Ads и Meta Ads',
+            today: 'Сегодня',
+            last7d: 'Последние 7 Дней',
+            last30d: 'Последние 30 Дней',
+            thisYear: 'Этот Год',
+            totalSpend: 'Общие Расходы',
+            totalClicks: 'Всего Кликов',
+            avgCpc: 'Средний CPC',
+            avgCtr: 'Средний CTR',
+            platformSpendDist: 'Распределение расходов платформы',
+            platformClickComp: 'Сравнение кликов',
+            metaAdsCampaigns: 'Кампании Meta Ads',
+            googleAdsCampaigns: 'Кампании Google Ads',
+            campaign: 'Кампания',
+            spend: 'Расходы',
+            clicks: 'Клики',
+            conversions: 'Конверсии',
+            status: 'Статус',
+            dataNotFound: 'Данные не найдены',
+            adsFetchError: 'Ошибка получения.',
+            title: 'Analytics Dashboard',
+            subtitle: 'Ziyaretçi istatistikleri ve yapılandırma',
+            dashboard: 'Dashboard',
+            realtime: 'Gerçek Zamanlı (Real-time)',
+            ads: 'Reklamlar',
+            demographics: 'Demografi',
+            settings: 'Ayarlar',
+            rightNow: 'Şu An',
+            activeUsersOnSite: 'Sitedeki aktif kullanıcı',
+            updatesEvery10Sec: 'Her 10 saniyede güncellenir',
+            deviceDist: 'Cihaz Dağılımı',
+            loadingData: 'Veri yükleniyor...',
+            noActiveVisitor: 'Şu an aktif ziyaretçi yok.',
+            activeCountries: 'Aktif Ülkeler',
+            noCountryData: 'Ülke verisi yok.',
+            popularPages: 'Popüler Sayfalar',
+            noPageData: 'Sayfa verisi yok.',
+            liveVisitorActivity: 'Canlı Ziyaretçi Hareketleri',
+            realtimeTracking: 'Gerçek Zamanlı Takip',
+            time: 'Zaman',
+            actionType: 'İşlem Tipi',
+            page: 'Sayfa',
+            detailInteraction: 'Detay / Etkileşim',
+            visitorId: 'Ziyaretçi Kimliği',
+            pageView: 'Sayfa Görüntüleme',
+            click: 'Tıklama',
+            clickedOn: 'butonuna/linkine tıklandı',
+            noActivityYet: 'Henüz bir aktivite kaydedilmedi. Gezindikçe bu tablo otomatik dolacaktır.',
+            totalUsers: 'Toplam Kullanıcı',
+            sessions: 'Oturumlar',
+            bounceRate: 'Hemen Çıkma Oranı',
+            avgDuration: 'Ort. Süre',
+            vsLastPeriod: 'önceki döneme göre',
+            noAnalyticsData: 'Analitik Verisi Alınamadı',
+            noGaDataDesc: 'Görüntülenecek veri bulunamadı veya GA4 bağlantısı kurulamadı.',
+            trafficOverview: 'Trafik Özeti (30 Gün)',
+            usersKey: 'kullanıcı',
+            acquisitionChannels: 'Edinme Kanalları',
+            noLiveApiData: 'Canlı Veri Bulunamadı',
+            noLiveApiDataDesc: 'Google Analytics API\'den veri alınamadı. Lütfen Ayarlar sekmesinden gerçek GA4 Property ID ve Service Account JSON bilgilerinin dolu olduğundan emin olun veya sunucu .env değişkenlerini kontrol edin.',
+            topCountries: 'En İyi Ülkeler',
+            country: 'Ülke',
+            pctOfTotal: 'Toplamın %\'si',
+            noCountryFound: 'Ülke verisi bulunamadı',
+            configuration: 'Yapılandırma',
+            ga4MeasurementId: 'Google Analytics 4 Measurement ID',
+            requiredBasicTracking: 'Temel takip için gereklidir.',
+            gtmId: 'Google Tag Manager ID',
+            fbPixelId: 'Facebook Pixel ID',
+            googleClientId: 'Google Client ID (OAuth)',
+            advancedReportingAPI: 'Gelişmiş Raporlama (API)',
+            requiredForCharts: 'Bu gösterge tablosunda gerçek grafikleri göstermek için gereklidir.',
+            enabled: 'Etkin',
+            disabled: 'Devre Dışı',
+            ga4PropertyId: 'GA4 Property ID',
+            numericPropertyId: 'Sayısal Property ID (G-ID değil)',
+            serviceAccountJson: 'Service Account JSON (Base64)',
+            saveConfiguration: 'Yapılandırmayı Kaydet',
+            settingsSaved: 'Ayarlar Kaydedildi!',
+            saving: 'Kaydediliyor...',
+            loading: 'Yükleniyor...',
         },
         presetToday: 'Сегодня',
         presetYesterday: 'Вчера',
@@ -1856,6 +2256,106 @@ export interface AdminTranslations {
         comparative: { title: string; r4: string; metric: string; thisSeason: string; lastSeason: string; change: string; paceComp: string; seasonalRevComp: string; channelAdrComp: string; roomTypeRevComp: string }
         rawdata: { title: string; searchPlaceholder: string; recordsSuffix: string; tableTitle: string }
         tableCols: { month: string; resCount: string; revenueYtl: string; budgetEur: string; actualEur: string; remainingEur: string; percent: string; adrYtl: string; roomType: string; avgRate: string; avgNights: string; share: string; channel: string; agency: string; country: string; avgRateYtl: string; durationRange: string; resCountLong: string; duration: string; realization: string; occupancyRate: string; revparYtl: string; rateType: string; voucher: string; boardType: string; checkIn: string; checkOut: string; nights: string; price: string; currency: string; status: string }
+    }
+    analyticsDashboard: {
+        platformSynergy: string
+        reach: string
+        conversion: string
+        retention: string
+        stickiness: string
+        engagement: string
+        revenueKey: string
+        recentVisitors: string
+        liveIndicator: string
+        aiInsightsTitle: string
+        insight1Title: string
+        insight1Desc: string
+        insight2Title: string
+        insight2Desc: string
+        insight3Title: string
+        insight3Desc: string
+        unifiedAdsTitle: string
+        unifiedAdsSubtitle: string
+        today: string
+        last7d: string
+        last30d: string
+        thisYear: string
+        totalSpend: string
+        totalClicks: string
+        avgCpc: string
+        avgCtr: string
+        platformSpendDist: string
+        platformClickComp: string
+        metaAdsCampaigns: string
+        googleAdsCampaigns: string
+        campaign: string
+        spend: string
+        clicks: string
+        conversions: string
+        status: string
+        dataNotFound: string
+        adsFetchError: string
+        title: string
+        subtitle: string
+        dashboard: string
+        realtime: string
+        ads: string
+        demographics: string
+        settings: string
+        rightNow: string
+        activeUsersOnSite: string
+        updatesEvery10Sec: string
+        deviceDist: string
+        loadingData: string
+        noActiveVisitor: string
+        activeCountries: string
+        noCountryData: string
+        popularPages: string
+        noPageData: string
+        liveVisitorActivity: string
+        realtimeTracking: string
+        time: string
+        actionType: string
+        page: string
+        detailInteraction: string
+        visitorId: string
+        pageView: string
+        click: string
+        clickedOn: string
+        noActivityYet: string
+        totalUsers: string
+        sessions: string
+        bounceRate: string
+        avgDuration: string
+        vsLastPeriod: string
+        noAnalyticsData: string
+        noGaDataDesc: string
+        trafficOverview: string
+        usersKey: string
+        acquisitionChannels: string
+        noLiveApiData: string
+        noLiveApiDataDesc: string
+        topCountries: string
+        country: string
+        pctOfTotal: string
+        noCountryFound: string
+        configuration: string
+        ga4MeasurementId: string
+        requiredBasicTracking: string
+        gtmId: string
+        fbPixelId: string
+        googleClientId: string
+        advancedReportingAPI: string
+        requiredForCharts: string
+        enabled: string
+        disabled: string
+        ga4PropertyId: string
+        numericPropertyId: string
+        serviceAccountJson: string
+        saveConfiguration: string
+        settingsSaved: string
+        saving: string
+        loading: string
     }
 
     extrasPage?: {

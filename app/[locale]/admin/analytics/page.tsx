@@ -2,6 +2,8 @@
 export const dynamic = 'force-dynamic'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useParams } from 'next/navigation'
+import { getAdminTranslations, AdminLocale } from '@/lib/admin-translations'
 import {
     BarChart3, Save, Check, AlertCircle, ExternalLink,
     Eye, EyeOff, ToggleLeft, ToggleRight, Key, Settings,
@@ -29,7 +31,7 @@ interface AnalyticsSettings {
 
 const COLORS = ['#0891b2', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6']
 
-function RealtimeTab({ realtimeUsers, setRealtimeUsers }: { realtimeUsers: number; setRealtimeUsers: (n: number) => void }) {
+function RealtimeTab({ realtimeUsers, setRealtimeUsers, t }: { realtimeUsers: number; setRealtimeUsers: (n: number) => void; t: any }) {
     const [countries, setCountries] = useState<any[]>([])
     const [pages, setPages] = useState<any[]>([])
     const [devices, setDevices] = useState<any[]>([])
@@ -71,20 +73,20 @@ function RealtimeTab({ realtimeUsers, setRealtimeUsers }: { realtimeUsers: numbe
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl p-8 text-center text-white relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-32 bg-white/5 rounded-full blur-3xl -mr-16 -mt-16"></div>
-                    <p className="text-blue-100 font-medium text-lg uppercase tracking-wider mb-2">Right Now</p>
+                    <p className="text-blue-100 font-medium text-lg uppercase tracking-wider mb-2">{t.rightNow}</p>
                     <h2 className="text-6xl font-bold mb-4">{realtimeUsers}</h2>
-                    <p className="text-blue-200">Active users on site</p>
+                    <p className="text-blue-200">{t.activeUsersOnSite}</p>
                     <div className="mt-6 flex justify-center gap-1">
                         {[...Array(5)].map((_, i) => (
                             <div key={i} className="w-1 h-8 bg-white/20 rounded-full animate-pulse" style={{ animationDelay: `${i * 0.2}s` }}></div>
                         ))}
                     </div>
-                    <p className="text-xs text-blue-300 mt-4">Her 10 saniyede güncellenir</p>
+                    <p className="text-xs text-blue-300 mt-4">{t.updatesEvery10Sec}</p>
                 </div>
 
                 {/* Devices */}
                 <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6">
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Cihaz Dağılımı</h3>
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">{t.deviceDist}</h3>
                     <div className="space-y-3">
                         {devices.map((d, i) => (
                             <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-white/5">
@@ -93,8 +95,8 @@ function RealtimeTab({ realtimeUsers, setRealtimeUsers }: { realtimeUsers: numbe
                                 <span className="text-lg font-bold text-cyan-500">{d.users}</span>
                             </div>
                         ))}
-                        {devices.length === 0 && realtimeUsers > 0 && <p className="text-slate-500 text-sm">Veri yükleniyor...</p>}
-                        {realtimeUsers === 0 && <p className="text-slate-500 text-sm">Şu an aktif ziyaretçi yok.</p>}
+                        {devices.length === 0 && realtimeUsers > 0 && <p className="text-slate-500 text-sm">{t.loadingData}</p>}
+                        {realtimeUsers === 0 && <p className="text-slate-500 text-sm">{t.noActiveVisitor}</p>}
                     </div>
                 </div>
             </div>
@@ -102,7 +104,7 @@ function RealtimeTab({ realtimeUsers, setRealtimeUsers }: { realtimeUsers: numbe
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Countries */}
                 <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6">
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Aktif Ülkeler</h3>
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">{t.activeCountries}</h3>
                     <div className="space-y-2">
                         {countries.map((c, i) => (
                             <div key={i} className="flex items-center justify-between py-2 border-b border-slate-100 dark:border-white/5 last:border-0">
@@ -113,14 +115,14 @@ function RealtimeTab({ realtimeUsers, setRealtimeUsers }: { realtimeUsers: numbe
                                 <span className="font-bold text-cyan-500">{c.users}</span>
                             </div>
                         ))}
-                        {countries.length === 0 && realtimeUsers > 0 && <p className="text-slate-500 text-sm">Veri yükleniyor...</p>}
-                        {realtimeUsers === 0 && <p className="text-slate-500 text-sm">Ülke verisi yok.</p>}
+                        {countries.length === 0 && realtimeUsers > 0 && <p className="text-slate-500 text-sm">{t.loadingData}</p>}
+                        {realtimeUsers === 0 && <p className="text-slate-500 text-sm">{t.noCountryData}</p>}
                     </div>
                 </div>
 
                 {/* Pages */}
                 <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6">
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Popüler Sayfalar</h3>
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">{t.popularPages}</h3>
                     <div className="space-y-2">
                         {pages.map((p, i) => (
                             <div key={i} className="flex items-center justify-between py-2 border-b border-slate-100 dark:border-white/5 last:border-0">
@@ -128,8 +130,8 @@ function RealtimeTab({ realtimeUsers, setRealtimeUsers }: { realtimeUsers: numbe
                                 <span className="font-bold text-cyan-500">{p.users}</span>
                             </div>
                         ))}
-                        {pages.length === 0 && realtimeUsers > 0 && <p className="text-slate-500 text-sm">Veri yükleniyor...</p>}
-                        {realtimeUsers === 0 && <p className="text-slate-500 text-sm">Sayfa verisi yok.</p>}
+                        {pages.length === 0 && realtimeUsers > 0 && <p className="text-slate-500 text-sm">{t.loadingData}</p>}
+                        {realtimeUsers === 0 && <p className="text-slate-500 text-sm">{t.noPageData}</p>}
                     </div>
                 </div>
             </div>
@@ -137,10 +139,10 @@ function RealtimeTab({ realtimeUsers, setRealtimeUsers }: { realtimeUsers: numbe
             {/* Detailed Visitor Activity Log */}
             <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6">
                 <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white">Canlı Ziyaretçi Hareketleri</h3>
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white">{t.liveVisitorActivity}</h3>
                     <div className="flex items-center gap-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-3 py-1.5 rounded-full">
                         <Activity size={14} className="animate-pulse" />
-                        Gerçek Zamanlı Takip
+                        {t.realtimeTracking}
                     </div>
                 </div>
 
@@ -148,11 +150,11 @@ function RealtimeTab({ realtimeUsers, setRealtimeUsers }: { realtimeUsers: numbe
                     <table className="w-full text-left text-sm whitespace-nowrap">
                         <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400">
                             <tr>
-                                <th className="px-4 py-3 font-medium">Zaman</th>
-                                <th className="px-4 py-3 font-medium">İşlem Tipi</th>
-                                <th className="px-4 py-3 font-medium">Sayfa</th>
-                                <th className="px-4 py-3 font-medium">Detay / Etkileşim</th>
-                                <th className="px-4 py-3 font-medium">Ziyaretçi Kimliği</th>
+                                <th className="px-4 py-3 font-medium">{t.time}</th>
+                                <th className="px-4 py-3 font-medium">{t.actionType}</th>
+                                <th className="px-4 py-3 font-medium">{t.page}</th>
+                                <th className="px-4 py-3 font-medium">{t.detailInteraction}</th>
+                                <th className="px-4 py-3 font-medium">{t.visitorId}</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -166,12 +168,12 @@ function RealtimeTab({ realtimeUsers, setRealtimeUsers }: { realtimeUsers: numbe
                                             {act.eventType === 'page_view' ? (
                                                 <span className="inline-flex items-center gap-1.5 text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 rounded text-xs font-medium">
                                                     <Eye size={12} />
-                                                    Sayfa Görüntüleme
+                                                    {t.pageView}
                                                 </span>
                                             ) : (
                                                 <span className="inline-flex items-center gap-1.5 text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-2 py-0.5 rounded text-xs font-medium">
                                                     <MousePointer size={12} />
-                                                    Tıklama
+                                                    {t.click}
                                                 </span>
                                             )}
                                         </td>
@@ -183,7 +185,7 @@ function RealtimeTab({ realtimeUsers, setRealtimeUsers }: { realtimeUsers: numbe
                                         <td className="px-4 py-3">
                                             <div className="max-w-[200px] truncate text-xs">
                                                 {act.eventType === 'click' ? (
-                                                    <span className="font-medium text-slate-900 dark:text-white">"{act.elementId}" butonuna/linkine tıklandı</span>
+                                                    <span className="font-medium text-slate-900 dark:text-white">"{act.elementId}" {t.clickedOn}</span>
                                                 ) : (
                                                     <span className="text-slate-500">{meta.agent?.substring(0, 35)}...</span>
                                                 )}
@@ -197,7 +199,7 @@ function RealtimeTab({ realtimeUsers, setRealtimeUsers }: { realtimeUsers: numbe
                             }) : (
                                 <tr>
                                     <td colSpan={5} className="px-4 py-8 text-center text-slate-500 dark:text-slate-400 italic">
-                                        Henüz bir aktivite kaydedilmedi. Gezindikçe bu tablo otomatik dolacaktır.
+                                        {t.noActivityYet}
                                     </td>
                                 </tr>
                             )}
@@ -210,6 +212,10 @@ function RealtimeTab({ realtimeUsers, setRealtimeUsers }: { realtimeUsers: numbe
 }
 
 export default function AnalyticsPage() {
+    const params = useParams()
+    const locale = (params.locale as AdminLocale) || 'tr'
+    const t = getAdminTranslations(locale).analyticsDashboard
+
     const [settings, setSettings] = useState<AnalyticsSettings>({
         gaId: '', gtmId: '', fbPixelId: '',
         gaApiSecret: '', gaPropertyId: '', gaServiceKey: '',
@@ -330,13 +336,13 @@ export default function AnalyticsPage() {
                         {change >= 0 ? <ArrowUpRight size={16} /> : <ArrowDownRight size={16} />}
                         {Math.abs(change)}%
                     </span>
-                    <span className="text-slate-500">vs last period</span>
+                    <span className="text-slate-500">{t.vsLastPeriod}</span>
                 </div>
             </div>
         )
     }
 
-    if (loading) return <div className="p-8 text-center text-slate-400">Yükleniyor...</div>
+    if (loading) return <div className="p-8 text-center text-slate-400">{t.loading}</div>
 
     return (
         <div className="max-w-7xl mx-auto space-y-6">
@@ -345,21 +351,21 @@ export default function AnalyticsPage() {
                 <div>
                     <h1 className="text-3xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
                         <BarChart3 className="text-cyan-500 dark:text-cyan-400" />
-                        Analytics Dashboard
+                        {t.title}
                     </h1>
                     <p className="text-slate-500 dark:text-slate-400 mt-1">
-                        Ziyaretçi istatistikleri ve yapılandırma
+                        {t.subtitle}
                     </p>
                 </div>
 
                 {/* Tab Navigation */}
                 <div className="flex bg-slate-100 dark:bg-white/5 p-1 rounded-lg self-start">
                     {[
-                        { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
-                        { id: 'realtime', label: 'Real-time', icon: Activity },
-                        { id: 'reklamlar', label: 'Reklamlar', icon: Globe },
-                        { id: 'demographics', label: 'Demographics', icon: Globe },
-                        { id: 'settings', label: 'Settings', icon: Settings },
+                        { id: 'dashboard', label: t.dashboard, icon: BarChart3 },
+                        { id: 'realtime', label: t.realtime, icon: Activity },
+                        { id: 'reklamlar', label: t.ads, icon: Globe },
+                        { id: 'demographics', label: t.demographics, icon: Globe },
+                        { id: 'settings', label: t.settings, icon: Settings },
                     ].map(tab => (
                         <button
                             key={tab.id}
@@ -383,18 +389,18 @@ export default function AnalyticsPage() {
                     {/* KPI Grid */}
                     {hasRealData ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                            <KPICard title="Total Users" value={totalsData.users.toLocaleString()} change={12.5} icon={Users} color="cyan" />
-                            <KPICard title="Sessions" value={totalsData.sessions.toLocaleString()} change={8.2} icon={Activity} color="green" />
-                            <KPICard title="Bounce Rate" value={`${totalsData.bounceRate}%`} change={-2.1} icon={ArrowUpRight} color="orange" />
-                            <KPICard title="Avg. Duration" value={totalsData.duration} change={5.4} icon={Clock} color="purple" />
+                            <KPICard title={t.totalUsers} value={totalsData.users.toLocaleString()} change={12.5} icon={Users} color="cyan" />
+                            <KPICard title={t.sessions} value={totalsData.sessions.toLocaleString()} change={8.2} icon={Activity} color="green" />
+                            <KPICard title={t.bounceRate} value={`${totalsData.bounceRate}%`} change={-2.1} icon={ArrowUpRight} color="orange" />
+                            <KPICard title={t.avgDuration} value={totalsData.duration} change={5.4} icon={Clock} color="purple" />
                         </div>
                     ) : (
                         <div className="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-xl p-6 mb-6">
                             <div className="flex items-start gap-4">
                                 <AlertCircle className="text-red-500 mt-1" size={24} />
                                 <div>
-                                    <h3 className="text-lg font-bold text-red-700 dark:text-red-400">Analitik Verisi Alınamadı</h3>
-                                    <p className="text-red-600 dark:text-red-300 mt-1">{apiError || 'Google Analytics bağlantısında bir sorun oluştu.'}</p>
+                                    <h3 className="text-lg font-bold text-red-700 dark:text-red-400">{t.noAnalyticsData}</h3>
+                                    <p className="text-red-600 dark:text-red-300 mt-1">{apiError || t.noGaDataDesc}</p>
                                 </div>
                             </div>
                         </div>
@@ -415,7 +421,7 @@ export default function AnalyticsPage() {
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             {/* Main Traffic Chart */}
                             <div className="lg:col-span-2 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6">
-                                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">Traffic Overview (30 Days)</h3>
+                                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">{t.trafficOverview}</h3>
                                 <div className="h-[300px] w-full">
                                     <ResponsiveContainer width="100%" height="100%">
                                         <AreaChart data={trafficData}>
@@ -433,7 +439,7 @@ export default function AnalyticsPage() {
                                                     return (
                                                         <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 rounded-xl shadow-lg">
                                                             <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">{label}</p>
-                                                            <p className="font-bold text-slate-900 dark:text-white">{payload[0].value} users</p>
+                                                            <p className="font-bold text-slate-900 dark:text-white">{payload[0].value} {t.usersKey}</p>
                                                         </div>
                                                     )
                                                 }
@@ -447,7 +453,7 @@ export default function AnalyticsPage() {
 
                             {/* Channels Chart */}
                             <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6">
-                                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">Acquisition Channels</h3>
+                                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">{t.acquisitionChannels}</h3>
                                 <div className="h-[300px] w-full">
                                     <ResponsiveContainer width="100%" height="100%">
                                         <PieChart>
@@ -486,11 +492,9 @@ export default function AnalyticsPage() {
                         <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-4 flex items-start gap-3">
                             <AlertCircle className="text-amber-400 shrink-0 mt-0.5" size={20} />
                             <div>
-                                <h4 className="font-bold text-amber-400">Canlı Veri Bulunamadı</h4>
+                                <h4 className="font-bold text-amber-400">{t.noLiveApiData}</h4>
                                 <p className="text-sm text-slate-500 dark:text-slate-300 mt-1">
-                                    Google Analytics API'den veri alınamadı. Lütfen <strong>Ayarlar</strong> sekmesinden
-                                    gerçek GA4 Property ID ve Service Account JSON bilgilerinin dolu olduğundan emin olun
-                                    veya sunucu <code>.env</code> değişkenlerini kontrol edin.
+                                    {t.noLiveApiDataDesc}
                                 </p>
                             </div>
                         </div>
@@ -499,7 +503,7 @@ export default function AnalyticsPage() {
             )}
 
             {activeTab === 'realtime' && (
-                <RealtimeTab realtimeUsers={realtimeUsers} setRealtimeUsers={setRealtimeUsers} />
+                <RealtimeTab realtimeUsers={realtimeUsers} setRealtimeUsers={setRealtimeUsers} t={t} />
             )}
 
             {activeTab === 'reklamlar' && (
@@ -509,14 +513,14 @@ export default function AnalyticsPage() {
             {activeTab === 'demographics' && (
                 <div className="space-y-6 animate-fade-in">
                     <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6">
-                        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">Top Countries</h3>
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">{t.topCountries}</h3>
                         <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse">
                                 <thead>
                                     <tr className="border-b border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 text-sm">
-                                        <th className="py-3 font-medium">Country</th>
-                                        <th className="py-3 font-medium">Users</th>
-                                        <th className="py-3 font-medium text-right">% of Total</th>
+                                        <th className="py-3 font-medium">{t.country}</th>
+                                        <th className="py-3 font-medium">{t.usersKey}</th>
+                                        <th className="py-3 font-medium text-right">{t.pctOfTotal}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -539,7 +543,7 @@ export default function AnalyticsPage() {
                                     ))}
                                     {countriesData.length === 0 && (
                                         <tr>
-                                            <td colSpan={3} className="py-6 text-center text-slate-500">Ülke verisi bulunamadı</td>
+                                            <td colSpan={3} className="py-6 text-center text-slate-500">{t.noCountryFound}</td>
                                         </tr>
                                     )}
                                 </tbody>
@@ -552,12 +556,12 @@ export default function AnalyticsPage() {
             {activeTab === 'settings' && (
                 <div className="animate-fade-in max-w-4xl">
                     <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 mb-6">
-                        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Configuration</h3>
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">{t.configuration}</h3>
 
                         <div className="space-y-6">
                             {/* GA4 ID */}
                             <div>
-                                <label className="block text-slate-500 dark:text-slate-400 text-sm mb-2">Google Analytics 4 Measurement ID</label>
+                                <label className="block text-slate-500 dark:text-slate-400 text-sm mb-2">{t.ga4MeasurementId}</label>
                                 <div className="relative">
                                     <input
                                         type="text"
@@ -568,13 +572,13 @@ export default function AnalyticsPage() {
                                     />
                                     <BarChart3 className="absolute left-3 top-3.5 text-slate-500" size={18} />
                                 </div>
-                                <p className="text-slate-500 text-xs mt-2">Required for basic tracking.</p>
+                                <p className="text-slate-500 text-xs mt-2">{t.requiredBasicTracking}</p>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {/* GTM ID */}
                                 <div>
-                                    <label className="block text-slate-500 dark:text-slate-400 text-sm mb-2">Google Tag Manager ID</label>
+                                    <label className="block text-slate-500 dark:text-slate-400 text-sm mb-2">{t.gtmId}</label>
                                     <input
                                         type="text"
                                         placeholder="GTM-XXXXXXX"
@@ -585,7 +589,7 @@ export default function AnalyticsPage() {
                                 </div>
                                 {/* FB Pixel */}
                                 <div>
-                                    <label className="block text-slate-500 dark:text-slate-400 text-sm mb-2">Facebook Pixel ID</label>
+                                    <label className="block text-slate-500 dark:text-slate-400 text-sm mb-2">{t.fbPixelId}</label>
                                     <input
                                         type="text"
                                         placeholder="Pixel ID"
@@ -598,7 +602,7 @@ export default function AnalyticsPage() {
 
                             {/* Google Client ID */}
                             <div>
-                                <label className="block text-slate-500 dark:text-slate-400 text-sm mb-2">Google Client ID (OAuth)</label>
+                                <label className="block text-slate-500 dark:text-slate-400 text-sm mb-2">{t.googleClientId}</label>
                                 <input
                                     type="text"
                                     placeholder="817024..."
@@ -611,8 +615,8 @@ export default function AnalyticsPage() {
                             <div className="pt-6 border-t border-slate-200 dark:border-white/10">
                                 <div className="flex items-center justify-between mb-4">
                                     <div>
-                                        <h4 className="text-slate-900 dark:text-white font-medium">Advanced Reporting (API)</h4>
-                                        <p className="text-slate-500 text-sm">Required to show real charts in this dashboard.</p>
+                                        <h4 className="text-slate-900 dark:text-white font-medium">{t.advancedReportingAPI}</h4>
+                                        <p className="text-slate-500 text-sm">{t.requiredForCharts}</p>
                                     </div>
                                     <button
                                         onClick={() => setSettings({ ...settings, useGaApi: !settings.useGaApi })}
@@ -620,14 +624,14 @@ export default function AnalyticsPage() {
                                             }`}
                                     >
                                         {settings.useGaApi ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
-                                        {settings.useGaApi ? 'Enabled' : 'Disabled'}
+                                        {settings.useGaApi ? t.enabled : t.disabled}
                                     </button>
                                 </div>
 
                                 {settings.useGaApi && (
                                     <div className="space-y-4 p-4 bg-black/20 rounded-lg">
                                         <div>
-                                            <label className="block text-slate-500 dark:text-slate-400 text-sm mb-2">GA4 Property ID</label>
+                                            <label className="block text-slate-500 dark:text-slate-400 text-sm mb-2">{t.ga4PropertyId}</label>
                                             <input
                                                 type="text"
                                                 placeholder="123456789"
@@ -635,10 +639,10 @@ export default function AnalyticsPage() {
                                                 onChange={(e) => setSettings({ ...settings, gaPropertyId: e.target.value })}
                                                 className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors"
                                             />
-                                            <p className="text-slate-500 text-xs mt-1">Numeric Property ID (Not G-ID)</p>
+                                            <p className="text-slate-500 text-xs mt-1">{t.numericPropertyId}</p>
                                         </div>
                                         <div>
-                                            <label className="block text-slate-500 dark:text-slate-400 text-sm mb-2">Service Account JSON (Base64)</label>
+                                            <label className="block text-slate-500 dark:text-slate-400 text-sm mb-2">{t.serviceAccountJson}</label>
                                             <textarea
                                                 rows={3}
                                                 placeholder="ewogICJ0eXBlIjogInNlcnZpY2VfYWNjb3VudCIsCiAg..."
@@ -659,7 +663,7 @@ export default function AnalyticsPage() {
                         className="w-full py-4 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl font-bold transition-all shadow-lg hover:shadow-cyan-500/20 disabled:opacity-50 flex items-center justify-center gap-2"
                     >
                         {saving ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Save size={20} />}
-                        {saved ? 'Settings Saved!' : 'Save Configuration'}
+                        {saved ? t.settingsSaved : t.saveConfiguration}
                     </button>
                 </div>
             )}

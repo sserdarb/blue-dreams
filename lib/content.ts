@@ -19,7 +19,7 @@ export interface RoomType {
 export const ROOM_TYPES: RoomType[] = [
     {
         id: 'club-oda',
-        slug: 'club-odalar',
+        slug: 'club',
         title: 'Club Oda',
         subtitle: 'Club Odalar',
         description: 'Doğayla iç içe yapısı, özgün mimarisi ve denize nazır konumda konforlu bir konaklama deneyimi.',
@@ -56,7 +56,7 @@ export const ROOM_TYPES: RoomType[] = [
     },
     {
         id: 'club-deniz',
-        slug: 'club-deniz-manzarali-odalar',
+        slug: 'club-deniz',
         title: 'Club Deniz Manzaralı Oda',
         subtitle: 'Club Odalar',
         description: 'Eşsiz Ege Denizi manzarası eşliğinde, doğanın kalbinde konforlu bir konaklama.',
@@ -93,7 +93,7 @@ export const ROOM_TYPES: RoomType[] = [
     },
     {
         id: 'club-aile',
-        slug: 'club-aile-odasi',
+        slug: 'aile',
         title: 'Club Aile Odası',
         subtitle: 'Club Odalar',
         description: 'Geniş aileler için tasarlanmış, iki yatak odalı ve konforlu ortak yaşam alanına sahip club odalar.',
@@ -131,7 +131,7 @@ export const ROOM_TYPES: RoomType[] = [
     },
     {
         id: 'deluxe',
-        slug: 'deluxe-odalar',
+        slug: 'deluxe',
         title: 'Deluxe Deniz Manzaralı Oda',
         subtitle: 'Deluxe Odalar',
         description: 'Modern tasarımın eşsiz Bodrum manzarasıyla buluştuğu, geniş ve ferah lüks yaşam alanları.',

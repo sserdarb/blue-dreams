@@ -33,16 +33,21 @@ export default async function ManagementReportsPage({
     let dataSourceLabel = 'Demo'
 
     if (group === 'management') {
-        const cyStart = new Date(currentYear, 0, 1)
-        const cyEnd = new Date(currentYear, 11, 31)
-        const pyStart = new Date(prevYear, 0, 1)
-        const pyEnd = new Date(prevYear, 11, 31)
+        // Use explicit date strings to avoid timezone shifts (toISOString shifts dates in UTC+3)
+        const cyStart = new Date(`${currentYear}-01-01T00:00:00Z`)
+        const cyEnd = new Date(`${currentYear}-12-31T23:59:59Z`)
+        const pyStart = new Date(`${prevYear}-01-01T00:00:00Z`)
+        const pyEnd = new Date(`${prevYear}-12-31T23:59:59Z`)
+
+        console.log(`[Reports] Fetching reservations: CY=${currentYear} (${cyStart.toISOString()} - ${cyEnd.toISOString()}), PY=${prevYear} (${pyStart.toISOString()} - ${pyEnd.toISOString()})`)
 
         const [currentYearRes, prevYearRes, exchangeRates] = await Promise.all([
             ElektraService.getReservations(cyStart, cyEnd),
             ElektraService.getReservations(pyStart, pyEnd),
             ElektraService.getExchangeRates()
         ])
+
+        console.log(`[Reports] CY reservations: ${currentYearRes.length}, PY reservations: ${prevYearRes.length}`)
 
         const serialized = {
             currentYear,

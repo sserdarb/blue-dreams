@@ -6,6 +6,7 @@ import { ROOM_TYPES } from '@/lib/content'
 import { Maximize, Users, Mountain } from 'lucide-react'
 import LivePricing from '@/components/shared/LivePricing'
 import { notFound } from 'next/navigation'
+import Link from 'next/link'
 
 export default async function DynamicRoomPage({ params }: { params: Promise<{ locale: string, slug: string }> }) {
     const { locale, slug } = await params
@@ -68,12 +69,12 @@ export default async function DynamicRoomPage({ params }: { params: Promise<{ lo
                             <LivePricing roomFilter={roomFilter} />
 
                             {/* CTA */}
-                            <a
+                            <Link
                                 href={`/${locale}/booking`}
                                 className="inline-block bg-brand text-white px-8 py-4 font-bold uppercase tracking-widest text-sm hover:bg-brand-dark transition-colors"
                             >
                                 Rezervasyon Yap
-                            </a>
+                            </Link>
                         </div>
 
                         {/* Gallery */}
@@ -137,13 +138,13 @@ export default async function DynamicRoomPage({ params }: { params: Promise<{ lo
                     <h3 className="text-3xl font-serif mb-8">Diğer Oda Tipleri</h3>
                     <div className="flex flex-wrap justify-center gap-4">
                         {ROOM_TYPES.filter(r => r.id !== room.id).map(r => (
-                            <a
+                            <Link
                                 key={r.id}
                                 href={`/${locale}/odalar/${r.slug}`}
                                 className="bg-white/10 hover:bg-white/20 px-6 py-3 rounded-sm text-sm font-bold uppercase tracking-widest transition-colors"
                             >
                                 {r.title}
-                            </a>
+                            </Link>
                         ))}
                     </div>
                 </div>
