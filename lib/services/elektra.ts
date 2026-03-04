@@ -554,6 +554,61 @@ async function fetchHRRequests(): Promise<any[]> {
     }
 }
 
+// ─── Task Management Functions ─────────────────────────────────
+
+async function fetchTaskDefinitions(language: string = 'TR'): Promise<any[]> {
+    try {
+        const jwt = await getJwt()
+        const res = await fetch(`${BASE_URL}/guest/task-definitions-list`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${jwt}`,
+            },
+            body: JSON.stringify({
+                HotelId: HOTEL_ID,
+                Language: language,
+            }),
+        })
+        if (!res.ok) throw new Error(`Task definitions API error: ${res.status}`)
+        const data = await res.json()
+        return Array.isArray(data) ? data : (data?.result || [])
+    } catch (err) {
+        console.error('[Elektra] fetchTaskDefinitions error:', err)
+        return []
+    }
+}
+
+async function createTask(taskData: {
+    taskDefinitionId: number;
+    location: string;
+    description?: string;
+    priority?: number;
+}): Promise<any> {
+    try {
+        const jwt = await getJwt()
+        const res = await fetch(`${BASE_URL}/guest/task-create`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${jwt}`,
+            },
+            body: JSON.stringify({
+                HotelId: HOTEL_ID,
+                TaskDefinitionId: taskData.taskDefinitionId,
+                Location: taskData.location,
+                Description: taskData.description || '',
+                Priority: taskData.priority || 3,
+            }),
+        })
+        if (!res.ok) throw new Error(`Task create API error: ${res.status}`)
+        return await res.json()
+    } catch (err) {
+        console.error('[Elektra] createTask error:', err)
+        throw err
+    }
+}
+
 // ─── Exported Service ──────────────────────────────────────────
 
 export const ElektraService = {
