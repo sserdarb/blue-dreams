@@ -8,14 +8,11 @@ import {
     Activity, Users, Clock, Globe, ArrowUpRight, ArrowDownRight,
     Map, Monitor, Smartphone, Tablet
 } from 'lucide-react'
-import {
-    LineChart, Line, AreaChart, Area, BarChart, Bar,
-    XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-    PieChart, Pie, Cell, Legend
-} from 'recharts'
+import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts'
 import { PlatformRadar } from '@/components/admin/analytics/PlatformRadar'
 import { AIInsights } from '@/components/admin/analytics/AIInsights'
 import { RecentVisitors } from '@/components/admin/analytics/RecentVisitors'
+import { UnifiedAdsTab } from '@/components/admin/UnifiedAdsTab'
 
 interface AnalyticsSettings {
     gaId: string
@@ -278,6 +275,7 @@ export default function AnalyticsPage() {
                     {[
                         { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
                         { id: 'realtime', label: 'Real-time', icon: Activity },
+                        { id: 'reklamlar', label: 'Reklamlar', icon: Globe },
                         { id: 'demographics', label: 'Demographics', icon: Globe },
                         { id: 'settings', label: 'Settings', icon: Settings },
                     ].map(tab => (
@@ -420,6 +418,10 @@ export default function AnalyticsPage() {
 
             {activeTab === 'realtime' && (
                 <RealtimeTab realtimeUsers={realtimeUsers} setRealtimeUsers={setRealtimeUsers} />
+            )}
+
+            {activeTab === 'reklamlar' && (
+                <UnifiedAdsTab />
             )}
 
             {activeTab === 'demographics' && (
