@@ -11,7 +11,7 @@ export const MetaSocialService = {
 
     async getInstagramProfile() {
         const token = await getToken()
-        const igId = process.env.INSTAGRAM_BUSINESS_ACCOUNT_ID
+        const igId = process.env.INSTAGRAM_BUSINESS_ACCOUNT_ID || process.env.IG_ACCOUNT_ID
         if (!token || !igId) return null
 
         const res = await fetch(
@@ -23,7 +23,7 @@ export const MetaSocialService = {
 
     async getInstagramInsights(period: 'day' | 'week' | 'days_28' = 'day') {
         const token = await getToken()
-        const igId = process.env.INSTAGRAM_BUSINESS_ACCOUNT_ID
+        const igId = process.env.INSTAGRAM_BUSINESS_ACCOUNT_ID || process.env.IG_ACCOUNT_ID
         if (!token || !igId) return null
 
         const metrics = 'impressions,reach,profile_views'
@@ -36,7 +36,7 @@ export const MetaSocialService = {
 
     async getInstagramMedia(limit = 12) {
         const token = await getToken()
-        const igId = process.env.INSTAGRAM_BUSINESS_ACCOUNT_ID
+        const igId = process.env.INSTAGRAM_BUSINESS_ACCOUNT_ID || process.env.IG_ACCOUNT_ID
         if (!token || !igId) return []
 
         const res = await fetch(
@@ -51,7 +51,7 @@ export const MetaSocialService = {
 
     async getFacebookPageInfo() {
         const token = await getToken()
-        const pageId = process.env.META_PAGE_ID
+        const pageId = process.env.META_PAGE_ID || process.env.FB_PAGE_ID
         if (!token || !pageId) return null
 
         const res = await fetch(
@@ -63,7 +63,7 @@ export const MetaSocialService = {
 
     async getFacebookInsights(period: 'day' | 'week' | 'days_28' = 'day') {
         const token = await getToken()
-        const pageId = process.env.META_PAGE_ID
+        const pageId = process.env.META_PAGE_ID || process.env.FB_PAGE_ID
         if (!token || !pageId) return null
 
         const metrics = 'page_impressions,page_engaged_users,page_post_engagements,page_fans'

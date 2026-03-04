@@ -6,26 +6,35 @@ export async function GET() {
         // Get GA4 credentials from env or DB
         const propertyId = process.env.GA_PROPERTY_ID || process.env.GA4_PROPERTY_ID
         const serviceKeyBase64 = process.env.GA_SERVICE_KEY || process.env.GA4_SERVICE_KEY
+        const clientEmail = process.env.GA_CLIENT_EMAIL
+        const privateKey = process.env.GA_PRIVATE_KEY
 
-        if (!propertyId || !serviceKeyBase64) {
+        if (!propertyId || (!serviceKeyBase64 && (!clientEmail || !privateKey))) {
             return NextResponse.json({
                 success: false,
-                error: 'GA4 Property ID veya Service Key eksik',
+                error: 'GA4 Property ID veya Service Key (veya Email/PrivateKey) eksik',
                 activeUsers: 0
             })
         }
 
-        // Decode service key
-        let credentials
-        try {
-            const decoded = Buffer.from(serviceKeyBase64, 'base64').toString('utf-8')
-            credentials = JSON.parse(decoded)
-        } catch {
-            return NextResponse.json({
-                success: false,
-                error: 'Service Key decode edilemedi',
-                activeUsers: 0
-            })
+        let credentials: any = {}
+
+        if (clientEmail && privateKey) {
+            credentials = {
+                client_email: clientEmail,
+                private_key: privateKey.replace(/\\n/g, '\n')
+            }
+        } else if (serviceKeyBase64) {
+            try {
+                const decoded = Buffer.from(serviceKeyBase64, 'base64').toString('utf-8')
+                credentials = JSON.parse(decoded)
+            } catch {
+                return NextResponse.json({
+                    success: false,
+                    error: 'Service Key decode edilemedi',
+                    activeUsers: 0
+                })
+            }
         }
 
         const client = new BetaAnalyticsDataClient({ credentials })
