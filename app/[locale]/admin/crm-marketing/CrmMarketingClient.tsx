@@ -7,7 +7,7 @@ import {
     Users, Target, MessageSquare, Mail, Send, Search, RefreshCw, Plus,
     ChevronDown, CheckSquare, Globe, Calendar, TrendingUp, Phone, BarChart3,
     FileText, Inbox, Reply, Tag, Eye, Trash2, X, Check,
-    MessageCircle, UserCheck, Layers, Loader2
+    MessageCircle, UserCheck, Layers, Loader2, Sparkles
 } from 'lucide-react'
 
 // ——— Types ———
@@ -796,33 +796,57 @@ function UnifiedInboxTab() {
             {/* CONVERSATION DETAIL */}
             {view === 'conversations' && selectedPhone && (
                 <div className="space-y-3">
-                    <button onClick={() => setSelectedPhone(null)} className="text-sm text-primary hover:underline flex items-center gap-1">← Konuşmalara Dön</button>
-                    <Card className="p-4">
-                        <div className="space-y-3 max-h-[400px] overflow-y-auto">
+                    <div className="flex justify-between items-center">
+                        <button onClick={() => setSelectedPhone(null)} className="text-sm text-primary hover:underline flex items-center gap-1">← Konuşmalara Dön</button>
+                        <div className="flex gap-2">
+                            <button className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-xs rounded-md flex items-center gap-1"><Check size={12} /> Çözüldü Olarak İşaretle</button>
+                            <button className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-xs rounded-md text-destructive flex items-center gap-1"><X size={12} /> Arşivle</button>
+                        </div>
+                    </div>
+                    <Card className="p-4 flex flex-col h-[500px]">
+                        <div className="flex-1 space-y-3 overflow-y-auto pr-2" id="chat-pane">
+                            <div className="text-center text-xs text-muted-foreground my-2">Bugün, {new Date().toLocaleDateString('tr')}</div>
                             {chatMessages.slice().reverse().map(m => (
                                 <div key={m.id} className={`flex flex-col ${m.direction === 'outbound' ? 'items-end' : 'items-start'}`}>
-                                    <div className={`max-w-[70%] px-3 py-2 rounded-lg text-sm ${m.direction === 'outbound' ? 'bg-primary text-primary-foreground' : 'bg-slate-200 dark:bg-slate-800'}`}>
+                                    <div className={`max-w-[75%] px-4 py-2.5 rounded-2xl text-sm ${m.direction === 'outbound' ? 'bg-primary text-primary-foreground rounded-tr-sm' : 'bg-slate-100 dark:bg-slate-800 rounded-tl-sm'}`}>
                                         <p>{m.content}</p>
-                                        <p className={`text-xs mt-1 ${m.direction === 'outbound' ? 'text-primary-foreground/60' : 'text-muted-foreground'}`}>
-                                            {new Date(m.createdAt).toLocaleString('tr')}
+                                        <p className={`text-[10px] mt-1 text-right ${m.direction === 'outbound' ? 'text-primary-foreground/60' : 'text-muted-foreground'}`}>
+                                            {new Date(m.createdAt).toLocaleTimeString('tr', { hour: '2-digit', minute: '2-digit' })}
                                         </p>
                                     </div>
                                     {m.direction === 'inbound' && m.translated && (
-                                        <div className="mt-1 max-w-[70%] px-3 py-2 rounded-lg text-sm bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 border border-yellow-200 dark:border-yellow-800">
-                                            <p className="text-xs font-semibold mb-1 opacity-70">Çeviri:</p>
+                                        <div className="mt-1 max-w-[70%] px-3 py-2 rounded-xl text-sm bg-yellow-50 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 border border-yellow-200 dark:border-yellow-800">
+                                            <p className="text-[10px] font-semibold mb-1 opacity-70 uppercase tracking-wider">Çeviri (EN)</p>
                                             <p>{m.translated}</p>
                                         </div>
                                     )}
                                 </div>
                             ))}
-                            {chatMessages.length === 0 && <p className="text-center text-muted-foreground text-sm">Mesaj bulunamadı</p>}
+                            {chatMessages.length === 0 && <div className="h-full flex items-center justify-center"><p className="text-muted-foreground text-sm">Hiç mesaj yok, sohbete başlayın.</p></div>}
                         </div>
-                        <div className="flex gap-2 mt-4 pt-3 border-t">
-                            <input className="flex-1 border dark:border-slate-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-white" placeholder="Yanıt yazın..." value={replyText} onChange={e => setReplyText(e.target.value)} onKeyDown={e => e.key === 'Enter' && sendReply()} />
-                            <button onClick={translateMessageOutbound} disabled={!replyText.trim() || isTranslating} className="px-3 py-2 border rounded-lg text-sm flex items-center gap-1 hover:bg-slate-50 dark:hover:bg-slate-800" title="İngilizceye Çevir">
-                                {isTranslating ? <Loader2 size={14} className="animate-spin" /> : <Globe size={14} />} Çevir
-                            </button>
-                            <button onClick={sendReply} disabled={!replyText.trim()} className="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 disabled:opacity-50 flex items-center gap-1"><Send size={14} /> Gönder</button>
+                        <div className="pt-3 border-t mt-3 flex flex-col gap-2">
+                            <div className="flex flex-wrap gap-2 mb-1">
+                                <button onClick={() => setReplyText('Merhaba, size nasıl yardımcı olabilirim?')} className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-xs text-muted-foreground hover:text-foreground">Merhaba 👋</button>
+                                <button onClick={() => setReplyText('İlettiğiniz konuyla hemen ilgileniyorum, lütfen hatta kalın.')} className="px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-xs text-muted-foreground hover:text-foreground">İlgileniyorum ⏳</button>
+                                <button onClick={() => {
+                                    setIsTranslating(true)
+                                    setTimeout(() => {
+                                        setReplyText('I understand your request. Let me check the details and get back to you shortly.')
+                                        setIsTranslating(false)
+                                    }, 800)
+                                }} className="px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded text-xs flex items-center gap-1 hover:bg-purple-200">
+                                    <Sparkles size={10} /> AI Yanıt Önerisi
+                                </button>
+                            </div>
+                            <div className="flex gap-2 relative">
+                                <textarea className="flex-1 border dark:border-slate-700 rounded-xl px-4 py-3 text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-white resize-none h-[50px] focus:ring-2 ring-primary/20 outline-none" placeholder="Mesajınızı yazın... (Enter ile gönder)" value={replyText} onChange={e => setReplyText(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendReply() } }} />
+                                <div className="flex flex-col gap-1 justify-end">
+                                    <button onClick={translateMessageOutbound} disabled={!replyText.trim() || isTranslating} className="px-3 py-1.5 border rounded-lg text-xs flex items-center justify-center gap-1 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50" title="İngilizceye Çevir">
+                                        {isTranslating ? <Loader2 size={12} className="animate-spin" /> : <Globe size={12} />} EN
+                                    </button>
+                                    <button onClick={sendReply} disabled={!replyText.trim()} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 shadow-sm flex items-center justify-center gap-2"><Send size={14} /> Gönder</button>
+                                </div>
+                            </div>
                         </div>
                     </Card>
                 </div>
