@@ -1,12 +1,13 @@
 'use client'
 
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
-import { BarChart3, DollarSign, ShoppingCart, Users } from 'lucide-react'
+import { BarChart3, DollarSign, ShoppingCart, Users, Megaphone } from 'lucide-react'
 
 const GROUPS = [
     { key: 'management', label: 'Yönetim', icon: BarChart3, color: 'cyan', gradient: 'from-cyan-500 to-blue-500' },
     { key: 'finance', label: 'Finans', icon: DollarSign, color: 'emerald', gradient: 'from-emerald-500 to-teal-500' },
     { key: 'purchasing', label: 'Satın Alma', icon: ShoppingCart, color: 'orange', gradient: 'from-orange-500 to-amber-500' },
+    { key: 'marketing', label: 'Pazarlama', icon: Megaphone, color: 'indigo', gradient: 'from-indigo-500 to-purple-500' },
 ]
 
 export default function ReportGroupNav({ activeGroup }: { activeGroup: string }) {

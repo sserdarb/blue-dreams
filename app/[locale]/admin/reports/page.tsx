@@ -5,6 +5,7 @@ import { FinanceService } from '@/lib/services/finance'
 import { HRService } from '@/lib/services/hr'
 import { PurchasingService } from '@/lib/services/purchasing'
 import ManagementReportsClient from './ManagementReportsClient'
+import MarketingReportsClient from './ReportsClient'
 import FinanceReportsClient from './FinanceReportsClient'
 import HRReportsClient from './HRReportsClient'
 import PurchasingReportsClient from './PurchasingReportsClient'
@@ -166,6 +167,11 @@ export default async function ManagementReportsPage({
         )
     }
 
+    if (group === 'marketing') {
+        dataSourceLabel = 'Meta & Google Ads API'
+        content = <MarketingReportsClient />
+    }
+
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
@@ -174,7 +180,8 @@ export default async function ManagementReportsPage({
                         {group === 'management' ? 'Yönetim Raporları' :
                             group === 'finance' ? 'Finans Raporları' :
                                 group === 'purchasing' ? 'Satın Alma Raporları' :
-                                    'İnsan Kaynakları Raporları'}
+                                    group === 'marketing' ? 'Pazarlama & Reklam Raporları' :
+                                        'İnsan Kaynakları Raporları'}
                     </h1>
                     <p className="text-slate-500 dark:text-slate-400">Elektra ERP entegrasyonu ile güncel veriler.</p>
                 </div>
