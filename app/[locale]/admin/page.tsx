@@ -24,13 +24,18 @@ export default async function AdminDashboard({
   const { from, to } = await searchParams
   const t = getAdminTranslations(locale as AdminLocale)
 
-  // Determine dates
+  // Determine dates — default: Bu Ay (this month)
   let endDate = new Date()
   if (to) endDate = new Date(to)
 
   let startDate = new Date()
-  startDate.setDate(endDate.getDate() - 7) // Default 7 days
-  if (from) startDate = new Date(from)
+  if (from) {
+    startDate = new Date(from)
+  } else {
+    startDate = new Date(endDate.getFullYear(), endDate.getMonth(), 1) // First day of current month
+  }
+
+  const dateLabel = `${startDate.toLocaleDateString('tr-TR')} – ${endDate.toLocaleDateString('tr-TR')}`
 
   try {
     const [salesData, stats, recentReservations, reviews, asisiaStats, pickupStats] = await Promise.all([
@@ -54,12 +59,14 @@ export default async function AdminDashboard({
         </div>
 
         {/* Header & Filter */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">{(t as any).title || 'Dashboard'}</h1>
-            <p className="text-slate-500 dark:text-slate-400 mt-1">
-              Veriler <strong>{startDate.toLocaleDateString('tr-TR')}</strong> - <strong>{endDate.toLocaleDateString('tr-TR')}</strong> aralığı için gösteriliyor.
-            </p>
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">{(t as any).title || 'Dashboard'}</h1>
+              <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm">
+                Seçili Dönem: <strong>{dateLabel}</strong>
+              </p>
+            </div>
           </div>
           <DashboardFilter />
         </div>
@@ -73,7 +80,7 @@ export default async function AdminDashboard({
               </div>
               <div>
                 <p className="text-cyan-100 font-medium">Toplam Rezervasyon</p>
-                <p className="text-xs text-cyan-200">{startDate.toLocaleDateString('tr-TR')} - {endDate.toLocaleDateString('tr-TR')} arası</p>
+                <p className="text-xs text-cyan-200">Seçili Dönem: {dateLabel}</p>
               </div>
             </div>
             <div className="flex items-end justify-between">
@@ -94,8 +101,8 @@ export default async function AdminDashboard({
                 <DollarSign size={24} className="text-white" />
               </div>
               <div>
-                <p className="text-orange-100 font-medium">Ortalama Günlük Ücret (ADR)</p>
-                <p className="text-xs text-orange-200">Seçili Dönem: Toplam Ciro / Toplam Geceleme</p>
+                <p className="text-orange-100 font-medium">ADR (Ort. Günlük Ücret)</p>
+                <p className="text-xs text-orange-200">{dateLabel} · Ciro / Oda Geceleme</p>
               </div>
             </div>
             <div className="flex items-end justify-between">
@@ -117,7 +124,7 @@ export default async function AdminDashboard({
               </div>
               <div>
                 <p className="text-red-100 font-medium">İptal Edilen Rezervasyonlar</p>
-                <p className="text-xs text-red-200">{startDate.toLocaleDateString('tr-TR')} - {endDate.toLocaleDateString('tr-TR')} arası</p>
+                <p className="text-xs text-red-200">Seçili Dönem: {dateLabel}</p>
               </div>
             </div>
             <div className="flex items-end justify-between">
@@ -179,10 +186,10 @@ export default async function AdminDashboard({
           </div>
 
           {/* Web Online Trendleri */}
-          <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 shadow-sm md:col-span-2">
+          <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 shadow-sm">
             <div className="flex items-center gap-2 mb-6">
               <TrendingUp size={20} className="text-emerald-500" />
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">Online (Web) Rezervasyon Trendleri</h2>
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white">Online (Web) Rez. Trendi</h2>
             </div>
             <ChannelTrendChart data={salesData} channel="web" color="#10b981" />
           </div>

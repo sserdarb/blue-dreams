@@ -50,14 +50,14 @@ export default function DashboardLastReservationsWidget({ reservations, locale =
     return (
         <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 shadow-sm">
             <div className="flex items-center justify-between mb-6">
-                <div>
-                    <h2 className="text-xl font-bold text-slate-900 dark:text-white">Son Rezervasyonlar & ADR Analizi</h2>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                        Aynı tarih aralığındaki ortalama fiyata (ADR) göre değerlendirilmiş son 10 onaylı rezervasyon.
-                    </p>
+                <div className="flex items-center gap-3">
+                    <h2 className="text-xl font-bold text-slate-900 dark:text-white">Son Rezervasyonlar</h2>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                        Canlı
+                    </span>
                 </div>
                 <Link href={`/${locale}/admin/reservations`} className="flex items-center gap-1 text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline">
-                    Tümüne Git <ArrowRight size={16} />
+                    Tümünü Gör <ArrowRight size={16} />
                 </Link>
             </div>
 
@@ -100,7 +100,8 @@ export default function DashboardLastReservationsWidget({ reservations, locale =
                     <tbody className="divide-y divide-slate-100 dark:divide-white/5">
                         {analyzedReservations.map((res) => {
                             const name = res.guests?.[0] ? `${res.guests[0].name} ${res.guests[0].surname}` : res.contactName || 'Belirtilmemiş'
-                            const formatter = new Intl.NumberFormat('tr-TR', { style: 'currency', currency: res.currency, maximumFractionDigits: 0 })
+                            const formatter = new Intl.NumberFormat('tr-TR', { style: 'currency', currency: res.currency || 'EUR', maximumFractionDigits: 0, minimumFractionDigits: 0 })
+                            const entryTime = res.createdAt ? new Date(res.createdAt).toLocaleString('tr-TR', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' }) : ''
 
                             return (
                                 <tr key={res.id} className="hover:bg-slate-50/50 dark:hover:bg-white/[0.02] transition-colors cursor-pointer relative group">
@@ -109,7 +110,10 @@ export default function DashboardLastReservationsWidget({ reservations, locale =
                                             <Link href={`/${locale}/admin/reservations`} className="absolute inset-0 z-10" />
                                             {name}
                                         </div>
-                                        <div className="text-xs text-slate-500 mt-0.5">{res.voucherNo || `#${res.id}`} • {res.country}</div>
+                                        <div className="text-xs text-slate-500 mt-0.5">
+                                            {res.voucherNo || `#${res.id}`} • {res.channel}
+                                            {entryTime && <span className="ml-1">• Giriş: {entryTime}</span>}
+                                        </div>
                                     </td>
                                     <td className="px-4 py-3">
                                         <div className="font-medium text-slate-700 dark:text-slate-300">{res.agency}</div>
