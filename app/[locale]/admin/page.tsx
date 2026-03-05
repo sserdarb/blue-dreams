@@ -72,8 +72,8 @@ export default async function AdminDashboard({
                 <Calendar size={24} className="text-white" />
               </div>
               <div>
-                <p className="text-cyan-100 font-medium">Bu Ay Toplam Rezervasyon</p>
-                <p className="text-xs text-cyan-200">Asisia PMS üzerinden canlı veri</p>
+                <p className="text-cyan-100 font-medium">Toplam Rezervasyon</p>
+                <p className="text-xs text-cyan-200">{startDate.toLocaleDateString('tr-TR')} - {endDate.toLocaleDateString('tr-TR')} arası</p>
               </div>
             </div>
             <div className="flex items-end justify-between">
@@ -94,8 +94,8 @@ export default async function AdminDashboard({
                 <DollarSign size={24} className="text-white" />
               </div>
               <div>
-                <p className="text-orange-100 font-medium">Bu Ay Ortalama Günlük Ücret (ADR)</p>
-                <p className="text-xs text-orange-200">Toplam Ciro / Toplam Geceleme</p>
+                <p className="text-orange-100 font-medium">Ortalama Günlük Ücret (ADR)</p>
+                <p className="text-xs text-orange-200">Seçili Dönem: Toplam Ciro / Toplam Geceleme</p>
               </div>
             </div>
             <div className="flex items-end justify-between">

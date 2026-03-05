@@ -1,60 +1,98 @@
 import { NextResponse } from 'next/server';
 import { isAuthenticated } from '@/app/actions/auth';
+import { prisma as db } from '@/lib/prisma';
 
 export async function GET(req: Request) {
     try {
         const isAuthed = await isAuthenticated();
         if (!isAuthed) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-        // Generate synthetic time-series data for the demonstration of trends.
-        // In a real environment, this data would come from historical SerpApi / Exa scrapes saved in the DB.
-
         const url = new URL(req.url);
-        const market = url.searchParams.get('market') || 'domestic'; // domestic or international
-        const months = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara'];
+        const market = url.searchParams.get('market') || 'domestic';
+        const days = parseInt(url.searchParams.get('days') || '90');
 
-        const priceMultiplier = market === 'international' ? 1.4 : 1; // 40% higher in EUR baseline
+        // Fetch real competitor prices from database
+        const cutoffDate = new Date();
+        cutoffDate.setDate(cutoffDate.getDate() - days);
 
-        const pricingTrends = months.map(month => {
-            return {
-                name: month,
-                'Blue Dreams': Math.floor((6000 + Math.random() * 8000) * priceMultiplier),
-                'Duja Bodrum': Math.floor((5500 + Math.random() * 7000) * priceMultiplier),
-                'La Blanche': Math.floor((7000 + Math.random() * 9000) * priceMultiplier),
-                'Samara Bodrum': Math.floor((8000 + Math.random() * 5000) * priceMultiplier),
-                'Kefaluka': Math.floor((6500 + Math.random() * 6000) * priceMultiplier),
-            };
+        const prices = await db.competitorPrice.findMany({
+            where: {
+                fetchedAt: { gte: cutoffDate }
+            },
+            orderBy: { fetchedAt: 'asc' }
         });
 
-        const reviewsTrends = months.map((month, idx) => {
-            // Incremental cumulative growth
-            return {
-                name: month,
-                'Blue Dreams': 3000 + (idx * Math.floor(Math.random() * 50)),
-                'Duja Bodrum': 3200 + (idx * Math.floor(Math.random() * 80)),
-                'La Blanche': 3800 + (idx * Math.floor(Math.random() * 40)),
-                'Samara Bodrum': 1600 + (idx * Math.floor(Math.random() * 30)),
-                'Kefaluka': 2700 + (idx * Math.floor(Math.random() * 60)),
-            };
+        // Get list of tracked competitors
+        const competitors = await db.competitorHotel.findMany({
+            where: { isActive: true },
+            orderBy: { name: 'asc' }
         });
 
-        const brandInterestTrends = months.map((month, idx) => {
-            // Random volatile search volume interest relative score (0-100)
-            return {
-                name: month,
-                'Blue Dreams': Math.floor(40 + Math.random() * 40 + (idx === 6 || idx === 7 ? 20 : 0)), // Peaks in summer
-                'Duja Bodrum': Math.floor(30 + Math.random() * 50 + (idx === 6 || idx === 7 ? 10 : 0)),
-                'La Blanche': Math.floor(50 + Math.random() * 30 + (idx === 6 || idx === 7 ? 15 : 0)),
-                'Samara Bodrum': Math.floor(20 + Math.random() * 40),
-                'Kefaluka': Math.floor(35 + Math.random() * 45),
-            };
-        });
+        const competitorNames = competitors.map(c => c.name);
 
+        // If we have real data, group by week/month
+        if (prices.length > 0) {
+            // Group prices by month for trend view
+            const monthlyPrices: Record<string, Record<string, number[]>> = {};
+
+            prices.forEach(p => {
+                const monthKey = p.fetchedAt.toISOString().slice(0, 7); // YYYY-MM
+                if (!monthlyPrices[monthKey]) monthlyPrices[monthKey] = {};
+                if (!monthlyPrices[monthKey][p.competitorName]) monthlyPrices[monthKey][p.competitorName] = [];
+                monthlyPrices[monthKey][p.competitorName].push(p.price);
+            });
+
+            const monthNames: Record<string, string> = {
+                '01': 'Oca', '02': 'Şub', '03': 'Mar', '04': 'Nis',
+                '05': 'May', '06': 'Haz', '07': 'Tem', '08': 'Ağu',
+                '09': 'Eyl', '10': 'Eki', '11': 'Kas', '12': 'Ara'
+            };
+
+            const pricingTrends = Object.keys(monthlyPrices).sort().map(monthKey => {
+                const monthNum = monthKey.split('-')[1];
+                const entry: any = { name: monthNames[monthNum] || monthKey };
+
+                Object.keys(monthlyPrices[monthKey]).forEach(comp => {
+                    const avgPrice = monthlyPrices[monthKey][comp].reduce((a, b) => a + b, 0) / monthlyPrices[monthKey][comp].length;
+                    entry[comp] = Math.round(avgPrice);
+                });
+
+                return entry;
+            });
+
+            // Latest prices for each competitor (last fetched)
+            const latestPrices: Record<string, { price: number, currency: string, date: string }> = {};
+            prices.forEach(p => {
+                latestPrices[p.competitorName] = {
+                    price: p.price,
+                    currency: p.currency,
+                    date: p.fetchedAt.toISOString()
+                };
+            });
+
+            return NextResponse.json({
+                success: true,
+                dataSource: 'live',
+                totalRecords: prices.length,
+                competitors: competitorNames,
+                pricingTrends,
+                latestPrices,
+                reviewsTrends: [], // Will be added with scraping
+                brandInterestTrends: [] // Will be added with scraping
+            });
+        }
+
+        // Fallback: no data in DB yet — return empty with guidance
         return NextResponse.json({
             success: true,
-            pricingTrends,
-            reviewsTrends,
-            brandInterestTrends
+            dataSource: 'empty',
+            totalRecords: 0,
+            competitors: competitorNames,
+            pricingTrends: [],
+            latestPrices: {},
+            reviewsTrends: [],
+            brandInterestTrends: [],
+            message: 'Henüz veritabanında rakip fiyat verisi bulunamadı. Scraping çalıştırarak veri toplayın.'
         });
 
     } catch (error) {
