@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { fetchAvailability, fetchReservations, computeOccupancy } from '@/lib/services/elektra'
+import { ElektraService } from '@/lib/services/elektra'
 
 export const dynamic = 'force-dynamic'
 
@@ -17,18 +17,15 @@ export async function GET(request: Request) {
         const toDate = to.toISOString().slice(0, 10)
 
         // Fetch availability (prices + rooms) from Elektra PMS
-        const availability = await fetchAvailability(fromDate, toDate, currency)
+        const availability = await ElektraService.getAvailability(new Date(fromDate), new Date(toDate), currency)
 
         // Compute occupancy from availability data
-        const occupancy = computeOccupancy(availability)
+        const occupancy = ElektraService.computeOccupancy(availability)
 
         // Fetch recent reservations (last 30 days check-ins)
         const resFrom = new Date()
         resFrom.setDate(resFrom.getDate() - 30)
-        const reservations = await fetchReservations(
-            resFrom.toISOString().slice(0, 10),
-            toDate
-        )
+        const reservations = await ElektraService.getReservations(resFrom, new Date(toDate))
 
         // Channel breakdown from reservations
         const channelMap = new Map<string, { count: number; revenue: number }>()

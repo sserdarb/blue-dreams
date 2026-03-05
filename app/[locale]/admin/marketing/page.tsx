@@ -129,9 +129,11 @@ export default async function MarketingPage({
 
             {!hasLiveConnection && (
                 <div className="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-xl text-sm">
-                    <strong>Bilgi:</strong> API bağlantıları kurulamadı veya eksik (Meta Token ya da Google OAuth).
-                    Gerçek zamanlı verileri görebilmek için lütfen <code>.env</code> dosyasındaki
-                    <code>META_ACCESS_TOKEN</code> ve <code>GOOGLE_ADS_*</code> kimlik bilgilerini tanımlayınız. Mock veri kullanımı devre dışı bırakılmıştır.
+                    <strong>Bilgi:</strong> {liveData?.metaAds?.status === 'Token Expired'
+                        ? <>Meta Access Token süresi dolmuş. <a href="/api/admin/settings/meta-token" target="_blank" className="underline font-semibold">Token durumunu kontrol edin</a> ve yeni bir token ile yenileyin.</>
+                        : <>API bağlantıları kurulamadı veya eksik. Gerçek zamanlı verileri görebilmek için
+                            <code className="mx-1">.env</code> dosyasındaki <code>META_ACCESS_TOKEN</code> ve <code>GOOGLE_ADS_*</code> kimlik bilgilerini tanımlayınız.</>
+                    }
                 </div>
             )}
 

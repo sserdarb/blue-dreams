@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { BookingService } from '@/lib/services/booking-service'
+import { prisma } from '@/lib/prisma'
 
 export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url)
@@ -8,7 +9,13 @@ export async function GET(req: NextRequest) {
     const checkOut = searchParams.get('checkOut')
     const adults = parseInt(searchParams.get('adults') || '2', 10)
     const children = parseInt(searchParams.get('children') || '0', 10)
-    const currency = searchParams.get('currency') || 'TRY'
+
+    // Geolocation from Vercel / Cloudflare headers
+    const country = req.headers.get('cf-ipcountry') || req.headers.get('x-vercel-ip-country') || 'TR'
+
+    const requestedCurrency = searchParams.get('currency')
+    const defaultCurrency = country === 'TR' ? 'TRY' : 'EUR'
+    const currency = requestedCurrency || defaultCurrency
 
     if (!checkIn || !checkOut) {
         return NextResponse.json(
@@ -28,7 +35,13 @@ export async function GET(req: NextRequest) {
     }
 
     try {
-        const availability = await BookingService.getAvailability(checkIn, checkOut, adults, children, currency)
+        const settings = await prisma.siteSettings.findFirst()
+        const contractTR = settings?.bookingContractTR || 'CALL CENTER TL'
+        const contractWorld = settings?.bookingContractWorld || 'CALL CENTER EUR'
+
+        const agency = country === 'TR' ? contractTR : contractWorld
+
+        const availability = await BookingService.getAvailability(checkIn, checkOut, adults, children, currency, agency)
         return NextResponse.json({
             checkIn,
             checkOut,
@@ -36,6 +49,8 @@ export async function GET(req: NextRequest) {
             adults,
             children,
             currency,
+            country, // For debugging/frontend awareness
+            agency,  // Exposing the selected contract
             roomTypes: availability
         })
     } catch (error) {

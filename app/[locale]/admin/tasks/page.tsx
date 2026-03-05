@@ -60,6 +60,7 @@ export default function TasksPage() {
 
     const [tasks, setTasks] = useState<Task[]>([])
     const [departments, setDepartments] = useState<Department[]>([])
+    const [elektraDefs, setElektraDefs] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const [viewMode, setViewMode] = useState<'kanban' | 'list' | 'diagram' | 'gantt' | 'calendar'>('kanban')
     const [filterDept, setFilterDept] = useState('')
@@ -72,12 +73,17 @@ export default function TasksPage() {
     // Fetch data
     const fetchData = useCallback(async () => {
         try {
-            const [tasksRes, deptsRes] = await Promise.all([
+            const [tasksRes, deptsRes, elektraRes] = await Promise.all([
                 fetch('/api/admin/tasks'),
                 fetch('/api/admin/departments'),
+                fetch('/api/admin/elektra/tasks')
             ])
             if (tasksRes.ok) setTasks(await tasksRes.json())
             if (deptsRes.ok) setDepartments(await deptsRes.json())
+            if (elektraRes.ok) {
+                const eData = await elektraRes.json()
+                if (eData.success) setElektraDefs(eData.data || [])
+            }
         } catch (e) { console.error('Fetch error:', e) }
         setLoading(false)
     }, [])
@@ -393,6 +399,7 @@ export default function TasksPage() {
                 <TaskModal
                     task={editingTask}
                     departments={departments}
+                    elektraDefs={elektraDefs}
                     t={t as AdminTranslations}
                     onClose={() => { setShowCreateModal(false); setEditingTask(null) }}
                     onSave={async (data) => {
@@ -480,9 +487,10 @@ function TaskCard({ task, onDragStart, onEdit, onDelete }: {
 }
 
 // ─── Task Detail/Edit Modal with Comments ───
-function TaskModal({ task, departments, t, onClose, onSave }: {
+function TaskModal({ task, departments, elektraDefs, t, onClose, onSave }: {
     task?: Task | null
     departments: Department[]
+    elektraDefs: any[]
     t: AdminTranslations
     onClose: () => void
     onSave: (data: any) => Promise<void>
@@ -501,6 +509,8 @@ function TaskModal({ task, departments, t, onClose, onSave }: {
         visibilityDepts: task?.visibilityDepts || '',
         visibilityUsers: task?.visibilityUsers || '',
         visibilityRoles: task?.visibilityRoles || '',
+        elektraDefId: '',
+        location: ''
     })
     const [saving, setSaving] = useState(false)
     const [comments, setComments] = useState<{ id: string; content: string; author: { name: string }; createdAt: string }[]>([])
@@ -614,6 +624,34 @@ function TaskModal({ task, departments, t, onClose, onSave }: {
                             <label className="text-[10px] text-slate-500 uppercase font-bold mb-1 block">Bitiş Tarihi</label>
                             <input type="date" value={form.dueDate} onChange={e => setForm(f => ({ ...f, dueDate: e.target.value }))}
                                 className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm" />
+                        </div>
+                    </div>
+
+                    {/* Elektra Integration */}
+                    <div className="bg-cyan-50 dark:bg-cyan-950/20 p-3 rounded-xl border border-cyan-200 dark:border-cyan-800/30 space-y-3">
+                        <h4 className="text-xs font-bold text-cyan-800 dark:text-cyan-300 uppercase flex items-center gap-2">
+                            <Sparkles size={14} /> Elektra PMS Entegrasyonu
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                                <label className="text-[10px] text-cyan-700/70 font-bold mb-1 block">Elektra Görev Türü</label>
+                                <select value={form.elektraDefId} onChange={e => setForm(f => ({ ...f, elektraDefId: e.target.value }))}
+                                    className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-cyan-200 dark:border-cyan-800/50 rounded-lg text-xs">
+                                    <option value="">(PMS'e Gönderme)</option>
+                                    {elektraDefs.map(d => (
+                                        <option key={d.taskDefinitionId || d.Id || Math.random()} value={d.taskDefinitionId || d.Id}>
+                                            {d.Name || d.TaskDefinitionName || 'Bilinmeyen Görev'}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="text-[10px] text-cyan-700/70 font-bold mb-1 block">Konum / Oda (PMS İçin)</label>
+                                <input type="text" value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))}
+                                    disabled={!form.elektraDefId}
+                                    placeholder={form.elektraDefId ? "örn. Oda 101, Lobi" : "Önce görev türü seçin"}
+                                    className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-cyan-200 dark:border-cyan-800/50 rounded-lg text-xs disabled:opacity-50" />
+                            </div>
                         </div>
                     </div>
 

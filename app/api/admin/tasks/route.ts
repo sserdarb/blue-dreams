@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getSession } from '@/app/actions/auth'
+import { ElektraService } from '@/lib/services/elektra'
+import { isDemoSession } from '@/lib/demo-session'
 
 // GET /api/admin/tasks — List tasks with filters
 export async function GET(request: NextRequest) {
@@ -13,6 +15,10 @@ export async function GET(request: NextRequest) {
 
         // Fetch user department if available (assuming user might have a department assigned via a profile setting later, 
         // for now we enforce via explicit roles or direct assignment fields if department integration isn't fully linked to AdminUser yet)
+
+        const siteSettings = await prisma.siteSettings.findFirst()
+        const demoSession = await isDemoSession()
+        const isDemo = demoSession || (siteSettings?.demoModeTasks ?? false)
 
         const { searchParams } = new URL(request.url)
         const status = searchParams.get('status')
@@ -89,7 +95,36 @@ export async function GET(request: NextRequest) {
             creator: userMap[t.creatorId] || null,
         }))
 
-        return NextResponse.json(enriched)
+        // Fetch Elektra tasks and blend
+        let elektraTasks: any[] = []
+        try {
+            if (isDemo) {
+                elektraTasks = [
+                    { id: 'mock-e-1', title: 'Fix AC in Room 101', description: 'Guest complained about AC not cooling.', status: 'todo', priority: 'high', sourceType: 'elektra_pms', createdAt: new Date() },
+                    { id: 'mock-e-2', title: 'Clean Pool Area', description: 'Routine cleaning required.', status: 'in_progress', priority: 'medium', sourceType: 'elektra_pms', createdAt: new Date() }
+                ]
+            } else {
+                const liveTasks = await ElektraService.fetchTasks()
+                elektraTasks = liveTasks.map((t: any) => ({
+                    id: `elektra-${t.TaskId || t.Id || Math.random()}`,
+                    title: t.TaskName || t.Description || 'PMS Task',
+                    description: t.Description || '',
+                    status: t.Status === 'Completed' || t.Status === 3 ? 'done' : t.Status === 'In Progress' || t.Status === 2 ? 'in_progress' : 'todo',
+                    priority: t.Priority === 1 ? 'high' : t.Priority === 2 ? 'medium' : 'low',
+                    sourceType: 'elektra_pms',
+                    sourceRef: t.TaskId?.toString() || t.Id?.toString() || '',
+                    createdAt: t.CreateDate ? new Date(t.CreateDate) : new Date(),
+                    dueDate: t.DueDate ? new Date(t.DueDate) : null,
+                    location: t.Location || ''
+                }))
+            }
+        } catch (e) {
+            console.error('[Tasks] Error blending Elektra tasks:', e)
+        }
+
+        const finalMergedTasks = [...elektraTasks, ...enriched]
+
+        return NextResponse.json(finalMergedTasks)
     } catch (error: any) {
         console.error('[Tasks] GET error:', error)
         return NextResponse.json({ error: error.message }, { status: 500 })
@@ -100,10 +135,28 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json()
-        const { title, description, status, priority, dueDate, departmentId, assigneeId, creatorId, parentId, workflowId, tags, sourceType, sourceRef, estimatedMin, visibilityDepts, visibilityUsers, visibilityRoles } = body
+        let { title, description, status, priority, dueDate, departmentId, assigneeId, creatorId, parentId, workflowId, tags, sourceType, sourceRef, estimatedMin, visibilityDepts, visibilityUsers, visibilityRoles, elektraDefId, location } = body
 
         if (!title || !creatorId) {
             return NextResponse.json({ error: 'title and creatorId are required' }, { status: 400 })
+        }
+
+        // --- ELEKTRA SYNC ---
+        if (elektraDefId && elektraDefId.trim() !== '') {
+            try {
+                const elektraRes = await ElektraService.createTask({
+                    taskDefinitionId: parseInt(elektraDefId, 10),
+                    location: location || '',
+                    description: description || title,
+                })
+                sourceType = 'elektra_pms'
+                if (elektraRes && elektraRes.success !== false) {
+                    sourceRef = elektraRes.TaskId?.toString() || elektraRes.id?.toString() || 'unknown'
+                }
+            } catch (pmsErr) {
+                console.error('[Tasks] Failed to push to Elektra:', pmsErr)
+                // Continue creating local task anyway, but maybe label it failed?
+            }
         }
 
         const task = await prisma.task.create({

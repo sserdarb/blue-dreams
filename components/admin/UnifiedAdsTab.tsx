@@ -169,7 +169,7 @@ export function UnifiedAdsTab({ }: UnifiedAdsProps) {
                                     ))}
                                 </Pie>
                                 <Tooltip
-                                    formatter={(value: number) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(value)}
+                                    formatter={(value: any) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(Number(value))}
                                     contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#fff' }}
                                 />
                                 <Legend />

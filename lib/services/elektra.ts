@@ -559,7 +559,7 @@ async function fetchHRRequests(): Promise<any[]> {
 async function fetchTaskDefinitions(language: string = 'TR'): Promise<any[]> {
     try {
         const jwt = await getJwt()
-        const res = await fetch(`${BASE_URL}/guest/task-definitions-list`, {
+        const res = await fetch(`${API_BASE}/guest/task-definition-list`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -579,6 +579,29 @@ async function fetchTaskDefinitions(language: string = 'TR'): Promise<any[]> {
     }
 }
 
+async function fetchTasks(language: string = 'TR'): Promise<any[]> {
+    try {
+        const jwt = await getJwt()
+        const res = await fetch(`${API_BASE}/guest/task-list`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${jwt}`,
+            },
+            body: JSON.stringify({
+                HotelId: HOTEL_ID,
+                Language: language,
+            }),
+        })
+        if (!res.ok) throw new Error(`Task list API error: ${res.status}`)
+        const data = await res.json()
+        return Array.isArray(data) ? data : (data?.result || [])
+    } catch (err) {
+        console.error('[Elektra] fetchTasks error:', err)
+        return []
+    }
+}
+
 async function createTask(taskData: {
     taskDefinitionId: number;
     location: string;
@@ -587,7 +610,7 @@ async function createTask(taskData: {
 }): Promise<any> {
     try {
         const jwt = await getJwt()
-        const res = await fetch(`${BASE_URL}/guest/task-create`, {
+        const res = await fetch(`${API_BASE}/guest/task-create`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -616,19 +639,7 @@ export const ElektraService = {
     isPartialLive: false,
     isFullyLive: true,
 
-    getAvailability: fetchAvailability,
-    getReservations: fetchReservations,
-    getExchangeRates: fetchExchangeRates,
-    getCountries: fetchCountries,
-    fetchTaskDefinitions,
-    createTask,
-    fetchEmployees,
-    fetchAttendanceLogs,
-    fetchHRRequests,
-
-    // ─── Availability ───────────────────────────────────────
-
-    async getAvailability(startDate: Date, endDate: Date, currency?: string, agency?: string): Promise<RoomAvailability[]> {
+    getAvailability: async (startDate: Date, endDate: Date, currency?: string, agency?: string): Promise<RoomAvailability[]> => {
         const from = startDate.toISOString().split('T')[0]
         const to = endDate.toISOString().split('T')[0]
         try {
@@ -638,51 +649,7 @@ export const ElektraService = {
             return []
         }
     },
-
-    async getOccupancy(startDate: Date, endDate: Date): Promise<DailyOccupancy[]> {
-        const availability = await this.getAvailability(startDate, endDate)
-        return computeOccupancy(availability)
-    },
-
-    async getTodayOccupancy(): Promise<{ rate: number; available: number; total: number }> {
-        const today = new Date()
-        const tomorrow = new Date(today)
-        tomorrow.setDate(today.getDate() + 1)
-        try {
-            const occupancy = await this.getOccupancy(today, tomorrow)
-            if (occupancy.length > 0) {
-                return { rate: occupancy[0].occupancyRate, available: occupancy[0].availableRooms, total: occupancy[0].totalRooms }
-            }
-        } catch (err) {
-            console.error('[Elektra] Today occupancy error:', err)
-        }
-        return { rate: 0, available: 0, total: TOTAL_ROOMS }
-    },
-
-    async getRoomTypeBreakdown(): Promise<{ name: string; available: number; total: number }[]> {
-        const today = new Date()
-        const tomorrow = new Date(today)
-        tomorrow.setDate(today.getDate() + 1)
-        const roomTotals: Record<string, number> = {
-            'Club Room': 109, 'Club Room Sea View': 108, 'Club Family Room': 58,
-            'Deluxe Room': 38, 'Deluxe Family Room': 28, 'Beach Side Room': 0,
-        }
-        try {
-            const availability = await this.getAvailability(today, tomorrow)
-            const todayStr = today.toISOString().split('T')[0]
-            const todayData = availability.filter(a => a.date === todayStr)
-            return todayData
-                .filter(a => roomTotals[a.roomType])
-                .map(a => ({ name: a.roomType, available: a.availableCount, total: roomTotals[a.roomType] || a.availableCount }))
-        } catch (err) {
-            console.error('[Elektra] Room breakdown error:', err)
-            return Object.entries(roomTotals).map(([name, total]) => ({ name, available: 0, total }))
-        }
-    },
-
-    // ─── Reservations (REAL DATA) ───────────────────────────
-
-    async getReservations(startDate: Date, endDate: Date, status?: string): Promise<Reservation[]> {
+    getReservations: async (startDate: Date, endDate: Date, status?: string): Promise<Reservation[]> => {
         const from = startDate.toISOString().split('T')[0]
         const to = endDate.toISOString().split('T')[0]
         const statuses = status ? [status] : ['Reservation', 'Waiting', 'InHouse', 'CheckOut']
@@ -697,18 +664,86 @@ export const ElektraService = {
         }
         return all
     },
+    computeOccupancy,
+    fetchTaskDefinitions,
+    fetchTasks,
+    createTask,
+    fetchEmployees,
+    fetchAttendanceLogs,
+    fetchHRRequests,
+
+    // ─── Occupancy & Room Types ───────────────────────────────────────
+
+    getOccupancy: async function (startDate: Date, endDate: Date): Promise<DailyOccupancy[]> {
+        const availability = await this.getAvailability(startDate, endDate)
+        return computeOccupancy(availability)
+    },
+
+    getTodayOccupancy: async function (): Promise<{ rate: number; available: number; total: number }> {
+        const today = new Date()
+        const tomorrow = new Date(today)
+        tomorrow.setDate(today.getDate() + 1)
+        try {
+            const occupancy = await this.getOccupancy(today, tomorrow)
+            if (occupancy.length > 0) {
+                return { rate: occupancy[0].occupancyRate, available: occupancy[0].availableRooms, total: occupancy[0].totalRooms }
+            }
+        } catch (err) {
+            console.error('[Elektra] Today occupancy error:', err)
+        }
+        return { rate: 0, available: 0, total: 341 }
+    },
+
+    getRoomTypeBreakdown: async function (): Promise<{ name: string; available: number; total: number }[]> {
+        const today = new Date()
+        const tomorrow = new Date(today)
+        tomorrow.setDate(today.getDate() + 1)
+        const roomTotals: Record<string, number> = {
+            'Club Room': 109, 'Club Room Sea View': 108, 'Club Family Room': 58,
+            'Deluxe Room': 38, 'Deluxe Family Room': 28, 'Beach Side Room': 0,
+        }
+        try {
+            const todayStr = today.toISOString().split('T')[0]
+            const tomorrowStr = tomorrow.toISOString().split('T')[0]
+            const availability = await this.getAvailability(today, tomorrow)
+            const todayData = availability.filter(a => a.date === todayStr)
+            return todayData
+                .filter(a => roomTotals[a.roomType])
+                .map(a => ({ name: a.roomType, available: a.availableCount, total: roomTotals[a.roomType] || a.availableCount }))
+        } catch (err) {
+            console.error('[Elektra] Room breakdown error:', err)
+            return Object.entries(roomTotals).map(([name, total]) => ({ name, available: 0, total }))
+        }
+    },
+
+    // Quick room price calculation
+    calculatePrice: async function (checkIn: string, checkOut: string, roomTypeId: number, adults: number, children: number): Promise<number | null> {
+        try {
+            const availability = await this.getAvailability(new Date(checkIn), new Date(checkOut))
+            // find cheapest base price for this room type during the period
+            const roomAvail = availability.filter(a => a.roomTypeId === roomTypeId)
+            if (!roomAvail.length) return null
+
+            let totalPrice = 0
+            for (const a of roomAvail) {
+                totalPrice += a.discountedPrice || a.basePrice || 0
+            }
+            return totalPrice > 0 ? totalPrice : null
+        } catch {
+            return null
+        }
+    },
 
     // Fetch full season reservations (broad check-in range) — reusable across components
-    async getAllSeasonReservations(): Promise<Reservation[]> {
+    getAllSeasonReservations: async function (): Promise<Reservation[]> {
         const today = new Date()
-        // Fetch from 3 months ago to 12 months ahead to cover all active bookings
         const from = new Date(today.getFullYear(), today.getMonth() - 3, 1)
         const to = new Date(today.getFullYear() + 1, today.getMonth(), 0)
         return this.getReservations(from, to)
     },
 
     // Fetch full season cancellations (used to prune DB cache real-time)
-    async getAllSeasonCancellations(): Promise<Reservation[]> {
+    getAllSeasonCancellations: async function (): Promise<Reservation[]> {
         const today = new Date()
         const from = new Date(today.getFullYear(), today.getMonth() - 3, 1)
         const to = new Date(today.getFullYear() + 1, today.getMonth(), 0)
@@ -716,8 +751,7 @@ export const ElektraService = {
     },
 
     // Filter reservations by BOOKING/SALE date (reservationDate), not check-in date
-    // reservationDate is the original booking creation date (not overwritten at checkout like lastUpdate)
-    async getReservationsByBookingDate(salesFrom: Date, salesTo: Date): Promise<Reservation[]> {
+    getReservationsByBookingDate: async function (salesFrom: Date, salesTo: Date): Promise<Reservation[]> {
         const allReservations = await this.getAllSeasonReservations()
         const fromStr = salesFrom.toISOString().split('T')[0]
         const toStr = salesTo.toISOString().split('T')[0]
@@ -728,8 +762,7 @@ export const ElektraService = {
     },
 
     // Fetch reservations by booking/sale date for a SPECIFIC YEAR
-    // Uses reservationDate (original booking creation date) for filtering
-    async getReservationsByBookingDateForYear(salesFrom: Date, salesTo: Date, year: number): Promise<Reservation[]> {
+    getReservationsByBookingDateForYear: async function (salesFrom: Date, salesTo: Date, year: number): Promise<Reservation[]> {
         const checkInFrom = new Date(year, 0, 1)       // Jan 1 of target year
         const checkInTo = new Date(year + 1, 11, 31)    // Dec 31 of next year
         const from = checkInFrom.toISOString().split('T')[0]
@@ -1123,8 +1156,8 @@ export const ElektraService = {
             .sort((a, b) => a.name.localeCompare(b.name))
     },
 
-    // ─── Create Reservation ──────────────────────────────────────
-    async createReservation(bookingData: {
+    // ─── Create Reservation    // Submit new reservation to Elektra
+    createReservation: async function (bookingData: {
         referenceId: string;
         checkIn: Date;
         checkOut: Date;

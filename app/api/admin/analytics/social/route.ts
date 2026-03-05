@@ -15,28 +15,30 @@ export async function GET(request: Request) {
 
             return NextResponse.json({
                 success: true,
-                instagram: igProfile ? {
-                    username: igProfile.username,
-                    name: igProfile.name,
-                    followers: igProfile.followers_count,
-                    following: igProfile.follows_count,
-                    posts: igProfile.media_count,
-                    profilePicture: igProfile.profile_picture_url,
-                    bio: igProfile.biography,
-                } : null,
-                facebook: fbPage ? {
-                    name: fbPage.name,
-                    likes: fbPage.fan_count,
-                    followers: fbPage.followers_count,
-                    talkingAbout: fbPage.talking_about_count,
-                    recentPosts: (fbPage.posts?.data || []).map((p: any) => ({
-                        message: p.message,
-                        createdAt: p.created_time,
-                        shares: p.shares?.count || 0,
-                        likes: p.likes?.summary?.total_count || 0,
-                        comments: p.comments?.summary?.total_count || 0,
-                    })),
-                } : null,
+                data: {
+                    instagram: igProfile ? {
+                        username: igProfile.username,
+                        name: igProfile.name,
+                        followers: igProfile.followers_count,
+                        following: igProfile.follows_count,
+                        posts: igProfile.media_count,
+                        profilePicture: igProfile.profile_picture_url,
+                        bio: igProfile.biography,
+                    } : null,
+                    facebook: fbPage ? {
+                        name: fbPage.name,
+                        likes: fbPage.fan_count,
+                        followers: fbPage.followers_count,
+                        talkingAbout: fbPage.talking_about_count,
+                        recentPosts: (fbPage.posts?.data || []).map((p: any) => ({
+                            message: p.message,
+                            createdAt: p.created_time,
+                            shares: p.shares?.count || 0,
+                            likes: p.likes?.summary?.total_count || 0,
+                            comments: p.comments?.summary?.total_count || 0,
+                        })),
+                    } : null,
+                }
             })
         }
 

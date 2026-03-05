@@ -17,14 +17,14 @@ export async function GET() {
         let churnRisk = 0
 
         try {
-            const reservations = await ElektraService.getReservations(fromStr, toStr, 'Reservation')
+            const reservations = await ElektraService.getReservations(yearStart, today, 'Reservation')
             const rates = await ElektraService.getExchangeRates()
 
             // Unique guest tracking
             const guestMap = new Map<string, { stays: number; revenue: number; lastDate: string }>()
 
             for (const r of reservations) {
-                const key = `${r.name || ''}_${r.surname || ''}_${r.country || ''}`.toLowerCase()
+                const key = `${r.contactName || ''}_${r.country || ''}`.toLowerCase()
                 const existing = guestMap.get(key)
                 const revEur = r.currency === 'EUR' ? r.totalPrice :
                     r.currency === 'USD' ? r.totalPrice * (rates.EUR_TO_TRY / rates.USD_TO_TRY) :

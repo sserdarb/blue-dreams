@@ -334,10 +334,10 @@ export const ElektraCache = {
      * fetches from live PMS, writes to DB, then returns.
      * Currency conversion is handled by the caller — DB stores TRY.
      */
-    async getAvailability(from: Date, to: Date, currency?: string): Promise<RoomAvailability[]> {
+    async getAvailability(from: Date, to: Date, currency?: string, agency?: string): Promise<RoomAvailability[]> {
         try {
             // DB cache removed. Use in-memory or direct live fetch
-            return await ElektraService.getAvailability(from, to, currency)
+            return await ElektraService.getAvailability(from, to, currency, agency)
         } catch (e) {
             console.error('[ElektraCache] Availability Error:', e)
             return []

@@ -96,6 +96,7 @@ export async function login(formData: FormData) {
         permissions: user.permissions,
         avatar: user.avatar || null,
         authProvider: user.authProvider || 'local',
+        isDemo: user.role === 'demo',
       });
 
       (await cookies()).set(COOKIE_NAME, sessionValue, {

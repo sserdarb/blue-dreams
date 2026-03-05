@@ -178,6 +178,21 @@ model SiteSettings {
   vatAccommodation Float    @default(10) // Accommodation KDV %
   taxAccommodation Float    @default(2) // Konaklama vergisi %
   vatFnb           Float    @default(20) // F&B KDV %
+
+  // Booking Engine Settings
+  bookingContractTR    String? @default("CALL CENTER TL")
+  bookingContractWorld String? @default("CALL CENTER EUR")
+
+  // Demo Mode Flags
+  demoModeAnalytics  Boolean @default(false)
+  demoModeSocial     Boolean @default(false)
+  demoModeTasks      Boolean @default(false)
+  demoModeInbox      Boolean @default(false)
+  demoModeFinance    Boolean @default(false)
+  demoModePurchasing Boolean @default(false)
+
+  // Page Token Storage (refreshed via admin endpoints)
+  metaPageToken String?
 }
 
 model MenuItem {
@@ -1029,14 +1044,14 @@ model SiteSetting {
 }
 
 model AnalyticsEvent {
-  id          String   @id @default(uuid())
-  visitorId   String
-  sessionId   String
-  eventType   String   // page_view, click, form_submit
-  pageUrl     String
-  elementId   String?
-  metadata    String?  // Custom context (browser, IP, etc.)
-  createdAt   DateTime @default(now())
+  id        String   @id @default(uuid())
+  visitorId String
+  sessionId String
+  eventType String // page_view, click, form_submit
+  pageUrl   String
+  elementId String?
+  metadata  String? // Custom context (browser, IP, etc.)
+  createdAt DateTime @default(now())
 
   @@index([visitorId])
   @@index([createdAt])

@@ -156,8 +156,8 @@ export default function SocialMetricsClient() {
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${isActive
-                                    ? 'bg-white dark:bg-slate-700 text-cyan-700 dark:text-cyan-300 shadow-sm'
-                                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                                ? 'bg-white dark:bg-slate-700 text-cyan-700 dark:text-cyan-300 shadow-sm'
+                                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
                                 }`}
                         >
                             <Icon size={16} />
@@ -271,7 +271,7 @@ function DashboardTab({ data }: { data: MetricsData }) {
                                 <YAxis tick={{ fill: '#94a3b8', fontSize: 12 }} />
                                 <Tooltip
                                     contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px', color: '#fff' }}
-                                    formatter={(value: any, name: string) => [value, name === 'value' ? 'Ort. Etkileşim' : 'Gönderi Sayısı']}
+                                    formatter={(value: any, name: any) => [value, name === 'value' ? 'Ort. Etkileşim' : 'Gönderi Sayısı']}
                                 />
                                 <Bar dataKey="value" fill="#8b5cf6" radius={[6, 6, 0, 0]} name="Ort. Etkileşim" />
                                 <Bar dataKey="count" fill="#06b6d4" radius={[6, 6, 0, 0]} name="Gönderi Sayısı" />
@@ -518,7 +518,7 @@ function AudienceTab({ data }: { data: MetricsData }) {
                                 cx="50%" cy="50%"
                                 innerRadius={60} outerRadius={100}
                                 dataKey="value"
-                                label={({ name, percent }) => `${name} %${(percent * 100).toFixed(0)}`}
+                                label={({ name, percent }: any) => `${name} %${((percent || 0) * 100).toFixed(0)}`}
                             >
                                 {platformSplit.map((entry, i) => (
                                     <Cell key={i} fill={entry.color} />

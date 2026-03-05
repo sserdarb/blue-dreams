@@ -2,10 +2,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { sendSocialMessage } from '@/lib/whatsapp';
+import { isDemoSession } from '@/lib/demo-session';
 
 // GET — WhatsApp inbox with filters
 export async function GET(req: NextRequest) {
     try {
+        const siteSettings = await prisma.siteSettings.findFirst();
+        const demoSession = await isDemoSession();
+        const isDemo = demoSession || (siteSettings?.demoModeInbox ?? false);
+
         const sp = req.nextUrl.searchParams;
         const page = parseInt(sp.get('page') || '1');
         const limit = parseInt(sp.get('limit') || '50');
@@ -28,6 +33,17 @@ export async function GET(req: NextRequest) {
 
         // Conversations view — group by phone number
         if (view === 'conversations') {
+            if (isDemo) {
+                const mockConvs = Array.from({ length: 5 }).map((_, i) => ({
+                    phone: `+90555123456${i}`,
+                    messageCount: Math.floor(Math.random() * 20) + 1,
+                    lastMessageAt: new Date(Date.now() - i * 3600000).toISOString(),
+                    guest: { id: `g${i}`, name: `Guest ${i}`, surname: 'Demo', country: 'TR', totalStays: 2 },
+                    lastMessage: { content: i % 2 === 0 ? "When is check-in?" : "Your room is ready.", direction: i % 2 === 0 ? 'inbound' : 'outbound', createdAt: new Date(Date.now() - i * 3600000).toISOString() }
+                }));
+                return NextResponse.json({ conversations: mockConvs, total: 5, page, limit });
+            }
+
             const conversations = await prisma.socialMessage.groupBy({
                 by: ['phone'],
                 _count: true,
@@ -68,6 +84,20 @@ export async function GET(req: NextRequest) {
         }
 
         // Messages view — flat list
+        if (isDemo) {
+            const mockMsgs = Array.from({ length: 15 }).map((_, i) => ({
+                id: `msg_${i}`,
+                phone: `+90555123456${i % 3}`,
+                direction: i % 2 === 0 ? 'inbound' : 'outbound',
+                content: i % 2 === 0 ? 'Can I get my room cleaned?' : 'We have scheduled housekeeping for your room.',
+                type: 'text',
+                status: 'delivered',
+                createdAt: new Date(Date.now() - i * 1800000).toISOString(),
+                guest: { id: `g${i % 3}`, name: `Guest ${i % 3}`, surname: 'Demo', country: 'TR', totalStays: 1 }
+            }));
+            return NextResponse.json({ messages: mockMsgs, total: 15, page, limit });
+        }
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const where: any = {};
         if (direction) where.direction = direction;

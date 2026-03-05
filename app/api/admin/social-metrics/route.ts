@@ -43,12 +43,13 @@ function getSocialMetricsDemoData() {
     }
 }
 
+import { isDemoSession } from '@/lib/demo-session'
+
 async function isDemoMode(): Promise<boolean> {
-    if (process.env.DEMO_MODE_SOCIAL === 'true') return true
     try {
-        const db = prisma as any
-        const setting = await db.siteSetting?.findUnique?.({ where: { key: 'demo_mode_social' } })
-        return setting?.value === 'true'
+        if (await isDemoSession()) return true
+        const s = await prisma.siteSettings.findFirst()
+        return s?.demoModeSocial ?? false
     } catch { return false }
 }
 

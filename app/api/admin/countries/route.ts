@@ -3,8 +3,8 @@ import { ElektraService } from '@/lib/services/elektra'
 
 export async function GET() {
     try {
-        const elektra = ElektraService.getInstance()
-        const countries = await elektra.fetchCountries()
+
+        const countries = await ElektraService.getCountries()
 
         return NextResponse.json({
             success: true,

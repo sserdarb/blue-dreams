@@ -1,11 +1,22 @@
 import { NextResponse } from 'next/server'
 import { ElektraCache } from '@/lib/services/elektra-cache'
+import { prisma } from '@/lib/prisma'
 
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url)
     const from = searchParams.get('from')
     const to = searchParams.get('to')
-    const currency = searchParams.get('currency') || 'TRY'
+
+    // Region detection via standard headers
+    const country = request.headers.get('x-vercel-ip-country') || request.headers.get('cf-ipcountry') || request.headers.get('x-country-code') || 'TR'
+    const isTR = country.toUpperCase() === 'TR'
+
+    // Fetch site settings for correct contracts dynamically
+    const siteSettings = await prisma.siteSettings.findFirst()
+    const agencyName = isTR
+        ? (siteSettings?.bookingContractTR || 'CALL CENTER TL')
+        : (siteSettings?.bookingContractWorld || 'CALL CENTER EUR')
+    const currency = searchParams.get('currency') || (isTR ? 'TRY' : 'EUR')
 
     if (!from || !to) {
         return NextResponse.json({ error: 'from and to are required' }, { status: 400 })
@@ -14,7 +25,7 @@ export async function GET(request: Request) {
     try {
         const fromDate = new Date(from)
         const toDate = new Date(to)
-        const availability = await ElektraCache.getAvailability(fromDate, toDate, currency)
+        const availability = await ElektraCache.getAvailability(fromDate, toDate, currency, agencyName)
 
         // Group by room type
         const byRoom = new Map<string, {

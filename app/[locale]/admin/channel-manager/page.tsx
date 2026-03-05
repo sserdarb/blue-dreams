@@ -3,7 +3,7 @@ import ChannelManagerClient from './ChannelManagerClient'
 
 export const dynamic = 'force-dynamic'
 
-export default async function ChannelManagerPage({ params }: { params: { locale: string } }) {
+export default async function ChannelManagerPage({ params }: { params: Promise<{ locale: string }> }) {
     const { locale } = await params
 
     return (

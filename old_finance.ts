@@ -95,9 +95,6 @@ export type DataSource = 'live' | 'demo'
 
 // ─── Config ────────────────────────────────────────────────────
 
-import { prisma } from '@/lib/prisma'
-import { isDemoSession } from '@/lib/demo-session'
-
 const HOTEL_ID = 33264
 
 // Elektra ERP clients
@@ -119,10 +116,6 @@ const daySeed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + tod
 const rng = seededRandom(daySeed)
 const randBetween = (min: number, max: number) => Math.round(min + rng() * (max - min))
 const randFloat = (min: number, max: number) => +(min + rng() * (max - min)).toFixed(2)
-
-// ─── Data Source Tracking ──────────────────────────────────────
-
-let currentDataSource: DataSource = 'live'
 
 // ─── Demo Data Generators ──────────────────────────────────────
 
@@ -313,28 +306,19 @@ function generateInvoices(startDate: string, endDate: string): InvoiceSummary[] 
     return invoices.sort((a, b) => b.date.localeCompare(a.date))
 }
 
+// ─── Data Source Tracking ──────────────────────────────────────
 
+let currentDataSource: DataSource = 'demo'
 
 // ─── Exported Service ──────────────────────────────────────────
 
 export const FinanceService = {
-    async checkSettings() {
-        try {
-            if (await isDemoSession()) return true
-            const settings = await prisma.siteSettings.findFirst()
-            return settings?.demoModeFinance ?? false
-        } catch {
-            return false
-        }
-    },
     get dataSource(): DataSource {
         return currentDataSource
     },
 
     // ── Trial Balance (Mizan) ────────────────────────────────────
     async getTrialBalance(fromDate: string, toDate: string): Promise<TrialBalanceRow[]> {
-        const isDemo = await this.checkSettings();
-        currentDataSource = 'live';
         if (erpStock.isConfigured) {
             try {
                 const result = await erpStock.execute('SP_EASYPMS_ACCOUNT_TRIALBALANCE4', {
@@ -360,152 +344,105 @@ export const FinanceService = {
                                 balance: (acc.DEBIT || 0) - (acc.CREDIT || 0),
                                 group: (acc.CODE || '').startsWith('6') ? 'Gelir'
                                     : (acc.CODE || '').startsWith('7') ? 'Gider'
-        currentDataSource = 'live';
-                                if(erpStock.isConfigured) {
-                                try {
-                                    const result = await erpStock.execute('SP_EASYPMS_ACCOUNT_TRIALBALANCE4', {
-                                        FROMDATE: fromDate,
-                                        TODATE: toDate,
-                                        FROMCODE: '',
-                                        TOCODE: 'zzz',
-                                    })
-                if(result && Array.isArray(result)) {
-                                const parsed = result.flat?.() ?? result
-                                const returnData = parsed.find?.((r: any) => r?.Return || r?.BODY)
-                                if (returnData) {
-                                    const body = typeof (returnData.Return || returnData.BODY) === 'string'
-                                        ? JSON.parse(returnData.Return || returnData.BODY)
-                                        : (returnData.Return || returnData.BODY)
-                                    if (body?.ACCOUNTS && Array.isArray(body.ACCOUNTS)) {
-                                        currentDataSource = 'live'
-                                        return body.ACCOUNTS.map((acc: any) => ({
-                                            accountCode: acc.CODE || acc.AccountCode || '',
-                                            accountName: acc.NAME || acc.AccountName || '',
-                                            debit: acc.DEBIT || 0,
-                                            credit: acc.CREDIT || 0,
-                                            balance: (acc.DEBIT || 0) - (acc.CREDIT || 0),
-                                            group: (acc.CODE || '').startsWith('6') ? 'Gelir'
-                                                : (acc.CODE || '').startsWith('7') ? 'Gider'
-                                                    : parseInt(acc.CODE || '0') < 300 ? 'Aktif' : 'Pasif',
-                                        }))
-                                    }
-                                }
-                            }
-                        } catch (err) {
-                            console.warn('[Finance] Trial balance error:', (err as Error).message)
-                        }
-                    }
-
-                    if (isDemo) {
-                        currentDataSource = 'demo'
-                        return generateTrialBalance()
-                    }
-                    currentDataSource = 'live'
-                    return []
-                },
-
-    // ── Daily Payments (Tahsilat) ────────────────────────────────
-    async getDailyPayments(date: string): Promise < PaymentRow[] > {
-                    const isDemo = await this.checkSettings();
-                    currentDataSource = 'live';
-                    if(erpFront.isConfigured) {
-                    try {
-                        const result = await erpFront.request({
-                            Action: 'Function',
-                            Object: 'FN_EASYPMS_HOTELPAYMENT_DAILYACCOUNTING',
-                            Parameters: {
-                                TDATE: date,
-                                DETAIL: 1,
-                                TYPE: 0,
-                                DETAILED_DAILY_PAYMENT_INTEGRATION_ACTIVE: 0,
-                            }
-                        })
-                        if (result && Array.isArray(result)) {
-                            const rows = result.flat?.() ?? result
-                            if (rows.length > 0 && rows[0]?.SORTORDER !== undefined) {
-                                currentDataSource = 'live'
-                                return rows.map((r: any) => ({
-                                    date: r.TDATE || date,
-                                    type: r.TTYPE || '',
-                                    info: r.INFO || '',
-                                    account: r.ACCOUNT || '',
-                                    debit: r.DEBIT || 0,
-                                    credit: r.CREDIT || 0,
-                                    currency: r.CURRENCY || 'TRY',
-                                    currencyRate: r.CURRENCYRATE || 1,
-                                    paymentName: r.PAYMENTNAME || '',
-                                    paymentCode: r.PAYMENTCODE || '',
-                                }))
-                            }
-                        }
-                    } catch (err) {
-                        console.warn('[Finance] Payments error:', (err as Error).message)
-                    }
-                }
-
-                if (isDemo) {
-                    currentDataSource = 'demo'
-                    return generatePayments(date)
-                }
-                currentDataSource = 'live'
-                return []
-            },
-
-    // ── Daily Revenue (Gelir) ────────────────────────────────────
-    async getDailyRevenue(date: string): Promise < RevenueRow[] > {
-                const isDemo = await this.checkSettings();
-                currentDataSource = 'live';
-                if(erpFront.isConfigured) {
-                try {
-                    const result = await erpFront.request({
-                        Action: 'Execute',
-                        Object: 'SP_EASYPMS_DAILYACCOUNTING',
-                        Parameters: {
-                            TDATE: date,
-                            SHOWDEPARTMENTS: 1,
-                            SHOWVATDETAILS: 1,
-                            SHOWCLACCOUNTS: 1,
-                        }
-                    })
-                    if (result && Array.isArray(result)) {
-                        const rows = result.flat?.() ?? result
-                        if (rows.length > 0 && rows[0]?.SORTORDER !== undefined) {
-                            currentDataSource = 'live'
-                            return rows.map((r: any) => ({
-                                date: r.TDATE || date,
-                                type: r.TTYPE || '',
-                                info: r.INFO || '',
-                                departmentId: r.DEPID || 0,
-                                revenueId: r.REVID || 0,
-                                account: r.ACCOUNT || '',
-                                debit: r.DEBIT || 0,
-                                credit: r.CREDIT || 0,
-                                currency: r.CURRENCY || 'TRY',
-                                currencyRate: r.CURRENCYRATE || 1,
-                                expenseCode: r.EXPENSECODE || null,
-                                vat1Percent: r.VAT1PERCENT || 0,
-                                vat2Percent: r.VAT2PERCENT || 0,
+                                        : parseInt(acc.CODE || '0') < 300 ? 'Aktif' : 'Pasif',
                             }))
                         }
                     }
-                } catch (err) {
-                    console.warn('[Finance] Revenue error:', (err as Error).message)
                 }
+            } catch (err) {
+                console.warn('[Finance] Trial balance error:', (err as Error).message)
             }
+        }
+        currentDataSource = 'demo'
+        return generateTrialBalance()
+    },
 
-            if (isDemo) {
-                currentDataSource = 'demo'
-                return generateRevenue(date)
+    // ── Daily Payments (Tahsilat) ────────────────────────────────
+    async getDailyPayments(date: string): Promise<PaymentRow[]> {
+        if (erpFront.isConfigured) {
+            try {
+                const result = await erpFront.request({
+                    Action: 'Function',
+                    Object: 'FN_EASYPMS_HOTELPAYMENT_DAILYACCOUNTING',
+                    Parameters: {
+                        TDATE: date,
+                        DETAIL: 1,
+                        TYPE: 0,
+                        DETAILED_DAILY_PAYMENT_INTEGRATION_ACTIVE: 0,
+                    }
+                })
+                if (result && Array.isArray(result)) {
+                    const rows = result.flat?.() ?? result
+                    if (rows.length > 0 && rows[0]?.SORTORDER !== undefined) {
+                        currentDataSource = 'live'
+                        return rows.map((r: any) => ({
+                            date: r.TDATE || date,
+                            type: r.TTYPE || '',
+                            info: r.INFO || '',
+                            account: r.ACCOUNT || '',
+                            debit: r.DEBIT || 0,
+                            credit: r.CREDIT || 0,
+                            currency: r.CURRENCY || 'TRY',
+                            currencyRate: r.CURRENCYRATE || 1,
+                            paymentName: r.PAYMENTNAME || '',
+                            paymentCode: r.PAYMENTCODE || '',
+                        }))
+                    }
+                }
+            } catch (err) {
+                console.warn('[Finance] Payments error:', (err as Error).message)
             }
-            currentDataSource = 'live'
-            return []
-        },
+        }
+        currentDataSource = 'demo'
+        return generatePayments(date)
+    },
+
+    // ── Daily Revenue (Gelir) ────────────────────────────────────
+    async getDailyRevenue(date: string): Promise<RevenueRow[]> {
+        if (erpFront.isConfigured) {
+            try {
+                const result = await erpFront.request({
+                    Action: 'Execute',
+                    Object: 'SP_EASYPMS_DAILYACCOUNTING',
+                    Parameters: {
+                        TDATE: date,
+                        SHOWDEPARTMENTS: 1,
+                        SHOWVATDETAILS: 1,
+                        SHOWCLACCOUNTS: 1,
+                    }
+                })
+                if (result && Array.isArray(result)) {
+                    const rows = result.flat?.() ?? result
+                    if (rows.length > 0 && rows[0]?.SORTORDER !== undefined) {
+                        currentDataSource = 'live'
+                        return rows.map((r: any) => ({
+                            date: r.TDATE || date,
+                            type: r.TTYPE || '',
+                            info: r.INFO || '',
+                            departmentId: r.DEPID || 0,
+                            revenueId: r.REVID || 0,
+                            account: r.ACCOUNT || '',
+                            debit: r.DEBIT || 0,
+                            credit: r.CREDIT || 0,
+                            currency: r.CURRENCY || 'TRY',
+                            currencyRate: r.CURRENCYRATE || 1,
+                            expenseCode: r.EXPENSECODE || null,
+                            vat1Percent: r.VAT1PERCENT || 0,
+                            vat2Percent: r.VAT2PERCENT || 0,
+                        }))
+                    }
+                }
+            } catch (err) {
+                console.warn('[Finance] Revenue error:', (err as Error).message)
+            }
+        }
+        currentDataSource = 'demo'
+        return generateRevenue(date)
+    },
 
     // ── Invoice List (Fatura Listesi) ────────────────────────────
-    async getInvoiceList(startDate: string, endDate: string): Promise < InvoiceSummary[] > {
-            const isDemo = await this.checkSettings();
-            currentDataSource = 'live';
-            if(erpStock.isConfigured) {
+    async getInvoiceList(startDate: string, endDate: string): Promise<InvoiceSummary[]> {
+        if (erpStock.isConfigured) {
             try {
                 const result = await erpStock.request({
                     Action: 'Function',
@@ -541,13 +478,8 @@ export const FinanceService = {
                 console.warn('[Finance] Invoice list error:', (err as Error).message)
             }
         }
-
-        if (isDemo) {
-            currentDataSource = 'demo'
-            return generateInvoices(startDate, endDate)
-        }
-        currentDataSource = 'live'
-        return []
+        currentDataSource = 'demo'
+        return generateInvoices(startDate, endDate)
     },
 
     // ── Aggregated KPIs ──────────────────────────────────────────
@@ -558,23 +490,16 @@ export const FinanceService = {
         const prevStartDate = `${y - 1}-01-01`
         const prevEndDate = `${y - 1}-12-31`
 
-        const { ElektraService } = await import('./elektra')
-        const yStart = new Date(y, 0, 1)
-        const yEnd = new Date(y, 11, 31)
-
-        const [trialBalance, invoices, prevInvoices, currentRes] = await Promise.all([
+        const [trialBalance, invoices, prevInvoices] = await Promise.all([
             this.getTrialBalance(startDate, endDate),
             this.getInvoiceList(startDate, endDate),
             this.getInvoiceList(prevStartDate, prevEndDate),
-            ElektraService.getReservations(yStart, yEnd)
         ])
 
         const revenueRows = trialBalance.filter(r => r.group === 'Gelir')
         const expenseRows = trialBalance.filter(r => r.group === 'Gider')
 
-        const pmsTotalRevenue = currentRes.reduce((s, r) => s + r.totalPrice, 0)
-        const totalRevenue = pmsTotalRevenue > 0 ? pmsTotalRevenue : revenueRows.reduce((s, r) => s + r.credit, 0)
-
+        const totalRevenue = revenueRows.reduce((s, r) => s + r.credit, 0)
         const totalExpense = expenseRows.reduce((s, r) => s + r.debit, 0)
         const profit = totalRevenue - totalExpense
         const profitMargin = totalRevenue > 0 ? Math.round((profit / totalRevenue) * 100) : 0
@@ -583,7 +508,8 @@ export const FinanceService = {
         const prevTotal = prevInvoices.reduce((s, i) => s + i.total, 0)
         const expenseGrowth = prevTotal > 0 ? Math.round(((currentTotal - prevTotal) / prevTotal) * 100) : 0
 
-        const revenueGrowth = 0
+        // Revenue growth estimate
+        const revenueGrowth = randBetween(5, 18)
 
         return {
             totalRevenue,
@@ -592,7 +518,7 @@ export const FinanceService = {
             cashFlow: profit * 0.85,
             revenueGrowth,
             expenseGrowth,
-            collectionRate: 0,
+            collectionRate: randFloat(88, 96),
             invoiceCount: invoices.length,
         }
     },
@@ -601,96 +527,79 @@ export const FinanceService = {
     async getMonthlyData(year?: number): Promise<MonthlyFinance[]> {
         const y = year || new Date().getFullYear()
 
-        const { ElektraService } = await import('./elektra')
-        const cyStart = new Date(y, 0, 1)
-        const cyEnd = new Date(y, 11, 31)
-        const pyStart = new Date(y - 1, 0, 1)
-        const pyEnd = new Date(y - 1, 11, 31)
+        // Base annual values — 341 room ultra all-inclusive resort
+        // ~₺250M annual revenue, ~₺180M annual expense
+        const baseRevenue = 250_000_000 / 12
+        const baseExpense = 180_000_000 / 12
 
-        const [currentRes, prevRes] = await Promise.all([
-            ElektraService.getReservations(cyStart, cyEnd),
-            ElektraService.getReservations(pyStart, pyEnd)
-        ])
+        const currentData = generateMonthlyData(baseRevenue, baseExpense, y)
+        const prevData = generateMonthlyData(baseRevenue * 0.85, baseExpense * 0.82, y - 1)
 
-        const currentMonthlyRev = new Array(12).fill(0)
-        currentRes.forEach(r => {
-            const m = parseInt(r.checkIn.slice(5, 7)) - 1 // YYYY-MM-DD
-            if (m >= 0 && m < 12) currentMonthlyRev[m] += r.totalPrice
-        })
-
-        const prevMonthlyRev = new Array(12).fill(0)
-        prevRes.forEach(r => {
-            const m = parseInt(r.checkIn.slice(5, 7)) - 1
-            if (m >= 0 && m < 12) prevMonthlyRev[m] += r.totalPrice
-        })
-
-        const MONTHS = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara']
-
-        return MONTHS.map((month, i) => {
-            const realRev = currentMonthlyRev[i] || 0
-            const realPrevRev = prevMonthlyRev[i] || 0
-
-            return {
-                month,
-                revenue: realRev,
-                expense: 0,
-                profit: realRev,
-                prevYearRevenue: realPrevRev,
-                prevYearExpense: 0,
-            }
-        })
+        return currentData.map((m, i) => ({
+            ...m,
+            prevYearRevenue: prevData[i].revenue,
+            prevYearExpense: prevData[i].expense,
+        }))
     },
 
     // ── Department Revenue Breakdown ─────────────────────────────
     async getDepartmentRevenue(): Promise<DepartmentRevenue[]> {
-        const isDemo = await this.checkSettings()
-        if (isDemo) {
-            currentDataSource = 'demo'
-            const totalRevenue = randBetween(20_000_000, 35_000_000)
-            let remaining = 100
-            return DEPARTMENTS.map((dept, i) => {
-                const pct = i === DEPARTMENTS.length - 1 ? remaining : Math.round(dept.base * (0.9 + rng() * 0.2))
-                remaining -= pct
-                return { department: dept.name, revenue: Math.round(totalRevenue * pct / 100), percentage: pct, color: dept.color }
-            })
-        }
-        currentDataSource = 'live'
-        return []
+        const totalRevenue = randBetween(20_000_000, 35_000_000)
+        let remaining = 100
+
+        return DEPARTMENTS.map((dept, i) => {
+            const pct = i === DEPARTMENTS.length - 1
+                ? remaining
+                : Math.round(dept.base * (0.9 + rng() * 0.2))
+            remaining -= pct
+            return {
+                department: dept.name,
+                revenue: Math.round(totalRevenue * pct / 100),
+                percentage: pct,
+                color: dept.color,
+            }
+        })
     },
 
     // ── Payment Method Breakdown ─────────────────────────────────
     async getPaymentMethodBreakdown(): Promise<PaymentMethodBreakdown[]> {
-        const isDemo = await this.checkSettings()
-        if (isDemo) {
-            currentDataSource = 'demo'
-            const totalPayments = randBetween(15_000_000, 25_000_000)
-            const totalCount = randBetween(2000, 5000)
-            let remaining = 100
-            return PAYMENT_METHODS.map((pm, i) => {
-                const pct = i === PAYMENT_METHODS.length - 1 ? remaining : Math.round(pm.base * (0.85 + rng() * 0.3))
-                remaining -= pct
-                return { method: pm.method, amount: Math.round(totalPayments * pct / 100), count: Math.round(totalCount * pct / 100), percentage: pct, color: pm.color }
-            })
-        }
-        currentDataSource = 'live'
-        return []
+        const totalPayments = randBetween(15_000_000, 25_000_000)
+        const totalCount = randBetween(2000, 5000)
+        let remaining = 100
+
+        return PAYMENT_METHODS.map((pm, i) => {
+            const pct = i === PAYMENT_METHODS.length - 1
+                ? remaining
+                : Math.round(pm.base * (0.85 + rng() * 0.3))
+            remaining -= pct
+            return {
+                method: pm.method,
+                amount: Math.round(totalPayments * pct / 100),
+                count: Math.round(totalCount * pct / 100),
+                percentage: pct,
+                color: pm.color,
+            }
+        })
     },
 
     // ── Expense Category Breakdown ───────────────────────────────
     async getExpenseBreakdown(): Promise<{ category: string; code: string; amount: number; percentage: number; color: string }[]> {
-        const isDemo = await this.checkSettings()
-        if (isDemo) {
-            currentDataSource = 'demo'
-            const totalExpense = randBetween(12_000_000, 20_000_000)
-            const colors = ['#ef4444', '#f97316', '#f59e0b', '#84cc16', '#22c55e', '#14b8a6', '#3b82f6', '#8b5cf6', '#6b7280']
-            let remaining = 100
-            return EXPENSE_CATEGORIES.map((cat, i) => {
-                const pct = i === EXPENSE_CATEGORIES.length - 1 ? remaining : Math.round(cat.base * (0.88 + rng() * 0.24))
-                remaining -= pct
-                return { category: cat.name, code: cat.code, amount: Math.round(totalExpense * pct / 100), percentage: pct, color: colors[i % colors.length] }
-            })
-        }
-        currentDataSource = 'live'
-        return []
+        const totalExpense = randBetween(12_000_000, 20_000_000)
+        const colors = ['#ef4444', '#f97316', '#f59e0b', '#84cc16', '#22c55e', '#14b8a6', '#3b82f6', '#8b5cf6', '#6b7280']
+        let remaining = 100
+
+        return EXPENSE_CATEGORIES.map((cat, i) => {
+            const pct = i === EXPENSE_CATEGORIES.length - 1
+                ? remaining
+                : Math.round(cat.base * (0.88 + rng() * 0.24))
+            remaining -= pct
+            return {
+                category: cat.name,
+                code: cat.code,
+                amount: Math.round(totalExpense * pct / 100),
+                percentage: pct,
+                color: colors[i % colors.length],
+            }
+        })
     },
 }

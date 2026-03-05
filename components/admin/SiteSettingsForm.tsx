@@ -18,6 +18,8 @@ interface SiteSettingsFormProps {
         footerCopyright?: string
         headerStyle?: string
         googleMapsApiKey?: string
+        bookingContractTR?: string
+        bookingContractWorld?: string
     }
 }
 
@@ -108,6 +110,29 @@ export function SiteSettingsForm({ locale, initialSettings }: SiteSettingsFormPr
                             <option value="transparent">Transparent</option>
                             <option value="dark">Dark</option>
                         </select>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Booking Contract (TR)</label>
+                        <input
+                            type="text"
+                            value={settings.bookingContractTR || ''}
+                            onChange={e => handleChange('bookingContractTR', e.target.value)}
+                            placeholder="CALL CENTER TL"
+                            className="w-full border rounded-lg px-3 py-2 text-sm"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Booking Contract (World)</label>
+                        <input
+                            type="text"
+                            value={settings.bookingContractWorld || ''}
+                            onChange={e => handleChange('bookingContractWorld', e.target.value)}
+                            placeholder="CALL CENTER EUR"
+                            className="w-full border rounded-lg px-3 py-2 text-sm"
+                        />
                     </div>
                 </div>
             </section>

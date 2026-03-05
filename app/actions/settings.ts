@@ -46,6 +46,8 @@ export async function updateSiteSettings(locale: string, data: {
     googleAdsTag?: string
     googleAdsToken?: string
     tiktokPixelId?: string
+    bookingContractTR?: string
+    bookingContractWorld?: string
 }) {
     const settings = await prisma.siteSettings.upsert({
         where: { locale },

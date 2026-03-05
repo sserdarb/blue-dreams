@@ -41,16 +41,16 @@ export async function POST(request: Request) {
 
                             // Upsert — don't duplicate
                             await prisma.socialMessage.upsert({
-                                where: { externalId: msg.id },
+                                where: { waMessageId: msg.id },
                                 update: {},
                                 create: {
-                                    externalId: msg.id,
+                                    waMessageId: msg.id,
                                     platform: 'instagram',
                                     socialId: senderId,
                                     direction: isFromPage ? 'outbound' : 'inbound',
                                     type: 'text',
                                     content: msg.message || '',
-                                    senderName: senderName,
+                                    metadata: JSON.stringify({ senderName }),
                                     status: 'delivered',
                                     isFromGuest: !isFromPage,
                                     createdAt: msg.created_time ? new Date(msg.created_time) : new Date(),
@@ -87,16 +87,16 @@ export async function POST(request: Request) {
                             const isFromPage = senderId === FB_PAGE_ID
 
                             await prisma.socialMessage.upsert({
-                                where: { externalId: msg.id },
+                                where: { waMessageId: msg.id },
                                 update: {},
                                 create: {
-                                    externalId: msg.id,
+                                    waMessageId: msg.id,
                                     platform: 'facebook',
                                     socialId: senderId,
                                     direction: isFromPage ? 'outbound' : 'inbound',
                                     type: 'text',
                                     content: msg.message || '',
-                                    senderName: senderName,
+                                    metadata: JSON.stringify({ senderName }),
                                     status: 'delivered',
                                     isFromGuest: !isFromPage,
                                     createdAt: msg.created_time ? new Date(msg.created_time) : new Date(),

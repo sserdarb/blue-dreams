@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
+import { isDemoSession } from '@/lib/demo-session'
 
 // ─── Ads API Service ──────────────────────────────────────────────────
 // Fetches Ad Spend, Impressions, Clicks, and ROAS from Meta Ads & Google Ads
@@ -44,7 +46,37 @@ async function getGoogleAdsAccessToken() {
 
 export async function GET() {
     try {
+        const siteSettings = await prisma.siteSettings.findFirst()
+        const demoSession = await isDemoSession()
+        const isDemo = demoSession || (siteSettings?.demoModeSocial ?? false)
+
+        if (isDemo) {
+            return NextResponse.json({
+                success: true,
+                data: {
+                    metaAds: {
+                        status: 'Connected',
+                        spend: 1420.50,
+                        impressions: 450000,
+                        clicks: 12500,
+                        roas: 4.2
+                    },
+                    googleAds: {
+                        status: 'Connected',
+                        spend: 2150.00,
+                        impressions: 210000,
+                        clicks: 18400,
+                        roas: 3.8
+                    },
+                    totalSpend: 3570.50,
+                    totalImpressions: 660000,
+                    totalClicks: 30900
+                }
+            })
+        }
+
         const metaToken = process.env.META_ACCESS_TOKEN
+        const siteMetaToken = (siteSettings as any)?.metaAccessToken
         // Support both old and new env var names for the Ads Account ID
         const fbAdAccountId = process.env.META_ADS_ACCOUNT_ID || process.env.FB_AD_ACCOUNT_ID
         const googleDevToken = process.env.GOOGLE_ADS_DEVELOPER_TOKEN
@@ -59,30 +91,43 @@ export async function GET() {
         }
 
         // 1. Fetch Meta Ads Data
-        if (metaToken && fbAdAccountId) {
-            const response = await fetch(
-                `${FB_BASE_URL}/act_${fbAdAccountId}/insights?fields=spend,impressions,clicks,purchase_roas,action_values&date_preset=last_30d&access_token=${metaToken}`
-            )
+        const activeMetaToken = metaToken || siteMetaToken
+        if (activeMetaToken && fbAdAccountId) {
+            try {
+                const adAccountClean = fbAdAccountId.startsWith('act_') ? fbAdAccountId : `act_${fbAdAccountId}`
+                const response = await fetch(
+                    `${FB_BASE_URL}/${adAccountClean}/insights?fields=spend,impressions,clicks,purchase_roas,action_values&date_preset=last_30d&access_token=${activeMetaToken}`
+                )
 
-            if (response.ok) {
-                const data = await response.json()
-                const insights = data.data?.[0] || {}
+                if (response.ok) {
+                    const data = await response.json()
+                    const insights = data.data?.[0] || {}
 
-                let roas = 0
-                if (insights.purchase_roas && insights.purchase_roas.length > 0) {
-                    roas = parseFloat(insights.purchase_roas[0].value) || 0
+                    let roas = 0
+                    if (insights.purchase_roas && insights.purchase_roas.length > 0) {
+                        roas = parseFloat(insights.purchase_roas[0].value) || 0
+                    }
+
+                    results.metaAds = {
+                        status: 'Connected',
+                        spend: parseFloat(insights.spend || 0),
+                        impressions: parseInt(insights.impressions || 0, 10),
+                        clicks: parseInt(insights.clicks || 0, 10),
+                        roas: roas
+                    }
+                } else {
+                    const errorText = await response.text()
+                    const isExpired = errorText.includes('Session has expired') || errorText.includes('Error validating access token')
+                    results.metaAds = {
+                        status: isExpired ? 'Token Expired' : 'Failed to fetch',
+                        spend: 0, impressions: 0, clicks: 0, roas: 0,
+                        ...(isExpired ? { message: 'Meta token expired. Go to /api/admin/settings/meta-token to refresh.' } : {})
+                    }
+                    console.warn('[Ads API] Failed to fetch Meta Ads data:', errorText.substring(0, 200))
                 }
-
-                results.metaAds = {
-                    status: 'Connected',
-                    spend: parseFloat(insights.spend || 0),
-                    impressions: parseInt(insights.impressions || 0, 10),
-                    clicks: parseInt(insights.clicks || 0, 10),
-                    roas: roas
-                }
-            } else {
-                results.metaAds = { status: 'Failed to fetch', spend: 0, impressions: 0, clicks: 0, roas: 0 }
-                console.warn('[Ads API] Failed to fetch Meta Ads data', await response.text())
+            } catch (metaErr: any) {
+                results.metaAds = { status: 'Connection Error', spend: 0, impressions: 0, clicks: 0, roas: 0 }
+                console.error('[Ads API] Meta connection error:', metaErr.message)
             }
         } else {
             results.metaAds = { status: 'Missing Meta Credentials', spend: 0, impressions: 0, clicks: 0, roas: 0 }
@@ -99,7 +144,7 @@ export async function GET() {
                     WHERE segments.date DURING LAST_30_DAYS
                 `;
 
-                const response = await fetch(`https://googleads.googleapis.com/v16/customers/${googleCustomerId}/googleAds:search`, {
+                const response = await fetch(`https://googleads.googleapis.com/v23/customers/${googleCustomerId}/googleAds:search`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${accessToken}`,
@@ -126,14 +171,31 @@ export async function GET() {
 
                     results.googleAds = {
                         status: 'Connected',
-                        spend: spendMicros / 1000000, // cost_micros to standard currency
+                        spend: spendMicros / 1000000,
                         impressions,
                         clicks,
-                        roas: 0 // Need conversion tracking to calculate ROAS reliably
+                        roas: 0
                     }
                 } else {
-                    results.googleAds = { status: 'Failed to fetch API', spend: 0, impressions: 0, clicks: 0, roas: 0 }
-                    console.warn('[Ads API] Failed to fetch Google Ads data', await response.text());
+                    let errorMsg = 'Failed to fetch API'
+                    try {
+                        const errorData = await response.json()
+                        if (errorData.error?.details?.some((d: any) => d.reason === 'SERVICE_DISABLED')) {
+                            errorMsg = 'Google Ads API disabled in Cloud Console'
+                            const activationUrl = errorData.error?.details?.find((d: any) => d.metadata?.activationUrl)?.metadata?.activationUrl
+                            results.googleAds = {
+                                status: 'API Disabled',
+                                spend: 0, impressions: 0, clicks: 0, roas: 0,
+                                message: `Enable it at: ${activationUrl || 'Google Cloud Console'}`
+                            }
+                        } else {
+                            results.googleAds = { status: errorMsg, spend: 0, impressions: 0, clicks: 0, roas: 0 }
+                        }
+                        console.warn('[Ads API] Google Ads error:', errorData.error?.message?.substring(0, 200))
+                    } catch {
+                        results.googleAds = { status: errorMsg, spend: 0, impressions: 0, clicks: 0, roas: 0 }
+                        console.warn('[Ads API] Google Ads non-JSON error, status:', response.status)
+                    }
                 }
             } else {
                 results.googleAds = { status: 'Token Refresh Failed', spend: 0, impressions: 0, clicks: 0, roas: 0 }
