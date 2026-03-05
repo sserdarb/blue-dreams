@@ -259,4 +259,113 @@ export const MetaSocialService = {
         const data = await res.json()
         return data.data?.[0] || null
     },
+
+    // ─── Audience Demographics ─────────────────────────────
+
+    async getAudienceDemographics() {
+        const isDemo = await checkSettings()
+        if (isDemo) {
+            return {
+                genderAge: [
+                    { dimension: 'F.18-24', value: 8 }, { dimension: 'F.25-34', value: 22 },
+                    { dimension: 'F.35-44', value: 15 }, { dimension: 'F.45-54', value: 7 },
+                    { dimension: 'F.55-64', value: 3 }, { dimension: 'F.65+', value: 1 },
+                    { dimension: 'M.18-24', value: 5 }, { dimension: 'M.25-34', value: 18 },
+                    { dimension: 'M.35-44', value: 12 }, { dimension: 'M.45-54', value: 6 },
+                    { dimension: 'M.55-64', value: 2 }, { dimension: 'M.65+', value: 1 },
+                ],
+                countries: [
+                    { country: 'TR', value: 55 }, { country: 'DE', value: 12 },
+                    { country: 'GB', value: 8 }, { country: 'RU', value: 7 },
+                    { country: 'NL', value: 5 }, { country: 'FR', value: 4 },
+                    { country: 'Other', value: 9 },
+                ],
+                cities: [
+                    { city: 'Istanbul', value: 25 }, { city: 'Ankara', value: 8 },
+                    { city: 'Izmir', value: 6 }, { city: 'Berlin', value: 4 },
+                    { city: 'London', value: 3 }, { city: 'Moscow', value: 3 },
+                    { city: 'Antalya', value: 3 },
+                ],
+                onlineTimes: [
+                    { hour: '06', value: 5 }, { hour: '09', value: 12 }, { hour: '12', value: 18 },
+                    { hour: '15', value: 15 }, { hour: '18', value: 22 }, { hour: '21', value: 28 },
+                    { hour: '00', value: 10 },
+                ]
+            }
+        }
+
+        const token = await getToken()
+        const igId = process.env.INSTAGRAM_BUSINESS_ACCOUNT_ID || process.env.IG_ACCOUNT_ID
+        if (!token || !igId) return null
+
+        try {
+            // Audience demographics (lifetime metrics)
+            const res = await fetch(
+                `${META_GRAPH_URL}/${igId}/insights?metric=follower_demographics&period=lifetime&metric_type=total_value&breakdown=age,gender,country,city&access_token=${token}`
+            )
+
+            if (!res.ok) {
+                // Fallback: try legacy v18 fields
+                const legacyRes = await fetch(
+                    `${META_GRAPH_URL}/${igId}/insights?metric=audience_gender_age,audience_country,audience_city&period=lifetime&access_token=${token}`
+                )
+                if (!legacyRes.ok) return null
+                const legacyData = await legacyRes.json()
+
+                const genderAge = legacyData.data?.find((m: any) => m.name === 'audience_gender_age')?.values?.[0]?.value || {}
+                const countries = legacyData.data?.find((m: any) => m.name === 'audience_country')?.values?.[0]?.value || {}
+                const cities = legacyData.data?.find((m: any) => m.name === 'audience_city')?.values?.[0]?.value || {}
+
+                return {
+                    genderAge: Object.entries(genderAge).map(([k, v]) => ({ dimension: k, value: v as number })),
+                    countries: Object.entries(countries).map(([k, v]) => ({ country: k, value: v as number })).sort((a, b) => b.value - a.value).slice(0, 10),
+                    cities: Object.entries(cities).map(([k, v]) => ({ city: k, value: v as number })).sort((a, b) => b.value - a.value).slice(0, 10),
+                    onlineTimes: []
+                }
+            }
+
+            const data = await res.json()
+            return data
+        } catch (e: any) {
+            console.error('[MetaSocial] Demographics error:', e?.message)
+            return null
+        }
+    },
+
+    async getFollowerGrowth() {
+        const isDemo = await checkSettings()
+        if (isDemo) {
+            const days = 30
+            return Array.from({ length: days }).map((_, i) => {
+                const d = new Date()
+                d.setDate(d.getDate() - (days - 1 - i))
+                return {
+                    date: d.toISOString().slice(0, 10),
+                    igFollowers: 3072 + Math.floor(i * 3 + Math.random() * 10),
+                    fbFollowers: 11391 + Math.floor(i * 5 + Math.random() * 15),
+                }
+            })
+        }
+
+        const token = await getToken()
+        const igId = process.env.INSTAGRAM_BUSINESS_ACCOUNT_ID || process.env.IG_ACCOUNT_ID
+        if (!token || !igId) return []
+
+        try {
+            const res = await fetch(
+                `${META_GRAPH_URL}/${igId}/insights?metric=follower_count&period=day&access_token=${token}`
+            )
+            if (!res.ok) return []
+            const data = await res.json()
+            const values = data.data?.[0]?.values || []
+            return values.map((v: any) => ({
+                date: v.end_time?.slice(0, 10),
+                igFollowers: v.value,
+                fbFollowers: 0,
+            }))
+        } catch (e: any) {
+            console.error('[MetaSocial] Follower growth error:', e?.message)
+            return []
+        }
+    },
 }

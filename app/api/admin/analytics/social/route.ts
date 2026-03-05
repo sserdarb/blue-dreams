@@ -60,6 +60,16 @@ export async function GET(request: Request) {
             return NextResponse.json({ success: true, insights })
         }
 
+        if (action === 'demographics') {
+            const demographics = await MetaSocialService.getAudienceDemographics()
+            return NextResponse.json({ success: true, demographics })
+        }
+
+        if (action === 'follower-growth') {
+            const growth = await MetaSocialService.getFollowerGrowth()
+            return NextResponse.json({ success: true, growth })
+        }
+
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
     } catch (error: any) {
         console.error('[Social Metrics API]', error)
