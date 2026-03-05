@@ -76,3 +76,62 @@ export async function GET(request: Request) {
         return NextResponse.json({ success: false, error: error.message }, { status: 500 })
     }
 }
+
+export async function POST(request: Request) {
+    try {
+        const body = await request.json()
+        const token = process.env.META_ACCESS_TOKEN
+
+        if (!token) {
+            return NextResponse.json({ error: 'Meta API token not configured' }, { status: 500 })
+        }
+
+        if (body.action === 'reply-comment') {
+            // Reply to a comment on a post
+            const { postId, message, commentId } = body
+            if (!postId || !message) {
+                return NextResponse.json({ error: 'postId and message required' }, { status: 400 })
+            }
+
+            // If commentId provided, reply to that specific comment
+            const targetId = commentId || postId
+            const res = await fetch(
+                `https://graph.facebook.com/v19.0/${targetId}/comments?message=${encodeURIComponent(message)}&access_token=${token}`,
+                { method: 'POST' }
+            )
+
+            if (!res.ok) {
+                const err = await res.json()
+                return NextResponse.json({ error: err.error?.message || 'Failed to post reply' }, { status: res.status })
+            }
+
+            const result = await res.json()
+            return NextResponse.json({ success: true, commentId: result.id })
+        }
+
+        if (body.action === 'get-comments') {
+            // Fetch comments for a specific post
+            const { postId } = body
+            if (!postId) {
+                return NextResponse.json({ error: 'postId required' }, { status: 400 })
+            }
+
+            const res = await fetch(
+                `https://graph.facebook.com/v19.0/${postId}/comments?fields=id,text,from,timestamp,like_count,replies{id,text,from,timestamp}&limit=50&access_token=${token}`
+            )
+
+            if (!res.ok) {
+                const err = await res.json()
+                return NextResponse.json({ error: err.error?.message || 'Failed to fetch comments' }, { status: res.status })
+            }
+
+            const data = await res.json()
+            return NextResponse.json({ success: true, comments: data.data || [] })
+        }
+
+        return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
+    } catch (error: any) {
+        console.error('[Social Metrics API POST]', error)
+        return NextResponse.json({ success: false, error: error.message }, { status: 500 })
+    }
+}

@@ -84,23 +84,26 @@ export async function fetchDashboardStats(startDate?: string, endDate?: string) 
     try {
         pool = await sql.connect(asisiaConfig);
 
+        // Use CREATIONDATE (when reservation was made) not DATE1 (check-in)
         let dateFilter = '';
         let cancelDateFilter = '';
         if (startDate && endDate) {
-            dateFilter = `AND b.DATE1 >= '${startDate}' AND b.DATE1 <= '${endDate}'`;
-            cancelDateFilter = `AND r.CREATIONDATE >= '${startDate}' AND r.CREATIONDATE <= '${endDate}'`;
+            dateFilter = `AND r.CREATIONDATE >= '${startDate}' AND r.CREATIONDATE <= '${endDate} 23:59:59'`;
+            cancelDateFilter = `AND r.CREATIONDATE >= '${startDate}' AND r.CREATIONDATE <= '${endDate} 23:59:59'`;
         }
 
-        // Active reservations
+        // Active reservations (created in period, not cancelled)
         const statsQuery = await pool.request().query(`
             SELECT 
                 COUNT(DISTINCT r.ID) as TotalReservations,
-                SUM(b.TOTAL) as TotalRevenue,
+                ISNULL(SUM(b.TOTAL), 0) as TotalRevenue,
                 AVG(DATEDIFF(day, b.DATE1, b.DATE2)) as AverageStay,
-                SUM(b.ADULT) as TotalGuests
+                ISNULL(SUM(b.ADULT), 0) as TotalGuests
             FROM REQUEST r
             JOIN VW_BASKET_INFO b ON r.ID = b.REQUESTID
-            WHERE b.DATE1 IS NOT NULL AND r.RESNO IS NOT NULL AND b.TOTAL > 0 ${dateFilter}
+            WHERE b.DATE1 IS NOT NULL AND r.RESNO IS NOT NULL AND b.TOTAL > 0
+              AND (r.STATUS NOT LIKE '%CANCEL%' OR r.STATUS IS NULL)
+              ${dateFilter}
         `);
 
         // Cancelled reservations count
@@ -109,8 +112,9 @@ export async function fetchDashboardStats(startDate?: string, endDate?: string) 
                 COUNT(DISTINCT r.ID) as CancelledCount,
                 ISNULL(SUM(b.TOTAL), 0) as CancelledRevenue
             FROM REQUEST r
-            JOIN VW_BASKET_INFO b ON r.ID = b.REQUESTID
-            WHERE r.STATUS LIKE '%CANCEL%' ${cancelDateFilter}
+            LEFT JOIN VW_BASKET_INFO b ON r.ID = b.REQUESTID
+            WHERE (r.STATUS LIKE '%CANCEL%' OR r.STATUS LIKE '%İPTAL%' OR r.STATUS LIKE '%IPTAL%')
+              ${cancelDateFilter}
         `);
 
         return {
@@ -140,9 +144,9 @@ export async function fetchCancellationTrend(startDate: string, endDate: string)
                 COUNT(DISTINCT r.ID) as CancelCount,
                 ISNULL(SUM(b.TOTAL), 0) as LostRevenue
             FROM REQUEST r
-            JOIN VW_BASKET_INFO b ON r.ID = b.REQUESTID
-            WHERE r.STATUS LIKE '%CANCEL%'
-              AND r.CREATIONDATE >= '${startDate}' AND r.CREATIONDATE <= '${endDate}'
+            LEFT JOIN VW_BASKET_INFO b ON r.ID = b.REQUESTID
+            WHERE (r.STATUS LIKE '%CANCEL%' OR r.STATUS LIKE '%İPTAL%' OR r.STATUS LIKE '%IPTAL%')
+              AND r.CREATIONDATE >= '${startDate}' AND r.CREATIONDATE <= '${endDate} 23:59:59'
             GROUP BY CAST(r.CREATIONDATE as DATE)
             ORDER BY CancelDate ASC
         `);
@@ -165,120 +169,138 @@ export async function fetchCallCenterStats(startDate?: string, endDate?: string)
     try {
         pool = await sql.connect(asisiaConfig);
 
-        let callDateFilter = '';
-        let callDateFilterAnd = '';
         let reqDateFilter = '';
-
         if (startDate && endDate) {
-            callDateFilter = `WHERE c.calldate >= '${startDate}' AND c.calldate <= '${endDate}'`;
-            callDateFilterAnd = `AND c.calldate >= '${startDate}' AND c.calldate <= '${endDate}'`;
             reqDateFilter = `AND r.CREATIONDATE >= '${startDate}' AND r.CREATIONDATE <= '${endDate}'`;
         }
 
-        // 1. Agent Based Call Totals & Durations
-        const agentQuery = await pool.request().query(`
-            SELECT 
-                u.FIRSTNAME + ' ' + u.LASTNAME as AgentName,
-                c.src as AgentExtension,
-                COUNT(c.uniqueid) as TotalCalls,
-                SUM(c.duration) as TotalSeconds,
-                AVG(c.duration) as AvgDuration,
-                SUM(CASE WHEN c.duration = 0 THEN 1 ELSE 0 END) as MissedCalls,
-                SUM(CASE WHEN c.duration > 0 THEN 1 ELSE 0 END) as AnsweredCalls
-            FROM SNT_CALLS c
-            LEFT JOIN USERS u ON c.src = u.USERNAME OR c.src = (u.FIRSTNAME + '.' + u.LASTNAME)
-            ${callDateFilter ? callDateFilter + ' AND' : 'WHERE'} c.src IS NOT NULL
-            GROUP BY u.FIRSTNAME, u.LASTNAME, c.src
-            ORDER BY TotalCalls DESC
-        `);
+        // 1. Agent Activity — from REQUEST_DETAIL (who created requests / quotes)
+        let callStats: any[] = [];
+        try {
+            const agentQuery = await pool.request().query(`
+                SELECT 
+                    ISNULL(u.FIRSTNAME + ' ' + u.LASTNAME, 'Bilinmiyor') as AgentName,
+                    ISNULL(u.USERNAME, '-') as AgentExtension,
+                    COUNT(rd.REQUESTID) as TotalCalls,
+                    0 as TotalSeconds,
+                    0 as AvgDuration,
+                    SUM(CASE WHEN rd.STATUS LIKE '%CANCEL%' THEN 1 ELSE 0 END) as MissedCalls,
+                    SUM(CASE WHEN rd.STATUS NOT LIKE '%CANCEL%' THEN 1 ELSE 0 END) as AnsweredCalls
+                FROM REQUEST_DETAIL rd
+                JOIN USERS u ON rd.ADDUSER = u.ID
+                WHERE u.FIRSTNAME IS NOT NULL ${reqDateFilter}
+                GROUP BY u.FIRSTNAME, u.LASTNAME, u.USERNAME
+                ORDER BY TotalCalls DESC
+            `);
+            callStats = agentQuery.recordset || [];
+        } catch (e) { console.error('[ASISIA] Agent query error:', e); }
 
-        // 2. Teklif (Quote) vs Satış (Sale) — FIXED: TotalQuotes = all requests, ConvertedSales = only confirmed
-        const conversionQuery = await pool.request().query(`
-            SELECT 
-                u.FIRSTNAME + ' ' + u.LASTNAME as AgentName,
-                COUNT(r.REQUESTID) as TotalQuotes,
-                SUM(CASE WHEN r.STATUS NOT LIKE '%CANCEL%' AND r.STATUS NOT LIKE '%PENDING%' THEN 1 ELSE 0 END) as ConvertedSales,
-                SUM(CASE WHEN r.STATUS LIKE '%CANCEL%' THEN 1 ELSE 0 END) as CancelledRequests
-            FROM REQUEST_DETAIL r
-            JOIN USERS u ON r.ADDUSER = u.ID
-            WHERE u.FIRSTNAME IS NOT NULL ${reqDateFilter}
-            GROUP BY u.FIRSTNAME, u.LASTNAME
-        `);
+        // 2. Teklif (Quote) vs Satış (Sale) — REQUEST_DETAIL
+        let conversionStats: any[] = [];
+        try {
+            const conversionQuery = await pool.request().query(`
+                SELECT 
+                    ISNULL(u.FIRSTNAME + ' ' + u.LASTNAME, 'Bilinmiyor') as AgentName,
+                    COUNT(rd.REQUESTID) as TotalQuotes,
+                    SUM(CASE WHEN rd.STATUS NOT LIKE '%CANCEL%' AND rd.STATUS NOT LIKE '%PENDING%' AND rd.STATUS NOT LIKE '%OPTION%' THEN 1 ELSE 0 END) as ConvertedSales,
+                    SUM(CASE WHEN rd.STATUS LIKE '%CANCEL%' THEN 1 ELSE 0 END) as CancelledRequests
+                FROM REQUEST_DETAIL rd
+                JOIN USERS u ON rd.ADDUSER = u.ID
+                WHERE u.FIRSTNAME IS NOT NULL ${reqDateFilter}
+                GROUP BY u.FIRSTNAME, u.LASTNAME
+            `);
+            conversionStats = conversionQuery.recordset || [];
+        } catch (e) { console.error('[ASISIA] Conversion query error:', e); }
 
         // 3. Agent Revenue (Satış Cirosu)
-        const agentRevenueQuery = await pool.request().query(`
-            SELECT 
-                u.FIRSTNAME + ' ' + u.LASTNAME as AgentName,
-                SUM(b.TOTAL) as TotalRevenue,
-                COUNT(DISTINCT r.ID) as ReservationCount,
-                AVG(b.TOTAL) as AvgDealValue
-            FROM REQUEST r
-            JOIN VW_BASKET_INFO b ON r.ID = b.REQUESTID
-            JOIN USERS u ON r.ADDUSER = u.ID
-            WHERE r.RESNO IS NOT NULL AND b.TOTAL > 0 
-              AND r.STATUS NOT LIKE '%CANCEL%'
-              ${reqDateFilter}
-            GROUP BY u.FIRSTNAME, u.LASTNAME
-            ORDER BY TotalRevenue DESC
-        `);
+        let agentRevenue: any[] = [];
+        try {
+            const agentRevenueQuery = await pool.request().query(`
+                SELECT 
+                    ISNULL(u.FIRSTNAME + ' ' + u.LASTNAME, 'Bilinmiyor') as AgentName,
+                    SUM(b.TOTAL) as TotalRevenue,
+                    COUNT(DISTINCT r.ID) as ReservationCount,
+                    AVG(b.TOTAL) as AvgDealValue
+                FROM REQUEST r
+                JOIN VW_BASKET_INFO b ON r.ID = b.REQUESTID
+                JOIN USERS u ON r.ADDUSER = u.ID
+                WHERE r.RESNO IS NOT NULL AND b.TOTAL > 0 
+                  AND r.STATUS NOT LIKE '%CANCEL%'
+                  ${reqDateFilter}
+                GROUP BY u.FIRSTNAME, u.LASTNAME
+                ORDER BY TotalRevenue DESC
+            `);
+            agentRevenue = agentRevenueQuery.recordset || [];
+        } catch (e) { console.error('[ASISIA] Revenue query error:', e); }
 
-        // 4. Hourly Call Trend
-        const hourlyQuery = await pool.request().query(`
-            SELECT 
-                DATEPART(hour, c.calldate) as Hour,
-                COUNT(c.uniqueid) as CallCount,
-                SUM(CASE WHEN c.duration = 0 THEN 1 ELSE 0 END) as MissedCount
-            FROM SNT_CALLS c
-            ${callDateFilter ? callDateFilter : 'WHERE c.calldate IS NOT NULL'}
-            GROUP BY DATEPART(hour, c.calldate)
-            ORDER BY Hour ASC
-        `);
+        // 4. Hourly Request Trend (from CREATIONDATE hour)
+        let hourlyTrend: any[] = [];
+        try {
+            const hourlyQuery = await pool.request().query(`
+                SELECT 
+                    DATEPART(hour, r.CREATIONDATE) as Hour,
+                    COUNT(DISTINCT r.ID) as CallCount,
+                    SUM(CASE WHEN r.STATUS LIKE '%CANCEL%' THEN 1 ELSE 0 END) as MissedCount
+                FROM REQUEST r
+                WHERE r.CREATIONDATE IS NOT NULL ${reqDateFilter}
+                GROUP BY DATEPART(hour, r.CREATIONDATE)
+                ORDER BY Hour ASC
+            `);
+            hourlyTrend = hourlyQuery.recordset || [];
+        } catch (e) { console.error('[ASISIA] Hourly query error:', e); }
 
-        // 5. Daily Call Trend
-        const dailyQuery = await pool.request().query(`
-            SELECT 
-                CAST(c.calldate as DATE) as Date,
-                COUNT(c.uniqueid) as CallCount,
-                SUM(CASE WHEN c.duration = 0 THEN 1 ELSE 0 END) as MissedCount,
-                SUM(CASE WHEN c.duration > 0 THEN 1 ELSE 0 END) as AnsweredCount
-            FROM SNT_CALLS c
-            ${callDateFilter ? callDateFilter : 'WHERE c.calldate IS NOT NULL'}
-            GROUP BY CAST(c.calldate as DATE)
-            ORDER BY Date ASC
-        `);
+        // 5. Daily Request Trend
+        let dailyTrend: any[] = [];
+        try {
+            const dailyQuery = await pool.request().query(`
+                SELECT 
+                    CAST(r.CREATIONDATE as DATE) as Date,
+                    COUNT(DISTINCT r.ID) as CallCount,
+                    SUM(CASE WHEN r.STATUS LIKE '%CANCEL%' THEN 1 ELSE 0 END) as MissedCount,
+                    SUM(CASE WHEN r.STATUS NOT LIKE '%CANCEL%' THEN 1 ELSE 0 END) as AnsweredCount
+                FROM REQUEST r
+                WHERE r.CREATIONDATE IS NOT NULL ${reqDateFilter}
+                GROUP BY CAST(r.CREATIONDATE as DATE)
+                ORDER BY Date ASC
+            `);
+            dailyTrend = dailyQuery.recordset || [];
+        } catch (e) { console.error('[ASISIA] Daily query error:', e); }
 
         // 6. Reservation Source Attribution
-        const sourceQuery = await pool.request().query(`
-            SELECT 
-                ISNULL(r.SOURCE, 'Bilinmiyor') as Source,
-                COUNT(DISTINCT r.ID) as ReservationCount,
-                ISNULL(SUM(b.TOTAL), 0) as Revenue
-            FROM REQUEST r
-            LEFT JOIN VW_BASKET_INFO b ON r.ID = b.REQUESTID
-            WHERE r.RESNO IS NOT NULL ${reqDateFilter}
-            GROUP BY r.SOURCE
-            ORDER BY ReservationCount DESC
-        `);
+        let sourceAttribution: any[] = [];
+        try {
+            const sourceQuery = await pool.request().query(`
+                SELECT 
+                    ISNULL(r.SOURCE, 'Bilinmiyor') as Source,
+                    COUNT(DISTINCT r.ID) as ReservationCount,
+                    ISNULL(SUM(b.TOTAL), 0) as Revenue
+                FROM REQUEST r
+                LEFT JOIN VW_BASKET_INFO b ON r.ID = b.REQUESTID
+                WHERE r.RESNO IS NOT NULL ${reqDateFilter}
+                GROUP BY r.SOURCE
+                ORDER BY ReservationCount DESC
+            `);
+            sourceAttribution = sourceQuery.recordset || [];
+        } catch (e) { console.error('[ASISIA] Source query error:', e); }
 
-        // Overall call metrics
-        const totalCalls = (agentQuery.recordset || []).reduce((s: number, a: any) => s + (a.TotalCalls || 0), 0);
-        const answeredCalls = (agentQuery.recordset || []).reduce((s: number, a: any) => s + (a.AnsweredCalls || 0), 0);
-        const missedCalls = (agentQuery.recordset || []).reduce((s: number, a: any) => s + (a.MissedCalls || 0), 0);
-        const avgDuration = totalCalls > 0 ? (agentQuery.recordset || []).reduce((s: number, a: any) => s + (a.TotalSeconds || 0), 0) / answeredCalls : 0;
+        // Overall metrics
+        const totalCalls = callStats.reduce((s: number, a: any) => s + (a.TotalCalls || 0), 0);
+        const answeredCalls = callStats.reduce((s: number, a: any) => s + (a.AnsweredCalls || 0), 0);
+        const missedCalls = callStats.reduce((s: number, a: any) => s + (a.MissedCalls || 0), 0);
 
         return {
-            callStats: agentQuery.recordset || [],
-            conversionStats: conversionQuery.recordset || [],
-            agentRevenue: agentRevenueQuery.recordset || [],
-            hourlyTrend: hourlyQuery.recordset || [],
-            dailyTrend: dailyQuery.recordset || [],
-            sourceAttribution: sourceQuery.recordset || [],
+            callStats,
+            conversionStats,
+            agentRevenue,
+            hourlyTrend,
+            dailyTrend,
+            sourceAttribution,
             summary: {
                 totalCalls,
                 answeredCalls,
                 missedCalls,
                 missedRate: totalCalls > 0 ? ((missedCalls / totalCalls) * 100).toFixed(1) : '0',
-                avgDurationSeconds: Math.round(avgDuration),
+                avgDurationSeconds: 0,
             }
         };
 

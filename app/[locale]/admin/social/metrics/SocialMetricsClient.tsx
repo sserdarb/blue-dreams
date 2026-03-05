@@ -151,8 +151,8 @@ export default function SocialMetricsClient() {
                                 key={opt.value}
                                 onClick={() => handlePeriodChange(opt.value)}
                                 className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${period === opt.value
-                                        ? 'bg-white dark:bg-slate-700 text-cyan-700 dark:text-cyan-300 shadow-sm'
-                                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'
+                                    ? 'bg-white dark:bg-slate-700 text-cyan-700 dark:text-cyan-300 shadow-sm'
+                                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'
                                     }`}
                             >
                                 {opt.label}
@@ -366,6 +366,9 @@ function DashboardTab({ data }: { data: MetricsData }) {
 
 function PostsTab({ data }: { data: MetricsData }) {
     const [sort, setSort] = useState<'engagement' | 'likes' | 'comments' | 'date'>('engagement')
+    const [replyingTo, setReplyingTo] = useState<string | null>(null)
+    const [replyText, setReplyText] = useState('')
+    const [sending, setSending] = useState(false)
 
     const sorted = useMemo(() => {
         return [...data.recentPosts].sort((a, b) => {
@@ -385,6 +388,25 @@ function PostsTab({ data }: { data: MetricsData }) {
                 engagement: p.engagement
             }))
     }, [data.recentPosts])
+
+    const handleReply = async (postId: string) => {
+        if (!replyText.trim()) return
+        setSending(true)
+        try {
+            const res = await fetch('/api/admin/analytics/social', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'reply-comment', postId, message: replyText })
+            })
+            if (res.ok) {
+                setReplyText('')
+                setReplyingTo(null)
+            }
+        } catch (err) {
+            console.error('Reply failed:', err)
+        }
+        setSending(false)
+    }
 
     return (
         <div className="space-y-6">
@@ -416,77 +438,127 @@ function PostsTab({ data }: { data: MetricsData }) {
                 </ResponsiveContainer>
             </Card>
 
-            {/* Posts Table */}
-            <Card className="p-5 bg-white dark:bg-slate-800/50 border-none shadow-lg">
-                <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                        <ImageIcon size={20} className="text-purple-500" /> Son Gönderiler ({sorted.length})
-                    </h3>
-                    <div className="flex gap-1">
-                        {([
-                            { key: 'engagement', label: 'Etkileşim' },
-                            { key: 'likes', label: 'Beğeni' },
-                            { key: 'comments', label: 'Yorum' },
-                            { key: 'date', label: 'Tarih' },
-                        ] as const).map(s => (
-                            <button
-                                key={s.key}
-                                onClick={() => setSort(s.key)}
-                                className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${sort === s.key ? 'bg-cyan-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
-                                    }`}
-                            >
-                                {s.label}
-                            </button>
-                        ))}
-                    </div>
+            {/* Posts Grid Header */}
+            <div className="flex justify-between items-center">
+                <h3 className="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                    <ImageIcon size={20} className="text-purple-500" /> Gönderiler ({sorted.length})
+                </h3>
+                <div className="flex gap-1">
+                    {([
+                        { key: 'engagement', label: 'Etkileşim' },
+                        { key: 'likes', label: 'Beğeni' },
+                        { key: 'comments', label: 'Yorum' },
+                        { key: 'date', label: 'Tarih' },
+                    ] as const).map(s => (
+                        <button
+                            key={s.key}
+                            onClick={() => setSort(s.key)}
+                            className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${sort === s.key ? 'bg-cyan-600 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'}`}
+                        >
+                            {s.label}
+                        </button>
+                    ))}
                 </div>
+            </div>
 
-                <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                        <thead>
-                            <tr className="border-b border-slate-200 dark:border-slate-700">
-                                <th className="text-left py-3 px-2 text-slate-500 dark:text-slate-400 font-medium">Gönderi</th>
-                                <th className="text-center py-3 px-2 text-slate-500 dark:text-slate-400 font-medium">Tür</th>
-                                <th className="text-right py-3 px-2 text-slate-500 dark:text-slate-400 font-medium">❤️ Beğeni</th>
-                                <th className="text-right py-3 px-2 text-slate-500 dark:text-slate-400 font-medium">💬 Yorum</th>
-                                <th className="text-right py-3 px-2 text-slate-500 dark:text-slate-400 font-medium">📊 Toplam</th>
-                                <th className="text-right py-3 px-2 text-slate-500 dark:text-slate-400 font-medium">Tarih</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {sorted.map((post, i) => {
-                                const TypeIcon = TYPE_ICONS[post.type] || ImageIcon
-                                return (
-                                    <tr key={post.id} className="border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
-                                        <td className="py-3 px-2">
-                                            <div className="flex items-center gap-3">
-                                                {post.mediaUrl && (
-                                                    <img src={post.mediaUrl} alt="" className="w-10 h-10 rounded object-cover" />
-                                                )}
-                                                <span className="text-slate-700 dark:text-slate-300 truncate max-w-[200px]">
-                                                    {post.caption || '—'}
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td className="py-3 px-2 text-center">
-                                            <TypeIcon size={16} className="text-slate-400 mx-auto" />
-                                        </td>
-                                        <td className="py-3 px-2 text-right font-semibold text-pink-600">{post.likes.toLocaleString()}</td>
-                                        <td className="py-3 px-2 text-right font-semibold text-blue-600">{post.comments.toLocaleString()}</td>
-                                        <td className="py-3 px-2 text-right font-bold text-slate-800 dark:text-white">{post.engagement.toLocaleString()}</td>
-                                        <td className="py-3 px-2 text-right text-slate-400 text-xs">
-                                            {new Date(post.timestamp).toLocaleDateString('tr-TR')}
-                                        </td>
-                                    </tr>
-                                )
-                            })}
-                        </tbody>
-                    </table>
-                </div>
-                {sorted.length === 0 && (
-                    <div className="text-center py-12 text-slate-400">Gönderi verisi bulunamadı</div>
-                )}
-            </Card>
+            {/* Posts Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {sorted.map((post) => {
+                    const TypeIcon = TYPE_ICONS[post.type] || ImageIcon
+                    const isVideo = post.type === 'VIDEO' || post.type === 'REELS'
+                    return (
+                        <Card key={post.id} className="bg-white dark:bg-slate-800/50 border-none shadow-lg overflow-hidden group">
+                            {/* Media Preview */}
+                            <div className="relative aspect-square bg-slate-100 dark:bg-slate-900">
+                                {post.mediaUrl ? (
+                                    isVideo ? (
+                                        <video
+                                            src={post.mediaUrl}
+                                            className="w-full h-full object-cover"
+                                            muted
+                                            playsInline
+                                            onMouseEnter={(e) => (e.target as HTMLVideoElement).play().catch(() => { })}
+                                            onMouseLeave={(e) => { (e.target as HTMLVideoElement).pause(); (e.target as HTMLVideoElement).currentTime = 0 }}
+                                            poster={post.thumbnailUrl || ''}
+                                        />
+                                    ) : (
+                                        <img src={post.mediaUrl} alt="" className="w-full h-full object-cover" />
+                                    )
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-slate-400">
+                                        <TypeIcon size={48} />
+                                    </div>
+                                )}
+                                {/* Type Badge */}
+                                <div className="absolute top-2 right-2 bg-black/50 backdrop-blur-sm rounded-md px-2 py-1 flex items-center gap-1">
+                                    <TypeIcon size={12} className="text-white" />
+                                    <span className="text-[10px] text-white font-medium">
+                                        {post.type === 'IMAGE' ? 'Görsel' : post.type === 'VIDEO' ? 'Video' : post.type === 'CAROUSEL_ALBUM' ? 'Carousel' : post.type}
+                                    </span>
+                                </div>
+                                {/* Hover Overlay with Stats */}
+                                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-6">
+                                    <span className="flex items-center gap-1 text-white font-bold">
+                                        <Heart size={18} /> {post.likes?.toLocaleString() || 0}
+                                    </span>
+                                    <span className="flex items-center gap-1 text-white font-bold">
+                                        <MessageCircle size={18} /> {post.comments?.toLocaleString() || 0}
+                                    </span>
+                                </div>
+                            </div>
+                            {/* Info */}
+                            <div className="p-3">
+                                <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 min-h-[2rem]">
+                                    {post.caption || '—'}
+                                </p>
+                                <div className="flex items-center justify-between mt-2">
+                                    <div className="flex items-center gap-3 text-xs">
+                                        <span className="flex items-center gap-0.5 text-pink-500 font-semibold">
+                                            <Heart size={12} /> {post.likes || 0}
+                                        </span>
+                                        <span className="flex items-center gap-0.5 text-blue-500 font-semibold">
+                                            <MessageCircle size={12} /> {post.comments || 0}
+                                        </span>
+                                    </div>
+                                    <span className="text-[10px] text-slate-400">
+                                        {new Date(post.timestamp).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })}
+                                    </span>
+                                </div>
+                                {/* Comment Reply */}
+                                {post.comments > 0 && (
+                                    <button
+                                        onClick={() => setReplyingTo(replyingTo === post.id ? null : post.id)}
+                                        className="mt-2 text-xs text-cyan-600 hover:text-cyan-500 font-medium"
+                                    >
+                                        {replyingTo === post.id ? 'Kapat' : 'Yanıtla'}
+                                    </button>
+                                )}
+                                {replyingTo === post.id && (
+                                    <div className="mt-2 flex gap-1">
+                                        <input
+                                            type="text"
+                                            value={replyText}
+                                            onChange={(e) => setReplyText(e.target.value)}
+                                            placeholder="Yanıt yaz..."
+                                            className="flex-1 px-2 py-1 text-xs rounded border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-white"
+                                        />
+                                        <button
+                                            onClick={() => handleReply(post.id)}
+                                            disabled={sending}
+                                            className="px-2 py-1 text-xs bg-cyan-600 text-white rounded hover:bg-cyan-700 disabled:opacity-50"
+                                        >
+                                            {sending ? '...' : 'Gönder'}
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </Card>
+                    )
+                })}
+            </div>
+            {sorted.length === 0 && (
+                <div className="text-center py-12 text-slate-400">Gönderi verisi bulunamadı</div>
+            )}
         </div>
     )
 }

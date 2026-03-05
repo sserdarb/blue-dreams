@@ -39,16 +39,17 @@ export async function GET(request: Request) {
             const adAccountId = process.env.META_ADS_ACCOUNT_ID || process.env.FB_AD_ACCOUNT_ID
             if (token && adAccountId) {
                 const acct = adAccountId.startsWith('act_') ? adAccountId : `act_${adAccountId}`
+                console.log('[Campaign API] Fetching Meta campaigns for account:', acct, 'statusFilter:', statusFilter)
                 // Build status filter for Meta
                 let metaStatusFilter = ''
                 if (statusFilter === 'active') metaStatusFilter = '&effective_status=["ACTIVE"]'
                 else if (statusFilter === 'paused') metaStatusFilter = '&effective_status=["PAUSED"]'
-                // Default: fetch all statuses
+                else metaStatusFilter = '&effective_status=["ACTIVE","PAUSED","ARCHIVED","DELETED","IN_PROCESS","WITH_ISSUES"]'
 
                 try {
-                    const res = await fetch(
-                        `${FB_BASE_URL}/${acct}/campaigns?fields=id,name,status,objective,daily_budget,lifetime_budget,created_time,start_time,stop_time,insights.date_preset(${datePreset}){spend,impressions,clicks,cpc,ctr,reach,actions,cost_per_action_type}&limit=100${metaStatusFilter}&access_token=${token}`
-                    )
+                    const url = `${FB_BASE_URL}/${acct}/campaigns?fields=id,name,status,effective_status,objective,daily_budget,lifetime_budget,created_time,start_time,stop_time,insights.date_preset(${datePreset}){spend,impressions,clicks,cpc,ctr,reach,actions,cost_per_action_type}&limit=100${metaStatusFilter}&access_token=${token}`
+                    console.log('[Campaign API] Fetching URL:', url.replace(token, 'TOKEN_HIDDEN'))
+                    const res = await fetch(url)
                     if (res.ok) {
                         const data = await res.json()
                         for (const c of (data.data || [])) {
