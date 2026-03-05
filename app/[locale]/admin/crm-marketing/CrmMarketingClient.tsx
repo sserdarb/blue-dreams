@@ -667,6 +667,29 @@ function UnifiedInboxTab() {
     const [chatMessages, setChatMessages] = useState<WaMessage[]>([])
     const [showNewTemplate, setShowNewTemplate] = useState(false)
     const [newTpl, setNewTpl] = useState({ name: '', content: '', category: 'general' })
+    const [syncing, setSyncing] = useState(false)
+    const [syncResult, setSyncResult] = useState<string | null>(null)
+    const [hasAutoSynced, setHasAutoSynced] = useState(false)
+
+    const syncMeta = async () => {
+        setSyncing(true)
+        setSyncResult(null)
+        try {
+            const res = await fetch('/api/admin/crm/social/sync', { method: 'POST' })
+            const data = await res.json()
+            if (data.success) {
+                setSyncResult(`✅ ${data.message}`)
+                await fetchData()
+            } else {
+                setSyncResult(`⚠️ ${data.error || 'Senkronizasyon başarısız'}`)
+            }
+        } catch (err: any) {
+            setSyncResult(`❌ ${err.message}`)
+        } finally {
+            setSyncing(false)
+            setTimeout(() => setSyncResult(null), 8000)
+        }
+    }
 
     const fetchData = useCallback(async () => {
         setLoading(true)
@@ -674,7 +697,15 @@ function UnifiedInboxTab() {
             const params = new URLSearchParams({ view, search, direction, platform, isFromGuest })
             const res = await fetch(`/api/admin/crm/social?${params}`)
             const data = await res.json()
-            if (view === 'conversations') setConversations(data.conversations || [])
+            if (view === 'conversations') {
+                const convos = data.conversations || []
+                setConversations(convos)
+                // Auto-sync from Meta if no conversations found on first load
+                if (convos.length === 0 && !hasAutoSynced) {
+                    setHasAutoSynced(true)
+                    syncMeta()
+                }
+            }
             else if (view === 'templates') setTemplates(data.templates || [])
             else setMessages(data.messages || [])
         } catch { /* ignore */ }
@@ -745,6 +776,21 @@ function UnifiedInboxTab() {
                 {view === 'templates' && (
                     <button onClick={() => setShowNewTemplate(!showNewTemplate)} className="flex items-center gap-1 px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-sm"><Plus size={14} /> Yeni Şablon</button>
                 )}
+                <div className="flex items-center gap-2 ml-auto">
+                    {syncResult && (
+                        <span className="text-xs px-2 py-1 rounded-lg bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300">
+                            {syncResult}
+                        </span>
+                    )}
+                    <button
+                        onClick={syncMeta}
+                        disabled={syncing}
+                        className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 disabled:opacity-50 rounded-lg text-xs text-white transition-all"
+                    >
+                        <RefreshCw size={12} className={syncing ? 'animate-spin' : ''} />
+                        {syncing ? 'Senkronize...' : 'Meta Sync'}
+                    </button>
+                </div>
             </div>
 
             {/* Filters for messages */}
