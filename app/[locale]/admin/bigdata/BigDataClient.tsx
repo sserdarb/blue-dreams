@@ -500,10 +500,10 @@ function RawDataTab({ reservations, a, t }: { reservations: any[]; a: any, t: an
     return <div className="space-y-6">
         <h2 className="text-lg font-bold text-cyan-400">{t.rawdata.title}</h2>
         <div className="flex gap-3 items-center">
-            <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="{t.rawdata.searchPlaceholder}" className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-500 w-96 focus:outline-none focus:border-cyan-500" />
+            <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder={t.rawdata.searchPlaceholder} className="px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-500 w-96 focus:outline-none focus:border-cyan-500" />
             <span className="text-xs text-slate-400">{filtered.length} / {reservations.length} {t.rawdata.recordsSuffix}</span>
         </div>
-        <ChartCard title={`{t.rawdata.tableTitle} (${filtered.length})`}>
+        <ChartCard title={`${t.rawdata.tableTitle} (${filtered.length})`}>
             <DataTable data={filtered} columns={[
                 { key: 'voucherNo', label: t.tableCols.voucher },
                 { key: 'agency', label: t.tableCols.agency },

@@ -28,11 +28,11 @@ export function MiniArea({ data, xKey, keys, height = 300 }: any) {
 }
 
 export function MiniPie({ data, nameKey, valueKey, height = 300 }: any) {
-    return <ResponsiveContainer width="100%" height={height}><PieChart><Pie data={data} dataKey={valueKey} nameKey={nameKey} cx="50%" cy="50%" outerRadius={100} label={({ name, value }: any) => `${name}: ${value}`} labelLine={{ stroke: '#64748b' }}>{data.map((_: any, i: number) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}</Pie><Tooltip contentStyle={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 8, color: '#e2e8f0' }} /><Legend /></PieChart></ResponsiveContainer>
+    return <ResponsiveContainer width="100%" height={height}><PieChart><Pie data={data} dataKey={valueKey} nameKey={nameKey} cx="50%" cy="50%" outerRadius={90} label={({ name, percent }: any) => percent > 0.03 ? `${name.slice(0, 12)} %${(percent * 100).toFixed(0)}` : ''} labelLine={{ stroke: '#64748b' }} fontSize={11}>{data.map((_: any, i: number) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}</Pie><Tooltip contentStyle={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 8, color: '#e2e8f0' }} /><Legend wrapperStyle={{ fontSize: '11px' }} /></PieChart></ResponsiveContainer>
 }
 
 export function DonutChart({ data, nameKey, valueKey, height = 300 }: any) {
-    return <ResponsiveContainer width="100%" height={height}><PieChart><Pie data={data} dataKey={valueKey} nameKey={nameKey} cx="50%" cy="50%" innerRadius={60} outerRadius={100} label={({ name, percent }: any) => `${name} %${(percent * 100).toFixed(0)}`} labelLine={{ stroke: '#64748b' }}>{data.map((_: any, i: number) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}</Pie><Tooltip contentStyle={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 8, color: '#e2e8f0' }} /></PieChart></ResponsiveContainer>
+    return <ResponsiveContainer width="100%" height={height}><PieChart><Pie data={data} dataKey={valueKey} nameKey={nameKey} cx="50%" cy="50%" innerRadius={55} outerRadius={90} label={({ name, percent }: any) => percent > 0.03 ? `${name.slice(0, 12)} %${(percent * 100).toFixed(0)}` : ''} labelLine={{ stroke: '#64748b' }} fontSize={11}>{data.map((_: any, i: number) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}</Pie><Tooltip contentStyle={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 8, color: '#e2e8f0' }} /></PieChart></ResponsiveContainer>
 }
 
 export function MiniScatter({ data, xKey, yKey, height = 300, label = '' }: any) {

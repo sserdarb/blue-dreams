@@ -7,7 +7,8 @@ import { prisma } from '@/lib/prisma'
 
 export async function POST(request: Request) {
     try {
-        const META_TOKEN = process.env.META_ACCESS_TOKEN
+        const settings = await prisma.siteSettings.findFirst()
+        const META_TOKEN = settings?.metaAccessToken || process.env.META_ACCESS_TOKEN
         const IG_ACCOUNT_ID = process.env.IG_ACCOUNT_ID
         const FB_PAGE_ID = process.env.FB_PAGE_ID
 

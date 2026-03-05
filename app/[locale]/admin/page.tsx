@@ -38,14 +38,84 @@ export default async function AdminDashboard({
   const dateLabel = `${startDate.toLocaleDateString('tr-TR')} – ${endDate.toLocaleDateString('tr-TR')}`
 
   try {
-    const [salesData, stats, recentReservations, reviews, asisiaStats, pickupStats] = await Promise.all([
+    const [salesData, stats, recentReservations, reviews, allReservations, pickupStats] = await Promise.all([
       ElektraService.getSalesData(startDate, endDate),
       ElektraService.getDailyStats(),
       ElektraService.getRecentReservations(10),
       ElektraService.getGuestReviews(startDate, endDate),
-      fetchDashboardStats(startDate.toISOString().split('T')[0], endDate.toISOString().split('T')[0]),
+      ElektraService.getAllSeasonReservations(),
       fetchPickupStats(startDate.toISOString().split('T')[0], endDate.toISOString().split('T')[0])
     ])
+
+    const startStr = startDate.toISOString().split('T')[0];
+    const endStr = endDate.toISOString().split('T')[0];
+
+    // Calculate dashboard stats manually using the booking date (lastUpdate/reservationDate)
+    const periodReservations = allReservations.filter((r: any) => {
+      const d = (r.reservationDate || r.lastUpdate || r.checkIn).slice(0, 10);
+      return d >= startStr && d <= endStr;
+    });
+
+    const activePeriod = periodReservations.filter((r: any) => r.status !== 'Cancelled' && r.status !== 'İptal');
+    const cancelledPeriod = periodReservations.filter((r: any) => r.status === 'Cancelled' || r.status === 'İptal');
+
+    // Aggregate with fallback to TRY rate map if not in TRY
+    const tryRate = stats.exchangeRate?.EUR_TO_TRY || 38.5; // fallback
+    const calcRev = (rsvs: any[]) => rsvs.reduce((sum, r) => sum + (r.currency === 'EUR' ? r.totalPrice * tryRate : (r.currency === 'USD' ? r.totalPrice * 35.7 : r.totalPrice)), 0);
+
+    const asisiaStats = {
+      totalReservations: activePeriod.length,
+      totalRevenue: calcRev(activePeriod),
+      averageStay: activePeriod.length ? activePeriod.reduce((s, r) => s + r.nights, 0) / activePeriod.length : 0,
+      totalGuests: activePeriod.reduce((sum, r) => sum + (r.guests?.length || 2), 0),
+      cancelledReservations: cancelledPeriod.length,
+      cancelledRevenue: calcRev(cancelledPeriod)
+    };
+
+    // --- PMS Pickup Calculation ---
+    const dailyMap = new Map<string, { new: number, cancelled: number }>();
+    let d = new Date(startDate);
+    while (d <= endDate) {
+      dailyMap.set(d.toISOString().split('T')[0], { new: 0, cancelled: 0 });
+      d.setDate(d.getDate() + 1);
+    }
+
+    periodReservations.forEach((r: any) => {
+      const rDate = (r.reservationDate || r.lastUpdate || r.checkIn).slice(0, 10);
+      if (dailyMap.has(rDate)) {
+        const entry = dailyMap.get(rDate)!;
+        if (r.status === 'Cancelled' || r.status === 'İptal') entry.cancelled += 1;
+        else entry.new += 1;
+      }
+    });
+
+    const sortedByPrice = [...periodReservations]
+      .filter(r => r.totalPrice > 0)
+      .sort((a, b) => b.totalPrice - a.totalPrice);
+
+    let pickupData = {
+      newReservations: activePeriod.length,
+      cancelledReservations: cancelledPeriod.length,
+      netPickup: activePeriod.length - cancelledPeriod.length,
+      revenue: calcRev(activePeriod) - calcRev(cancelledPeriod),
+      dailyTrend: Array.from(dailyMap.entries()).map(([date, counts]) => ({ date, ...counts })),
+      recentPickups: periodReservations.slice(0, 10).map((r: any) => ({
+        resNo: String(r.id || r.voucherNo),
+        guestName: r.contactName || (r.guests && r.guests[0] ? r.guests[0].name : 'Gizli Misafir'),
+        checkIn: r.checkIn,
+        price: r.totalPrice,
+        currency: r.currency,
+        isCancelled: r.status === 'Cancelled' || r.status === 'İptal'
+      })),
+      majorImpacts: sortedByPrice.slice(0, 5).map((r: any) => ({
+        resNo: String(r.id || r.voucherNo),
+        guestName: r.contactName || (r.guests && r.guests[0] ? r.guests[0].name : 'Gizli Misafir'),
+        checkIn: r.checkIn,
+        price: r.totalPrice,
+        currency: r.currency,
+        isCancelled: r.status === 'Cancelled' || r.status === 'İptal'
+      }))
+    };
 
     return (
       <div className="space-y-8">
@@ -141,7 +211,7 @@ export default async function AdminDashboard({
         </div>
 
         {/* PICKUP WIDGET */}
-        <DashboardPickupWidget data={pickupStats} />
+        <DashboardPickupWidget data={pickupData} />
 
         {/* SON REZERVASYONLAR (ADR PERFORMANSI İLE BİRLİKTE) */}
         <DashboardLastReservationsWidget reservations={recentReservations} locale={locale} />

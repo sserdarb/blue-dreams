@@ -252,8 +252,8 @@ export default function CallCenterClient({ locale, t }: Props) {
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
                         className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${activeTab === tab.id
-                                ? 'bg-white dark:bg-slate-700 text-cyan-600 dark:text-cyan-400 shadow-sm'
-                                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                            ? 'bg-white dark:bg-slate-700 text-cyan-600 dark:text-cyan-400 shadow-sm'
+                            : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
                             }`}
                     >
                         <tab.icon size={16} />
@@ -272,13 +272,14 @@ export default function CallCenterClient({ locale, t }: Props) {
                     {activeTab === 'overview' && (
                         <>
                             {/* Top KPI row */}
-                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
                                 <KpiCard icon={PhoneCall} color="blue" label="Toplam Çağrı" value={summary.totalCalls.toLocaleString('tr-TR')} />
                                 <KpiCard icon={CheckCircle2} color="emerald" label="Cevaplanan" value={summary.answeredCalls.toLocaleString('tr-TR')} />
                                 <KpiCard icon={PhoneMissed} color="red" label="Cevapsız" value={`${summary.missedCalls} (%${summary.missedRate})`} />
                                 <KpiCard icon={Clock} color="purple" label="Ort. Süre" value={fmtDuration(summary.avgDurationSeconds)} />
                                 <KpiCard icon={Target} color="amber" label="Teklif Sayısı" value={mergedAgents.reduce((s, a) => s + a.quotes, 0).toLocaleString('tr-TR')} />
                                 <KpiCard icon={ArrowUpRight} color="cyan" label="Satış (CR)" value={mergedAgents.reduce((s, a) => s + a.sales, 0).toLocaleString('tr-TR')} />
+                                <KpiCard icon={DollarSign} color="emerald" label="Çağrı Başı Gelir" value={`₺${summary.totalCalls > 0 ? Math.round(mergedAgents.reduce((s, a) => s + a.revenue, 0) / summary.totalCalls).toLocaleString('tr-TR') : 0}`} />
                             </div>
 
                             {/* Agent Table */}

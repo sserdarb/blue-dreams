@@ -255,24 +255,43 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
         return false
     }
 
+    const isWithinYtdCheckIn = (checkInDate: string) => {
+        if (!checkInDate) return true
+        const rdStr = checkInDate.includes('.') ? checkInDate.split('.').reverse().join('-') : checkInDate
+        const rd = new Date(rdStr.slice(0, 10))
+        if (isNaN(rd.getTime())) return true
+        const now = new Date()
+        rd.setFullYear(now.getFullYear()) // normalized to current year
+        return rd <= now
+    }
+
     const filteredCY = useMemo(() => {
         let data = currentYearReservations
         if (marketFilter !== 'ALL') data = data.filter(r => (r.agency || 'Bilinmeyen') === marketFilter)
-        if (ytdMode) data = data.filter(r => isWithinYtd(r.reservationDate, currentYear))
+        if (ytdMode && activeReport !== 'pace') data = data.filter(r => isWithinYtdCheckIn(r.checkIn))
         return data
-    }, [currentYearReservations, marketFilter, ytdMode, currentYear, ytdTarget])
+    }, [currentYearReservations, marketFilter, ytdMode, activeReport])
 
     const filteredPY = useMemo(() => {
         let data = prevYearReservations
         if (marketFilter !== 'ALL') data = data.filter(r => (r.agency || 'Bilinmeyen') === marketFilter)
-        // YoY karşılaştırma: ytdMode aktifse önceki yılı da aynı ay/gün hesabıyla kesiyoruz
-        if (ytdMode) data = data.filter(r => isWithinYtd(r.reservationDate, prevYear))
+        if (ytdMode && activeReport !== 'pace') data = data.filter(r => isWithinYtdCheckIn(r.checkIn))
         return data
-    }, [prevYearReservations, marketFilter, ytdMode, prevYear, ytdTarget])
+    }, [prevYearReservations, marketFilter, ytdMode, activeReport])
 
-    // Aggregate data (now using filtered)
+    // Specific pacing definitions
+    const cyOtbData = useMemo(() => filteredCY.filter(r => isWithinYtd(r.reservationDate, currentYear)), [filteredCY, currentYear, ytdTarget])
+    const pyOtbData = useMemo(() => filteredPY.filter(r => isWithinYtd(r.reservationDate, prevYear)), [filteredPY, prevYear, ytdTarget])
+    const pyActData = filteredPY; // The final achieved numbers for last year
+
+    // Aggregate primary panels (S26, Channels, etc)
     const cyMonth = useMemo(() => aggregateByMonth(filteredCY, exchangeRates, currentYear, monthNamesLocal, priceMode, totalTaxRate), [filteredCY, exchangeRates, currentYear, monthNamesLocal, priceMode, totalTaxRate])
     const pyMonth = useMemo(() => aggregateByMonth(filteredPY, exchangeRates, prevYear, monthNamesLocal, priceMode, totalTaxRate), [filteredPY, exchangeRates, prevYear, monthNamesLocal, priceMode, totalTaxRate])
+
+    // Aggregate Pace-specific
+    const cyOtbMonth = useMemo(() => aggregateByMonth(cyOtbData, exchangeRates, currentYear, monthNamesLocal, priceMode, totalTaxRate), [cyOtbData, exchangeRates, currentYear, monthNamesLocal, priceMode, totalTaxRate])
+    const pyOtbMonth = useMemo(() => aggregateByMonth(pyOtbData, exchangeRates, prevYear, monthNamesLocal, priceMode, totalTaxRate), [pyOtbData, exchangeRates, prevYear, monthNamesLocal, priceMode, totalTaxRate])
+    const pyActMonth = useMemo(() => aggregateByMonth(pyActData, exchangeRates, prevYear, monthNamesLocal, priceMode, totalTaxRate), [pyActData, exchangeRates, prevYear, monthNamesLocal, priceMode, totalTaxRate])
 
     // Only show months with some activity (Apr-Oct typical for resort), apply season filter
     const activeMonths = useMemo(() => {
@@ -440,18 +459,17 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
             }, { rn: 0, rev: 0, revEur: 0 })
         }
 
-        const paceCY = calc(currentYearReservations.filter(r => isWithinYtd(r.reservationDate, currentYear)))
-        const pacePY = calc(prevYearReservations.filter(r => isWithinYtd(r.reservationDate, prevYear)))
-
-        // Determine capacity based on total days in the year
         const cyCapacity = TOTAL_ROOMS * (new Date(currentYear % 4 === 0 ? 366 : 365, 0, 0).getDate() || 365)
         const pyCapacity = TOTAL_ROOMS * (new Date(prevYear % 4 === 0 ? 366 : 365, 0, 0).getDate() || 365)
+
+        const paceCY = calc(cyOtbData)
+        const pacePY = calc(pyOtbData)
 
         return {
             cy: { ...paceCY, occ: cyCapacity > 0 ? paceCY.rn / cyCapacity : 0 },
             py: { ...pacePY, occ: pyCapacity > 0 ? pacePY.rn / pyCapacity : 0 }
         }
-    }, [currentYearReservations, prevYearReservations, exchangeRates, currentYear, prevYear, ytdTarget])
+    }, [cyOtbData, pyOtbData, exchangeRates, currentYear, prevYear, ytdTarget])
 
     const PIE_COLORS = ['#06b6d4', '#f59e0b', '#8b5cf6', '#10b981', '#ec4899', '#f97316', '#64748b', '#14b8a6', '#e11d48', '#6366f1']
 
@@ -787,75 +805,109 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
                     </div>
                     <div className="overflow-x-auto">
                         <table className="w-full text-xs">
-                            {/* Header Row - Two year groups */}
+                            {/* Header Row - Three year columns */}
                             <thead>
                                 <tr className="bg-blue-900 text-white">
                                     <th className="p-2 text-left" rowSpan={2}>Ay</th>
-                                    <th className="p-2 text-center border-l border-blue-700" colSpan={6}>{prevYear}</th>
-                                    <th className="p-2 text-center border-l border-yellow-600 bg-yellow-700" colSpan={6}>{currentYear}</th>
+                                    <th className="p-2 text-center border-l border-blue-700" colSpan={4}>{prevYear} FINAL (ACT)</th>
+                                    <th className="p-2 text-center border-l border-blue-600 bg-blue-800" colSpan={4}>{prevYear} OTB (Pace)</th>
+                                    <th className="p-2 text-center border-l border-yellow-600 bg-yellow-700" colSpan={4}>{currentYear} OTB (Current)</th>
                                 </tr>
-                                <tr className="bg-blue-800 text-blue-200 text-[10px] uppercase tracking-wider font-bold">
-                                    <th className="p-2 text-right border-l border-blue-700">RN</th>
-                                    <th className="p-2 text-right">BN</th>
-                                    <th className="p-2 text-right">Occ</th>
-                                    <th className="p-2 text-right">REV</th>
-                                    <th className="p-2 text-right">ADR</th>
-                                    <th className="p-2 text-right">REVPAR</th>
-                                    <th className="p-2 text-right border-l border-yellow-600 bg-yellow-800 text-yellow-200">RN</th>
-                                    <th className="p-2 text-right bg-yellow-800 text-yellow-200">BN</th>
-                                    <th className="p-2 text-right bg-yellow-800 text-yellow-200">Occ</th>
-                                    <th className="p-2 text-right bg-yellow-800 text-yellow-200">REV</th>
-                                    <th className="p-2 text-right bg-yellow-800 text-yellow-200">ADR</th>
-                                    <th className="p-2 text-right bg-yellow-800 text-yellow-200">REVPAR</th>
+                                <tr className="bg-slate-800 text-blue-200 text-[10px] uppercase tracking-wider font-bold">
+                                    <th className="p-2 text-right border-l border-blue-700 bg-slate-800">RN</th>
+                                    <th className="p-2 text-right bg-slate-800">REV</th>
+                                    <th className="p-2 text-right bg-slate-800">ADR</th>
+                                    <th className="p-2 text-right bg-slate-800">Occ%</th>
+
+                                    <th className="p-2 text-right border-l border-slate-600 bg-slate-700 text-purple-200">RN</th>
+                                    <th className="p-2 text-right bg-slate-700 text-purple-200">REV</th>
+                                    <th className="p-2 text-right bg-slate-700 text-purple-200">ADR</th>
+                                    <th className="p-2 text-right bg-slate-700 text-purple-200">Occ%</th>
+
+                                    <th className="p-2 text-right border-l border-yellow-600 bg-slate-900 text-yellow-200">RN</th>
+                                    <th className="p-2 text-right bg-slate-900 text-yellow-200">REV</th>
+                                    <th className="p-2 text-right bg-slate-900 text-yellow-200">ADR</th>
+                                    <th className="p-2 text-right bg-slate-900 text-yellow-200">Occ%</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-200 dark:divide-white/5">
                                 {activeMonths.map(m => {
-                                    const c = cyMonth[m.month]
-                                    const p = pyMonth[m.month]
+                                    const c = cyOtbMonth[m.month]
+                                    const pOtb = pyOtbMonth[m.month]
+                                    const pAct = pyActMonth[m.month]
                                     const season = getSeasonType(m.month)
                                     const sc = SEASON_CONFIG[season]
                                     return (
                                         <tr key={m.month} className={`${sc.bgRow} ${sc.bgRowDark} ${sc.borderL} hover:brightness-95 dark:hover:brightness-110 transition-all`}>
                                             <td className="p-2 font-bold text-slate-900 dark:text-white">{monthNamesShort[m.month]}</td>
-                                            {/* Prev year */}
-                                            <td className="p-2 text-right text-slate-600 dark:text-slate-400 font-mono border-l border-slate-200 dark:border-white/5">{fmt(p.roomNights)}</td>
-                                            <td className="p-2 text-right text-slate-600 dark:text-slate-400 font-mono">{fmt(p.bedNights)}</td>
-                                            <td className="p-2 text-right text-slate-600 dark:text-slate-400 font-mono">{pct(p.occupancy)}</td>
-                                            <td className="p-2 text-right text-slate-600 dark:text-slate-400 font-mono">{fmtEur(p.revenueEur)}</td>
-                                            <td className="p-2 text-right text-slate-600 dark:text-slate-400 font-mono">{fmtEur(p.adr)}</td>
-                                            <td className="p-2 text-right text-slate-600 dark:text-slate-400 font-mono">{fmtEur(p.revpar)}</td>
-                                            {/* Current year */}
+
+                                            {/* Prev year Final */}
+                                            <td className="p-2 text-right text-slate-600 dark:text-slate-400 font-mono border-l border-slate-200 dark:border-white/5">{fmt(pAct.roomNights)}</td>
+                                            <td className="p-2 text-right text-slate-600 dark:text-slate-400 font-mono">{showCurrency === 'EUR' ? fmtEur(pAct.revenueEur) : fmtTry(pAct.revenue)}</td>
+                                            <td className="p-2 text-right text-slate-600 dark:text-slate-400 font-mono">{showCurrency === 'EUR' ? fmtEur(pAct.adr) : fmtTry(pAct.adr * exchangeRates.EUR_TO_TRY)}</td>
+                                            <td className="p-2 text-right text-slate-600 dark:text-slate-400 font-mono">{pct(pAct.occupancy)}</td>
+
+                                            {/* Prev year OTB */}
+                                            <td className="p-2 text-right text-slate-700 dark:text-slate-300 font-mono font-medium border-l border-slate-200 dark:border-white/10 bg-black/5">{fmt(pOtb.roomNights)}</td>
+                                            <td className="p-2 text-right text-slate-700 dark:text-slate-300 font-mono bg-black/5">{showCurrency === 'EUR' ? fmtEur(pOtb.revenueEur) : fmtTry(pOtb.revenue)}</td>
+                                            <td className="p-2 text-right text-slate-700 dark:text-slate-300 font-mono bg-black/5">{showCurrency === 'EUR' ? fmtEur(pOtb.adr) : fmtTry(pOtb.adr * exchangeRates.EUR_TO_TRY)}</td>
+                                            <td className="p-2 text-right text-slate-700 dark:text-slate-300 font-mono bg-black/5">{pct(pOtb.occupancy)}</td>
+
+                                            {/* Current year OTB */}
                                             <td className="p-2 text-right text-slate-900 dark:text-white font-mono font-bold border-l border-amber-200 dark:border-amber-500/20">{fmt(c.roomNights)}</td>
-                                            <td className="p-2 text-right text-slate-900 dark:text-white font-mono font-bold">{fmt(c.bedNights)}</td>
+                                            <td className="p-2 text-right text-slate-900 dark:text-white font-mono font-bold">{showCurrency === 'EUR' ? fmtEur(c.revenueEur) : fmtTry(c.revenue)}</td>
+                                            <td className="p-2 text-right text-slate-900 dark:text-white font-mono font-bold">{showCurrency === 'EUR' ? fmtEur(c.adr) : fmtTry(c.adr * exchangeRates.EUR_TO_TRY)}</td>
                                             <td className="p-2 text-right font-mono font-bold">
-                                                <span className={c.occupancy > p.occupancy ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}>
+                                                <span className={c.roomNights > pOtb.roomNights ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}>
                                                     {pct(c.occupancy)}
                                                 </span>
                                             </td>
-                                            <td className="p-2 text-right text-slate-900 dark:text-white font-mono font-bold">{fmtEur(c.revenueEur)}</td>
-                                            <td className="p-2 text-right text-slate-900 dark:text-white font-mono font-bold">{fmtEur(c.adr)}</td>
-                                            <td className="p-2 text-right text-slate-900 dark:text-white font-mono font-bold">{fmtEur(c.revpar)}</td>
                                         </tr>
                                     )
                                 })}
                             </tbody>
                             <tfoot>
-                                <tr className="bg-slate-900 dark:bg-slate-800 text-white font-bold text-xs">
-                                    <td className="p-2">{t.managementReports.total}</td>
-                                    <td className="p-2 text-right font-mono border-l border-slate-700">{fmt(pyTotal.roomNights)}</td>
-                                    <td className="p-2 text-right font-mono">{fmt(pyTotal.bedNights)}</td>
-                                    <td className="p-2 text-right font-mono">{pct(pyTotal.capacity > 0 ? pyTotal.roomNights / pyTotal.capacity : 0)}</td>
-                                    <td className="p-2 text-right font-mono">{fmtEur(pyTotal.revenueEur)}</td>
-                                    <td className="p-2 text-right font-mono">{fmtEur(pyTotal.roomNights > 0 ? pyTotal.revenueEur / pyTotal.roomNights : 0)}</td>
-                                    <td className="p-2 text-right font-mono">{fmtEur(pyTotal.capacity > 0 ? pyTotal.revenueEur / pyTotal.capacity : 0)}</td>
-                                    <td className="p-2 text-right font-mono border-l border-amber-600">{fmt(cyTotal.roomNights)}</td>
-                                    <td className="p-2 text-right font-mono">{fmt(cyTotal.bedNights)}</td>
-                                    <td className="p-2 text-right font-mono">{pct(cyTotal.capacity > 0 ? cyTotal.roomNights / cyTotal.capacity : 0)}</td>
-                                    <td className="p-2 text-right font-mono">{fmtEur(cyTotal.revenueEur)}</td>
-                                    <td className="p-2 text-right font-mono">{fmtEur(cyTotal.roomNights > 0 ? cyTotal.revenueEur / cyTotal.roomNights : 0)}</td>
-                                    <td className="p-2 text-right font-mono">{fmtEur(cyTotal.capacity > 0 ? cyTotal.revenueEur / cyTotal.capacity : 0)}</td>
-                                </tr>
+                                {(() => {
+                                    const sum = (arr: any[], key: string) => arr.reduce((acc, obj) => acc + obj[key], 0);
+
+                                    const cyRn = sum(cyOtbMonth, 'roomNights');
+                                    const cyRevEur = sum(cyOtbMonth, 'revenueEur');
+                                    const cyRev = sum(cyOtbMonth, 'revenue');
+                                    const cyCap = sum(cyOtbMonth, 'daysInMonth') * TOTAL_ROOMS;
+
+                                    const poRn = sum(pyOtbMonth, 'roomNights');
+                                    const poRevEur = sum(pyOtbMonth, 'revenueEur');
+                                    const poRev = sum(pyOtbMonth, 'revenue');
+                                    const poCap = sum(pyOtbMonth, 'daysInMonth') * TOTAL_ROOMS;
+
+                                    const paRn = sum(pyActMonth, 'roomNights');
+                                    const paRevEur = sum(pyActMonth, 'revenueEur');
+                                    const paRev = sum(pyActMonth, 'revenue');
+                                    const paCap = sum(pyActMonth, 'daysInMonth') * TOTAL_ROOMS;
+
+                                    return (
+                                        <tr className="bg-slate-900 dark:bg-slate-800 text-white font-bold text-xs">
+                                            <td className="p-2">{t.managementReports.total}</td>
+                                            {/* PA */}
+                                            <td className="p-2 text-right font-mono border-l border-slate-700">{fmt(paRn)}</td>
+                                            <td className="p-2 text-right font-mono">{showCurrency === 'EUR' ? fmtEur(paRevEur) : fmtTry(paRev)}</td>
+                                            <td className="p-2 text-right font-mono">{showCurrency === 'EUR' ? fmtEur(paRn > 0 ? paRevEur / paRn : 0) : fmtTry(paRn > 0 ? paRev / paRn : 0)}</td>
+                                            <td className="p-2 text-right font-mono">{pct(paCap > 0 ? paRn / paCap : 0)}</td>
+
+                                            {/* PO */}
+                                            <td className="p-2 text-right font-mono border-l border-slate-700 text-purple-200">{fmt(poRn)}</td>
+                                            <td className="p-2 text-right font-mono text-purple-200">{showCurrency === 'EUR' ? fmtEur(poRevEur) : fmtTry(poRev)}</td>
+                                            <td className="p-2 text-right font-mono text-purple-200">{showCurrency === 'EUR' ? fmtEur(poRn > 0 ? poRevEur / poRn : 0) : fmtTry(poRn > 0 ? poRev / poRn : 0)}</td>
+                                            <td className="p-2 text-right font-mono text-purple-200">{pct(poCap > 0 ? poRn / poCap : 0)}</td>
+
+                                            {/* CY */}
+                                            <td className="p-2 text-right font-mono border-l border-amber-600 text-yellow-200">{fmt(cyRn)}</td>
+                                            <td className="p-2 text-right font-mono text-yellow-200">{showCurrency === 'EUR' ? fmtEur(cyRevEur) : fmtTry(cyRev)}</td>
+                                            <td className="p-2 text-right font-mono text-yellow-200">{showCurrency === 'EUR' ? fmtEur(cyRn > 0 ? cyRevEur / cyRn : 0) : fmtTry(cyRn > 0 ? cyRev / cyRn : 0)}</td>
+                                            <td className="p-2 text-right font-mono text-yellow-200">{pct(cyCap > 0 ? cyRn / cyCap : 0)}</td>
+                                        </tr>
+                                    );
+                                })()}
                             </tfoot>
                         </table>
                     </div>
@@ -871,45 +923,36 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
                                     <tr className="bg-red-900 text-white text-[10px] uppercase tracking-wider font-bold">
                                         <th className="p-2 text-left">Ay</th>
                                         <th className="p-2 text-right">RN Fark</th>
-                                        <th className="p-2 text-right">BN Fark</th>
-                                        <th className="p-2 text-right">Occ Fark</th>
                                         <th className="p-2 text-right">REV Fark</th>
                                         <th className="p-2 text-right">ADR Fark</th>
-                                        <th className="p-2 text-right">REVPAR Fark</th>
+                                        <th className="p-2 text-right">Occ Fark</th>
                                         <th className="p-2 text-right border-l border-red-700">RN %</th>
-                                        <th className="p-2 text-right">BN %</th>
-                                        <th className="p-2 text-right">Occ %</th>
                                         <th className="p-2 text-right">REV %</th>
                                         <th className="p-2 text-right">ADR %</th>
-                                        <th className="p-2 text-right">REVPAR %</th>
+                                        <th className="p-2 text-right">Occ %</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-200 dark:divide-white/5">
                                     {activeMonths.map(m => {
-                                        const c = cyMonth[m.month]
-                                        const p = pyMonth[m.month]
+                                        const c = cyOtbMonth[m.month]
+                                        const p = pyOtbMonth[m.month]
                                         const rnDiff = c.roomNights - p.roomNights
-                                        const bnDiff = c.bedNights - p.bedNights
                                         const occDiff = c.occupancy - p.occupancy
                                         const revDiff = c.revenueEur - p.revenueEur
                                         const adrDiff = c.adr - p.adr
-                                        const revparDiff = c.revpar - p.revpar
                                         const colorize = (v: number) => v >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'
                                         return (
                                             <tr key={m.month} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
                                                 <td className="p-2 font-bold text-slate-900 dark:text-white">{monthNamesShort[m.month]}</td>
-                                                <td className={`p-2 text-right font-mono ${colorize(rnDiff)}`}>{rnDiff >= 0 ? '+' : ''}{fmt(rnDiff)}</td>
-                                                <td className={`p-2 text-right font-mono ${colorize(bnDiff)}`}>{bnDiff >= 0 ? '+' : ''}{fmt(bnDiff)}</td>
-                                                <td className={`p-2 text-right font-mono ${colorize(occDiff)}`}>{(occDiff * 100).toFixed(2)}%</td>
-                                                <td className={`p-2 text-right font-mono ${colorize(revDiff)}`}>{revDiff >= 0 ? '+' : ''}{fmtEur(revDiff)}</td>
-                                                <td className={`p-2 text-right font-mono ${colorize(adrDiff)}`}>{adrDiff >= 0 ? '+' : ''}{fmtEur(adrDiff)}</td>
-                                                <td className={`p-2 text-right font-mono ${colorize(revparDiff)}`}>{revparDiff >= 0 ? '+' : ''}{fmtEur(revparDiff)}</td>
-                                                <td className={`p-2 text-right font-mono border-l border-slate-200 dark:border-white/5 ${colorize(rnDiff)}`}>{diffPct(c.roomNights, p.roomNights)}</td>
-                                                <td className={`p-2 text-right font-mono ${colorize(bnDiff)}`}>{diffPct(c.bedNights, p.bedNights)}</td>
-                                                <td className={`p-2 text-right font-mono ${colorize(occDiff)}`}>{diffPct(c.occupancy, p.occupancy)}</td>
-                                                <td className={`p-2 text-right font-mono ${colorize(revDiff)}`}>{diffPct(c.revenueEur, p.revenueEur)}</td>
-                                                <td className={`p-2 text-right font-mono ${colorize(adrDiff)}`}>{diffPct(c.adr, p.adr)}</td>
-                                                <td className={`p-2 text-right font-mono ${colorize(revparDiff)}`}>{diffPct(c.revpar, p.revpar)}</td>
+                                                <td className={`p-2 text-right font-mono font-medium ${colorize(rnDiff)}`}>{rnDiff > 0 ? '+' : ''}{fmt(rnDiff)}</td>
+                                                <td className={`p-2 text-right font-mono font-medium ${colorize(revDiff)}`}>{revDiff > 0 ? '+' : ''}{fmtEur(revDiff)}</td>
+                                                <td className={`p-2 text-right font-mono font-medium ${colorize(adrDiff)}`}>{adrDiff > 0 ? '+' : ''}{fmtEur(adrDiff)}</td>
+                                                <td className={`p-2 text-right font-mono font-medium ${colorize(occDiff)}`}>{occDiff > 0 ? '+' : ''}{pct(occDiff)}</td>
+
+                                                <td className="p-2 text-right font-mono font-bold border-l border-red-700/20">{diffPct(c.roomNights, p.roomNights)}</td>
+                                                <td className="p-2 text-right font-mono font-bold">{diffPct(c.revenueEur, p.revenueEur)}</td>
+                                                <td className="p-2 text-right font-mono font-bold">{diffPct(c.adr, p.adr)}</td>
+                                                <td className="p-2 text-right font-mono font-bold">{diffPct(c.occupancy, p.occupancy)}</td>
                                             </tr>
                                         )
                                     })}

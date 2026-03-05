@@ -43,7 +43,7 @@ async function getCachedReservations() {
             currency: r.currency,
             roomCount: r.roomCount,
             status: r.status,
-            saleDate: r.lastUpdate.slice(0, 10),
+            saleDate: r.reservationDate.slice(0, 10),
             country: r.country,
         }))
         return { reservations, lastUpdated: new Date().toISOString(), error: null }
@@ -88,7 +88,7 @@ export default async function StatisticsPage({ params }: { params: Promise<{ loc
             currency: r.currency,
             roomCount: r.roomCount,
             status: r.status,
-            saleDate: r.lastUpdate.slice(0, 10),
+            saleDate: r.reservationDate.slice(0, 10),
             country: r.country,
         }))
 
@@ -113,7 +113,7 @@ export default async function StatisticsPage({ params }: { params: Promise<{ loc
             id: r.id,
             totalPrice: r.totalPrice,
             currency: r.currency,
-            saleDate: r.lastUpdate.slice(0, 10),
+            saleDate: r.reservationDate.slice(0, 10),
             checkIn: r.checkIn.slice(0, 10),
             nights: Math.max(1, Math.ceil(
                 (new Date(r.checkOut).getTime() - new Date(r.checkIn).getTime()) / 86400000

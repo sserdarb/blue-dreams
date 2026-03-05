@@ -196,10 +196,11 @@ async function fetchCountries(): Promise<Map<number, string>> {
         if (res.ok) {
             const data = await res.json()
             const map = new Map<number, string>()
-            if (Array.isArray(data)) {
-                for (const c of data) {
-                    const id = c['country-id'] || c['id'] || c['countryId']
-                    const name = c['country-name'] || c['name'] || c['countryName'] || ''
+            const list = Array.isArray(data) ? data : (data?.result || data?.data || [])
+            if (Array.isArray(list)) {
+                for (const c of list) {
+                    const id = c['country-id'] || c['id'] || c['countryId'] || c['nation-id'] || c['nation_id'] || c['NationId']
+                    const name = c['country-name'] || c['name'] || c['countryName'] || c['nation-name'] || c['NationName'] || ''
                     if (id && name) map.set(Number(id), String(name))
                 }
             }
@@ -216,7 +217,7 @@ async function fetchCountries(): Promise<Map<number, string>> {
 
 function resolveCountry(guest: Record<string, unknown>, countryMap: Map<number, string>): string {
     // 1. Try country-id lookup first
-    const countryId = guest['country-id'] || guest['countryId'] || guest['country_id']
+    const countryId = guest['country-id'] || guest['countryId'] || guest['country_id'] || guest['nation-id'] || guest['nationId'] || guest['NationId'] || guest['nationality_id'] || guest['nationality-id']
     if (countryId && countryMap.size > 0) {
         const name = countryMap.get(Number(countryId))
         if (name) return name
@@ -225,7 +226,7 @@ function resolveCountry(guest: Record<string, unknown>, countryMap: Map<number, 
     const nat = guest['country'] as string
     if (nat && nat !== 'Unknown' && nat.length > 1) return nat
     // Try various other location identifiers found in Elektra API iterations
-    const genericFields = ['country', 'country-name', 'nationality', 'client-country', 'guest-country'];
+    const genericFields = ['country', 'country-name', 'nationality', 'client-country', 'guest-country', 'nation', 'nation-name'];
     for (const f of genericFields) {
         if (guest[f] && typeof guest[f] === 'string' && (guest[f] as string).length > 1 && guest[f] !== 'Unknown') {
             return guest[f] as string;
@@ -652,7 +653,7 @@ export const ElektraService = {
     getReservations: async (startDate: Date, endDate: Date, status?: string): Promise<Reservation[]> => {
         const from = startDate.toISOString().split('T')[0]
         const to = endDate.toISOString().split('T')[0]
-        const statuses = status ? [status] : ['Reservation', 'Waiting', 'InHouse', 'CheckOut']
+        const statuses = status ? [status] : ['Reservation', 'Waiting', 'InHouse', 'CheckOut', 'Cancelled']
         const all: Reservation[] = []
         for (const s of statuses) {
             try {
