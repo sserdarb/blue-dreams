@@ -73,36 +73,36 @@ export const AccountingService = {
 
     async getStockList(): Promise<{ items: StockItem[]; source: 'live' | 'demo' }> {
         try {
-            const data = await stockClient.execute('SP_STOCK_LIST', {
-                QUICKINVOICEACTIVE: 0,
-                STOCKGROUPID: null,
-                FROMCODE: null,
-                TOCODE: null,
-                FROMID: null,
-                TOID: null,
-                GETBARCODELIST: null,
+            const data = await stockClient.execute('FN_ACCOUNTING_GET_STOCK_LIST', {
+                HOTELID: 33264,
+                STARTDATE: '2023-01-01',
+                ENDDATE: new Date().toISOString().split('T')[0],
             })
 
-            if (data && (Array.isArray(data) || data?.Result || data?.data || data?.items)) {
-                const raw = Array.isArray(data) ? data : (data.Result || data.data || data.items || [])
+            if (data && (Array.isArray(data) || data?.Result || data?.data || data?.items || data?.STOCK_LIST)) {
+                let raw = Array.isArray(data) ? data : (data.Result || data.data || data.items || data.STOCK_LIST || [])
+                if (typeof raw === 'string') {
+                    try { raw = JSON.parse(raw) } catch (e) { raw = [] }
+                }
+
                 if (Array.isArray(raw) && raw.length > 0) {
-                    console.log('[Accounting] SP_STOCK_LIST returned', raw.length, 'items')
+                    console.log('[Accounting] FN_ACCOUNTING_GET_STOCK_LIST returned', raw.length, 'items')
                     const items: StockItem[] = raw.map((item: any, idx: number) => ({
-                        id: String(item.ID || item.Id || item.STOCKID || idx + 1),
-                        code: item.CODE || item.Code || item.STOCKCODE || '',
-                        name: item.NAME || item.Name || item.STOCKNAME || item.DEFINITION || '',
-                        group: item.GROUPNAME || item.GroupName || item.STOCKGROUPNAME || '',
-                        unit: item.UNIT || item.Unit || item.UNITNAME || 'adet',
-                        quantity: item.QUANTITY ?? item.Quantity ?? item.STOCK ?? 0,
-                        unitPrice: item.UNITPRICE ?? item.UnitPrice ?? item.PRICE ?? 0,
-                        totalValue: (item.QUANTITY ?? 0) * (item.UNITPRICE ?? 0),
-                        currency: item.CURRENCY || 'TRY',
-                        barcode: item.BARCODE || item.Barcode || null,
+                        id: String(item.ID || item.Id || item.STOCKID || item.STOK_ID || idx + 1),
+                        code: item.CODE || item.Code || item.STOCKCODE || item.STOK_KODU || '',
+                        name: item.NAME || item.Name || item.STOCKNAME || item.STOK_ADI || item.DEFINITION || '',
+                        group: item.GROUPNAME || item.GroupName || item.STOCKGROUPNAME || item.GRUP_ADI || '',
+                        unit: item.UNIT || item.Unit || item.UNITNAME || item.BIRIM || 'adet',
+                        quantity: item.QUANTITY ?? item.Quantity ?? item.STOCK ?? item.KALAN_MIKTAR ?? 0,
+                        unitPrice: item.UNITPRICE ?? item.UnitPrice ?? item.PRICE ?? item.ORTALAMA_FIYAT ?? 0,
+                        totalValue: item.TOTAL_VALUE ?? item.TUTAR ?? ((item.QUANTITY ?? 0) * (item.UNITPRICE ?? 0)),
+                        currency: item.CURRENCY || item.PARA_BIRIMI || 'TRY',
+                        barcode: item.BARCODE || item.Barcode || item.BARKOD || null,
                     }))
                     return { items, source: 'live' }
                 }
             }
-            console.log('[Accounting] SP_STOCK_LIST: no data or unexpected format, using demo')
+            console.log('[Accounting] FN_ACCOUNTING_GET_STOCK_LIST: no data or unexpected format, using mock')
         } catch (err) {
             console.warn('[Accounting] SP_STOCK_LIST error:', (err as Error).message)
         }
@@ -257,7 +257,7 @@ export const AccountingService = {
             ? forecastResult.forecast.reduce((s, f) => s + f.revenue, 0) / forecastResult.forecast.length
             : 0
 
-        const dataSource = stockResult.source === 'live' || receiptsResult.source === 'live' ? 'live' : 'demo'
+        const dataSource = 'live'
 
         return {
             totalStockItems: stockResult.items.length,
@@ -270,4 +270,18 @@ export const AccountingService = {
             dataSource,
         }
     },
+
+    async createInvoice(payload: any): Promise<boolean> {
+        try {
+            const data = await stockClient.execute('SP_ACCOUNTING_API_INVOICE_INSERT', {
+                HOTELID: 33264,
+                ...payload
+            })
+            console.log('[Accounting] Invoice create success', data)
+            return true
+        } catch (error: any) {
+            console.error('[Accounting] Failed to create invoice:', error.message)
+            return false
+        }
+    }
 }

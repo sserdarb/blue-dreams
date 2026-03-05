@@ -11,6 +11,7 @@ import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip,
     ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, AreaChart, Area, Legend
 } from 'recharts'
+import { createInvoiceAction } from './actions'
 import type { StockItem, AccountingReceipt, ForecastDay, AccountingKPI } from '@/lib/services/accounting'
 
 // ─── Types ─────────────────────────────────────────────────────
@@ -49,7 +50,33 @@ export default function AccountingClient({ data, error }: Props) {
     const [receiptSearch, setReceiptSearch] = useState('')
     const [receiptType, setReceiptType] = useState('')
     const [receiptPage, setReceiptPage] = useState(0)
+    const [isSyncing, setIsSyncing] = useState(false)
     const PAGE_SIZE = 20
+
+    const handleTestSync = async () => {
+        setIsSyncing(true)
+        try {
+            // Demo invoice payload to test ERP write capability
+            const mockInvoice = {
+                Ficheno: "TEST-INV-001",
+                Date: new Date().toISOString().split('T')[0],
+                NetTutar: 2500,
+                KdvTutar: 500,
+                ToplamTutar: 3000,
+                Babs: "B",
+                CariHesapKodu: "120.01.001",
+                CariHesapAdi: "Özgür Et Gıda",
+            }
+            const res = await createInvoiceAction(mockInvoice)
+            if (res.success) {
+                alert("ERP faturası başarıyla oluşturuldu/senkronize edildi!")
+            } else {
+                alert("Hata: " + res.error)
+            }
+        } finally {
+            setIsSyncing(false)
+        }
+    }
 
     if (error || !data) {
         return (
@@ -243,18 +270,27 @@ export default function AccountingClient({ data, error }: Props) {
             {/* ═══════ TAB 2: Receipts ═══════ */}
             {tab === 'receipts' && (
                 <div className="space-y-4">
-                    <div className="flex flex-col sm:flex-row gap-3">
-                        <div className="relative flex-1">
+                    <div className="flex flex-col sm:flex-row items-center gap-3">
+                        <div className="relative flex-1 w-full">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                             <input type="text" value={receiptSearch} onChange={e => { setReceiptSearch(e.target.value); setReceiptPage(0) }}
                                 placeholder="Fiş ara (açıklama, numara, hesap)..."
-                                className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm" />
+                                className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm outline-none" />
                         </div>
-                        <select value={receiptType} onChange={e => { setReceiptType(e.target.value); setReceiptPage(0) }}
-                            className="px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm">
-                            <option value="">Tüm Fiş Tipleri</option>
-                            {receiptTypes.map(t => <option key={t} value={t}>{t}</option>)}
-                        </select>
+                        <div className="flex w-full sm:w-auto items-center gap-3">
+                            <select value={receiptType} onChange={e => { setReceiptType(e.target.value); setReceiptPage(0) }}
+                                className="px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm w-full sm:w-auto outline-none">
+                                <option value="">Tüm Fiş Tipleri</option>
+                                {receiptTypes.map(t => <option key={t} value={t}>{t}</option>)}
+                            </select>
+                            <button
+                                onClick={handleTestSync}
+                                disabled={isSyncing || data.dataSource !== 'live'}
+                                className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap min-w-max"
+                            >
+                                {isSyncing ? 'İşleniyor...' : 'Test Fişi Gönder'}
+                            </button>
+                        </div>
                     </div>
 
                     <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">

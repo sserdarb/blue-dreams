@@ -11,6 +11,7 @@ import {
     AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
     ResponsiveContainer, Legend, Cell, PieChart, Pie
 } from 'recharts'
+import { createPurchaseOrderAction } from './actions'
 import type {
     PurchaseOrder, Vendor, InventoryNeed, PriceTrend, PurchasePerformance
 } from '@/lib/services/purchasing'
@@ -60,7 +61,32 @@ export default function PurchasingClient({ data, error }: Props) {
     const [categoryFilter, setCategoryFilter] = useState('all')
     const [selectedPriceTrend, setSelectedPriceTrend] = useState(0)
     const [orderPage, setOrderPage] = useState(0)
+    const [isSyncing, setIsSyncing] = useState(false)
     const PAGE_SIZE = 15
+
+    const handleTestSync = async () => {
+        setIsSyncing(true)
+        try {
+            // Demo order payload to test ERP write
+            const mockOrder = {
+                "HOTELID": 20854,
+                "TDATE": new Date().toISOString().split('T')[0] + " 00:00:00.000",
+                "SENDERSTORENAME": "Ana Depo",
+                "RECIPIENTSTORENAME": "Lobby Mutfak",
+                "TOTALPRICE": 1500,
+                "TYPENAME": "Test Order via UI",
+                "ISMANUEL": true
+            }
+            const res = await createPurchaseOrderAction(mockOrder)
+            if (res.success) {
+                alert("ERP siparişi başarıyla oluşturuldu/senkronize edildi!")
+            } else {
+                alert("Hata: " + res.error)
+            }
+        } finally {
+            setIsSyncing(false)
+        }
+    }
 
     if (error || !data) {
         return <ModuleOffline moduleName="Satın Alma & Lojistik" dataSource="purchasing_erp" offlineReason={error || 'Veri yüklenemedi'} />
@@ -335,36 +361,45 @@ export default function PurchasingClient({ data, error }: Props) {
                     {activeTab === 'orders' && (
                         <div className="space-y-4">
                             {/* Filters */}
-                            <div className="flex flex-wrap items-center gap-3">
-                                <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-700/50 rounded-lg px-3 py-2 flex-1 min-w-[200px]">
-                                    <Search size={16} className="text-slate-400" />
-                                    <input
-                                        type="text"
-                                        placeholder="Sipariş, tedarikçi veya ürün ara..."
-                                        value={search}
-                                        onChange={e => { setSearch(e.target.value); setOrderPage(0) }}
-                                        className="bg-transparent text-sm text-slate-700 dark:text-slate-200 outline-none w-full"
-                                    />
+                            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3">
+                                <div className="flex flex-wrap items-center gap-3">
+                                    <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-700/50 rounded-lg px-3 py-2 flex-1 min-w-[200px]">
+                                        <Search size={16} className="text-slate-400" />
+                                        <input
+                                            type="text"
+                                            placeholder="Sipariş, tedarikçi veya ürün ara..."
+                                            value={search}
+                                            onChange={e => { setSearch(e.target.value); setOrderPage(0) }}
+                                            className="bg-transparent text-sm text-slate-700 dark:text-slate-200 outline-none w-full"
+                                        />
+                                    </div>
+                                    <select
+                                        value={statusFilter}
+                                        onChange={e => { setStatusFilter(e.target.value); setOrderPage(0) }}
+                                        className="bg-slate-100 dark:bg-slate-700/50 text-sm text-slate-700 dark:text-slate-200 rounded-lg px-3 py-2 border-none outline-none"
+                                    >
+                                        <option value="all">Tüm Durumlar</option>
+                                        <option value="Teslim Edildi">Teslim Edildi</option>
+                                        <option value="Beklemede">Beklemede</option>
+                                        <option value="Kısmi Teslim">Kısmi Teslim</option>
+                                        <option value="İptal">İptal</option>
+                                    </select>
+                                    <select
+                                        value={deptFilter}
+                                        onChange={e => { setDeptFilter(e.target.value); setOrderPage(0) }}
+                                        className="bg-slate-100 dark:bg-slate-700/50 text-sm text-slate-700 dark:text-slate-200 rounded-lg px-3 py-2 border-none outline-none"
+                                    >
+                                        <option value="all">Tüm Departmanlar</option>
+                                        {departments.map(d => <option key={d} value={d}>{d}</option>)}
+                                    </select>
                                 </div>
-                                <select
-                                    value={statusFilter}
-                                    onChange={e => { setStatusFilter(e.target.value); setOrderPage(0) }}
-                                    className="bg-slate-100 dark:bg-slate-700/50 text-sm text-slate-700 dark:text-slate-200 rounded-lg px-3 py-2 border-none outline-none"
+                                <button
+                                    onClick={handleTestSync}
+                                    disabled={isSyncing || !isLive}
+                                    className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 whitespace-nowrap"
                                 >
-                                    <option value="all">Tüm Durumlar</option>
-                                    <option value="Teslim Edildi">Teslim Edildi</option>
-                                    <option value="Beklemede">Beklemede</option>
-                                    <option value="Kısmi Teslim">Kısmi Teslim</option>
-                                    <option value="İptal">İptal</option>
-                                </select>
-                                <select
-                                    value={deptFilter}
-                                    onChange={e => { setDeptFilter(e.target.value); setOrderPage(0) }}
-                                    className="bg-slate-100 dark:bg-slate-700/50 text-sm text-slate-700 dark:text-slate-200 rounded-lg px-3 py-2 border-none outline-none"
-                                >
-                                    <option value="all">Tüm Departmanlar</option>
-                                    {departments.map(d => <option key={d} value={d}>{d}</option>)}
-                                </select>
+                                    {isSyncing ? 'Senkronize Ediliyor...' : 'Test Siparişi Senkronize Et'}
+                                </button>
                             </div>
 
                             {/* Orders Table */}

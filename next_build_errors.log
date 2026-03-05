@@ -1,0 +1,58 @@
+   Ôû▓ Next.js 15.1.0
+   - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+Failed to compile.
+
+./app/[locale]/admin/accounting/AccountingClient.tsx
+Module parse failed: Identifier 'receiptType' has already been declared (53:11)
+File was processed with these loaders:
+ * ./node_modules/next/dist/build/webpack/loaders/next-flight-client-module-loader.js
+ * ./node_modules/next/dist/build/webpack/loaders/next-swc-loader.js
+You may need an additional loader to handle the result of these loaders.
+|     const [receiptSearch, setReceiptSearch] = useState('');
+|     const [receiptType, setReceiptType] = useState('');
+>     const [receiptType, setReceiptType] = useState('');
+|     const [receiptPage, setReceiptPage] = useState(0);
+|     const [isSyncing, setIsSyncing] = useState(false);
+
+Import trace for requested module:
+./app/[locale]/admin/accounting/AccountingClient.tsx
+
+./app/[locale]/admin/purchasing/PurchasingClient.tsx
+Module parse failed: Identifier 'orderPage' has already been declared (55:11)
+File was processed with these loaders:
+ * ./node_modules/next/dist/build/webpack/loaders/next-flight-client-module-loader.js
+ * ./node_modules/next/dist/build/webpack/loaders/next-swc-loader.js
+You may need an additional loader to handle the result of these loaders.
+|     const [selectedPriceTrend, setSelectedPriceTrend] = useState(0);
+|     const [orderPage, setOrderPage] = useState(0);
+>     const [orderPage, setOrderPage] = useState(0);
+|     const [isSyncing, setIsSyncing] = useState(false);
+|     const PAGE_SIZE = 15;
+
+Import trace for requested module:
+./app/[locale]/admin/purchasing/PurchasingClient.tsx
+
+./lib/services/finance.ts
+Error:   x Expected ':', got 'currentDataSource'
+     ,-[C:\Users\sserd\OneDrive\Belgeler\Antigravity\blue-dreams-fix\lib\services\finance.ts:363:1]
+ 360 |                                 balance: (acc.DEBIT || 0) - (acc.CREDIT || 0),
+ 361 |                                 group: (acc.CODE || '').startsWith('6') ? 'Gelir'
+ 362 |                                     : (acc.CODE || '').startsWith('7') ? 'Gider'
+ 363 |         currentDataSource = 'live';
+     :         ^^^^^^^^^^^^^^^^^
+ 364 |                                 if(erpStock.isConfigured) {
+ 365 |                                 try {
+ 365 |                                     const result = await erpStock.execute('SP_EASYPMS_ACCOUNT_TRIALBALANCE4', {
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./lib/services/finance.ts
+./app/[locale]/admin/reports/page.tsx
+
+
+> Build failed because of webpack errors

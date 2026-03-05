@@ -360,152 +360,126 @@ export const FinanceService = {
                                 balance: (acc.DEBIT || 0) - (acc.CREDIT || 0),
                                 group: (acc.CODE || '').startsWith('6') ? 'Gelir'
                                     : (acc.CODE || '').startsWith('7') ? 'Gider'
-        currentDataSource = 'live';
-                                if(erpStock.isConfigured) {
-                                try {
-                                    const result = await erpStock.execute('SP_EASYPMS_ACCOUNT_TRIALBALANCE4', {
-                                        FROMDATE: fromDate,
-                                        TODATE: toDate,
-                                        FROMCODE: '',
-                                        TOCODE: 'zzz',
-                                    })
-                if(result && Array.isArray(result)) {
-                                const parsed = result.flat?.() ?? result
-                                const returnData = parsed.find?.((r: any) => r?.Return || r?.BODY)
-                                if (returnData) {
-                                    const body = typeof (returnData.Return || returnData.BODY) === 'string'
-                                        ? JSON.parse(returnData.Return || returnData.BODY)
-                                        : (returnData.Return || returnData.BODY)
-                                    if (body?.ACCOUNTS && Array.isArray(body.ACCOUNTS)) {
-                                        currentDataSource = 'live'
-                                        return body.ACCOUNTS.map((acc: any) => ({
-                                            accountCode: acc.CODE || acc.AccountCode || '',
-                                            accountName: acc.NAME || acc.AccountName || '',
-                                            debit: acc.DEBIT || 0,
-                                            credit: acc.CREDIT || 0,
-                                            balance: (acc.DEBIT || 0) - (acc.CREDIT || 0),
-                                            group: (acc.CODE || '').startsWith('6') ? 'Gelir'
-                                                : (acc.CODE || '').startsWith('7') ? 'Gider'
-                                                    : parseInt(acc.CODE || '0') < 300 ? 'Aktif' : 'Pasif',
-                                        }))
-                                    }
-                                }
-                            }
-                        } catch (err) {
-                            console.warn('[Finance] Trial balance error:', (err as Error).message)
-                        }
-                    }
-
-                    if (isDemo) {
-                        currentDataSource = 'demo'
-                        return generateTrialBalance()
-                    }
-                    currentDataSource = 'live'
-                    return []
-                },
-
-    // ── Daily Payments (Tahsilat) ────────────────────────────────
-    async getDailyPayments(date: string): Promise < PaymentRow[] > {
-                    const isDemo = await this.checkSettings();
-                    currentDataSource = 'live';
-                    if(erpFront.isConfigured) {
-                    try {
-                        const result = await erpFront.request({
-                            Action: 'Function',
-                            Object: 'FN_EASYPMS_HOTELPAYMENT_DAILYACCOUNTING',
-                            Parameters: {
-                                TDATE: date,
-                                DETAIL: 1,
-                                TYPE: 0,
-                                DETAILED_DAILY_PAYMENT_INTEGRATION_ACTIVE: 0,
-                            }
-                        })
-                        if (result && Array.isArray(result)) {
-                            const rows = result.flat?.() ?? result
-                            if (rows.length > 0 && rows[0]?.SORTORDER !== undefined) {
-                                currentDataSource = 'live'
-                                return rows.map((r: any) => ({
-                                    date: r.TDATE || date,
-                                    type: r.TTYPE || '',
-                                    info: r.INFO || '',
-                                    account: r.ACCOUNT || '',
-                                    debit: r.DEBIT || 0,
-                                    credit: r.CREDIT || 0,
-                                    currency: r.CURRENCY || 'TRY',
-                                    currencyRate: r.CURRENCYRATE || 1,
-                                    paymentName: r.PAYMENTNAME || '',
-                                    paymentCode: r.PAYMENTCODE || '',
-                                }))
-                            }
-                        }
-                    } catch (err) {
-                        console.warn('[Finance] Payments error:', (err as Error).message)
-                    }
-                }
-
-                if (isDemo) {
-                    currentDataSource = 'demo'
-                    return generatePayments(date)
-                }
-                currentDataSource = 'live'
-                return []
-            },
-
-    // ── Daily Revenue (Gelir) ────────────────────────────────────
-    async getDailyRevenue(date: string): Promise < RevenueRow[] > {
-                const isDemo = await this.checkSettings();
-                currentDataSource = 'live';
-                if(erpFront.isConfigured) {
-                try {
-                    const result = await erpFront.request({
-                        Action: 'Execute',
-                        Object: 'SP_EASYPMS_DAILYACCOUNTING',
-                        Parameters: {
-                            TDATE: date,
-                            SHOWDEPARTMENTS: 1,
-                            SHOWVATDETAILS: 1,
-                            SHOWCLACCOUNTS: 1,
-                        }
-                    })
-                    if (result && Array.isArray(result)) {
-                        const rows = result.flat?.() ?? result
-                        if (rows.length > 0 && rows[0]?.SORTORDER !== undefined) {
-                            currentDataSource = 'live'
-                            return rows.map((r: any) => ({
-                                date: r.TDATE || date,
-                                type: r.TTYPE || '',
-                                info: r.INFO || '',
-                                departmentId: r.DEPID || 0,
-                                revenueId: r.REVID || 0,
-                                account: r.ACCOUNT || '',
-                                debit: r.DEBIT || 0,
-                                credit: r.CREDIT || 0,
-                                currency: r.CURRENCY || 'TRY',
-                                currencyRate: r.CURRENCYRATE || 1,
-                                expenseCode: r.EXPENSECODE || null,
-                                vat1Percent: r.VAT1PERCENT || 0,
-                                vat2Percent: r.VAT2PERCENT || 0,
+                                        : parseInt(acc.CODE || '0') < 300 ? 'Aktif' : 'Pasif',
                             }))
                         }
                     }
-                } catch (err) {
-                    console.warn('[Finance] Revenue error:', (err as Error).message)
                 }
+            } catch (err) {
+                console.warn('[Finance] Trial balance error:', (err as Error).message)
             }
+        }
 
-            if (isDemo) {
-                currentDataSource = 'demo'
-                return generateRevenue(date)
+        if (isDemo) {
+            currentDataSource = 'demo'
+            return generateTrialBalance()
+        }
+        currentDataSource = 'live'
+        return []
+    },
+
+    // ── Daily Payments (Tahsilat) ────────────────────────────────
+    async getDailyPayments(date: string): Promise<PaymentRow[]> {
+        const isDemo = await this.checkSettings();
+        currentDataSource = 'live';
+        if (erpFront.isConfigured) {
+            try {
+                const result = await erpFront.request({
+                    Action: 'Function',
+                    Object: 'FN_EASYPMS_HOTELPAYMENT_DAILYACCOUNTING',
+                    Parameters: {
+                        TDATE: date,
+                        DETAIL: 1,
+                        TYPE: 0,
+                        DETAILED_DAILY_PAYMENT_INTEGRATION_ACTIVE: 0,
+                    }
+                })
+                if (result && Array.isArray(result)) {
+                    const rows = result.flat?.() ?? result
+                    if (rows.length > 0 && rows[0]?.SORTORDER !== undefined) {
+                        currentDataSource = 'live'
+                        return rows.map((r: any) => ({
+                            date: r.TDATE || date,
+                            type: r.TTYPE || '',
+                            info: r.INFO || '',
+                            account: r.ACCOUNT || '',
+                            debit: r.DEBIT || 0,
+                            credit: r.CREDIT || 0,
+                            currency: r.CURRENCY || 'TRY',
+                            currencyRate: r.CURRENCYRATE || 1,
+                            paymentName: r.PAYMENTNAME || '',
+                            paymentCode: r.PAYMENTCODE || '',
+                        }))
+                    }
+                }
+            } catch (err) {
+                console.warn('[Finance] Payments error:', (err as Error).message)
             }
-            currentDataSource = 'live'
-            return []
-        },
+        }
+
+        if (isDemo) {
+            currentDataSource = 'demo'
+            return generatePayments(date)
+        }
+        currentDataSource = 'live'
+        return []
+    },
+
+    // ── Daily Revenue (Gelir) ────────────────────────────────────
+    async getDailyRevenue(date: string): Promise<RevenueRow[]> {
+        const isDemo = await this.checkSettings();
+        currentDataSource = 'live';
+        if (erpFront.isConfigured) {
+            try {
+                const result = await erpFront.request({
+                    Action: 'Execute',
+                    Object: 'SP_EASYPMS_DAILYACCOUNTING',
+                    Parameters: {
+                        TDATE: date,
+                        SHOWDEPARTMENTS: 1,
+                        SHOWVATDETAILS: 1,
+                        SHOWCLACCOUNTS: 1,
+                    }
+                })
+                if (result && Array.isArray(result)) {
+                    const rows = result.flat?.() ?? result
+                    if (rows.length > 0 && rows[0]?.SORTORDER !== undefined) {
+                        currentDataSource = 'live'
+                        return rows.map((r: any) => ({
+                            date: r.TDATE || date,
+                            type: r.TTYPE || '',
+                            info: r.INFO || '',
+                            departmentId: r.DEPID || 0,
+                            revenueId: r.REVID || 0,
+                            account: r.ACCOUNT || '',
+                            debit: r.DEBIT || 0,
+                            credit: r.CREDIT || 0,
+                            currency: r.CURRENCY || 'TRY',
+                            currencyRate: r.CURRENCYRATE || 1,
+                            expenseCode: r.EXPENSECODE || null,
+                            vat1Percent: r.VAT1PERCENT || 0,
+                            vat2Percent: r.VAT2PERCENT || 0,
+                        }))
+                    }
+                }
+            } catch (err) {
+                console.warn('[Finance] Revenue error:', (err as Error).message)
+            }
+        }
+
+        if (isDemo) {
+            currentDataSource = 'demo'
+            return generateRevenue(date)
+        }
+        currentDataSource = 'live'
+        return []
+    },
 
     // ── Invoice List (Fatura Listesi) ────────────────────────────
-    async getInvoiceList(startDate: string, endDate: string): Promise < InvoiceSummary[] > {
-            const isDemo = await this.checkSettings();
-            currentDataSource = 'live';
-            if(erpStock.isConfigured) {
+    async getInvoiceList(startDate: string, endDate: string): Promise<InvoiceSummary[]> {
+        const isDemo = await this.checkSettings();
+        currentDataSource = 'live';
+        if (erpStock.isConfigured) {
             try {
                 const result = await erpStock.request({
                     Action: 'Function',
