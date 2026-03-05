@@ -49,12 +49,16 @@ export default function DashboardFilter() {
 
     const [from, setFrom] = useState('')
     const [to, setTo] = useState('')
+    const [currency, setCurrency] = useState('TRY')
     const [showInfo, setShowInfo] = useState(false)
     const [activePreset, setActivePreset] = useState<string>('Bu Ay')
 
     useEffect(() => {
         const urlFrom = searchParams.get('from')
         const urlTo = searchParams.get('to')
+        const urlCurrency = searchParams.get('currency')
+
+        if (urlCurrency) setCurrency(urlCurrency)
 
         if (urlFrom) setFrom(urlFrom)
         else {
@@ -69,11 +73,12 @@ export default function DashboardFilter() {
         }
     }, [searchParams])
 
-    const applyFilter = (fromVal?: string, toVal?: string) => {
+    const applyFilter = (fromVal?: string, toVal?: string, currVal?: string) => {
         setLoading(true)
         const params = new URLSearchParams(searchParams.toString())
         params.set('from', fromVal || from)
         params.set('to', toVal || to)
+        params.set('currency', currVal || currency)
         router.push(`${pathname}?${params.toString()}`)
         // Loading will clear on re-render via searchParams change
         setTimeout(() => setLoading(false), 3000)
@@ -84,7 +89,7 @@ export default function DashboardFilter() {
         setFrom(dates.from)
         setTo(dates.to)
         setActivePreset(preset.label)
-        applyFilter(dates.from, dates.to)
+        applyFilter(dates.from, dates.to, currency)
     }
 
     return (
@@ -96,8 +101,8 @@ export default function DashboardFilter() {
                         key={preset.label}
                         onClick={() => applyPreset(preset)}
                         className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${activePreset === preset.label
-                                ? 'bg-cyan-600 text-white shadow-md shadow-cyan-900/30'
-                                : 'bg-white/5 border border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-300 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 hover:text-cyan-600 dark:hover:text-cyan-400'
+                            ? 'bg-cyan-600 text-white shadow-md shadow-cyan-900/30'
+                            : 'bg-white/5 border border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-300 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 hover:text-cyan-600 dark:hover:text-cyan-400'
                             }`}
                     >
                         {preset.label}
@@ -153,11 +158,25 @@ export default function DashboardFilter() {
                                 <li><strong>Rezervasyon Verileri:</strong> Asisia PMS canlı MS SQL bağlantısından gelir. Oluşturma tarihine göre filtrelenir.</li>
                                 <li><strong>Kanal Kırılımı:</strong> OTA, Call Center, Web, Direkt ve Tur Operatörü kanallarına göre gruplanır.</li>
                                 <li><strong>Pickup Analizi:</strong> Seçili dönemde oluşturulan yeni ve iptal edilen rez. sayılarını gösterir.</li>
-                                <li><strong>Döviz:</strong> PMS kur verileri kullanılarak çevrilir (TL & EUR).</li>
+                                <li><strong>Döviz Çevrimi:</strong> Otomatik kur çevrimleriyle TL/EUR/USD desteklenir.</li>
                             </ul>
                         </div>
                     )}
                 </div>
+            </div>
+
+            {/* Currency Selector */}
+            <div className="flex items-center gap-1.5 self-end sm:self-auto ml-auto pl-2 border-l border-slate-200 dark:border-white/10">
+                <span className="text-xs font-medium text-slate-500">Döviz:</span>
+                <select
+                    value={currency}
+                    onChange={(e) => applyFilter(from, to, e.target.value)}
+                    className="text-xs font-bold px-2 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:border-cyan-500 text-slate-700 dark:text-slate-200 cursor-pointer"
+                >
+                    <option value="TRY">₺ TRY</option>
+                    <option value="EUR">€ EUR</option>
+                    <option value="USD">$ USD</option>
+                </select>
             </div>
         </div>
     )

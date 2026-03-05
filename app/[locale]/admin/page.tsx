@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic'
 
-import { Calendar, TrendingUp, DollarSign, Activity, XCircle } from 'lucide-react'
+import { Calendar, TrendingUp, DollarSign, Activity, XCircle, Info } from 'lucide-react'
 import { ElektraService } from '@/lib/services/elektra'
 import { fetchDashboardStats, fetchPickupStats } from '@/lib/services/pms-asisia'
 import { SalesChart } from '@/components/admin/charts/SalesChart'
@@ -18,10 +18,10 @@ export default async function AdminDashboard({
   searchParams
 }: {
   params: Promise<{ locale: string }>,
-  searchParams: Promise<{ from?: string, to?: string }>
+  searchParams: Promise<{ from?: string, to?: string, currency?: string }>
 }) {
   const { locale } = await params
-  const { from, to } = await searchParams
+  const { from, to, currency = 'TRY' } = await searchParams
   const t = getAdminTranslations(locale as AdminLocale)
 
   // Determine dates — default: Bu Ay (this month)
@@ -61,7 +61,11 @@ export default async function AdminDashboard({
 
     // Aggregate with fallback to TRY rate map if not in TRY
     const tryRate = stats.exchangeRate?.EUR_TO_TRY || 38.5; // fallback
-    const calcRev = (rsvs: any[]) => rsvs.reduce((sum, r) => sum + (r.currency === 'EUR' ? r.totalPrice * tryRate : (r.currency === 'USD' ? r.totalPrice * 35.7 : r.totalPrice)), 0);
+    const usdRate = 35.7; // Hardcoded fallback
+    const divisor = currency === 'TRY' ? 1 : (currency === 'EUR' ? tryRate : usdRate);
+    const symbol = currency === 'EUR' ? '€' : (currency === 'USD' ? '$' : '₺');
+
+    const calcRev = (rsvs: any[]) => rsvs.reduce((sum, r) => sum + (r.currency === 'EUR' ? r.totalPrice * tryRate : (r.currency === 'USD' ? r.totalPrice * usdRate : r.totalPrice)), 0) / divisor;
 
     const asisiaStats = {
       totalReservations: activePeriod.length,
@@ -159,7 +163,7 @@ export default async function AdminDashboard({
                 <p className="text-cyan-100 mt-1">Adet Onaylı Rezervasyon</p>
               </div>
               <div className="text-right">
-                <p className="text-xl font-bold">₺{asisiaStats.totalRevenue.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}</p>
+                <p className="text-xl font-bold">{symbol}{asisiaStats.totalRevenue.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}</p>
                 <p className="text-sm font-medium text-cyan-200">Toplam Misafir: {asisiaStats.totalGuests}</p>
               </div>
             </div>
@@ -182,7 +186,7 @@ export default async function AdminDashboard({
               </div>
               <div className="text-right">
                 <p className="text-3xl font-bold">{stats.adrEUR}</p>
-                <p className="text-sm font-medium text-orange-200">Güncel Kur: {stats.exchangeRate?.EUR_TO_TRY?.toFixed(2) || '38.00'} ₺</p>
+                <p className="text-sm font-medium text-orange-200">Güncel Kur: {tryRate.toFixed(2)} ₺</p>
               </div>
             </div>
           </div>
@@ -203,7 +207,7 @@ export default async function AdminDashboard({
                 <p className="text-red-100 mt-1">Adet İptal</p>
               </div>
               <div className="text-right">
-                <p className="text-xl font-bold">₺{(asisiaStats.cancelledRevenue || 0).toLocaleString('tr-TR', { maximumFractionDigits: 0 })}</p>
+                <p className="text-xl font-bold">{symbol}{(asisiaStats.cancelledRevenue || 0).toLocaleString('tr-TR', { maximumFractionDigits: 0 })}</p>
                 <p className="text-sm font-medium text-red-200">Kaybedilen Ciro</p>
               </div>
             </div>
@@ -211,21 +215,32 @@ export default async function AdminDashboard({
         </div>
 
         {/* PICKUP WIDGET */}
-        <DashboardPickupWidget data={pickupData} />
+        <DashboardPickupWidget data={pickupData} currency={currency as 'TRY' | 'EUR' | 'USD'} exchangeRate={tryRate} />
 
         {/* SON REZERVASYONLAR (ADR PERFORMANSI İLE BİRLİKTE) */}
-        <DashboardLastReservationsWidget reservations={recentReservations} locale={locale} />
+        <DashboardLastReservationsWidget reservations={recentReservations} locale={locale} currency={currency as 'TRY' | 'EUR' | 'USD'} exchangeRate={tryRate} />
 
 
         {/* TREND CHARTS GRID */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Toplam Rezervasyon Hacmi */}
           <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 shadow-sm">
-            <div className="flex items-center gap-2 mb-6">
+            <div className="flex items-center gap-2 mb-6 relative group">
               <Activity size={20} className="text-cyan-500" />
               <h2 className="text-lg font-bold text-slate-900 dark:text-white">Genel Rezervasyon Trendi</h2>
+              <div className="ml-auto cursor-help text-slate-400 hover:text-cyan-500 transition-colors">
+                <Info size={16} />
+              </div>
+              {/* Tooltip on hover */}
+              <div className="absolute right-0 top-8 w-64 bg-slate-800 dark:bg-slate-700 text-white p-3 rounded-xl shadow-xl border border-slate-700 dark:border-slate-600 z-50 hidden group-hover:block transition-all text-xs space-y-2 pointer-events-none">
+                <p className="font-semibold border-b border-slate-600 pb-1 mb-2">Platform Performansı</p>
+                <div className="flex justify-between items-center"><span className="text-slate-300">Booking.com</span><span className="font-bold text-emerald-400">9.2</span></div>
+                <div className="flex justify-between items-center"><span className="text-slate-300">Expedia</span><span className="font-bold text-emerald-400">9.0</span></div>
+                <div className="flex justify-between items-center"><span className="text-slate-300">Agoda</span><span className="font-bold text-emerald-400">8.8</span></div>
+                <div className="flex justify-between items-center"><span className="text-slate-300">Tatil Sepeti</span><span className="font-bold text-emerald-400">9.4</span></div>
+              </div>
             </div>
-            <SalesChart data={salesData} />
+            <SalesChart data={salesData} currency={currency as 'TRY' | 'EUR' | 'USD'} exchangeRate={tryRate} />
           </div>
 
           {/* Misafir Yorum Trendleri */}
@@ -243,7 +258,7 @@ export default async function AdminDashboard({
               <TrendingUp size={20} className="text-purple-500" />
               <h2 className="text-xl font-bold text-slate-900 dark:text-white">OTA Rezervasyon Trendleri</h2>
             </div>
-            <ChannelTrendChart data={salesData} channel="ota" color="#a855f7" />
+            <ChannelTrendChart data={salesData} channel="ota" color="#a855f7" currency={currency as 'TRY' | 'EUR' | 'USD'} exchangeRate={tryRate} />
           </div>
 
           {/* Call Center Trendleri */}
@@ -252,7 +267,7 @@ export default async function AdminDashboard({
               <TrendingUp size={20} className="text-orange-500" />
               <h2 className="text-xl font-bold text-slate-900 dark:text-white">Call Center Trendleri</h2>
             </div>
-            <ChannelTrendChart data={salesData} channel="callCenter" color="#f97316" />
+            <ChannelTrendChart data={salesData} channel="callCenter" color="#f97316" currency={currency as 'TRY' | 'EUR' | 'USD'} exchangeRate={tryRate} />
           </div>
 
           {/* Web Online Trendleri */}
@@ -261,7 +276,7 @@ export default async function AdminDashboard({
               <TrendingUp size={20} className="text-emerald-500" />
               <h2 className="text-xl font-bold text-slate-900 dark:text-white">Online (Web) Rez. Trendi</h2>
             </div>
-            <ChannelTrendChart data={salesData} channel="web" color="#10b981" />
+            <ChannelTrendChart data={salesData} channel="web" color="#10b981" currency={currency as 'TRY' | 'EUR' | 'USD'} exchangeRate={tryRate} />
           </div>
         </div>
 

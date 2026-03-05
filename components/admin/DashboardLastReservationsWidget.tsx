@@ -6,20 +6,44 @@ import type { Reservation } from '@/lib/services/elektra'
 interface DashboardLastReservationsProps {
     reservations: Reservation[]
     locale?: string
+    currency?: 'TRY' | 'EUR' | 'USD'
+    exchangeRate?: number
 }
 
-export default function DashboardLastReservationsWidget({ reservations, locale = 'tr' }: DashboardLastReservationsProps) {
+export default function DashboardLastReservationsWidget({ reservations, locale = 'tr', currency = 'TRY', exchangeRate = 38.5 }: DashboardLastReservationsProps) {
     if (!reservations || reservations.length === 0) return null
+
+    const usdRate = 35.7
+    const symbol = currency === 'EUR' ? '€' : (currency === 'USD' ? '$' : '₺')
+
+    const convertPrice = (price: number, nativeCurrency: string) => {
+        let p = price
+        nativeCurrency = (nativeCurrency || 'EUR').trim()
+        if (currency === 'TRY') {
+            return nativeCurrency === 'EUR' ? p * exchangeRate : (nativeCurrency === 'USD' ? p * usdRate : p)
+        } else if (currency === 'EUR') {
+            return nativeCurrency === 'TRY' ? p / exchangeRate : (nativeCurrency === 'USD' ? (p * usdRate) / exchangeRate : p)
+        } else if (currency === 'USD') {
+            return nativeCurrency === 'TRY' ? p / usdRate : (nativeCurrency === 'EUR' ? (p * exchangeRate) / usdRate : p)
+        }
+        return p
+    }
+
+    const convertedReservations = reservations.map(r => ({
+        ...r,
+        convertedDailyAverage: convertPrice(r.dailyAverage, r.currency),
+        convertedTotalPrice: convertPrice(r.totalPrice, r.currency)
+    }))
 
     // Calculate the baseline ADR for the same date range 
     // (using the provided reservations as a representative sample for ADR average)
-    const validReservations = reservations.filter(r => r.dailyAverage > 0 && r.status !== 'Cancelled')
-    const totalAdr = validReservations.reduce((sum, r) => sum + r.dailyAverage, 0)
+    const validReservations = convertedReservations.filter(r => r.convertedDailyAverage > 0 && r.status !== 'Cancelled')
+    const totalAdr = validReservations.reduce((sum, r) => sum + r.convertedDailyAverage, 0)
     const baselineAdr = validReservations.length > 0 ? totalAdr / validReservations.length : 0
 
     // Determine performance for each reservation
-    const analyzedReservations = reservations.map(res => {
-        const isHigh = res.dailyAverage > baselineAdr
+    const analyzedReservations = convertedReservations.map(res => {
+        const isHigh = res.convertedDailyAverage > baselineAdr
         return {
             ...res,
             isHigh
@@ -100,8 +124,9 @@ export default function DashboardLastReservationsWidget({ reservations, locale =
                     <tbody className="divide-y divide-slate-100 dark:divide-white/5">
                         {analyzedReservations.map((res) => {
                             const name = res.guests?.[0] ? `${res.guests[0].name} ${res.guests[0].surname}` : res.contactName || 'Belirtilmemiş'
-                            const formatter = new Intl.NumberFormat('tr-TR', { style: 'currency', currency: res.currency || 'EUR', maximumFractionDigits: 0, minimumFractionDigits: 0 })
-                            const entryTime = res.createdAt ? new Date(res.createdAt).toLocaleString('tr-TR', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' }) : ''
+                            const formatter = new Intl.NumberFormat('tr-TR', { style: 'currency', currency: currency, maximumFractionDigits: 0, minimumFractionDigits: 0 })
+                            const entryDate = (res as any).createdAt || (res as any).reservationDate || (res as any).lastUpdate
+                            const entryTime = entryDate ? new Date(entryDate).toLocaleString('tr-TR', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' }) : ''
 
                             return (
                                 <tr key={res.id} className="hover:bg-slate-50/50 dark:hover:bg-white/[0.02] transition-colors cursor-pointer relative group">
@@ -128,9 +153,9 @@ export default function DashboardLastReservationsWidget({ reservations, locale =
                                     </td>
                                     <td className="px-4 py-3 text-right">
                                         <div className="font-bold text-slate-900 dark:text-white">
-                                            {formatter.format(res.dailyAverage)}
+                                            {formatter.format(res.convertedDailyAverage)}
                                         </div>
-                                        <div className="text-xs text-slate-500 mt-0.5">Top: {formatter.format(res.totalPrice)}</div>
+                                        <div className="text-xs text-slate-500 mt-0.5">Top: {formatter.format(res.convertedTotalPrice)}</div>
                                     </td>
                                     <td className="px-4 py-3 text-right">
                                         {res.status === 'Cancelled' ? (

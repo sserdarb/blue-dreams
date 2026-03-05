@@ -9,14 +9,20 @@ interface ChannelTrendChartProps {
     data: SalesData[]
     channel: 'web' | 'callCenter' | 'ota' | 'tourOperator' | 'direct'
     color: string
+    currency?: 'TRY' | 'EUR' | 'USD'
+    exchangeRate?: number
 }
 
-export function ChannelTrendChart({ data, channel, color }: ChannelTrendChartProps) {
-    // Format dates for X-axis (e.g., "DD MMM")
+export function ChannelTrendChart({ data, channel, color, currency = 'TRY', exchangeRate = 38.5 }: ChannelTrendChartProps) {
+    const symbol = currency === 'EUR' ? '€' : (currency === 'USD' ? '$' : '₺')
+    const divisor = currency === 'TRY' ? 1 : (currency === 'EUR' ? exchangeRate : 35.7)
+
+    // Format dates for X-axis and convert currency
     const formattedData = data.map(d => {
         const date = new Date(d.date)
         return {
             ...d,
+            [channel]: d[channel] / divisor,
             displayDate: date.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })
         }
     })
@@ -24,9 +30,9 @@ export function ChannelTrendChart({ data, channel, color }: ChannelTrendChartPro
     // Format currency
     const formatYAxis = (tickItem: number) => {
         if (tickItem === 0) return '0'
-        if (tickItem >= 1000000) return `₺${(tickItem / 1000000).toFixed(1)}M`
-        if (tickItem >= 1000) return `₺${(tickItem / 1000).toFixed(0)}K`
-        return `₺${tickItem}`
+        if (tickItem >= 1000000) return `${symbol}${(tickItem / 1000000).toFixed(1)}M`
+        if (tickItem >= 1000) return `${symbol}${(tickItem / 1000).toFixed(0)}K`
+        return `${symbol}${tickItem.toFixed(0)}`
     }
 
     const CustomTooltip = ({ active, payload, label }: any) => {
@@ -38,7 +44,7 @@ export function ChannelTrendChart({ data, channel, color }: ChannelTrendChartPro
                         <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
                         <span className="text-slate-600 dark:text-slate-400">Hacim:</span>
                         <span className="font-bold text-slate-900 dark:text-white">
-                            ₺{payload[0].value.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}
+                            {symbol}{Number(payload[0].value).toLocaleString('tr-TR', { maximumFractionDigits: 0 })}
                         </span>
                     </div>
                 </div>

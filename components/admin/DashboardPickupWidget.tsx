@@ -16,8 +16,31 @@ interface PickupStats {
     majorImpacts: { resNo: string, guestName: string, checkIn: string, price: number, currency: string, isCancelled: boolean }[]
 }
 
-export default function DashboardPickupWidget({ data }: { data: PickupStats }) {
+interface DashboardPickupWidgetProps {
+    data: PickupStats
+    currency?: 'TRY' | 'EUR' | 'USD'
+    exchangeRate?: number
+}
+
+export default function DashboardPickupWidget({ data, currency = 'TRY', exchangeRate = 38.5 }: DashboardPickupWidgetProps) {
     if (!data) return null;
+
+    const symbol = currency === 'EUR' ? '€' : (currency === 'USD' ? '$' : '₺')
+    const usdRate = 35.7
+    const divisor = currency === 'TRY' ? 1 : (currency === 'EUR' ? exchangeRate : usdRate)
+
+    const convertPrice = (price: number, nativeCurrency: string) => {
+        let p = price
+        nativeCurrency = (nativeCurrency || 'EUR').trim()
+        if (currency === 'TRY') {
+            return nativeCurrency === 'EUR' ? p * exchangeRate : (nativeCurrency === 'USD' ? p * usdRate : p)
+        } else if (currency === 'EUR') {
+            return nativeCurrency === 'TRY' ? p / exchangeRate : (nativeCurrency === 'USD' ? (p * usdRate) / exchangeRate : p)
+        } else if (currency === 'USD') {
+            return nativeCurrency === 'TRY' ? p / usdRate : (nativeCurrency === 'EUR' ? (p * exchangeRate) / usdRate : p)
+        }
+        return p
+    }
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -39,7 +62,7 @@ export default function DashboardPickupWidget({ data }: { data: PickupStats }) {
                         <div className="text-right border-l md:border-l-0 border-slate-200 dark:border-white/10 pl-4">
                             <p className="text-xs text-slate-500 uppercase font-semibold">Ciro Etkisi</p>
                             <p className="text-lg font-bold text-slate-900 dark:text-white">
-                                ₺{data.revenue.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}
+                                {symbol}{(data.revenue / divisor).toLocaleString('tr-TR', { maximumFractionDigits: 0 })}
                             </p>
                         </div>
                     </div>
@@ -103,7 +126,7 @@ export default function DashboardPickupWidget({ data }: { data: PickupStats }) {
                                         <p className="text-xs text-slate-500">Giriş: {new Date(imp.checkIn).toLocaleDateString('tr-TR')} • {imp.resNo}</p>
                                     </div>
                                     <div className="text-right text-emerald-600 dark:text-emerald-400 font-bold">
-                                        +{(imp.price || 0).toLocaleString('tr-TR')} {imp.currency?.trim()}
+                                        +{convertPrice(imp.price || 0, imp.currency).toLocaleString('tr-TR', { maximumFractionDigits: 0 })} {symbol}
                                     </div>
                                 </div>
                             ))}
@@ -132,7 +155,7 @@ export default function DashboardPickupWidget({ data }: { data: PickupStats }) {
                                         </span>
                                     </div>
                                     <div className={`text-right font-semibold ${rec.isCancelled ? 'text-red-500' : 'text-slate-900 dark:text-white'}`}>
-                                        {rec.isCancelled ? '-' : ''}{(rec.price || 0).toLocaleString('tr-TR')} {rec.currency?.trim()}
+                                        {rec.isCancelled ? '-' : ''}{convertPrice(rec.price || 0, rec.currency).toLocaleString('tr-TR', { maximumFractionDigits: 0 })} {symbol}
                                     </div>
                                 </div>
                             ))}
