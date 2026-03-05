@@ -235,3 +235,158 @@ export async function PATCH(request: Request) {
         return NextResponse.json({ error: error.message }, { status: 500 })
     }
 }
+
+// ─── POST: Create new campaign ───
+export async function POST(request: Request) {
+    try {
+        const body = await request.json()
+        const { platform, name, objective, dailyBudget, status = 'PAUSED', startDate, endDate, targetUrl } = body
+
+        if (!platform || !name) {
+            return NextResponse.json({ error: 'Platform ve kampanya adı zorunludur' }, { status: 400 })
+        }
+
+        if (platform === 'meta') {
+            const token = process.env.META_ACCESS_TOKEN
+            const adAccountId = process.env.META_ADS_ACCOUNT_ID || process.env.FB_AD_ACCOUNT_ID
+            if (!token || !adAccountId) {
+                return NextResponse.json({ error: 'Meta API kimlik bilgileri eksik. META_ACCESS_TOKEN ve META_ADS_ACCOUNT_ID gereklidir.', code: 'MISSING_CREDENTIALS' }, { status: 400 })
+            }
+
+            const acct = adAccountId.startsWith('act_') ? adAccountId : `act_${adAccountId}`
+
+            // Step 1: Create campaign
+            const campaignParams: Record<string, string> = {
+                name,
+                objective: objective || 'OUTCOME_TRAFFIC',
+                status: status.toUpperCase(),
+                special_ad_categories: '[]',
+                access_token: token,
+            }
+            if (dailyBudget) {
+                campaignParams.daily_budget = String(Math.round(dailyBudget * 100)) // Meta uses cents
+            }
+            if (startDate) campaignParams.start_time = new Date(startDate).toISOString()
+            if (endDate) campaignParams.end_time = new Date(endDate).toISOString()
+
+            const res = await fetch(`${FB_BASE_URL}/${acct}/campaigns`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams(campaignParams),
+            })
+
+            const data = await res.json()
+
+            if (!res.ok) {
+                return NextResponse.json({
+                    success: false,
+                    error: data.error?.message || 'Meta kampanya oluşturulamadı',
+                    errorCode: data.error?.code,
+                    details: data.error,
+                }, { status: res.status })
+            }
+
+            return NextResponse.json({
+                success: true,
+                campaignId: data.id,
+                platform: 'meta',
+                message: `Meta kampanya "${name}" başarıyla oluşturuldu`,
+            })
+        }
+
+        if (platform === 'google') {
+            const devToken = process.env.GOOGLE_ADS_DEVELOPER_TOKEN
+            const customerId = process.env.GOOGLE_ADS_CUSTOMER_ID?.replace(/-/g, '')
+            const accessToken = await getGoogleAdsAccessToken()
+
+            if (!accessToken || !devToken || !customerId) {
+                return NextResponse.json({ error: 'Google Ads API kimlik bilgileri eksik.', code: 'MISSING_CREDENTIALS' }, { status: 400 })
+            }
+
+            // Google Ads requires budget and campaign to be created separately
+            // Step 1: Create campaign budget
+            const budgetRes = await fetch(`https://googleads.googleapis.com/v23/customers/${customerId}/campaignBudgets:mutate`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'developer-token': devToken,
+                    'login-customer-id': customerId,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    operations: [{
+                        create: {
+                            name: `${name}_budget`,
+                            amountMicros: String(Math.round((dailyBudget || 100) * 1000000)),
+                            deliveryMethod: 'STANDARD',
+                        }
+                    }]
+                })
+            })
+
+            if (!budgetRes.ok) {
+                const budgetError = await budgetRes.json()
+                return NextResponse.json({
+                    success: false,
+                    error: 'Google Ads bütçe oluşturulamadı',
+                    details: budgetError,
+                }, { status: budgetRes.status })
+            }
+
+            const budgetData = await budgetRes.json()
+            const budgetResourceName = budgetData.results?.[0]?.resourceName
+
+            // Step 2: Create campaign
+            const objectiveMap: Record<string, string> = {
+                'SEARCH': 'SEARCH',
+                'DISPLAY': 'DISPLAY',
+                'VIDEO': 'VIDEO',
+                'SHOPPING': 'SHOPPING',
+            }
+
+            const campaignRes = await fetch(`https://googleads.googleapis.com/v23/customers/${customerId}/campaigns:mutate`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'developer-token': devToken,
+                    'login-customer-id': customerId,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    operations: [{
+                        create: {
+                            name,
+                            advertisingChannelType: objectiveMap[objective] || 'SEARCH',
+                            status: status === 'ACTIVE' ? 'ENABLED' : 'PAUSED',
+                            campaignBudget: budgetResourceName,
+                            ...(startDate && { startDate: startDate.replace(/-/g, '') }),
+                            ...(endDate && { endDate: endDate.replace(/-/g, '') }),
+                        }
+                    }]
+                })
+            })
+
+            const campaignData = await campaignRes.json()
+
+            if (!campaignRes.ok) {
+                return NextResponse.json({
+                    success: false,
+                    error: 'Google Ads kampanya oluşturulamadı',
+                    details: campaignData,
+                }, { status: campaignRes.status })
+            }
+
+            return NextResponse.json({
+                success: true,
+                campaignId: campaignData.results?.[0]?.resourceName,
+                platform: 'google',
+                message: `Google Ads kampanya "${name}" başarıyla oluşturuldu`,
+            })
+        }
+
+        return NextResponse.json({ error: 'Desteklenmeyen platform. "meta" veya "google" kullanın.' }, { status: 400 })
+    } catch (error: any) {
+        console.error('[Campaign Create Error]', error)
+        return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+}

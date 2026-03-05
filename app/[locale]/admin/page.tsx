@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic'
 
-import { Calendar, TrendingUp, DollarSign, Activity } from 'lucide-react'
+import { Calendar, TrendingUp, DollarSign, Activity, XCircle } from 'lucide-react'
 import { ElektraService } from '@/lib/services/elektra'
 import { fetchDashboardStats, fetchPickupStats } from '@/lib/services/pms-asisia'
 import { SalesChart } from '@/components/admin/charts/SalesChart'
@@ -64,8 +64,8 @@ export default async function AdminDashboard({
           <DashboardFilter />
         </div>
 
-        {/* PROMINENT METRICS (This Month focused) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+        {/* PROMINENT METRICS */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
           <div className="bg-gradient-to-br from-cyan-600 to-blue-700 rounded-2xl p-6 text-white shadow-xl shadow-cyan-900/20">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
@@ -106,6 +106,28 @@ export default async function AdminDashboard({
               <div className="text-right">
                 <p className="text-3xl font-bold">{stats.adrEUR}</p>
                 <p className="text-sm font-medium text-orange-200">Güncel Kur: {stats.exchangeRate?.EUR_TO_TRY?.toFixed(2) || '38.00'} ₺</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-red-600 to-red-800 rounded-2xl p-6 text-white shadow-xl shadow-red-900/20">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                <XCircle size={24} className="text-white" />
+              </div>
+              <div>
+                <p className="text-red-100 font-medium">İptal Edilen Rezervasyonlar</p>
+                <p className="text-xs text-red-200">{startDate.toLocaleDateString('tr-TR')} - {endDate.toLocaleDateString('tr-TR')} arası</p>
+              </div>
+            </div>
+            <div className="flex items-end justify-between">
+              <div>
+                <h2 className="text-5xl font-black">{asisiaStats.cancelledReservations?.toLocaleString('tr-TR') || 0}</h2>
+                <p className="text-red-100 mt-1">Adet İptal</p>
+              </div>
+              <div className="text-right">
+                <p className="text-xl font-bold">₺{(asisiaStats.cancelledRevenue || 0).toLocaleString('tr-TR', { maximumFractionDigits: 0 })}</p>
+                <p className="text-sm font-medium text-red-200">Kaybedilen Ciro</p>
               </div>
             </div>
           </div>
