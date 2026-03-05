@@ -51,10 +51,10 @@ const Navbar: React.FC<NavbarProps> = ({ locale = 'tr', menuItems = [] }) => {
 
   // Fallback menu items if none provided
   const items = menuItems.length > 0 ? menuItems : [
-    { label: 'Konaklama', url: '/accommodation' },
-    { label: 'Restoranlar', url: '/dining' },
-    { label: 'Spa', url: '/spa' },
-    { label: 'İletişim', url: '/contact' }
+    { label: 'Konaklama', url: `/${locale}/odalar` },
+    { label: 'Restoranlar', url: `/${locale}/restoran` },
+    { label: 'Spa', url: `/${locale}/spa` },
+    { label: 'İletişim', url: `/${locale}/iletisim` }
   ];
 
   return (

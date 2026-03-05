@@ -100,19 +100,19 @@ export function Footer({ settings, locale }: FooterProps) {
                     <div>
                         <h4 className="font-bold text-lg mb-4 tracking-wide">Quick Links</h4>
                         <div className="space-y-2">
-                            <Link href={`/${locale}/accommodation`} className="block text-gray-400 hover:text-white transition-colors">
+                            <Link href={`/${locale}/odalar`} className="block text-gray-400 hover:text-white transition-colors">
                                 Accommodation
                             </Link>
-                            <Link href={`/${locale}/dining`} className="block text-gray-400 hover:text-white transition-colors">
+                            <Link href={`/${locale}/restoran`} className="block text-gray-400 hover:text-white transition-colors">
                                 Dining
                             </Link>
                             <Link href={`/${locale}/spa`} className="block text-gray-400 hover:text-white transition-colors">
                                 Spa & Wellness
                             </Link>
-                            <Link href={`/${locale}/gallery`} className="block text-gray-400 hover:text-white transition-colors">
+                            <Link href={`/${locale}/galeri`} className="block text-gray-400 hover:text-white transition-colors">
                                 Gallery
                             </Link>
-                            <Link href={`/${locale}/contact`} className="block text-gray-400 hover:text-white transition-colors">
+                            <Link href={`/${locale}/iletisim`} className="block text-gray-400 hover:text-white transition-colors">
                                 Contact
                             </Link>
                             <Link href={`/${locale}/admin`} className="block text-gray-500 hover:text-gray-300 text-sm mt-4 transition-colors">
