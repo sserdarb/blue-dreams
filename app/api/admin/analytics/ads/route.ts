@@ -134,6 +134,13 @@ export async function GET() {
         }
 
         // 2. Fetch Google Ads Data
+        console.log('[Ads API] Google Ads env check:', {
+            hasDevToken: !!googleDevToken,
+            hasCustomerId: !!googleCustomerId,
+            hasRefreshToken: !!process.env.GOOGLE_ADS_REFRESH_TOKEN,
+            hasClientId: !!process.env.GOOGLE_ADS_CLIENT_ID,
+            hasClientSecret: !!process.env.GOOGLE_ADS_CLIENT_SECRET,
+        })
         if (googleDevToken && googleCustomerId && process.env.GOOGLE_ADS_REFRESH_TOKEN) {
             const accessToken = await getGoogleAdsAccessToken();
             if (accessToken) {

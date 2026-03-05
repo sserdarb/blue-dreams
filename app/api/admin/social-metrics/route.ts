@@ -63,6 +63,12 @@ export async function GET(request: Request) {
     const fbPageId = process.env.FB_PAGE_ID
     const igAccountId = process.env.IG_ACCOUNT_ID
 
+    // Period support: 7d, 30d, 90d
+    const period = searchParams.get('period') || '30d'
+    const periodDays = period === '7d' ? 7 : period === '90d' ? 90 : 30
+    const datePreset = period === '7d' ? 'last_7d' : period === '90d' ? 'last_90d' : 'last_28d'
+    const mediaLimit = period === '7d' ? 10 : period === '90d' ? 50 : 25
+
     if (!token) {
         return NextResponse.json({
             success: false,
@@ -75,6 +81,8 @@ export async function GET(request: Request) {
         engagement: { rate: 0, trend: [] },
         recentPosts: [],
         audienceInsights: null,
+        period,
+        periodDays,
         fetchedAt: new Date().toISOString()
     }
 
@@ -108,7 +116,7 @@ export async function GET(request: Request) {
             // FB Page Insights (28 days)
             try {
                 const insRes = await fetch(
-                    `${BASE}/${fbPageId}/insights?metric=page_impressions,page_engaged_users,page_post_engagements,page_fans&period=day&date_preset=last_28d&access_token=${token}`
+                    `${BASE}/${fbPageId}/insights?metric=page_impressions,page_engaged_users,page_post_engagements,page_fans&period=day&date_preset=${datePreset}&access_token=${token}`
                 )
                 if (insRes.ok) {
                     const ins = await insRes.json()
@@ -170,7 +178,7 @@ export async function GET(request: Request) {
             // ─── 3. Recent Posts with Engagement ──────────────────────────
             try {
                 const mediaRes = await fetch(
-                    `${BASE}/${igAccountId}/media?fields=id,caption,media_type,media_url,thumbnail_url,timestamp,like_count,comments_count,permalink&limit=25&access_token=${token}`
+                    `${BASE}/${igAccountId}/media?fields=id,caption,media_type,media_url,thumbnail_url,timestamp,like_count,comments_count,permalink&limit=${mediaLimit}&access_token=${token}`
                 )
                 if (mediaRes.ok) {
                     const mediaData = await mediaRes.json()

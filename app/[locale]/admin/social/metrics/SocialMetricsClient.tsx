@@ -6,7 +6,7 @@ import {
     Instagram, Facebook, TrendingUp, Users, Heart, MessageCircle,
     Eye, BarChart3, Image as ImageIcon, Video, Loader2, AlertCircle,
     ArrowUpRight, ArrowDownRight, Minus, Calendar, Award, Share2,
-    Activity, Target, FileText, Download, RefreshCw
+    Activity, Target, FileText, Download, RefreshCw, Clock
 } from 'lucide-react'
 import {
     AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, RadarChart,
@@ -37,6 +37,12 @@ interface MetricsData {
 }
 
 // ─── Constants ────────────────────────────────────────────────────────
+const PERIOD_OPTIONS = [
+    { value: '7d', label: 'Son 7 Gün' },
+    { value: '30d', label: 'Son 30 Gün' },
+    { value: '90d', label: 'Son 90 Gün' },
+]
+
 const TABS = [
     { id: 'dashboard', label: 'Genel Bakış', icon: BarChart3 },
     { id: 'posts', label: 'Gönderi Analizi', icon: ImageIcon },
@@ -63,11 +69,13 @@ export default function SocialMetricsClient() {
     const [error, setError] = useState<string | null>(null)
     const [activeTab, setActiveTab] = useState('dashboard')
     const [refreshing, setRefreshing] = useState(false)
+    const [period, setPeriod] = useState('30d')
 
-    const fetchData = async () => {
+    const fetchData = async (p?: string) => {
         try {
             setRefreshing(true)
-            const res = await fetch('/api/admin/social-metrics')
+            const activePeriod = p || period
+            const res = await fetch(`/api/admin/social-metrics?period=${activePeriod}`)
             if (!res.ok) throw new Error(`API Hatası: ${res.status}`)
             const json = await res.json()
             if (!json.success && json.error) {
@@ -82,6 +90,11 @@ export default function SocialMetricsClient() {
             setLoading(false)
             setRefreshing(false)
         }
+    }
+
+    const handlePeriodChange = (newPeriod: string) => {
+        setPeriod(newPeriod)
+        fetchData(newPeriod)
     }
 
     useEffect(() => { fetchData() }, [])
@@ -129,14 +142,30 @@ export default function SocialMetricsClient() {
                         Kapsamlı sosyal medya analiz ve raporlama
                     </p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 flex-wrap">
+                    {/* Sprout Social style period selector */}
+                    <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/50 p-1 rounded-lg">
+                        <Clock size={14} className="text-slate-400 ml-2" />
+                        {PERIOD_OPTIONS.map(opt => (
+                            <button
+                                key={opt.value}
+                                onClick={() => handlePeriodChange(opt.value)}
+                                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${period === opt.value
+                                        ? 'bg-white dark:bg-slate-700 text-cyan-700 dark:text-cyan-300 shadow-sm'
+                                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'
+                                    }`}
+                            >
+                                {opt.label}
+                            </button>
+                        ))}
+                    </div>
                     {data?.fetchedAt && (
                         <span className="text-xs text-slate-400">
                             Son güncelleme: {new Date(data.fetchedAt).toLocaleTimeString('tr-TR')}
                         </span>
                     )}
                     <button
-                        onClick={fetchData}
+                        onClick={() => fetchData()}
                         disabled={refreshing}
                         className="flex items-center gap-2 px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
                     >
