@@ -1,0 +1,237 @@
+import { NextResponse } from 'next/server'
+
+// ─── Campaign Management API ──────────────────────────────────────
+// GET: List all campaigns from Meta + Google Ads
+// POST: Create new campaign (Meta Marketing API)
+// PATCH: Update campaign status (pause/activate)
+
+const META_API_VERSION = 'v19.0'
+const FB_BASE_URL = `https://graph.facebook.com/${META_API_VERSION}`
+
+async function getGoogleAdsAccessToken() {
+    const clientId = process.env.GOOGLE_ADS_CLIENT_ID
+    const clientSecret = process.env.GOOGLE_ADS_CLIENT_SECRET
+    const refreshToken = process.env.GOOGLE_ADS_REFRESH_TOKEN
+    if (!clientId || !clientSecret || !refreshToken) return null
+    try {
+        const res = await fetch('https://oauth2.googleapis.com/token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ client_id: clientId, client_secret: clientSecret, refresh_token: refreshToken, grant_type: 'refresh_token' })
+        })
+        if (!res.ok) return null
+        return (await res.json()).access_token
+    } catch { return null }
+}
+
+export async function GET(request: Request) {
+    try {
+        const { searchParams } = new URL(request.url)
+        const platform = searchParams.get('platform') || 'all'
+        const datePreset = searchParams.get('datePreset') || 'last_30d'
+        const statusFilter = searchParams.get('status') || 'all' // all, active, paused
+
+        const results: any[] = []
+
+        // ─── Meta Ads Campaigns ───
+        if (platform === 'all' || platform === 'meta') {
+            const token = process.env.META_ACCESS_TOKEN
+            const adAccountId = process.env.META_ADS_ACCOUNT_ID || process.env.FB_AD_ACCOUNT_ID
+            if (token && adAccountId) {
+                const acct = adAccountId.startsWith('act_') ? adAccountId : `act_${adAccountId}`
+                // Build status filter for Meta
+                let metaStatusFilter = ''
+                if (statusFilter === 'active') metaStatusFilter = '&effective_status=["ACTIVE"]'
+                else if (statusFilter === 'paused') metaStatusFilter = '&effective_status=["PAUSED"]'
+                // Default: fetch all statuses
+
+                try {
+                    const res = await fetch(
+                        `${FB_BASE_URL}/${acct}/campaigns?fields=id,name,status,objective,daily_budget,lifetime_budget,created_time,start_time,stop_time,insights.date_preset(${datePreset}){spend,impressions,clicks,cpc,ctr,reach,actions,cost_per_action_type}&limit=100${metaStatusFilter}&access_token=${token}`
+                    )
+                    if (res.ok) {
+                        const data = await res.json()
+                        for (const c of (data.data || [])) {
+                            const insights = c.insights?.data?.[0] || {}
+                            const conversions = (insights.actions || [])
+                                .filter((a: any) => ['offsite_conversion.fb_pixel_purchase', 'lead', 'complete_registration'].includes(a.action_type))
+                                .reduce((s: number, a: any) => s + parseInt(a.value || '0'), 0)
+
+                            results.push({
+                                id: c.id,
+                                platform: 'meta',
+                                name: c.name,
+                                status: (c.status || '').toLowerCase(),
+                                objective: c.objective,
+                                dailyBudget: c.daily_budget ? parseInt(c.daily_budget) / 100 : null,
+                                lifetimeBudget: c.lifetime_budget ? parseInt(c.lifetime_budget) / 100 : null,
+                                spend: parseFloat(insights.spend || '0'),
+                                impressions: parseInt(insights.impressions || '0'),
+                                clicks: parseInt(insights.clicks || '0'),
+                                cpc: parseFloat(insights.cpc || '0'),
+                                ctr: parseFloat(insights.ctr || '0'),
+                                reach: parseInt(insights.reach || '0'),
+                                conversions,
+                                roas: 0,
+                                createdAt: c.created_time,
+                                startDate: c.start_time,
+                                endDate: c.stop_time,
+                            })
+                        }
+                    }
+                } catch (err: any) {
+                    console.error('[Campaign API] Meta fetch error:', err.message)
+                }
+            }
+        }
+
+        // ─── Google Ads Campaigns ───
+        if (platform === 'all' || platform === 'google') {
+            const devToken = process.env.GOOGLE_ADS_DEVELOPER_TOKEN
+            const customerId = process.env.GOOGLE_ADS_CUSTOMER_ID?.replace(/-/g, '')
+            if (devToken && customerId) {
+                const accessToken = await getGoogleAdsAccessToken()
+                if (accessToken) {
+                    let statusClause = ''
+                    if (statusFilter === 'active') statusClause = " AND campaign.status = 'ENABLED'"
+                    else if (statusFilter === 'paused') statusClause = " AND campaign.status = 'PAUSED'"
+
+                    const query = `
+                        SELECT
+                            campaign.id, campaign.name, campaign.status,
+                            campaign.advertising_channel_type, campaign.start_date, campaign.end_date,
+                            campaign_budget.amount_micros,
+                            metrics.impressions, metrics.clicks, metrics.cost_micros,
+                            metrics.conversions, metrics.conversions_value,
+                            metrics.average_cpc, metrics.ctr
+                        FROM campaign
+                        WHERE segments.date DURING LAST_30_DAYS${statusClause}
+                        ORDER BY metrics.cost_micros DESC
+                        LIMIT 100`
+
+                    try {
+                        const res = await fetch(`https://googleads.googleapis.com/v23/customers/${customerId}/googleAds:search`, {
+                            method: 'POST',
+                            headers: {
+                                'Authorization': `Bearer ${accessToken}`,
+                                'developer-token': devToken,
+                                'login-customer-id': customerId,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ query })
+                        })
+                        if (res.ok) {
+                            const data = await res.json()
+                            for (const row of (data.results || [])) {
+                                const m = row.metrics || {}
+                                const costMicros = parseInt(m.costMicros || '0', 10)
+                                const budgetMicros = parseInt(row.campaignBudget?.amountMicros || '0', 10)
+                                results.push({
+                                    id: row.campaign?.id,
+                                    platform: 'google',
+                                    name: row.campaign?.name,
+                                    status: (row.campaign?.status || '').toLowerCase(),
+                                    objective: row.campaign?.advertisingChannelType,
+                                    dailyBudget: budgetMicros > 0 ? budgetMicros / 1000000 : null,
+                                    lifetimeBudget: null,
+                                    spend: costMicros / 1000000,
+                                    impressions: parseInt(m.impressions || '0', 10),
+                                    clicks: parseInt(m.clicks || '0', 10),
+                                    cpc: parseInt(m.averageCpc || '0', 10) / 1000000,
+                                    ctr: parseFloat(m.ctr || '0') * 100,
+                                    reach: 0,
+                                    conversions: parseFloat(m.conversions || '0'),
+                                    roas: costMicros > 0 ? (parseFloat(m.conversionsValue || '0') / (costMicros / 1000000)) : 0,
+                                    createdAt: null,
+                                    startDate: row.campaign?.startDate,
+                                    endDate: row.campaign?.endDate,
+                                })
+                            }
+                        }
+                    } catch (err: any) {
+                        console.error('[Campaign API] Google fetch error:', err.message)
+                    }
+                }
+            }
+        }
+
+        // Sort by spend desc
+        results.sort((a, b) => b.spend - a.spend)
+
+        // Totals
+        const totals = {
+            totalCampaigns: results.length,
+            activeCampaigns: results.filter(c => c.status === 'active' || c.status === 'enabled').length,
+            pausedCampaigns: results.filter(c => c.status === 'paused').length,
+            totalSpend: results.reduce((s, c) => s + c.spend, 0),
+            totalImpressions: results.reduce((s, c) => s + c.impressions, 0),
+            totalClicks: results.reduce((s, c) => s + c.clicks, 0),
+            totalConversions: results.reduce((s, c) => s + c.conversions, 0),
+            avgCpc: 0,
+            avgCtr: 0,
+        }
+        if (totals.totalClicks > 0) totals.avgCpc = totals.totalSpend / totals.totalClicks
+        if (totals.totalImpressions > 0) totals.avgCtr = (totals.totalClicks / totals.totalImpressions) * 100
+
+        return NextResponse.json({ success: true, campaigns: results, totals, datePreset })
+    } catch (error: any) {
+        console.error('[Campaign API Error]', error)
+        return NextResponse.json({ success: false, error: error.message }, { status: 500 })
+    }
+}
+
+// ─── PATCH: Update campaign status ───
+export async function PATCH(request: Request) {
+    try {
+        const body = await request.json()
+        const { campaignId, platform, newStatus } = body
+
+        if (platform === 'meta') {
+            const token = process.env.META_ACCESS_TOKEN
+            if (!token) return NextResponse.json({ error: 'Meta token missing' }, { status: 400 })
+
+            const res = await fetch(`${FB_BASE_URL}/${campaignId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: newStatus.toUpperCase(), access_token: token })
+            })
+            const data = await res.json()
+            return NextResponse.json({ success: data.success !== false, data })
+        }
+
+        if (platform === 'google') {
+            const devToken = process.env.GOOGLE_ADS_DEVELOPER_TOKEN
+            const customerId = process.env.GOOGLE_ADS_CUSTOMER_ID?.replace(/-/g, '')
+            const accessToken = await getGoogleAdsAccessToken()
+            if (!accessToken || !devToken || !customerId) {
+                return NextResponse.json({ error: 'Google Ads credentials missing' }, { status: 400 })
+            }
+
+            const statusMap: Record<string, number> = { enabled: 2, paused: 3, removed: 4 }
+            const res = await fetch(`https://googleads.googleapis.com/v23/customers/${customerId}/campaigns:mutate`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'developer-token': devToken,
+                    'login-customer-id': customerId,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    operations: [{
+                        update: {
+                            resourceName: `customers/${customerId}/campaigns/${campaignId}`,
+                            status: statusMap[newStatus] || 3
+                        },
+                        updateMask: 'status'
+                    }]
+                })
+            })
+            const data = await res.json()
+            return NextResponse.json({ success: res.ok, data })
+        }
+
+        return NextResponse.json({ error: 'Unsupported platform' }, { status: 400 })
+    } catch (error: any) {
+        return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+}

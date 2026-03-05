@@ -4,7 +4,7 @@ export type AdCampaign = {
     id: string
     platform: AdPlatform
     name: string
-    status: 'active' | 'paused' | 'ended'
+    status: 'active' | 'paused' | 'ended' | 'enabled'
     spend: number
     impressions: number
     clicks: number
@@ -12,6 +12,7 @@ export type AdCampaign = {
     cpc: number
     conversions: number
     roas: number
+    dailyBudget?: number
 }
 
 export type MarketingOverview = {

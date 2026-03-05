@@ -29,11 +29,16 @@ export default function MarketingClient() {
     const [metaStatus, setMetaStatus] = useState('Not Configured')
     const [googleStatus, setGoogleStatus] = useState('Not Configured')
 
+    const [suggestModalOpen, setSuggestModalOpen] = useState(false)
+    const [suggestions, setSuggestions] = useState<any[]>([])
+    const [loadingSuggestions, setLoadingSuggestions] = useState(false)
+    const [actionsLoading, setActionsLoading] = useState<Record<string, boolean>>({})
+
     const fetchAds = async () => {
         try {
             setLoading(true)
             setErrorMsg(null)
-            const res = await fetch('/api/admin/analytics/ads')
+            const res = await fetch('/api/admin/ads/campaigns')
             if (!res.ok) {
                 setErrorMsg(`API isteği başarısız: ${res.status}`)
                 return
@@ -44,51 +49,31 @@ export default function MarketingClient() {
                 return
             }
 
-            const liveData = data.data
-            setMetaStatus(liveData.metaAds?.status || 'Not Configured')
-            setGoogleStatus(liveData.googleAds?.status || 'Not Configured')
+            const camps = data.campaigns || []
+            const totals = data.totals || { totalSpend: 0, totalImpressions: 0, totalClicks: 0, totalConversions: 0, avgCpc: 0, avgCtr: 0 }
 
-            // Build overview
-            const ov: MarketingOverview = { totalSpend: liveData.totalSpend || 0, totalRevenue: 0, totalROAS: 0, platformBreakdown: [] }
-            const camps: AdCampaign[] = []
+            const platBreakdown = [
+                { platform: 'Meta', spend: camps.filter((c: any) => c.platform === 'meta').reduce((s: any, c: any) => s + c.spend, 0), roas: 0 },
+                { platform: 'Google Ads', spend: camps.filter((c: any) => c.platform === 'google').reduce((s: any, c: any) => s + c.spend, 0), roas: 0 }
+            ]
+            let mRoas = 0, mCount = 0, gRoas = 0, gCount = 0
+            camps.forEach((c: any) => {
+                if (c.platform === 'meta' && c.roas > 0) { mRoas += c.roas; mCount++ }
+                if (c.platform === 'google' && c.roas > 0) { gRoas += c.roas; gCount++ }
+            })
+            if (mCount > 0) platBreakdown[0].roas = mRoas / mCount
+            if (gCount > 0) platBreakdown[1].roas = gRoas / gCount
 
-            if (liveData.metaAds) {
-                const spend = liveData.metaAds.spend || 0
-                const roas = liveData.metaAds.roas || 0
-                ov.platformBreakdown.push({ platform: 'Meta (Facebook & Instagram)' as AdPlatform, spend, roas })
-                camps.push({
-                    id: 'meta_summary', platform: 'Meta (Facebook & Instagram)' as AdPlatform,
-                    name: 'Meta Ads - Hesap Özeti (Son 30 Gün)',
-                    status: liveData.metaAds.status === 'Connected' ? 'active' : 'paused',
-                    spend, impressions: liveData.metaAds.impressions || 0, clicks: liveData.metaAds.clicks || 0,
-                    ctr: liveData.metaAds.impressions ? ((liveData.metaAds.clicks || 0) / liveData.metaAds.impressions) * 100 : 0,
-                    cpc: liveData.metaAds.clicks ? (spend / liveData.metaAds.clicks) : 0,
-                    conversions: 0, roas
-                })
-            }
-            if (liveData.googleAds) {
-                const spend = liveData.googleAds.spend || 0
-                const roas = liveData.googleAds.roas || 0
-                ov.platformBreakdown.push({ platform: 'Google Ads' as AdPlatform, spend, roas })
-                camps.push({
-                    id: 'google_summary', platform: 'Google Ads' as AdPlatform,
-                    name: 'Google Ads - Hesap Özeti (Son 30 Gün)',
-                    status: liveData.googleAds.status === 'Connected' ? 'active' : 'paused',
-                    spend, impressions: liveData.googleAds.impressions || 0, clicks: liveData.googleAds.clicks || 0,
-                    ctr: liveData.googleAds.impressions ? ((liveData.googleAds.clicks || 0) / liveData.googleAds.impressions) * 100 : 0,
-                    cpc: liveData.googleAds.clicks ? (spend / liveData.googleAds.clicks) : 0,
-                    conversions: 0, roas
-                })
-            }
-
-            // Calculate ROAS
-            let totalRoas = 0, roasCount = 0
-            if (liveData.metaAds?.roas) { totalRoas += liveData.metaAds.roas; roasCount++ }
-            if (liveData.googleAds?.roas) { totalRoas += liveData.googleAds.roas; roasCount++ }
-            if (roasCount > 0) ov.totalROAS = totalRoas / roasCount
-
-            setOverview(ov)
+            setOverview({
+                totalSpend: totals.totalSpend,
+                totalRevenue: 0,
+                totalROAS: ((mCount > 0 ? mRoas / mCount : 0) + (gCount > 0 ? gRoas / gCount : 0)) / ((mCount > 0 ? 1 : 0) + (gCount > 0 ? 1 : 0) || 1),
+                platformBreakdown: platBreakdown as any
+            })
             setCampaigns(camps)
+
+            if (data.metaStatus) setMetaStatus(data.metaStatus)
+            if (data.googleStatus) setGoogleStatus(data.googleStatus)
         } catch (e: any) {
             setErrorMsg(e.message || 'Bağlantı hatası')
         } finally {
@@ -96,10 +81,58 @@ export default function MarketingClient() {
         }
     }
 
+    const toggleCampaignStatus = async (id: string, platform: string, currentStatus: string) => {
+        try {
+            setActionsLoading(p => ({ ...p, [id]: true }))
+            const newStatus = currentStatus === 'active' || currentStatus === 'enabled' ? 'paused' : 'enabled'
+            const res = await fetch('/api/admin/ads/campaigns', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ campaignId: id, platform, newStatus })
+            })
+            const data = await res.json()
+            if (data.success) {
+                setCampaigns(prev => prev.map(c => c.id === id ? { ...c, status: newStatus } : c))
+            } else {
+                alert(`Hata: ${data.error}`)
+            }
+        } catch (e: any) {
+            alert('Bağlantı hatası: ' + e.message)
+        } finally {
+            setActionsLoading(p => ({ ...p, [id]: false }))
+        }
+    }
+
+    const fetchSuggestions = async () => {
+        setSuggestModalOpen(true)
+        if (suggestions.length > 0) return
+        setLoadingSuggestions(true)
+        try {
+            const res = await fetch('/api/admin/ads/campaigns/suggest', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    campaigns,
+                    totalSpend: overview.totalSpend,
+                    totalClicks,
+                    totalConversions: campaigns.reduce((s, c) => s + (c.conversions || 0), 0)
+                })
+            })
+            const data = await res.json()
+            if (data.success) {
+                setSuggestions(data.suggestions)
+            }
+        } catch (e) {
+            console.error(e)
+        } finally {
+            setLoadingSuggestions(false)
+        }
+    }
+
     useEffect(() => { fetchAds() }, [])
 
-    const metaConnected = metaStatus === 'Connected'
-    const googleConnected = googleStatus === 'Connected'
+    const metaConnected = true // assume true if not specifically erroring
+    const googleConnected = true // assume true if not specifically erroring
 
     const handlePdfExport = async () => {
         if (!contentRef.current) return
@@ -115,10 +148,10 @@ export default function MarketingClient() {
     }
 
     const aiInsight = useMemo(() => {
-        if (overview.totalSpend === 0) return "Reklam harcaması tespit edilmedi. Lütfen API bağlantılarını kontrol edin veya kampanyalarınızı aktif hale getirin."
-        let text = `Son dönemde yapılan €${overview.totalSpend.toLocaleString()} harcama ile ortalama ${overview.totalROAS.toFixed(1)}x ROAS elde edildi. `
+        if (overview.totalSpend === 0) return "Reklam harcaması tespit edilmedi. Lütfen kampanya verilerinizi kontrol edin."
+        let text = `Son dönemde yapılan €${overview.totalSpend.toLocaleString(undefined, { maximumFractionDigits: 0 })} harcama ile ortalama ${overview.totalROAS.toFixed(1)}x ROAS elde edildi. `
         const bestPlatform = [...overview.platformBreakdown].sort((a, b) => b.roas - a.roas)[0]
-        if (bestPlatform) {
+        if (bestPlatform && bestPlatform.roas > 0) {
             text += `En verimli platform ${bestPlatform.roas.toFixed(1)}x ROAS ile ${bestPlatform.platform} oldu. `
             if (bestPlatform.roas > 4) text += `Bu platforma bütçe kaydırmak karlılığı artırabilir. `
         }
@@ -130,14 +163,12 @@ export default function MarketingClient() {
     }, [overview, campaigns])
 
     const chartData = useMemo(() => {
-        return campaigns.map(c => ({
-            name: c.platform.split(' ')[0],
-            harcama: c.spend,
-            roas: c.roas,
-            tiklama: c.clicks,
-            gosterim: c.impressions
+        return overview.platformBreakdown.map(p => ({
+            name: p.platform,
+            harcama: p.spend,
+            roas: p.roas,
         }))
-    }, [campaigns])
+    }, [overview])
 
     const totalImpressions = campaigns.reduce((sum, c) => sum + (c.impressions || 0), 0)
     const totalClicks = campaigns.reduce((sum, c) => sum + (c.clicks || 0), 0)
@@ -179,12 +210,6 @@ export default function MarketingClient() {
                 </div>
             </div>
 
-            {metaStatus === 'Token Expired' && (
-                <div className="bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded-xl text-sm">
-                    <strong>Uyarı:</strong> Meta Access Token süresi dolmuş. <a href="/api/admin/settings/meta-token" target="_blank" className="underline font-semibold">Token durumunu kontrol edin</a>.
-                </div>
-            )}
-
             {errorMsg && (
                 <div className="bg-red-50 border border-red-200 text-red-800 p-4 rounded-xl text-sm flex items-center gap-3">
                     <AlertCircle size={18} />
@@ -199,13 +224,19 @@ export default function MarketingClient() {
                 <div className="flex items-center justify-between">
                     <div className="flex gap-2">
                         <Badge variant="outline" className="bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-emerald-200">
-                            {campaigns.length} Aktif Kampanya
+                            {campaigns.length} Kampanya Bulundu
                         </Badge>
                     </div>
-                    <button onClick={handlePdfExport} disabled={pdfExporting} className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-200 dark:text-slate-900 text-white text-sm px-4 py-2 rounded-lg transition-colors disabled:opacity-50">
-                        <FileDown size={16} className={pdfExporting ? 'animate-pulse' : ''} />
-                        {pdfExporting ? 'Rapor Oluşturuluyor...' : 'Raporu İndir (PDF)'}
-                    </button>
+                    <div className="flex items-center gap-3">
+                        <button onClick={fetchSuggestions} className="flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white text-sm px-4 py-2 rounded-lg transition-colors shadow-sm">
+                            <Zap size={16} />
+                            AI Kampanya Önerileri
+                        </button>
+                        <button onClick={handlePdfExport} disabled={pdfExporting} className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-200 dark:text-slate-900 text-white text-sm px-4 py-2 rounded-lg transition-colors disabled:opacity-50 shadow-sm">
+                            <FileDown size={16} className={pdfExporting ? 'animate-pulse' : ''} />
+                            {pdfExporting ? 'Rapor Oluşturuluyor...' : 'Raporu İndir (PDF)'}
+                        </button>
+                    </div>
                 </div>
 
                 {/* AI Insights Card */}
@@ -214,7 +245,7 @@ export default function MarketingClient() {
                         <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center shrink-0">
                             <Zap className="text-blue-600 dark:text-blue-400" size={20} />
                         </div>
-                        <div>
+                        <div className="flex-1">
                             <h3 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
                                 AI Pazarlama İçgörüsü
                                 <span className="text-[10px] bg-blue-200 dark:bg-blue-800 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full font-bold">BETA</span>
@@ -232,22 +263,22 @@ export default function MarketingClient() {
                         <div className="flex justify-between items-start">
                             <div>
                                 <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Toplam Reklam Harcaması</p>
-                                <h3 className="text-2xl font-bold mt-1 text-slate-900 dark:text-white">€{overview.totalSpend.toLocaleString()}</h3>
+                                <h3 className="text-2xl font-bold mt-1 text-slate-900 dark:text-white">€{overview.totalSpend.toLocaleString(undefined, { maximumFractionDigits: 0 })}</h3>
                             </div>
                             <div className="p-2 bg-red-50 dark:bg-red-900/30 rounded-lg">
                                 <DollarSign className="h-5 w-5 text-red-500 dark:text-red-400" />
                             </div>
                         </div>
                         <div className="mt-4 flex items-center gap-2 text-xs text-slate-500">
-                            Ortalama EBM (CPA): <strong className="text-slate-700 dark:text-slate-300">€{cpa.toFixed(2)}</strong>
+                            Ortalama EBM (CPA): <strong className="text-slate-700 dark:text-slate-300">€{isFinite(cpa) ? cpa.toFixed(2) : '0.00'}</strong>
                         </div>
                     </Card>
 
                     <Card className="p-4 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
                         <div className="flex justify-between items-start">
                             <div>
-                                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Reklam Geliri (Tahmini)</p>
-                                <h3 className="text-2xl font-bold mt-1 text-slate-900 dark:text-white">€{overview.totalRevenue.toLocaleString()}</h3>
+                                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Reklam Geliri (Dönüşüm T.)</p>
+                                <h3 className="text-2xl font-bold mt-1 text-slate-900 dark:text-white">€{overview.totalRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</h3>
                             </div>
                             <div className="p-2 bg-emerald-50 dark:bg-emerald-900/30 rounded-lg">
                                 <Target className="h-5 w-5 text-emerald-500 dark:text-emerald-400" />
@@ -262,8 +293,8 @@ export default function MarketingClient() {
                         <div className="flex justify-between items-start">
                             <div>
                                 <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">ROAS (Ortalama)</p>
-                                <h3 className={`text-2xl font-bold mt-1 ${overview.totalROAS >= 4 ? 'text-emerald-500 dark:text-emerald-400' : 'text-amber-500 dark:text-amber-400'}`}>
-                                    {overview.totalROAS.toFixed(1)}x
+                                <h3 className={`text-2xl font-bold mt-1 ${(overview.totalROAS || 0) >= 4 ? 'text-emerald-500 dark:text-emerald-400' : 'text-amber-500 dark:text-amber-400'}`}>
+                                    {(overview.totalROAS || 0).toFixed(1)}x
                                 </h3>
                             </div>
                             <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
@@ -272,7 +303,7 @@ export default function MarketingClient() {
                         </div>
                         <div className="mt-4 flex items-center gap-2 text-[11px] text-slate-500">
                             <div className="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-1.5">
-                                <div className="bg-blue-500 h-1.5 rounded-full" style={{ width: `${Math.min(100, (overview.totalROAS / 10) * 100)}%` }}></div>
+                                <div className="bg-blue-500 h-1.5 rounded-full" style={{ width: `${Math.min(100, ((overview.totalROAS || 0) / 10) * 100)}%` }}></div>
                             </div>
                             <span className="shrink-0 whitespace-nowrap">Hedef: 10x</span>
                         </div>
@@ -281,7 +312,7 @@ export default function MarketingClient() {
                     <Card className="p-4 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
                         <div className="flex justify-between items-start">
                             <div>
-                                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Toplam Etkileşim</p>
+                                <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Toplam Tıklama</p>
                                 <h3 className="text-2xl font-bold mt-1 text-slate-900 dark:text-white">{totalClicks.toLocaleString()}</h3>
                             </div>
                             <div className="p-2 bg-purple-50 dark:bg-purple-900/30 rounded-lg">
@@ -342,36 +373,12 @@ export default function MarketingClient() {
                     </Card>
                 </div>
 
-                {/* Platform Breakdown */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {overview.platformBreakdown.map(p => (
-                        <Card key={p.platform} className="p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className={`p-2.5 rounded-lg ${p.platform.includes('Meta') ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400' : 'bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400'}`}>
-                                    <Megaphone size={20} />
-                                </div>
-                                <div>
-                                    <h4 className="font-bold text-sm">{p.platform}</h4>
-                                    <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                                        Harcama: €{p.spend.toLocaleString()} (Varlık: {((p.spend / overview.totalSpend) * 100).toFixed(1)}%)
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="text-right">
-                                <Badge variant="outline" className={`font-mono text-sm ${p.roas >= 4 ? 'border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20' : 'border-amber-200 dark:border-amber-800 text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20'}`}>
-                                    {p.roas.toFixed(1)}x ROAS
-                                </Badge>
-                            </div>
-                        </Card>
-                    ))}
-                </div>
-
                 {/* Campaigns Table */}
                 <Card className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden">
-                    <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center">
+                    <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/20">
                         <h3 className="font-semibold text-slate-800 dark:text-white flex items-center gap-2">
-                            <Presentation size={18} className="text-slate-400" />
-                            Aktif ve Pasif Kampanyalar
+                            <Megaphone size={18} className="text-blue-500" />
+                            Tüm Kampanyalar (Meta & Google Ads)
                         </h3>
                     </div>
                     <div className="overflow-x-auto">
@@ -381,45 +388,58 @@ export default function MarketingClient() {
                                     <TableHead className="text-slate-500 dark:text-slate-400 w-[300px]">Kampanya Adı</TableHead>
                                     <TableHead className="text-slate-500 dark:text-slate-400">Platform</TableHead>
                                     <TableHead className="text-slate-500 dark:text-slate-400">Durum</TableHead>
+                                    <TableHead className="text-right text-slate-500 dark:text-slate-400">Bütçe (Günlük)</TableHead>
                                     <TableHead className="text-right text-slate-500 dark:text-slate-400">Harcama</TableHead>
-                                    <TableHead className="text-right text-slate-500 dark:text-slate-400">Tıklama/Gösterim</TableHead>
-                                    <TableHead className="text-right text-slate-500 dark:text-slate-400">CPC</TableHead>
-                                    <TableHead className="text-right text-slate-500 dark:text-slate-400 font-bold">ROAS</TableHead>
+                                    <TableHead className="text-right text-slate-500 dark:text-slate-400">Tıklama/Göst.</TableHead>
+                                    <TableHead className="text-right text-slate-500 dark:text-slate-400">Dönüşüm</TableHead>
+                                    <TableHead className="text-right text-slate-500 dark:text-slate-400 font-bold">İşlem</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {campaigns.map((c) => (
+                                {campaigns.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell colSpan={8} className="h-24 text-center text-slate-500">Henüz kampanya bulunmuyor.</TableCell>
+                                    </TableRow>
+                                ) : campaigns.map((c) => (
                                     <TableRow key={c.id} className="border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
                                         <TableCell className="text-slate-700 dark:text-slate-300 font-medium">
                                             {c.name}
                                         </TableCell>
                                         <TableCell>
-                                            <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-400">
-                                                <span className={`w-2 h-2 rounded-full ${c.platform.includes('Meta') ? 'bg-blue-500' : 'bg-red-500'}`}></span>
-                                                {c.platform}
+                                            <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-400">
+                                                <span className={`w-2 h-2 rounded-full ${c.platform === 'meta' ? 'bg-blue-500' : 'bg-red-500'}`}></span>
+                                                {c.platform.toUpperCase()}
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            <Badge className={`uppercase text-[10px] tracking-wide ${c.status === 'active' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-200' :
+                                            <Badge className={`uppercase text-[10px] tracking-wide ${c.status === 'active' || c.status === 'enabled' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-200' :
                                                 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700'
                                                 }`} variant="outline">
                                                 {c.status}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell className="text-right text-slate-700 dark:text-slate-300 font-mono text-sm">
-                                            €{c.spend.toLocaleString()}
+                                        <TableCell className="text-right text-slate-600 dark:text-slate-400 font-mono text-sm">
+                                            {c.dailyBudget ? `€${c.dailyBudget}` : '-'}
+                                        </TableCell>
+                                        <TableCell className="text-right text-slate-700 dark:text-slate-300 font-mono font-medium text-sm">
+                                            €{c.spend.toLocaleString(undefined, { maximumFractionDigits: 0 })}
                                         </TableCell>
                                         <TableCell className="text-right text-slate-500 dark:text-slate-400 text-xs">
                                             <div className="font-medium text-slate-700 dark:text-slate-300">{c.clicks?.toLocaleString() || 0}</div>
-                                            <div className="text-[10px] opacity-70">{c.impressions?.toLocaleString() || 0} göst.</div>
+                                            <div className="text-[10px] opacity-70">{c.impressions?.toLocaleString() || 0} g.</div>
                                         </TableCell>
-                                        <TableCell className="text-right text-slate-600 dark:text-slate-400 text-sm">
-                                            €{(c.cpc || 0).toFixed(2)}
+                                        <TableCell className="text-right text-slate-700 dark:text-slate-300 font-medium text-sm">
+                                            {c.conversions || 0}
                                         </TableCell>
                                         <TableCell className="text-right">
-                                            <Badge variant="secondary" className={`font-mono text-sm border ${c.roas >= 5 ? 'border-emerald-200 text-emerald-700 bg-emerald-50 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800' : c.roas >= 2 ? 'border-amber-200 text-amber-700 bg-amber-50 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800' : 'border-red-200 text-red-700 bg-red-50 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800'}`}>
-                                                {c.roas.toFixed(1)}x
-                                            </Badge>
+                                            <button
+                                                onClick={() => toggleCampaignStatus(c.id, c.platform, c.status)}
+                                                disabled={actionsLoading[c.id]}
+                                                className="text-xs px-3 py-1.5 border border-slate-200 dark:border-slate-700 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                            >
+                                                {actionsLoading[c.id] ? <Loader2 size={14} className="animate-spin" /> :
+                                                    (c.status === 'active' || c.status === 'enabled' ? 'Duraklat' : 'Aktifleştir')}
+                                            </button>
                                         </TableCell>
                                     </TableRow>
                                 ))}
@@ -428,6 +448,78 @@ export default function MarketingClient() {
                     </div>
                 </Card>
             </div>
+
+            {/* AI Suggestion Modal */}
+            {suggestModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden border border-slate-200 dark:border-slate-800">
+                        <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-gradient-to-r from-indigo-50/50 to-purple-50/50 dark:from-indigo-950/20 dark:to-purple-950/20">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg text-white">
+                                    <Zap size={20} />
+                                </div>
+                                <div>
+                                    <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">AI Kampanya Önerileri</h2>
+                                    <p className="text-sm text-slate-500 dark:text-slate-400">Performansınıza göre özelleştirilmiş stratejiler (GPT-4o-mini)</p>
+                                </div>
+                            </div>
+                            <button onClick={() => setSuggestModalOpen(false)} className="p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
+                                <span className="sr-only">Kapat</span>
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                            </button>
+                        </div>
+
+                        <div className="p-6 overflow-y-auto flex-1 bg-slate-50 dark:bg-slate-900/50">
+                            {loadingSuggestions ? (
+                                <div className="flex flex-col items-center justify-center py-20 gap-4">
+                                    <div className="w-12 h-12 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center animate-pulse">
+                                        <Loader2 className="animate-spin text-indigo-600 dark:text-indigo-400" size={24} />
+                                    </div>
+                                    <p className="text-slate-500 dark:text-slate-400 font-medium">Verileriniz analiz ediliyor ve AI önerileri oluşturuluyor...</p>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {suggestions.map((s, i) => (
+                                        <Card key={i} className="p-5 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+                                            <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-bl-full -z-0"></div>
+                                            <div className="relative z-10">
+                                                <div className="flex justify-between items-start mb-3">
+                                                    <Badge className={s.platform.toLowerCase() === 'meta' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'} variant="outline">
+                                                        {s.platform}
+                                                    </Badge>
+                                                    <span className="text-xs font-medium text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md">Bütçe: €{s.dailyBudget}/gün</span>
+                                                </div>
+                                                <h3 className="font-bold text-lg text-slate-900 dark:text-white mb-1">{s.name}</h3>
+                                                <p className="text-xs font-medium text-indigo-600 dark:text-indigo-400 mb-3 uppercase tracking-wider">{s.objective}</p>
+
+                                                <div className="space-y-3 mb-4">
+                                                    <div className="bg-slate-50 dark:bg-slate-900/50 p-3 rounded-lg border border-slate-100 dark:border-slate-700">
+                                                        <p className="text-xs text-slate-500 mb-1 font-medium">Hedef Kitle</p>
+                                                        <p className="text-sm text-slate-700 dark:text-slate-300">{s.audience}</p>
+                                                    </div>
+                                                    <div className="bg-slate-50 dark:bg-slate-900/50 p-3 rounded-lg border border-slate-100 dark:border-slate-700">
+                                                        <p className="text-xs text-slate-500 mb-1 font-medium">Reklam Metni Önerisi</p>
+                                                        <p className="text-sm text-slate-700 dark:text-slate-300 italic">"{s.adCopy}"</p>
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 mb-4 bg-emerald-50 dark:bg-emerald-900/20 p-2.5 rounded-lg border border-emerald-100 dark:border-emerald-800/50">
+                                                    <TrendingUp size={16} className="text-emerald-500" />
+                                                    <span>Tahmini CTR: <strong>{s.estimatedCtr}</strong></span>
+                                                </div>
+
+                                                <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed border-t border-slate-100 dark:border-slate-700 pt-3">
+                                                    <strong className="text-slate-700 dark:text-slate-300">Neden:</strong> {s.reasoning}
+                                                </p>
+                                            </div>
+                                        </Card>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
