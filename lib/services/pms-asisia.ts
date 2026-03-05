@@ -93,6 +93,7 @@ export async function fetchDashboardStats(startDate?: string, endDate?: string) 
         }
 
         // Active reservations (created in period, not cancelled)
+        // NOTE: Removed RESNO filter — quotes don't have RESNO but should be counted
         const statsQuery = await pool.request().query(`
             SELECT 
                 COUNT(DISTINCT r.ID) as TotalReservations,
@@ -101,7 +102,7 @@ export async function fetchDashboardStats(startDate?: string, endDate?: string) 
                 ISNULL(SUM(b.ADULT), 0) as TotalGuests
             FROM REQUEST r
             JOIN VW_BASKET_INFO b ON r.ID = b.REQUESTID
-            WHERE b.DATE1 IS NOT NULL AND r.RESNO IS NOT NULL AND b.TOTAL > 0
+            WHERE b.TOTAL > 0
               AND (r.STATUS NOT LIKE '%CANCEL%' OR r.STATUS IS NULL)
               ${dateFilter}
         `);
@@ -174,20 +175,20 @@ export async function fetchCallCenterStats(startDate?: string, endDate?: string)
             reqDateFilter = `AND r.CREATIONDATE >= '${startDate}' AND r.CREATIONDATE <= '${endDate}'`;
         }
 
-        // 1. Agent Activity — from REQUEST_DETAIL (who created requests / quotes)
+        // 1. Agent Activity — from REQUEST (who created requests / quotes)
         let callStats: any[] = [];
         try {
             const agentQuery = await pool.request().query(`
                 SELECT 
                     ISNULL(u.FIRSTNAME + ' ' + u.LASTNAME, 'Bilinmiyor') as AgentName,
                     ISNULL(u.USERNAME, '-') as AgentExtension,
-                    COUNT(rd.REQUESTID) as TotalCalls,
+                    COUNT(DISTINCT r.ID) as TotalCalls,
                     0 as TotalSeconds,
                     0 as AvgDuration,
-                    SUM(CASE WHEN rd.STATUS LIKE '%CANCEL%' THEN 1 ELSE 0 END) as MissedCalls,
-                    SUM(CASE WHEN rd.STATUS NOT LIKE '%CANCEL%' THEN 1 ELSE 0 END) as AnsweredCalls
-                FROM REQUEST_DETAIL rd
-                JOIN USERS u ON rd.ADDUSER = u.ID
+                    SUM(CASE WHEN r.STATUS LIKE '%CANCEL%' OR r.STATUS LIKE '%IPTAL%' THEN 1 ELSE 0 END) as MissedCalls,
+                    SUM(CASE WHEN r.STATUS NOT LIKE '%CANCEL%' AND (r.STATUS NOT LIKE '%IPTAL%' OR r.STATUS IS NULL) THEN 1 ELSE 0 END) as AnsweredCalls
+                FROM REQUEST r
+                JOIN USERS u ON r.ADDUSER = u.ID
                 WHERE u.FIRSTNAME IS NOT NULL ${reqDateFilter}
                 GROUP BY u.FIRSTNAME, u.LASTNAME, u.USERNAME
                 ORDER BY TotalCalls DESC
@@ -195,17 +196,17 @@ export async function fetchCallCenterStats(startDate?: string, endDate?: string)
             callStats = agentQuery.recordset || [];
         } catch (e) { console.error('[ASISIA] Agent query error:', e); }
 
-        // 2. Teklif (Quote) vs Satış (Sale) — REQUEST_DETAIL
+        // 2. Teklif (Quote) vs Satış (Sale) — REQUEST
         let conversionStats: any[] = [];
         try {
             const conversionQuery = await pool.request().query(`
                 SELECT 
                     ISNULL(u.FIRSTNAME + ' ' + u.LASTNAME, 'Bilinmiyor') as AgentName,
-                    COUNT(rd.REQUESTID) as TotalQuotes,
-                    SUM(CASE WHEN rd.STATUS NOT LIKE '%CANCEL%' AND rd.STATUS NOT LIKE '%PENDING%' AND rd.STATUS NOT LIKE '%OPTION%' THEN 1 ELSE 0 END) as ConvertedSales,
-                    SUM(CASE WHEN rd.STATUS LIKE '%CANCEL%' THEN 1 ELSE 0 END) as CancelledRequests
-                FROM REQUEST_DETAIL rd
-                JOIN USERS u ON rd.ADDUSER = u.ID
+                    COUNT(DISTINCT r.ID) as TotalQuotes,
+                    SUM(CASE WHEN r.RESNO IS NOT NULL AND r.STATUS NOT LIKE '%CANCEL%' THEN 1 ELSE 0 END) as ConvertedSales,
+                    SUM(CASE WHEN r.STATUS LIKE '%CANCEL%' OR r.STATUS LIKE '%IPTAL%' THEN 1 ELSE 0 END) as CancelledRequests
+                FROM REQUEST r
+                JOIN USERS u ON r.ADDUSER = u.ID
                 WHERE u.FIRSTNAME IS NOT NULL ${reqDateFilter}
                 GROUP BY u.FIRSTNAME, u.LASTNAME
             `);
