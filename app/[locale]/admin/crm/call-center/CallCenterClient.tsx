@@ -90,6 +90,7 @@ export default function CallCenterClient({ locale, t }: Props) {
     const [dailyTrend, setDailyTrend] = useState<DailyTrend[]>([])
     const [sourceAttribution, setSourceAttribution] = useState<SourceAttribution[]>([])
     const [summary, setSummary] = useState<CallSummary>({ totalCalls: 0, answeredCalls: 0, missedCalls: 0, missedRate: '0', avgDurationSeconds: 0 })
+    const [error, setError] = useState<string | null>(null)
 
     // Formula State
     const [isFormulaEditorOpen, setIsFormulaEditorOpen] = useState(false)
@@ -102,6 +103,7 @@ export default function CallCenterClient({ locale, t }: Props) {
     const fetchAnalysisData = useCallback(async () => {
         setLoading(true)
         try {
+            setError(null)
             let url = `/api/admin/asisia/call-center`
             const params = new URLSearchParams()
 
@@ -121,7 +123,7 @@ export default function CallCenterClient({ locale, t }: Props) {
 
             if (params.toString()) url += `?${params.toString()}`
 
-            const res = await fetch(url)
+            const res = await fetch(url, { signal: AbortSignal.timeout(15000) })
             if (res.ok) {
                 const data = await res.json()
                 setCallStats(data.callStats || [])
@@ -131,11 +133,15 @@ export default function CallCenterClient({ locale, t }: Props) {
                 setDailyTrend(data.dailyTrend || [])
                 setSourceAttribution(data.sourceAttribution || [])
                 setSummary(data.summary || { totalCalls: 0, answeredCalls: 0, missedCalls: 0, missedRate: '0', avgDurationSeconds: 0 })
+            } else {
+                setError(`API hata kodu: ${res.status}`)
             }
-        } catch (error) {
-            console.error('Failed to fetch call center data:', error)
+        } catch (err: any) {
+            console.error('Failed to fetch call center data:', err)
+            setError(err?.name === 'TimeoutError' ? 'PMS bağlantısı zaman aşımına uğradı. Lütfen tekrar deneyin.' : 'Çağrı merkezi verileri yüklenemedi.')
+        } finally {
+            setLoading(false)
         }
-        setLoading(false)
     }, [fromDate, toDate])
 
     useEffect(() => {
@@ -224,14 +230,7 @@ export default function CallCenterClient({ locale, t }: Props) {
                         <p className="text-sm text-slate-500">Asisia PMS üzerinden canlı çağrı hacmi, ciro ve dönüşüm oranları</p>
                     </div>
                 </div>
-                <div className="flex items-center gap-3">
-                    <button
-                        onClick={() => setIsFormulaEditorOpen(true)}
-                        className="flex items-center gap-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
-                    >
-                        <Settings2 size={16} />
-                        Formül Düzenle
-                    </button>
+                <div className="flex flex-col gap-3">
                     <DashboardFilter />
                 </div>
             </div>
@@ -246,25 +245,33 @@ export default function CallCenterClient({ locale, t }: Props) {
             />
 
             {/* Tab Navigation */}
-            <div className="flex gap-1 bg-slate-100 dark:bg-slate-800 rounded-xl p-1">
-                {TAB_OPTIONS.map(tab => (
-                    <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id)}
-                        className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${activeTab === tab.id
-                            ? 'bg-white dark:bg-slate-700 text-cyan-600 dark:text-cyan-400 shadow-sm'
-                            : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
-                            }`}
-                    >
-                        <tab.icon size={16} />
-                        {tab.label}
-                    </button>
-                ))}
+            <div className="overflow-x-auto -mx-1 px-1">
+                <div className="flex gap-1 bg-slate-100 dark:bg-slate-800 rounded-xl p-1 min-w-max">
+                    {TAB_OPTIONS.map(tab => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id)}
+                            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all whitespace-nowrap ${activeTab === tab.id
+                                ? 'bg-white dark:bg-slate-700 text-cyan-600 dark:text-cyan-400 shadow-sm'
+                                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                                }`}
+                        >
+                            <tab.icon size={16} />
+                            {tab.label}
+                        </button>
+                    ))}
+                </div>
             </div>
 
             {loading ? (
                 <div className="flex justify-center items-center h-64">
                     <Loader2 className="animate-spin text-cyan-500" size={32} />
+                </div>
+            ) : error ? (
+                <div className="flex flex-col items-center justify-center h-64 gap-4">
+                    <XCircle className="text-red-400" size={40} />
+                    <p className="text-sm text-slate-500 dark:text-slate-400 text-center">{error}</p>
+                    <button onClick={fetchAnalysisData} className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-sm font-medium transition-colors">Tekrar Dene</button>
                 </div>
             ) : (
                 <>
@@ -272,7 +279,7 @@ export default function CallCenterClient({ locale, t }: Props) {
                     {activeTab === 'overview' && (
                         <>
                             {/* Top KPI row */}
-                            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3">
                                 <KpiCard icon={PhoneCall} color="blue" label="Toplam Çağrı" value={summary.totalCalls.toLocaleString('tr-TR')} />
                                 <KpiCard icon={CheckCircle2} color="emerald" label="Cevaplanan" value={summary.answeredCalls.toLocaleString('tr-TR')} />
                                 <KpiCard icon={PhoneMissed} color="red" label="Cevapsız" value={`${summary.missedCalls} (%${summary.missedRate})`} />
@@ -449,7 +456,7 @@ export default function CallCenterClient({ locale, t }: Props) {
                     {/* ─── TAB: QUALITY (Çağrı Kalitesi) ─── */}
                     {activeTab === 'quality' && (
                         <>
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                                 <KpiCard icon={PhoneCall} color="blue" label="Cevaplama Oranı" value={`%${summary.totalCalls > 0 ? ((summary.answeredCalls / summary.totalCalls) * 100).toFixed(1) : '0'}`} />
                                 <KpiCard icon={PhoneMissed} color="red" label="Cevapsız Oranı" value={`%${summary.missedRate}`} />
                                 <KpiCard icon={Clock} color="purple" label="Ort. Yanıt Süresi" value={fmtDuration(summary.avgDurationSeconds)} />

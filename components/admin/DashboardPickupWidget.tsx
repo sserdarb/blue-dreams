@@ -47,7 +47,7 @@ export default function DashboardPickupWidget({ data, currency = 'TRY', exchange
 
             {/* Trend Chart */}
             <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 shadow-sm lg:col-span-2">
-                <div className="flex items-center justify-between mb-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-0 mb-6">
                     <div className="flex items-center gap-2">
                         <Activity size={20} className="text-blue-500" />
                         <h2 className="text-xl font-bold text-slate-900 dark:text-white">Gelişim (Pickup) Trendi</h2>

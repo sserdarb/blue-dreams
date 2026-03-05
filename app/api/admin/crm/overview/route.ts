@@ -17,7 +17,7 @@ export async function GET() {
         let churnRisk = 0
 
         try {
-            const reservations = await ElektraService.getReservations(yearStart, today, 'Reservation')
+            const reservations = await ElektraService.getReservations(yearStart, today)
             const rates = await ElektraService.getExchangeRates()
 
             // Unique guest tracking

@@ -88,7 +88,7 @@ const BookingWidget: React.FC = () => {
 
           {/* Mobile Layout: Elektra Ready Date Inputs + Button */}
           <div className="md:hidden flex flex-col w-full gap-2 py-1">
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2">
               {/* Mobile Check-in */}
               <div className="flex-1 bg-gray-50 rounded-lg p-2 flex flex-col justify-center border border-gray-200">
                 <span className="text-[9px] text-gray-500 font-bold uppercase tracking-wide">Giriş</span>

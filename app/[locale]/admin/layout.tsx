@@ -60,7 +60,7 @@ export default async function AdminLayout({
           <AdminSidebar locale={locale} t={t} userRole={sessionRole} userName={sessionName} userAvatar={sessionAvatar} />
 
           {/* Main Content */}
-          <main className="transition-all duration-300 md:ml-64 pt-16 md:pt-0">
+          <main className="transition-all duration-300 md:ml-64 pt-16 md:pt-0 overflow-x-hidden">
             {/* Top Bar with Notifications */}
             <div className="hidden md:flex items-center justify-end px-8 py-3 border-b border-slate-100 dark:border-slate-800">
               <NotificationBell />
