@@ -120,7 +120,7 @@ export default function SocialMetricsClient() {
                         <AlertCircle className="text-red-500" size={48} />
                         <h2 className="text-xl font-bold text-red-600 dark:text-red-400">Veri Alınamadı</h2>
                         <p className="text-red-500/80">{error}</p>
-                        <button onClick={fetchData} className="mt-2 px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors">
+                        <button onClick={() => fetchData()} className="mt-2 px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors">
                             Tekrar Dene
                         </button>
                     </div>

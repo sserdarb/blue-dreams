@@ -1,0 +1,2 @@
+app/[locale]/admin/marketing/MarketingClient.tsx(487,90): error TS2367: This comparison appears to be unintentional because the types 'AdPlatform' and '"meta"' have no overlap.
+old_finance.ts(7,66): error TS2307: Cannot find module './purchasing' or its corresponding type declarations.

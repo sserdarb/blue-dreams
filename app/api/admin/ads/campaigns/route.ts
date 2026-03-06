@@ -161,12 +161,19 @@ export async function GET(request: Request) {
 
         // Fallback mock data if real APIs fail or have no data (for dashboard testing/preview)
         if (results.length === 0) {
-            results.push(
+            const mocks = [
                 { id: 'mock_m_1', platform: 'meta', name: 'Yaz Erken Rezervasyon (Meta)', status: 'active', objective: 'OUTCOME_TRAFFIC', dailyBudget: 50, spend: 1250.40, impressions: 45000, clicks: 1250, cpc: 1.0, ctr: 2.7, conversions: 45, roas: 4.2 },
                 { id: 'mock_m_2', platform: 'meta', name: 'Spa Paketleri Hedefli', status: 'paused', objective: 'AWARENESS', dailyBudget: 25, spend: 400.0, impressions: 12000, clicks: 300, cpc: 1.33, ctr: 2.5, conversions: 5, roas: 1.5 },
                 { id: 'mock_g_1', platform: 'google', name: 'Bodrum Lüks Otel Arama Ağı', status: 'active', objective: 'SEARCH', dailyBudget: 100, spend: 3200.50, impressions: 15000, clicks: 2100, cpc: 1.52, ctr: 14.0, conversions: 80, roas: 6.5 },
-                { id: 'mock_g_2', platform: 'google', name: 'Almanya & İngiltere Dönüşüm', status: 'active', objective: 'DISPLAY', dailyBudget: 150, spend: 4500.00, impressions: 200000, clicks: 4500, cpc: 1.0, ctr: 2.25, conversions: 120, roas: 8.0 }
-            )
+                { id: 'mock_g_2', platform: 'google', name: 'Almanya & İngiltere Dönüşüm', status: 'active', objective: 'DISPLAY', dailyBudget: 150, spend: 4500.00, impressions: 200000, clicks: 4500, cpc: 1.0, ctr: 2.25, conversions: 120, roas: 8.0 },
+                { id: 'mock_m_3', platform: 'meta', name: 'Kış Sezonu İndirimi (Pasif)', status: 'paused', objective: 'OUTCOME_LEADS', dailyBudget: 60, spend: 100.0, impressions: 5000, clicks: 100, cpc: 1.0, ctr: 2.0, conversions: 2, roas: 1.2 }
+            ]
+
+            for (const m of mocks) {
+                if (statusFilter === 'active' && m.status !== 'active') continue;
+                if (statusFilter === 'paused' && m.status !== 'paused') continue;
+                results.push(m);
+            }
         }
 
         // Totals

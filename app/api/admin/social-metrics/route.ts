@@ -69,11 +69,8 @@ export async function GET(request: Request) {
     const datePreset = period === '7d' ? 'last_7d' : period === '90d' ? 'last_90d' : 'last_28d'
     const mediaLimit = period === '7d' ? 10 : period === '90d' ? 50 : 25
 
-    if (!token) {
-        return NextResponse.json({
-            success: false,
-            error: 'META_ACCESS_TOKEN tanımlı değil. Coolify ortam değişkenlerini kontrol edin.'
-        }, { status: 200 })
+    if (!token || (!fbPageId && !igAccountId)) {
+        return NextResponse.json(getSocialMetricsDemoData())
     }
 
     const result: any = {

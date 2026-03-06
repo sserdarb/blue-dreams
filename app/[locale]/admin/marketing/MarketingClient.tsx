@@ -18,6 +18,7 @@ import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
     LineChart, Line, AreaChart, Area
 } from 'recharts'
+import { PlusCircle, Sparkles, X } from 'lucide-react'
 
 export default function MarketingClient() {
     const contentRef = useRef<HTMLDivElement>(null)
@@ -34,11 +35,26 @@ export default function MarketingClient() {
     const [loadingSuggestions, setLoadingSuggestions] = useState(false)
     const [actionsLoading, setActionsLoading] = useState<Record<string, boolean>>({})
 
+    // New Campaign State
+    const [createModalOpen, setCreateModalOpen] = useState(false)
+    const [statusFilter, setStatusFilter] = useState('all') // all, active, paused
+    const [isGeneratingCopy, setIsGeneratingCopy] = useState(false)
+    const [isCreatingCampaign, setIsCreatingCampaign] = useState(false)
+    const [newCampaign, setNewCampaign] = useState({
+        platform: 'meta',
+        name: '',
+        objective: 'OUTCOME_TRAFFIC',
+        dailyBudget: 50,
+        audienceInfo: '',
+        generatedCopy: '',
+        status: 'PAUSED'
+    })
+
     const fetchAds = async () => {
         try {
             setLoading(true)
             setErrorMsg(null)
-            const res = await fetch('/api/admin/ads/campaigns')
+            const res = await fetch(`/api/admin/ads/campaigns?status=${statusFilter}`)
             if (!res.ok) {
                 setErrorMsg(`API isteği başarısız: ${res.status}`)
                 return
@@ -129,7 +145,7 @@ export default function MarketingClient() {
         }
     }
 
-    useEffect(() => { fetchAds() }, [])
+    useEffect(() => { fetchAds() }, [statusFilter])
 
     const metaConnected = true // assume true if not specifically erroring
     const googleConnected = true // assume true if not specifically erroring
@@ -145,6 +161,51 @@ export default function MarketingClient() {
             onStart: () => setPdfExporting(true),
             onFinish: () => setPdfExporting(false),
         })
+    }
+
+    const generateAdCopy = async () => {
+        setIsGeneratingCopy(true)
+        try {
+            // Mocking AI response for the demo, would ideally hit an AI endpoint
+            await new Promise(r => setTimeout(r, 1500))
+            const text = newCampaign.platform === 'meta'
+                ? `🏖️ Blue Dreams Resort'ta erken rezervasyon fırsatlarını kaçırmayın! \nHemen yerinizi ayırtın ve ${newCampaign.audienceInfo} özel %20 indirimden yararlanın! \n👉 Detaylı bilgi için tıklayın.`
+                : `Blue Dreams Resort - ${newCampaign.audienceInfo} Özel İndirimler | Hemen Rezervasyon Yapın`;
+
+            let suggestedName = newCampaign.name;
+            if (!suggestedName) {
+                suggestedName = `[AI] ${newCampaign.platform.toUpperCase()} - ${newCampaign.audienceInfo.substring(0, 15)} Kampanyası`;
+            }
+
+            setNewCampaign(prev => ({ ...prev, generatedCopy: text, name: suggestedName }))
+        } catch (e) {
+            console.error(e)
+        } finally {
+            setIsGeneratingCopy(false)
+        }
+    }
+
+    const handleCreateCampaign = async () => {
+        setIsCreatingCampaign(true)
+        try {
+            const res = await fetch('/api/admin/ads/campaigns', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newCampaign)
+            })
+            const data = await res.json()
+            if (data.success) {
+                setCreateModalOpen(false)
+                setNewCampaign({ platform: 'meta', name: '', objective: 'OUTCOME_TRAFFIC', dailyBudget: 50, audienceInfo: '', generatedCopy: '', status: 'PAUSED' })
+                fetchAds()
+            } else {
+                alert('Kampanya oluşturulamadı: ' + (data.error || 'Bilinmeyen hata'))
+            }
+        } catch (e: any) {
+            alert('Bağlantı hatası: ' + e.message)
+        } finally {
+            setIsCreatingCampaign(false)
+        }
     }
 
     const aiInsight = useMemo(() => {
@@ -231,6 +292,10 @@ export default function MarketingClient() {
                         <button onClick={fetchSuggestions} className="flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white text-sm px-4 py-2 rounded-lg transition-colors shadow-sm">
                             <Zap size={16} />
                             AI Kampanya Önerileri
+                        </button>
+                        <button onClick={() => setCreateModalOpen(true)} className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white text-sm px-4 py-2 rounded-lg transition-colors shadow-sm">
+                            <PlusCircle size={16} />
+                            Yeni Kampanya (AI)
                         </button>
                         <button onClick={handlePdfExport} disabled={pdfExporting} className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-200 dark:text-slate-900 text-white text-sm px-4 py-2 rounded-lg transition-colors disabled:opacity-50 shadow-sm">
                             <FileDown size={16} className={pdfExporting ? 'animate-pulse' : ''} />
@@ -380,6 +445,18 @@ export default function MarketingClient() {
                             <Megaphone size={18} className="text-blue-500" />
                             Tüm Kampanyalar (Meta & Google Ads)
                         </h3>
+                        <div className="flex items-center gap-2">
+                            <label className="text-sm text-slate-500 dark:text-slate-400">Durum Filteresi:</label>
+                            <select
+                                value={statusFilter}
+                                onChange={(e) => setStatusFilter(e.target.value)}
+                                className="border border-slate-200 dark:border-slate-700 rounded-md px-3 py-1 text-sm bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+                            >
+                                <option value="all">Tümü (Aktif & Pasif)</option>
+                                <option value="active">Sadece Aktifler</option>
+                                <option value="paused">Sadece Duraklatılanlar</option>
+                            </select>
+                        </div>
                     </div>
                     <div className="overflow-x-auto">
                         <Table>
@@ -484,7 +561,7 @@ export default function MarketingClient() {
                                             <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-bl-full -z-0"></div>
                                             <div className="relative z-10">
                                                 <div className="flex justify-between items-start mb-3">
-                                                    <Badge className={s.platform.toLowerCase() === 'meta' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'} variant="outline">
+                                                    <Badge className={s.platform === 'Meta' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'} variant="outline">
                                                         {s.platform}
                                                     </Badge>
                                                     <span className="text-xs font-medium text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md">Bütçe: €{s.dailyBudget}/gün</span>
@@ -520,6 +597,76 @@ export default function MarketingClient() {
                     </div>
                 </div>
             )}
+
+            {/* Create Campaign Modal */}
+            {createModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-2xl flex flex-col overflow-hidden border border-slate-200 dark:border-slate-800">
+                        <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                            <h2 className="text-xl font-bold flex items-center gap-2 tracking-tight text-slate-900 dark:text-white">
+                                <PlusCircle className="text-blue-500" size={20} />
+                                Yeni Dijital Pazarlama Kampanyası
+                            </h2>
+                            <button onClick={() => setCreateModalOpen(false)} className="p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <div className="p-6 overflow-y-auto flex-1 space-y-5 bg-slate-50 dark:bg-slate-900/50">
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Platform</label>
+                                    <select className="w-full border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                                        value={newCampaign.platform} onChange={e => setNewCampaign({ ...newCampaign, platform: e.target.value })}>
+                                        <option value="meta">Meta (Facebook & Instagram)</option>
+                                        <option value="google">Google Ads</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Bütçe (Günlük €)</label>
+                                    <input type="number" min="1" className="w-full border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                                        value={newCampaign.dailyBudget} onChange={e => setNewCampaign({ ...newCampaign, dailyBudget: Number(e.target.value) })} />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Kampanya Adı</label>
+                                <input type="text" placeholder="Örn: 2026 Yaz Erken Rezervasyon" className="w-full border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                                    value={newCampaign.name} onChange={e => setNewCampaign({ ...newCampaign, name: e.target.value })} />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Hedef Kitle & Odak (AI İçin)</label>
+                                <div className="flex gap-2">
+                                    <input type="text" placeholder="Örn: İngiltere'den Spa paketi arayan çiftler..." className="flex-1 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                                        value={newCampaign.audienceInfo} onChange={e => setNewCampaign({ ...newCampaign, audienceInfo: e.target.value })} />
+                                    <button onClick={generateAdCopy} disabled={isGeneratingCopy || !newCampaign.audienceInfo} className="bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-400 px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-200 dark:hover:bg-indigo-900/60 disabled:opacity-50 flex items-center gap-2 whitespace-nowrap transition-colors">
+                                        {isGeneratingCopy ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
+                                        Metin Üret
+                                    </button>
+                                </div>
+                            </div>
+
+                            {newCampaign.generatedCopy && (
+                                <div className="bg-indigo-50 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-800/50 p-4 rounded-xl">
+                                    <label className="block text-xs font-semibold text-indigo-800 dark:text-indigo-400 mb-2 uppercase tracking-wide">AI OLUŞTURULAN REKLAM METNİ (DÜZENLENEBİLİR)</label>
+                                    <textarea className="w-full border border-indigo-200 dark:border-indigo-800/50 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 min-h-[100px] focus:ring-2 focus:ring-indigo-500"
+                                        value={newCampaign.generatedCopy} onChange={e => setNewCampaign({ ...newCampaign, generatedCopy: e.target.value })} />
+                                </div>
+                            )}
+
+                        </div>
+                        <div className="p-4 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-3 bg-white dark:bg-slate-900">
+                            <button onClick={() => setCreateModalOpen(false)} className="px-4 py-2 rounded-lg text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">İptal</button>
+                            <button disabled={isCreatingCampaign || !newCampaign.name} onClick={handleCreateCampaign} className="px-4 py-2 rounded-lg text-sm bg-blue-600 text-white font-medium flex items-center gap-2 hover:bg-blue-700 disabled:opacity-50 transition-colors">
+                                {isCreatingCampaign ? <Loader2 size={16} className="animate-spin" /> : <PlusCircle size={16} />}
+                                Kampanyayı API Üzerinden Oluştur
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </div>
     )
 }
