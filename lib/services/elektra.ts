@@ -253,31 +253,58 @@ async function fetchExchangeRates(): Promise<ExchangeRates> {
     if (cachedRates && Date.now() - cachedRates.fetchedAt < RATE_CACHE_TTL) {
         return cachedRates
     }
+
+    // Attempt TCMB First (Central Bank of Turkey)
+    try {
+        const res = await fetch('https://www.tcmb.gov.tr/kurlar/today.xml', { next: { revalidate: 3600 } });
+        if (res.ok) {
+            const xml = await res.text();
+            const usdMatch = xml.match(/<Currency[^>]*CurrencyCode="USD"[^>]*>[\s\S]*?<ForexBuying>([\d.]+)<\/ForexBuying>/);
+            const eurMatch = xml.match(/<Currency[^>]*CurrencyCode="EUR"[^>]*>[\s\S]*?<ForexBuying>([\d.]+)<\/ForexBuying>/);
+
+            if (usdMatch && eurMatch) {
+                cachedRates = {
+                    EUR_TO_TRY: parseFloat(eurMatch[1]),
+                    USD_TO_TRY: parseFloat(usdMatch[1]),
+                    fetchedAt: Date.now()
+                }
+                console.log('[TCMB] Live exchange rates fetched successfully:', cachedRates)
+                return cachedRates;
+            }
+        }
+    } catch (err) {
+        console.warn('[TCMB] Exchange rates fetch failed:', err)
+    }
+
+    // Fallback to Elektra API
     try {
         const jwt = await getJwt()
         const res = await fetch(`${API_BASE}/hotel/${HOTEL_ID}/exchangerates`, {
             headers: { 'Authorization': `Bearer ${jwt}` },
             next: { revalidate: 3600 }
         })
-        if (res.ok) {
+        const contentType = res.headers.get('content-type') || '';
+        if (res.ok && contentType.includes('json')) {
             const data = await res.json()
-            // API returns rates array; find EUR and USD
             const eurRate = Array.isArray(data)
                 ? data.find((r: any) => r['currency-code'] === 'EUR' || r['currency'] === 'EUR')
                 : null
             const usdRate = Array.isArray(data)
                 ? data.find((r: any) => r['currency-code'] === 'USD' || r['currency'] === 'USD')
                 : null
-            cachedRates = {
-                EUR_TO_TRY: eurRate?.['rate'] || eurRate?.['buying-rate'] || FALLBACK_RATES.EUR_TO_TRY,
-                USD_TO_TRY: usdRate?.['rate'] || usdRate?.['buying-rate'] || FALLBACK_RATES.USD_TO_TRY,
-                fetchedAt: Date.now()
+
+            if (eurRate || usdRate) {
+                cachedRates = {
+                    EUR_TO_TRY: eurRate?.['rate'] || eurRate?.['buying-rate'] || FALLBACK_RATES.EUR_TO_TRY,
+                    USD_TO_TRY: usdRate?.['rate'] || usdRate?.['buying-rate'] || FALLBACK_RATES.USD_TO_TRY,
+                    fetchedAt: Date.now()
+                }
+                console.log('[Elektra] Exchange rates fetched:', cachedRates)
+                return cachedRates
             }
-            console.log('[Elektra] Exchange rates fetched:', cachedRates)
-            return cachedRates
         }
     } catch (err) {
-        console.warn('[Elektra] Exchange rates fetch failed, using fallback:', err)
+        console.warn('[Elektra] Exchange rates fetch failed, using hardcoded fallback:', err)
     }
     return FALLBACK_RATES
 }

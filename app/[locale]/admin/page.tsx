@@ -67,6 +67,9 @@ export default async function AdminDashboard({
 
     const calcRev = (rsvs: any[]) => rsvs.reduce((sum, r) => sum + (r.currency === 'EUR' ? r.totalPrice * tryRate : (r.currency === 'USD' ? r.totalPrice * usdRate : r.totalPrice)), 0) / divisor;
 
+    const calcRevTry = (rsvs: any[]) => rsvs.reduce((sum, r) => sum + (r.currency === 'EUR' ? r.totalPrice * tryRate : (r.currency === 'USD' ? r.totalPrice * usdRate : r.totalPrice)), 0);
+    const calcRevEur = (rsvs: any[]) => rsvs.reduce((sum, r) => sum + (r.currency === 'EUR' ? r.totalPrice : (r.currency === 'TRY' ? (tryRate > 0 ? r.totalPrice / tryRate : 0) : r.totalPrice * (usdRate / tryRate))), 0);
+
     const asisiaStats = {
       totalReservations: activePeriod.length,
       totalRevenue: calcRev(activePeriod),
@@ -75,6 +78,23 @@ export default async function AdminDashboard({
       cancelledReservations: cancelledPeriod.length,
       cancelledRevenue: calcRev(cancelledPeriod)
     };
+
+    const totalRoomNights = activePeriod.reduce((sum, r) => sum + (r.nights * (r.roomCount || 1)), 0);
+    const primaryAdr = totalRoomNights > 0 ? asisiaStats.totalRevenue / totalRoomNights : 0;
+
+    let secondaryAdr = 0;
+    let secondaryAdrSymbol = '€';
+
+    if (currency === 'EUR') {
+      secondaryAdrSymbol = '₺';
+      secondaryAdr = totalRoomNights > 0 ? calcRevTry(activePeriod) / totalRoomNights : 0;
+    } else {
+      secondaryAdrSymbol = '€';
+      secondaryAdr = totalRoomNights > 0 ? calcRevEur(activePeriod) / totalRoomNights : 0;
+    }
+
+    const primaryAdrString = `${symbol}${Math.round(primaryAdr).toLocaleString('tr-TR')}`;
+    const secondaryAdrString = `${secondaryAdrSymbol}${Math.round(secondaryAdr).toLocaleString('tr-TR')}`;
 
     // --- PMS Pickup Calculation ---
     const fromStr = startDate.toISOString().split('T')[0];
@@ -189,11 +209,11 @@ export default async function AdminDashboard({
             </div>
             <div className="flex items-end justify-between">
               <div>
-                <h2 className="text-5xl font-black">{stats.adr}</h2>
+                <h2 className="text-5xl font-black">{primaryAdrString}</h2>
                 <p className="text-orange-100 mt-1">Gecelik Ortalama Kâr</p>
               </div>
               <div className="text-right">
-                <p className="text-3xl font-bold">{stats.adrEUR}</p>
+                <p className="text-3xl font-bold">{secondaryAdrString}</p>
                 <p className="text-sm font-medium text-orange-200">Güncel Kur: {tryRate.toFixed(2)} ₺</p>
               </div>
             </div>
