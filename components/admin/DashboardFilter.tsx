@@ -5,6 +5,7 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { Info, Calendar, Loader2 } from 'lucide-react'
 
 const DATE_PRESETS = [
+    { label: 'Bugün', days: 0, type: 'today' as const },
     { label: 'Son 7 Gün', days: 7 },
     { label: 'Bu Ay', days: 0, type: 'thisMonth' as const },
     { label: 'Geçen Ay', days: 0, type: 'lastMonth' as const },
@@ -16,7 +17,10 @@ function getPresetDates(preset: typeof DATE_PRESETS[number]) {
     const now = new Date()
     let from: Date, to: Date
 
-    if ('type' in preset && preset.type === 'thisMonth') {
+    if ('type' in preset && preset.type === 'today') {
+        from = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+        to = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    } else if ('type' in preset && preset.type === 'thisMonth') {
         from = new Date(now.getFullYear(), now.getMonth(), 1)
         to = now
     } else if ('type' in preset && preset.type === 'lastMonth') {

@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useMemo, useState } from 'react'
 import { Building2, TrendingUp, TrendingDown, ArrowRight, ChevronDown, ChevronUp } from 'lucide-react'
 import type { Reservation } from '@/lib/services/elektra'
