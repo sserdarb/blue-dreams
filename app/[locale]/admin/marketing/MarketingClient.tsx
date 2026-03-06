@@ -475,7 +475,9 @@ export default function MarketingClient() {
                             <TableBody>
                                 {campaigns.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={8} className="h-24 text-center text-slate-500">Henüz kampanya bulunmuyor.</TableCell>
+                                        <TableCell colSpan={8} className="h-24 text-center text-slate-500">
+                                            {metaConnected || googleConnected ? 'API bağlantıları başarılı ancak belirtilen filtreye uygun reklam kampanyası bulunamadı.' : 'Henüz kampanya bulunmuyor.'}
+                                        </TableCell>
                                     </TableRow>
                                 ) : campaigns.map((c) => (
                                     <TableRow key={c.id} className="border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
@@ -484,8 +486,8 @@ export default function MarketingClient() {
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-400">
-                                                <span className={`w-2 h-2 rounded-full ${c.platform === 'meta' ? 'bg-blue-500' : 'bg-red-500'}`}></span>
-                                                {c.platform.toUpperCase()}
+                                                <span className={`w-2 h-2 rounded-full ${String(c.platform).toLowerCase() === 'meta' ? 'bg-blue-500' : 'bg-red-500'}`}></span>
+                                                {String(c.platform).toUpperCase()}
                                             </div>
                                         </TableCell>
                                         <TableCell>
@@ -561,8 +563,8 @@ export default function MarketingClient() {
                                             <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-bl-full -z-0"></div>
                                             <div className="relative z-10">
                                                 <div className="flex justify-between items-start mb-3">
-                                                    <Badge className={s.platform === 'meta' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'} variant="outline">
-                                                        {s.platform === 'meta' ? 'Meta' : 'Google'}
+                                                    <Badge className={String(s.platform).toLowerCase() === 'meta' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'} variant="outline">
+                                                        {String(s.platform).toLowerCase() === 'meta' ? 'Meta' : 'Google'}
                                                     </Badge>
                                                     <span className="text-xs font-medium text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md">Bütçe: €{s.dailyBudget}/gün</span>
                                                 </div>
