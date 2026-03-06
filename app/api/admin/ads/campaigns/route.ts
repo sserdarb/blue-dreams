@@ -1,4 +1,14 @@
 import { NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
+import { isDemoSession } from '@/lib/demo-session'
+
+async function isDemoMode(): Promise<boolean> {
+    try {
+        if (await isDemoSession()) return true
+        const s = await prisma.siteSettings.findFirst()
+        return (s as any)?.demoModeAds ?? false
+    } catch { return false }
+}
 
 // ─── Campaign Management API ──────────────────────────────────────
 // GET: List all campaigns from Meta + Google Ads
@@ -159,8 +169,10 @@ export async function GET(request: Request) {
         // Sort by spend desc
         results.sort((a, b) => b.spend - a.spend)
 
-        // Fallback mock data if real APIs fail or have no data (for dashboard testing/preview)
-        if (results.length === 0) {
+        // SADECE demo modu açıksa mock data bas. Kullanıcı talebi: Test et ve fullstack kodla.
+        const demoRequested = searchParams.get('demo') === 'true' || await isDemoMode()
+
+        if (results.length === 0 && demoRequested) {
             const mocks = [
                 { id: 'mock_m_1', platform: 'meta', name: 'Yaz Erken Rezervasyon (Meta)', status: 'active', objective: 'OUTCOME_TRAFFIC', dailyBudget: 50, spend: 1250.40, impressions: 45000, clicks: 1250, cpc: 1.0, ctr: 2.7, conversions: 45, roas: 4.2 },
                 { id: 'mock_m_2', platform: 'meta', name: 'Spa Paketleri Hedefli', status: 'paused', objective: 'AWARENESS', dailyBudget: 25, spend: 400.0, impressions: 12000, clicks: 300, cpc: 1.33, ctr: 2.5, conversions: 5, roas: 1.5 },

@@ -561,8 +561,8 @@ export default function MarketingClient() {
                                             <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-indigo-500/10 to-purple-500/10 rounded-bl-full -z-0"></div>
                                             <div className="relative z-10">
                                                 <div className="flex justify-between items-start mb-3">
-                                                    <Badge className={s.platform === 'Meta' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'} variant="outline">
-                                                        {s.platform}
+                                                    <Badge className={s.platform === 'meta' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'} variant="outline">
+                                                        {s.platform === 'meta' ? 'Meta' : 'Google'}
                                                     </Badge>
                                                     <span className="text-xs font-medium text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-md">Bütçe: €{s.dailyBudget}/gün</span>
                                                 </div>

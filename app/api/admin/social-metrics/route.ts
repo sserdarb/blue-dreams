@@ -70,7 +70,13 @@ export async function GET(request: Request) {
     const mediaLimit = period === '7d' ? 10 : period === '90d' ? 50 : 25
 
     if (!token || (!fbPageId && !igAccountId)) {
-        return NextResponse.json(getSocialMetricsDemoData())
+        return NextResponse.json({
+            success: false,
+            error: 'API ayarları (Token veya Account ID) eksik. Ayarlardan konfigürasyon yapın.',
+            overview: { instagram: null, facebook: null },
+            engagement: { rate: 0, trend: [] },
+            recentPosts: []
+        }, { status: 200 })
     }
 
     const result: any = {
