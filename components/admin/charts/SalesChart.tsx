@@ -56,35 +56,39 @@ export function SalesChart({ data, currency = 'TRY', exchangeRate = 38.5 }: Sale
                         </linearGradient>
                     </defs>
                     <XAxis dataKey="date" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                    <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${symbol}${(value / 1000).toFixed(0)}k`} />
+                    <YAxis yAxisId="left" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `${symbol}${(value / 1000).toFixed(0)}k`} />
+                    <YAxis yAxisId="right" orientation="right" stroke="#64748b" fontSize={10} tickLine={false} axisLine={false} />
                     <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-slate-200 dark:stroke-slate-700" />
                     <Tooltip
                         content={({ active, payload, label }) => {
                             if (active && payload && payload.length) {
                                 return (
-                                    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 rounded-xl shadow-lg">
+                                    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 rounded-xl shadow-lg z-50">
                                         <p className="font-bold text-slate-900 dark:text-white mb-2">{label}</p>
-                                        {payload.map((p: any, index: number) => (
-                                            <div key={index} className="flex items-center gap-2 text-xs mb-1">
-                                                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: p.color }} />
-                                                <span className="text-slate-500 dark:text-slate-400">{p.name}:</span>
-                                                <span className="font-bold text-slate-900 dark:text-white ml-auto">
-                                                    {symbol}{Number(p.value).toLocaleString('tr-TR', { maximumFractionDigits: 0 })}
-                                                </span>
-                                            </div>
-                                        ))}
+                                        {payload.map((p: any, index: number) => {
+                                            const isRes = p.dataKey === 'totalReservations'
+                                            return (
+                                                <div key={index} className="flex items-center gap-2 text-xs mb-1">
+                                                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: p.stroke || p.color }} />
+                                                    <span className="text-slate-500 dark:text-slate-400">{p.name}:</span>
+                                                    <span className="font-bold text-slate-900 dark:text-white ml-auto">
+                                                        {isRes ? p.value : `${symbol}${Number(p.value).toLocaleString('tr-TR', { maximumFractionDigits: 0 })}`}
+                                                    </span>
+                                                </div>
+                                            )
+                                        })}
                                     </div>
                                 )
                             }
                             return null
                         }}
                     />
-                    <Legend verticalAlign="bottom" height={36} iconType="circle" />
                     <Area type="monotone" dataKey="tourOperator" stackId="1" stroke="#8b5cf6" fill="url(#colorTourOp)" name="Tur Operatörü" />
                     <Area type="monotone" dataKey="ota" stackId="1" stroke="#f59e0b" fill="url(#colorOTA)" name="OTA" />
                     <Area type="monotone" dataKey="callCenter" stackId="1" stroke="#0ea5e9" fill="url(#colorCall)" name="Call Center" />
                     <Area type="monotone" dataKey="web" stackId="1" stroke="#ec4899" fill="url(#colorWeb)" name="Website" />
                     <Area type="monotone" dataKey="direct" stackId="1" stroke="#10b981" fill="url(#colorDirect)" name="Direkt" />
+                    <Area type="monotone" dataKey="totalReservations" yAxisId="right" stroke="#64748b" fillOpacity={0} name="Toplam Rezervasyon" strokeWidth={2} strokeDasharray="5 5" />
                 </AreaChart>
             </ResponsiveContainer>
         </div>

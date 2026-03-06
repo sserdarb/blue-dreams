@@ -3,7 +3,7 @@
 import { useState, useMemo, useRef, useCallback } from 'react'
 import { exportPdf } from '@/lib/export-pdf'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import { Calendar, Search, ChevronLeft, ChevronRight, Eye, Check, X, Clock, Download, RefreshCw, ArrowRightLeft, TrendingUp, BarChart3, Filter, FileDown } from 'lucide-react'
+import { Calendar, Search, ChevronLeft, ChevronRight, Eye, Check, X, Clock, Download, RefreshCw, ArrowRightLeft, TrendingUp, BarChart3, Filter, FileDown, Activity, Info, Users, AlertTriangle } from 'lucide-react'
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts'
 import type { ExchangeRates } from '@/lib/services/elektra'
 
@@ -30,6 +30,7 @@ interface ReservationRow {
     lastUpdate: string
     country: string
     dailyAverage: number
+    paxCount: number
 }
 
 const CHANNELS = ['all', 'OTA', 'Call Center', 'Tur Operatörü', 'Website', 'Direkt']
@@ -60,6 +61,7 @@ interface Props {
 }
 
 import ModuleOffline from '@/components/admin/ModuleOffline'
+import { SalesChart } from '@/components/admin/charts/SalesChart'
 
 export default function ReservationsClient({ initialData, comparisonData, comparisonMode, error, rates, initialBookingStart, initialBookingEnd, initialCompareYear }: Props) {
     if (error) {
@@ -70,13 +72,14 @@ export default function ReservationsClient({ initialData, comparisonData, compar
     const pathname = usePathname()
     const contentRef = useRef<HTMLDivElement>(null)
     const [pdfExporting, setPdfExporting] = useState(false)
+    const [isApplying, setIsApplying] = useState(false)
 
     // Booking Date Filter (Server)
     const [bookingDateRange, setBookingDateRange] = useState({ start: initialBookingStart, end: initialBookingEnd })
     const [compareYear, setCompareYear] = useState(initialCompareYear)
 
     const [channel, setChannel] = useState('all')
-    const [chartBasis, setChartBasis] = useState<'booking' | 'checkin'>('checkin')
+    const [chartBasis, setChartBasis] = useState<'booking' | 'checkin'>('booking')
     const [status, setStatus] = useState('all')
     const [currency, setCurrency] = useState<'TRY' | 'EUR'>('TRY')
     const [search, setSearch] = useState('')
@@ -105,11 +108,13 @@ export default function ReservationsClient({ initialData, comparisonData, compar
 
     // Apply Booking Date Filter (Server Reload)
     const applyBookingFilter = () => {
+        setIsApplying(true)
         const params = new URLSearchParams()
         if (bookingDateRange.start) params.set('bookingStart', bookingDateRange.start)
         if (bookingDateRange.end) params.set('bookingEnd', bookingDateRange.end)
         if (compareYear) params.set('compareYear', compareYear)
         router.push(`${pathname}?${params.toString()}`)
+        setTimeout(() => setIsApplying(false), 2000)
     }
 
     const handleCompareChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -164,7 +169,7 @@ export default function ReservationsClient({ initialData, comparisonData, compar
             data = data.filter(r => r.status === status)
         }
 
-        // Filter by STAY DATE (Check-in)
+        // Filter by STAY DATE (Check-in within range)
         if (stayDateRange.start) data = data.filter(r => r.checkIn >= stayDateRange.start)
         if (stayDateRange.end) data = data.filter(r => r.checkIn <= stayDateRange.end)
 
@@ -226,6 +231,29 @@ export default function ReservationsClient({ initialData, comparisonData, compar
         return { start: checkIns[0], end: checkIns[checkIns.length - 1] }
     }, [filtered])
 
+    // Performance Calculations (Market & Agency Averages)
+    const performances = useMemo(() => {
+        const byMarket: Record<string, { sum: number, count: number }> = {} // channel_checkIn => metrics
+        const byAgency: Record<string, { sum: number, count: number }> = {}
+
+        filtered.forEach(r => {
+            const amount = getAmount(r.dailyAverage, r.currency)
+            if (amount <= 0) return
+
+            const mKey = `${r.channel}_${r.checkIn}`
+            if (!byMarket[mKey]) byMarket[mKey] = { sum: 0, count: 0 }
+            byMarket[mKey].sum += amount
+            byMarket[mKey].count++
+
+            const aKey = r.agency
+            if (!byAgency[aKey]) byAgency[aKey] = { sum: 0, count: 0 }
+            byAgency[aKey].sum += amount
+            byAgency[aKey].count++
+        })
+
+        return { byMarket, byAgency }
+    }, [filtered, currency, rates])
+
     // Filter comparison data
     // Pace mode: data is already scoped by server (364-day shifted booking period) — just pass through
     // Aggregate mode: filter by shifted stay dates
@@ -262,57 +290,50 @@ export default function ReservationsClient({ initialData, comparisonData, compar
     }, [filteredComparison, totalRevenue, filtered.length, currency])
 
     // ─── Charts Data — User-selectable date basis ───
-    const chartData = useMemo(() => {
-        const map = new Map<string, { date: string, count: number, revenue: number, compCount: number, compRevenue: number }>()
+    const salesChartData = useMemo(() => {
+        const map = new Map<string, any>()
+        const sorted = [...filtered].sort((a, b) => a[chartBasis === 'booking' ? 'saleDate' : 'checkIn'].localeCompare(b[chartBasis === 'booking' ? 'saleDate' : 'checkIn']))
 
-        if (chartBasis === 'booking') {
-            // ─── X-axis = booking dates (saleDate / rezervasyon tarihi) ───
-            const sorted = [...filtered].sort((a, b) => a.saleDate.localeCompare(b.saleDate))
-            sorted.forEach(r => {
-                const date = r.saleDate.split('-').slice(1).join('/') // MM/DD
-                if (!map.has(date)) map.set(date, { date, count: 0, revenue: 0, compCount: 0, compRevenue: 0 })
-                const entry = map.get(date)!
-                entry.count++
-                entry.revenue += getAmount(r.totalPrice, r.currency)
-            })
-            // Comparison: +364 day shift on saleDate (same weekday alignment)
-            filteredComparison.forEach(r => {
-                const shifted = new Date(r.saleDate)
-                shifted.setDate(shifted.getDate() + 364)
-                const mm = String(shifted.getMonth() + 1).padStart(2, '0')
-                const dd = String(shifted.getDate()).padStart(2, '0')
-                const key = `${mm}/${dd}`
-                if (!map.has(key)) map.set(key, { date: key, count: 0, revenue: 0, compCount: 0, compRevenue: 0 })
-                const entry = map.get(key)!
-                entry.compCount++
-                entry.compRevenue += getAmount(r.totalPrice, r.currency)
-            })
-        } else {
-            // ─── X-axis = check-in dates (konaklama tarihi) — gün bazlı ───
-            const sorted = [...filtered].sort((a, b) => a.checkIn.localeCompare(b.checkIn))
-            sorted.forEach(r => {
-                const date = r.checkIn.split('-').slice(1).join('/') // MM/DD from checkIn
-                if (!map.has(date)) map.set(date, { date, count: 0, revenue: 0, compCount: 0, compRevenue: 0 })
-                const entry = map.get(date)!
-                entry.count++
-                entry.revenue += getAmount(r.totalPrice, r.currency)
-            })
-            // Comparison: +364 day shift on checkIn (weekday alignment)
-            filteredComparison.forEach(r => {
-                const shifted = new Date(r.checkIn)
-                shifted.setDate(shifted.getDate() + 364)
-                const mm = String(shifted.getMonth() + 1).padStart(2, '0')
-                const dd = String(shifted.getDate()).padStart(2, '0')
-                const key = `${mm}/${dd}`
-                if (!map.has(key)) map.set(key, { date: key, count: 0, revenue: 0, compCount: 0, compRevenue: 0 })
-                const entry = map.get(key)!
-                entry.compCount++
-                entry.compRevenue += getAmount(r.totalPrice, r.currency)
-            })
-        }
+        sorted.forEach(res => {
+            const date = res[chartBasis === 'booking' ? 'saleDate' : 'checkIn']
+            if (!date) return
+            const dStr = date.split('-').slice(1).join('/') // MM/DD
 
-        return Array.from(map.values()).sort((a, b) => a.date.localeCompare(b.date))
-    }, [filtered, filteredComparison, chartBasis, currency])
+            if (!map.has(dStr)) {
+                map.set(dStr, {
+                    date: dStr, web: 0, callCenter: 0, ota: 0, tourOperator: 0, direct: 0,
+                    totalRevenue: 0, totalReservations: 0, totalRoomNights: 0,
+                    otaRes: 0, otaRN: 0, callCenterRes: 0, callCenterRN: 0,
+                    webRes: 0, webRN: 0, directRes: 0, directRN: 0,
+                    tourOpRes: 0, tourOpRN: 0
+                })
+            }
+            const entry = map.get(dStr)!
+            const amount = getAmount(res.totalPrice, res.currency)
+            const roomNights = res.roomCount * res.nights
+            const isCancelled = res.status === 'Cancelled' || res.status === 'İptal'
+
+            if (!isCancelled) {
+                entry.totalRevenue += amount
+                entry.totalReservations += 1
+                entry.totalRoomNights += roomNights
+
+                switch (res.channel) {
+                    case 'Website':
+                        entry.web += amount; entry.webRes += 1; entry.webRN += roomNights; break;
+                    case 'Call Center':
+                        entry.callCenter += amount; entry.callCenterRes += 1; entry.callCenterRN += roomNights; break;
+                    case 'OTA':
+                        entry.ota += amount; entry.otaRes += 1; entry.otaRN += roomNights; break;
+                    case 'Direkt':
+                        entry.direct += amount; entry.directRes += 1; entry.directRN += roomNights; break;
+                    default:
+                        entry.tourOperator += amount; entry.tourOpRes += 1; entry.tourOpRN += roomNights; break;
+                }
+            }
+        })
+        return Array.from(map.values())
+    }, [filtered, chartBasis, currency, rates])
 
     const fmt = (n: number) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency, maximumFractionDigits: 0 }).format(n)
 
@@ -474,10 +495,11 @@ export default function ReservationsClient({ initialData, comparisonData, compar
 
                     <button
                         onClick={applyBookingFilter}
-                        className="px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-sm font-semibold shadow-lg shadow-emerald-600/20 transition-all flex items-center gap-2 w-full md:w-auto justify-center"
+                        disabled={isApplying}
+                        className={`px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-sm font-semibold shadow-lg shadow-emerald-600/20 transition-all flex items-center gap-2 w-full md:w-auto justify-center ${isApplying ? 'opacity-75 cursor-not-allowed' : ''}`}
                     >
-                        <RefreshCw size={16} />
-                        Uygula
+                        <RefreshCw size={16} className={isApplying ? "animate-spin" : ""} />
+                        {isApplying ? "Uygulanıyor..." : "Uygula"}
                     </button>
                 </div>
             </div>
@@ -504,54 +526,20 @@ export default function ReservationsClient({ initialData, comparisonData, compar
                     Rezervasyon Tarihi
                 </button>
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-5 shadow-sm">
-                    <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4 flex items-center gap-2">
-                        <TrendingUp size={16} className="text-emerald-500 dark:text-emerald-400" /> Günlük Rezervasyon Geliri
-                    </h3>
-                    <div className="h-[250px] w-full">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={chartData}>
-                                <defs>
-                                    <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.8} />
-                                        <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
-                                    </linearGradient>
-                                </defs>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" className="dark:[&>line]:stroke-[#374151]" vertical={false} opacity={0.5} />
-                                <XAxis dataKey="date" stroke="#6b7280" fontSize={12} tickLine={false} axisLine={false} />
-                                <YAxis stroke="#6b7280" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `${val / 1000}k`} />
-                                <Tooltip
-                                    contentStyle={{ backgroundColor: 'var(--tooltip-bg, #1f2937)', borderColor: 'var(--tooltip-border, #374151)', color: 'var(--tooltip-text, #f3f4f6)' }}
-                                    formatter={(value: any, name: any) => [fmt(value || 0), name === 'revenue' ? `Gelir (2026)` : `Gelir (${compareYear})`]}
-                                />
-                                <Area type="monotone" dataKey="revenue" stroke="#10b981" fillOpacity={1} fill="url(#colorRev)" name="revenue" />
-                                {compareYear && <Area type="monotone" dataKey="compRevenue" stroke="#94a3b8" strokeDasharray="5 5" fill="none" name="compRevenue" />}
-                            </AreaChart>
-                        </ResponsiveContainer>
+            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-5 shadow-sm">
+                <div className="flex items-center gap-2 mb-6 relative group">
+                    <Activity size={20} className="text-cyan-500" />
+                    <h2 className="text-lg font-bold text-slate-900 dark:text-white">Genel Rezervasyon Trendi</h2>
+                    <div className="ml-auto cursor-help text-slate-400 hover:text-cyan-500 transition-colors">
+                        <Info size={16} />
+                    </div>
+                    {/* Tooltip on hover */}
+                    <div className="absolute right-0 top-8 w-64 bg-slate-800 dark:bg-slate-700 text-white p-3 rounded-xl shadow-xl border border-slate-700 dark:border-slate-600 z-50 hidden group-hover:block transition-all text-xs space-y-2 pointer-events-none">
+                        <p className="font-semibold border-b border-slate-600 pb-1 mb-2">Grafik Bilgisi</p>
+                        <div className="text-slate-300">Seçilen tarih bazına (Rezervasyon / Konaklama) göre kanallardan gelen rezervasyonların (ciro) ve adetlerinin dağılımını gösterir.</div>
                     </div>
                 </div>
-
-                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-5 shadow-sm">
-                    <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4 flex items-center gap-2">
-                        <BarChart3 size={16} className="text-blue-500 dark:text-blue-400" /> Günlük Rezervasyon Sayısı
-                    </h3>
-                    <div className="h-[250px] w-full">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={chartData}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" className="dark:[&>line]:stroke-[#374151]" vertical={false} opacity={0.5} />
-                                <XAxis dataKey="date" stroke="#6b7280" fontSize={12} tickLine={false} axisLine={false} />
-                                <YAxis stroke="#6b7280" fontSize={12} tickLine={false} axisLine={false} />
-                                <Tooltip
-                                    contentStyle={{ backgroundColor: 'var(--tooltip-bg, #1f2937)', borderColor: 'var(--tooltip-border, #374151)', color: 'var(--tooltip-text, #f3f4f6)' }}
-                                    formatter={(value: any, name: any) => [typeof value === 'number' ? Math.round(value) : value, name === 'count' ? `Adet (2026)` : `Adet (${compareYear})`]}
-                                />
-                                <Bar dataKey="count" fill="#3b82f6" radius={[4, 4, 0, 0]} name="count" />
-                                {compareYear && <Bar dataKey="compCount" fill="#94a3b8" radius={[4, 4, 0, 0]} name="compCount" />}
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </div>
-                </div>
+                <SalesChart data={salesChartData} currency={currency as 'TRY' | 'EUR' | 'USD'} />
             </div>
 
             {/* Summary Cards */}
@@ -589,56 +577,46 @@ export default function ReservationsClient({ initialData, comparisonData, compar
                 ))}
             </div>
 
-            {/* Channel & Status Charts */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Channel Chart */}
+            <div className="grid grid-cols-1 gap-6">
                 <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-5 shadow-sm">
                     <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4 flex items-center gap-2">
                         <ArrowRightLeft size={16} className="text-purple-500 dark:text-purple-400" /> Kanal Dağılımı
                     </h3>
-                    <div className="h-[220px] w-full">
+                    <div className="h-[250px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie
                                     data={Object.entries(channelSummary).map(([name, v], i) => ({
                                         name, value: v.count,
+                                        revenue: v.revenue,
                                         color: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#ef4444', '#14b8a6'][i % 7]
                                     }))}
-                                    cx="50%" cy="50%" innerRadius={55} outerRadius={85} dataKey="value" nameKey="name" paddingAngle={2}
+                                    cx="50%" cy="50%" innerRadius={70} outerRadius={110} dataKey="value" nameKey="name" paddingAngle={2}
+                                    label={({ name, percent = 0 }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                                    labelLine={false}
                                 >
                                     {Object.entries(channelSummary).map(([,], i) => (
                                         <Cell key={i} fill={['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#ef4444', '#14b8a6'][i % 7]} />
                                     ))}
                                 </Pie>
-                                <Tooltip formatter={(value: any) => [value, 'Rezervasyon']} />
-                                <Legend verticalAlign="bottom" height={36} formatter={(value: any) => <span className="text-xs text-slate-600 dark:text-slate-300">{value}</span>} />
+                                <Tooltip
+                                    content={({ active, payload }) => {
+                                        if (active && payload && payload.length) {
+                                            const data = payload[0].payload
+                                            return (
+                                                <div className="bg-white dark:bg-slate-800 p-3 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700">
+                                                    <p className="font-bold text-slate-900 dark:text-white mb-1">{data.name}</p>
+                                                    <p className="text-sm text-slate-600 dark:text-slate-300">Rezervasyon: <span className="font-medium text-slate-900 dark:text-white">{data.value} adet</span></p>
+                                                    <p className="text-sm text-slate-600 dark:text-slate-300">Toplam Ciro: <span className="font-medium text-emerald-600 font-bold">{fmt(data.revenue)}</span></p>
+                                                </div>
+                                            )
+                                        }
+                                        return null;
+                                    }}
+                                />
+                                <Legend verticalAlign="bottom" height={36} formatter={(value: any) => <span className="text-xs text-slate-600 dark:text-slate-300 font-medium">{value}</span>} />
                             </PieChart>
-                        </ResponsiveContainer>
-                    </div>
-                </div>
-
-                <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-5 shadow-sm">
-                    <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4 flex items-center gap-2">
-                        <Filter size={16} className="text-amber-500 dark:text-amber-400" /> Durum Dağılımı
-                    </h3>
-                    <div className="h-[220px] w-full">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart
-                                data={(() => {
-                                    const map = new Map<string, number>()
-                                    filtered.forEach(r => map.set(r.status, (map.get(r.status) || 0) + 1))
-                                    return Array.from(map.entries()).map(([name, count]) => ({
-                                        name: name === 'Reservation' ? 'Onaylı' : name === 'InHouse' ? 'Konaklamada' : name === 'CheckOut' ? 'Çıkış' : name === 'Waiting' ? 'Beklemede' : name,
-                                        count
-                                    })).sort((a, b) => b.count - a.count)
-                                })()}
-                                layout="vertical"
-                            >
-                                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" className="dark:[&>line]:stroke-[#374151]" horizontal={false} opacity={0.5} />
-                                <XAxis type="number" fontSize={11} />
-                                <YAxis dataKey="name" type="category" fontSize={11} width={80} />
-                                <Tooltip />
-                                <Bar dataKey="count" name="Adet" fill="#f59e0b" radius={[0, 6, 6, 0]} />
-                            </BarChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
@@ -698,8 +676,8 @@ export default function ReservationsClient({ initialData, comparisonData, compar
                                 Uygula
                             </button>
                         )}
-                        <button onClick={() => { setStayDateRange({ start: '1970-01-01', end: '2099-12-31' }); setTempStayStart(''); setTempStayEnd(''); }} className="px-2 text-[10px] text-slate-500 hover:text-cyan-500 transition-colors shrink-0">
-                            Tüm Zamanlar
+                        <button onClick={() => { setStayDateRange({ start: '', end: '' }); setTempStayStart(''); setTempStayEnd(''); }} className="px-2 text-[10px] text-slate-500 hover:text-cyan-500 transition-colors shrink-0">
+                            Temizle
                         </button>
                     </div>
 
@@ -958,8 +936,8 @@ export default function ReservationsClient({ initialData, comparisonData, compar
                                     <p className="text-slate-900 dark:text-white">{selectedRes.boardType}</p>
                                 </div>
                                 <div>
-                                    <p className="text-slate-500 text-xs uppercase mb-1">Oda Sayısı</p>
-                                    <p className="text-slate-900 dark:text-white">{selectedRes.roomCount}</p>
+                                    <p className="text-slate-500 text-xs uppercase mb-1">Misafir (Pax)</p>
+                                    <p className="text-slate-900 dark:text-white flex items-center gap-1.5"><Users size={14} className="text-slate-400" /> {selectedRes.paxCount} Kişi / {selectedRes.roomCount} Oda</p>
                                 </div>
                             </div>
 
@@ -973,6 +951,50 @@ export default function ReservationsClient({ initialData, comparisonData, compar
                                     <p className="text-slate-900 dark:text-white">{selectedRes.rateType}</p>
                                 </div>
                             </div>
+
+                            {/* Performance Data */}
+                            {(() => {
+                                const mKey = `${selectedRes.channel}_${selectedRes.checkIn}`
+                                const mData = performances.byMarket[mKey]
+                                const mAvg = mData && mData.count > 0 ? mData.sum / mData.count : 0
+
+                                const aData = performances.byAgency[selectedRes.agency]
+                                const aAvg = aData && aData.count > 0 ? aData.sum / aData.count : 0
+
+                                const resAds = getAmount(selectedRes.dailyAverage, selectedRes.currency)
+                                const isAboveAvg = resAds >= mAvg
+                                const pctDiff = mAvg > 0 ? Math.abs(((resAds - mAvg) / mAvg) * 100) : 0
+
+                                return (
+                                    <div className="bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg p-4 mt-2">
+                                        <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mb-3 flex items-center gap-1"><TrendingUp size={14} /> Performans Analizi</p>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <p className="text-slate-600 dark:text-slate-400 text-xs mb-1">Pazar Ortalamasına Göre</p>
+                                                {mAvg > 0 ? (
+                                                    <div className="flex items-center gap-2">
+                                                        <span className={`px-2 py-0.5 rounded text-xs font-semibold ${isAboveAvg ? 'bg-emerald-500/20 text-emerald-500' : 'bg-red-500/20 text-red-500'}`}>
+                                                            {isAboveAvg ? '↑' : '↓'} %{pctDiff.toFixed(1)} {isAboveAvg ? 'Üstünde' : 'Altında'}
+                                                        </span>
+                                                    </div>
+                                                ) : <span className="text-slate-500 text-sm">Veri Yok</span>}
+                                            </div>
+                                            <div>
+                                                <p className="text-slate-600 dark:text-slate-400 text-xs mb-1">Ortalama Günlük Gelir (ADR)</p>
+                                                <p className="text-slate-900 dark:text-white text-sm font-semibold">{fmt(resAds)}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-slate-600 dark:text-slate-400 text-xs mb-1">Acente Geneli ADR</p>
+                                                <p className="text-slate-900 dark:text-white text-sm font-semibold">{aAvg > 0 ? fmt(aAvg) : 'Veri Yok'}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-slate-600 dark:text-slate-400 text-xs mb-1">Pazar Geneli ADR ({selectedRes.channel})</p>
+                                                <p className="text-slate-900 dark:text-white text-sm font-semibold">{mAvg > 0 ? fmt(mAvg) : 'Veri Yok'}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )
+                            })()}
 
                             <div className="pt-4 border-t border-slate-200 dark:border-white/10">
                                 <div className="flex items-center justify-between">

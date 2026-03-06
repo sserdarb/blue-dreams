@@ -39,6 +39,7 @@ export default async function ReservationsPage({ searchParams }: { searchParams:
                 guestName: r.guests.length > 0
                     ? `${r.guests[0].name} ${r.guests[0].surname}`
                     : r.contactName || 'N/A',
+                paxCount: r.guests ? Math.max(1, r.guests.length) : 1,
                 contactEmail: r.contactEmail,
                 contactPhone: r.contactPhone,
                 agency: r.agency,

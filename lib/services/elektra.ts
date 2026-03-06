@@ -8,6 +8,20 @@ export type SalesData = {
     ota: number
     tourOperator: number
     direct: number
+    totalRevenue: number
+    totalReservations: number
+    totalRoomNights: number
+    // granular stats for charts
+    otaRes: number
+    otaRN: number
+    callCenterRes: number
+    callCenterRN: number
+    webRes: number
+    webRN: number
+    directRes: number
+    directRN: number
+    tourOpRes: number
+    tourOpRN: number
 }
 
 export type OccupancyData = {
@@ -811,17 +825,54 @@ export const ElektraService = {
             const date = res.lastUpdate.slice(0, 10) // YYYY-MM-DD from ISO
             if (!date) continue
             if (!byDate.has(date)) {
-                byDate.set(date, { date, web: 0, callCenter: 0, ota: 0, tourOperator: 0, direct: 0 })
+                byDate.set(date, {
+                    date, web: 0, callCenter: 0, ota: 0, tourOperator: 0, direct: 0,
+                    totalRevenue: 0, totalReservations: 0, totalRoomNights: 0,
+                    otaRes: 0, otaRN: 0, callCenterRes: 0, callCenterRN: 0,
+                    webRes: 0, webRN: 0, directRes: 0, directRN: 0,
+                    tourOpRes: 0, tourOpRN: 0
+                })
             }
             const entry = byDate.get(date)!
             const rates = await fetchExchangeRates()
             const amount = toTRY(res.totalPrice, res.currency, rates)
-            switch (res.channel) {
-                case 'Website': entry.web += amount; break
-                case 'Call Center': entry.callCenter += amount; break
-                case 'OTA': entry.ota += amount; break
-                case 'Direkt': entry.direct += amount; break
-                default: entry.tourOperator += amount; break
+            const nights = Math.max(1, res.nights || 1)
+            const roomCount = Math.max(1, res.roomCount || 1)
+            const roomNights = nights * roomCount
+            const isCancelled = res.status === 'Cancelled' || res.status === 'İptal'
+
+            if (!isCancelled) {
+                entry.totalRevenue += amount
+                entry.totalReservations += 1
+                entry.totalRoomNights += roomNights
+
+                switch (res.channel) {
+                    case 'Website':
+                        entry.web += amount;
+                        entry.webRes += 1;
+                        entry.webRN += roomNights;
+                        break;
+                    case 'Call Center':
+                        entry.callCenter += amount;
+                        entry.callCenterRes += 1;
+                        entry.callCenterRN += roomNights;
+                        break;
+                    case 'OTA':
+                        entry.ota += amount;
+                        entry.otaRes += 1;
+                        entry.otaRN += roomNights;
+                        break;
+                    case 'Direkt':
+                        entry.direct += amount;
+                        entry.directRes += 1;
+                        entry.directRN += roomNights;
+                        break;
+                    default:
+                        entry.tourOperator += amount;
+                        entry.tourOpRes += 1;
+                        entry.tourOpRN += roomNights;
+                        break;
+                }
             }
         }
 

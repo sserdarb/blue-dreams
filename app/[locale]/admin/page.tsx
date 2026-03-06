@@ -8,7 +8,7 @@ import { ChannelTrendChart } from '@/components/admin/charts/ChannelTrendChart'
 import { ReviewTrendChart } from '@/components/admin/charts/ReviewTrendChart'
 import DashboardFilter from '@/components/admin/DashboardFilter'
 import DashboardPickupWidget from '@/components/admin/DashboardPickupWidget'
-import DashboardLastReservationsWidget from '@/components/admin/DashboardLastReservationsWidget'
+import DashboardAgencyPerformanceWidget from '@/components/admin/DashboardAgencyPerformanceWidget'
 import ModuleOffline from '@/components/admin/ModuleOffline'
 import LiveTrafficSocialWidget from '@/components/admin/LiveTrafficSocialWidget'
 import { getAdminTranslations, type AdminLocale } from '@/lib/admin-translations'
@@ -77,48 +77,56 @@ export default async function AdminDashboard({
     };
 
     // --- PMS Pickup Calculation ---
-    const dailyMap = new Map<string, { new: number, cancelled: number }>();
-    let d = new Date(startDate);
-    while (d <= endDate) {
-      dailyMap.set(d.toISOString().split('T')[0], { new: 0, cancelled: 0 });
-      d.setDate(d.getDate() + 1);
-    }
+    const fromStr = startDate.toISOString().split('T')[0];
+    const toStr = endDate.toISOString().split('T')[0];
 
-    periodReservations.forEach((r: any) => {
-      const rDate = (r.reservationDate || r.lastUpdate || r.checkIn).slice(0, 10);
-      if (dailyMap.has(rDate)) {
-        const entry = dailyMap.get(rDate)!;
-        if (r.status === 'Cancelled' || r.status === 'İptal') entry.cancelled += 1;
-        else entry.new += 1;
+    // Pickups based on last update date being within the selected range
+    const pickupsInPeriod = allReservations.filter((r: any) => {
+      const lastUpdateDate = r.lastUpdate ? r.lastUpdate.slice(0, 10) : '';
+      return lastUpdateDate >= fromStr && lastUpdateDate <= toStr;
+    });
+    const cancelledInPeriod = pickupsInPeriod.filter((r: any) => r.status === 'Cancelled' || r.status === 'İptal');
+    const newInPeriod = pickupsInPeriod.filter((r: any) => r.status !== 'Cancelled' && r.status !== 'İptal');
+
+    // Agency impacts for pickups
+    const agencyPickupMap = new Map<string, number>();
+    pickupsInPeriod.forEach((r: any) => {
+      const agencyName = (r.agency || 'Bilinmeyen Acente').trim().toUpperCase();
+      const price = calcRev([r]);
+      const isCancelled = r.status === 'Cancelled' || r.status === 'İptal';
+      const impact = isCancelled ? -price : price;
+
+      if (!agencyPickupMap.has(agencyName)) {
+        agencyPickupMap.set(agencyName, 0);
       }
+      agencyPickupMap.set(agencyName, agencyPickupMap.get(agencyName)! + impact);
     });
 
-    const sortedByPrice = [...periodReservations]
-      .filter(r => r.totalPrice > 0)
-      .sort((a, b) => b.totalPrice - a.totalPrice);
+    const agencyImpacts = Array.from(agencyPickupMap.entries()).map(([name, pickupRevenue]) => ({
+      name,
+      pickupRevenue
+    }));
 
-    let pickupData = {
-      newReservations: activePeriod.length,
-      cancelledReservations: cancelledPeriod.length,
-      netPickup: activePeriod.length - cancelledPeriod.length,
-      revenue: calcRev(activePeriod) - calcRev(cancelledPeriod),
-      dailyTrend: Array.from(dailyMap.entries()).map(([date, counts]) => ({ date, ...counts })),
-      recentPickups: periodReservations.slice(0, 10).map((r: any) => ({
-        resNo: String(r.id || r.voucherNo),
-        guestName: r.contactName || (r.guests && r.guests[0] ? r.guests[0].name : 'Gizli Misafir'),
-        checkIn: r.checkIn,
-        price: r.totalPrice,
-        currency: r.currency,
-        isCancelled: r.status === 'Cancelled' || r.status === 'İptal'
-      })),
-      majorImpacts: sortedByPrice.slice(0, 5).map((r: any) => ({
-        resNo: String(r.id || r.voucherNo),
-        guestName: r.contactName || (r.guests && r.guests[0] ? r.guests[0].name : 'Gizli Misafir'),
-        checkIn: r.checkIn,
-        price: r.totalPrice,
-        currency: r.currency,
-        isCancelled: r.status === 'Cancelled' || r.status === 'İptal'
-      }))
+    const pickupData = {
+      newReservations: newInPeriod.length,
+      cancelledReservations: cancelledInPeriod.length,
+      netPickup: newInPeriod.length - cancelledInPeriod.length,
+      revenue: calcRev(newInPeriod) - calcRev(cancelledInPeriod),
+      dailyTrend: Array.from(
+        pickupsInPeriod.reduce((acc, r) => {
+          const d = r.lastUpdate.slice(0, 10);
+          if (!acc.has(d)) acc.set(d, { date: d, new: 0, cancelled: 0 });
+          if (r.status === 'Cancelled' || r.status === 'İptal') {
+            acc.get(d)!.cancelled += 1;
+          } else {
+            acc.get(d)!.new += 1;
+          }
+          return acc;
+        }, new Map<string, { date: string, new: number, cancelled: number }>()).values()
+      ).sort((a, b) => a.date.localeCompare(b.date)),
+      recentPickups: [], // legacy
+      majorImpacts: [], // legacy
+      agencyImpacts
     };
 
     return (
@@ -217,9 +225,8 @@ export default async function AdminDashboard({
         {/* PICKUP WIDGET */}
         <DashboardPickupWidget data={pickupData} currency={currency as 'TRY' | 'EUR' | 'USD'} exchangeRate={tryRate} />
 
-        {/* SON REZERVASYONLAR (ADR PERFORMANSI İLE BİRLİKTE) */}
-        <DashboardLastReservationsWidget reservations={recentReservations} locale={locale} currency={currency as 'TRY' | 'EUR' | 'USD'} exchangeRate={tryRate} />
-
+        {/* ACENTE PERFORMANS ANALİZİ */}
+        <DashboardAgencyPerformanceWidget reservations={periodReservations} currency={currency as 'TRY' | 'EUR' | 'USD'} exchangeRate={tryRate} />
 
         {/* TREND CHARTS GRID */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -233,11 +240,8 @@ export default async function AdminDashboard({
               </div>
               {/* Tooltip on hover */}
               <div className="absolute right-0 top-8 w-64 bg-slate-800 dark:bg-slate-700 text-white p-3 rounded-xl shadow-xl border border-slate-700 dark:border-slate-600 z-50 hidden group-hover:block transition-all text-xs space-y-2 pointer-events-none">
-                <p className="font-semibold border-b border-slate-600 pb-1 mb-2">Platform Performansı</p>
-                <div className="flex justify-between items-center"><span className="text-slate-300">Booking.com</span><span className="font-bold text-emerald-400">9.2</span></div>
-                <div className="flex justify-between items-center"><span className="text-slate-300">Expedia</span><span className="font-bold text-emerald-400">9.0</span></div>
-                <div className="flex justify-between items-center"><span className="text-slate-300">Agoda</span><span className="font-bold text-emerald-400">8.8</span></div>
-                <div className="flex justify-between items-center"><span className="text-slate-300">Tatil Sepeti</span><span className="font-bold text-emerald-400">9.4</span></div>
+                <p className="font-semibold border-b border-slate-600 pb-1 mb-2">Grafik Bilgisi</p>
+                <div className="text-slate-300">Bu grafik, seçilen tarih aralığında rezervasyonların kanallara göre dağılımını (ciro olarak) ve toplam rezervasyon adetini (çizgi ile) göstermektedir. Seçili aralıktaki rezervasyon oluşturulma/güncelleme tarihleri (pickup) baz alınır.</div>
               </div>
             </div>
             <SalesChart data={salesData} currency={currency as 'TRY' | 'EUR' | 'USD'} exchangeRate={tryRate} />

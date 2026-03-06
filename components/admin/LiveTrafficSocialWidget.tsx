@@ -80,7 +80,7 @@ export default function LiveTrafficSocialWidget() {
                 <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
                         <Activity className="text-blue-500" size={20} />
-                        <h3 className="text-lg font-bold text-slate-900 dark:text-white">Web Trafiği (Son 30 Gün)</h3>
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-white">Web Trafiği</h3>
                     </div>
                     <div className="flex items-center gap-2">
                         {loading ? <RefreshCw size={14} className="animate-spin text-slate-400" /> : (

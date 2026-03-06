@@ -12,8 +12,9 @@ interface PickupStats {
     netPickup: number
     revenue: number
     dailyTrend: { date: string, new: number, cancelled: number }[]
-    recentPickups: { resNo: string, guestName: string, checkIn: string, price: number, currency: string, isCancelled: boolean }[]
-    majorImpacts: { resNo: string, guestName: string, checkIn: string, price: number, currency: string, isCancelled: boolean }[]
+    recentPickups: { resNo: string, guestName: string, checkIn: string, price: number, currency: string, isCancelled: boolean }[] // legacy
+    majorImpacts: { resNo: string, guestName: string, checkIn: string, price: number, currency: string, isCancelled: boolean }[] // legacy
+    agencyImpacts: { name: string, pickupRevenue: number }[]
 }
 
 interface DashboardPickupWidgetProps {
@@ -109,54 +110,49 @@ export default function DashboardPickupWidget({ data, currency = 'TRY', exchange
             </div>
 
             {/* Impact Tables */}
-            <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 shadow-sm overflow-hidden flex flex-col gap-6">
-                <div>
-                    <div className="flex items-center gap-2 mb-4">
-                        <TrendingUp size={18} className="text-emerald-500" />
-                        <h3 className="font-bold text-slate-900 dark:text-white">Pozitif Etki (En Yüksek Ciro)</h3>
+            <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-0 shadow-sm overflow-hidden flex flex-col">
+                {/* Positive Impact */}
+                <div className="p-5 flex-1">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                            <TrendingUp size={18} className="text-emerald-500" />
+                            <h3 className="font-bold text-slate-900 dark:text-white">Pozitif Etki (Ciro Artışı)</h3>
+                        </div>
                     </div>
-                    {data.majorImpacts.length === 0 ? (
-                        <p className="text-sm text-slate-500 text-center py-4">Bu aralıkta büyük etkili rezervasyon bulunamadı.</p>
+                    {data.agencyImpacts?.filter(a => a.pickupRevenue > 0).length === 0 ? (
+                        <p className="text-sm text-slate-500 py-2">Pozitif etki eden acente bulunamadı.</p>
                     ) : (
                         <div className="space-y-3">
-                            {data.majorImpacts.map((imp, idx) => (
-                                <div key={idx} className="flex justify-between items-center p-2 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg text-sm">
-                                    <div>
-                                        <p className="font-semibold text-slate-900 dark:text-white truncate max-w-[120px]">{imp.guestName}</p>
-                                        <p className="text-xs text-slate-500">Giriş: {new Date(imp.checkIn).toLocaleDateString('tr-TR')} • {imp.resNo}</p>
-                                    </div>
-                                    <div className="text-right text-emerald-600 dark:text-emerald-400 font-bold">
-                                        +{convertPrice(imp.price || 0, imp.currency).toLocaleString('tr-TR', { maximumFractionDigits: 0 })} {symbol}
-                                    </div>
+                            {data.agencyImpacts?.filter(a => a.pickupRevenue > 0).slice(0, 5).map((imp, idx) => (
+                                <div key={idx} className="flex justify-between items-center group p-1.5 -mx-1.5 rounded-md hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300 truncate pr-2">{imp.name}</span>
+                                    <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                                        +{symbol}{imp.pickupRevenue.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}
+                                    </span>
                                 </div>
                             ))}
                         </div>
                     )}
                 </div>
 
-                <div className="pt-4 border-t border-slate-200 dark:border-white/10">
-                    <div className="flex items-center gap-2 mb-4">
-                        <Clock size={18} className="text-blue-500" />
-                        <h3 className="font-bold text-slate-900 dark:text-white">Son Hareketler</h3>
+                {/* Negative Impact */}
+                <div className="p-5 border-t border-slate-100 dark:border-slate-800 bg-red-50/30 dark:bg-red-900/10 flex-1">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                            <TrendingDown size={18} className="text-red-500" />
+                            <h3 className="font-bold text-slate-900 dark:text-white">Negatif Etki (İptal / Kayıp)</h3>
+                        </div>
                     </div>
-                    {data.recentPickups.length === 0 ? (
-                        <p className="text-sm text-slate-500 text-center py-4">Son hareket bulunmuyor.</p>
+                    {data.agencyImpacts?.filter(a => a.pickupRevenue < 0).length === 0 ? (
+                        <p className="text-sm text-slate-500 py-2">Negatif etki eden acente bulunamadı.</p>
                     ) : (
                         <div className="space-y-3">
-                            {data.recentPickups.slice(0, 4).map((rec, idx) => (
-                                <div key={idx} className="flex justify-between items-center p-2 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg text-sm">
-                                    <div className="flex items-center gap-2 truncate">
-                                        {rec.isCancelled ?
-                                            <TrendingDown size={14} className="text-red-500 flex-shrink-0" /> :
-                                            <TrendingUp size={14} className="text-emerald-500 flex-shrink-0" />
-                                        }
-                                        <span className={`truncate max-w-[100px] ${rec.isCancelled ? 'line-through text-slate-400' : 'text-slate-900 dark:text-white font-medium'}`}>
-                                            {rec.guestName}
-                                        </span>
-                                    </div>
-                                    <div className={`text-right font-semibold ${rec.isCancelled ? 'text-red-500' : 'text-slate-900 dark:text-white'}`}>
-                                        {rec.isCancelled ? '-' : ''}{convertPrice(rec.price || 0, rec.currency).toLocaleString('tr-TR', { maximumFractionDigits: 0 })} {symbol}
-                                    </div>
+                            {data.agencyImpacts?.filter(a => a.pickupRevenue < 0).sort((a, b) => a.pickupRevenue - b.pickupRevenue).slice(0, 5).map((imp, idx) => (
+                                <div key={idx} className="flex justify-between items-center group p-1.5 -mx-1.5 rounded-md hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300 truncate pr-2">{imp.name}</span>
+                                    <span className="text-sm font-bold text-red-600 dark:text-red-400">
+                                        {symbol}{imp.pickupRevenue.toLocaleString('tr-TR', { maximumFractionDigits: 0 })}
+                                    </span>
                                 </div>
                             ))}
                         </div>
