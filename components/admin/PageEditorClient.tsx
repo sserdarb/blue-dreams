@@ -69,15 +69,18 @@ export function PageEditorClient({
     const [collapsedWidgets, setCollapsedWidgets] = useState<Set<string>>(new Set())
     const [pickerOpen, setPickerOpen] = useState(false)
     const [deleting, setDeleting] = useState<string | null>(null)
+    const [activeWidgetId, setActiveWidgetId] = useState<string | null>(initialWidgets.length > 0 ? initialWidgets[0].id : null)
 
     // AI states
     const [aiGenerating, setAiGenerating] = useState<string | null>(null) // widget id being generated
     const [aiTopicInput, setAiTopicInput] = useState<string>('')
+    const [aiSourceUrl, setAiSourceUrl] = useState<string>('')
     const [aiTopicWidgetId, setAiTopicWidgetId] = useState<string | null>(null)
     const [aiMsg, setAiMsg] = useState('')
     const [translating, setTranslating] = useState(false)
     const [translateTarget, setTranslateTarget] = useState('')
     const [translateMsg, setTranslateMsg] = useState('')
+    const [generatingSeo, setGeneratingSeo] = useState(false)
 
     // Save page metadata
     const handleSave = async (newStatus?: string) => {
@@ -145,6 +148,8 @@ export function PageEditorClient({
         try {
             await addWidget(page.id, type)
             router.refresh()
+            // Assume the new widget will appear at the end, so its ID isn't known here instantly 
+            // without reading the result. In a real scenario we could return the id from `addWidget`.
         } catch (err) { console.error(err) }
     }
 
@@ -158,7 +163,7 @@ export function PageEditorClient({
 
     // AI Content Generation
     const handleAiGenerate = async (widget: Widget) => {
-        if (!aiTopicInput.trim()) return
+        if (!aiTopicInput.trim() && !aiSourceUrl.trim()) return
         setAiGenerating(widget.id)
         setAiMsg('')
         try {
@@ -168,6 +173,7 @@ export function PageEditorClient({
                 body: JSON.stringify({
                     widgetType: widget.type,
                     topic: aiTopicInput,
+                    sourceUrl: aiSourceUrl,
                     locale: page.locale,
                 })
             })
@@ -214,6 +220,29 @@ export function PageEditorClient({
         setTranslating(false)
     }
 
+    // Auto SEO Generation
+    const handleGenerateSeo = async () => {
+        setGeneratingSeo(true)
+        try {
+            const res = await fetch('/api/admin/cms-generate-seo', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title,
+                    locale: page.locale,
+                    widgets: widgets.map(w => w.data) // send widget contents as context
+                })
+            })
+            const result = await res.json()
+            if (!res.ok) throw new Error(result.error)
+            setMetaDesc(result.description)
+        } catch (err) {
+            console.error(err)
+            alert('SEO Otomatik üretim başarısız oldu. Lütfen tekrar deneyin.')
+        }
+        setGeneratingSeo(false)
+    }
+
     return (
         <div>
             {/* Top bar */}
@@ -256,9 +285,67 @@ export function PageEditorClient({
                 </div>
             </div>
 
-            {/* Main layout: Left (content) + Right (sidebar) */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Left Column — Page Title, Slug, Content Builder */}
+            {/* Main layout: 3 Columns -> Navigation (1), Content (2), Settings (1) */}
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+
+                {/* 1. Left Sidebar: Widget Navigation List */}
+                <div className="lg:col-span-1 space-y-4">
+                    <div className="bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden sticky top-6">
+                        <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
+                            <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">{t.pageContentBuilder || 'YAPI (BLOKLAR)'}</h3>
+                            <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">
+                                {widgets.length}
+                            </span>
+                        </div>
+                        <div className="p-2 space-y-1.5 max-h-[600px] overflow-y-auto edit-scrollbar">
+                            {widgets.length === 0 ? (
+                                <div className="text-center py-6">
+                                    <span className="text-xs text-slate-400">Blok Yok</span>
+                                </div>
+                            ) : (
+                                widgets.map((widget, index) => (
+                                    <div
+                                        key={widget.id}
+                                        draggable
+                                        onDragStart={() => handleDragStart(index)}
+                                        onDragOver={e => handleDragOver(e, index)}
+                                        onDrop={e => handleDrop(e, index)}
+                                        onDragEnd={handleDragEnd}
+                                        className={`flex items-center justify-between p-2.5 rounded-lg border-2 cursor-pointer transition-all ${activeWidgetId === widget.id
+                                                ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-900/20'
+                                                : overIndex === index
+                                                    ? 'border-blue-300 ring-2 ring-blue-300/20'
+                                                    : 'border-transparent bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/40 dark:hover:bg-slate-800'
+                                            }`}
+                                        onClick={() => setActiveWidgetId(widget.id)}
+                                    >
+                                        <div className="flex items-center gap-3 truncate w-full">
+                                            <button className="text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-grab active:cursor-grabbing hover:bg-slate-200 dark:hover:bg-slate-700 p-1 rounded transition-colors shrink-0" onClick={(e) => e.stopPropagation()}>
+                                                <GripVertical size={14} />
+                                            </button>
+                                            <span className="text-xl opacity-70 shrink-0">{getWidgetIcon(widget.type)}</span>
+                                            <div className="truncate flex-1">
+                                                <span className="text-xs font-bold text-slate-700 dark:text-slate-200 uppercase block truncate">
+                                                    {widget.type.replace(/-/g, ' ')}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                        <div className="p-3 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+                            <button
+                                onClick={() => setPickerOpen(true)}
+                                className="w-full py-2.5 border border-dashed border-slate-300 dark:border-slate-600 rounded-lg text-blue-600 dark:text-blue-400 hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-all text-xs font-bold flex items-center justify-center gap-2"
+                            >
+                                <Plus size={14} /> YENİ BLOK EKLE
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* 2. Center Column: Page Info & Active Editor */}
                 <div className="lg:col-span-2 space-y-6">
                     {/* Title + Slug */}
                     <div className="bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 p-6 space-y-4">
@@ -289,55 +376,24 @@ export function PageEditorClient({
                         </div>
                     </div>
 
-                    {/* Content Builder */}
-                    <div className="bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-                        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">
-                            <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">{t.pageContentBuilder}</h3>
-                            <span className="text-xs text-slate-400 dark:text-slate-500 font-medium">
-                                {widgets.length} {t.blocksAdded}
-                            </span>
-                        </div>
-
-                        {/* Widget list */}
-                        <div className="p-4 space-y-3">
-                            {widgets.length === 0 ? (
-                                <div className="text-center py-12 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
-                                    <FileText size={32} className="text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-                                    <p className="text-slate-400 dark:text-slate-500 text-sm">Bu sayfada henüz widget yok</p>
-                                </div>
-                            ) : (
-                                widgets.map((widget, index) => (
-                                    <div
-                                        key={widget.id}
-                                        draggable
-                                        onDragStart={() => handleDragStart(index)}
-                                        onDragOver={e => handleDragOver(e, index)}
-                                        onDrop={e => handleDrop(e, index)}
-                                        onDragEnd={handleDragEnd}
-                                        className={`bg-white dark:bg-slate-900 rounded-xl border-2 overflow-hidden transition-all duration-200 ${dragIndex === index
-                                            ? 'opacity-50 border-blue-400 scale-[0.98]'
-                                            : overIndex === index
-                                                ? 'border-blue-400 ring-2 ring-blue-400/20'
-                                                : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
-                                            }`}
-                                    >
-                                        {/* Widget header */}
-                                        <div className="flex items-center justify-between px-4 py-3 bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+                    {/* Active Widget Editor */}
+                    <div className="bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
+                        {activeWidgetId && widgets.find(w => w.id === activeWidgetId) ? (
+                            (() => {
+                                const widget = widgets.find(w => w.id === activeWidgetId)!
+                                return (
+                                    <div className="h-full flex flex-col">
+                                        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 shrink-0">
                                             <div className="flex items-center gap-3">
-                                                <button className="text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-grab active:cursor-grabbing">
-                                                    <GripVertical size={16} />
-                                                </button>
-                                                <span className="text-xl">{getWidgetIcon(widget.type)}</span>
+                                                <span className="text-2xl">{getWidgetIcon(widget.type)}</span>
                                                 <div>
-                                                    <span className="text-sm font-semibold text-slate-700 dark:text-slate-200 uppercase">
+                                                    <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
                                                         {widget.type.replace(/-/g, ' ')}
-                                                    </span>
-                                                    {widget.name && (
-                                                        <span className="block text-xs text-slate-400">{widget.name}</span>
-                                                    )}
+                                                    </h3>
+                                                    <span className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest bg-emerald-500/10 px-2 py-0.5 rounded-full mt-1 inline-block">Aktif Blok</span>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center gap-1">
+                                            <div className="flex items-center gap-1.5">
                                                 <button
                                                     onClick={() => {
                                                         if (aiTopicWidgetId === widget.id) {
@@ -345,23 +401,20 @@ export function PageEditorClient({
                                                         } else {
                                                             setAiTopicWidgetId(widget.id)
                                                             setAiTopicInput('')
+                                                            setAiSourceUrl('')
                                                         }
                                                     }}
-                                                    className="p-1.5 rounded text-amber-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/30 transition"
-                                                    title={t.aiGenerateBtn}
+                                                    className={`p-2 rounded-lg transition border flex items-center gap-2 text-xs font-bold ${aiTopicWidgetId === widget.id ? 'bg-amber-100 dark:bg-amber-900/50 border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-400' : 'bg-white dark:bg-slate-800 text-amber-500 border-slate-200 dark:border-slate-700 hover:border-amber-300'}`}
                                                 >
-                                                    <Sparkles size={14} />
+                                                    <Sparkles size={14} /> AI YAZAR
                                                 </button>
-                                                <button onClick={() => handleDuplicateWidget(widget)} className="p-1.5 rounded text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition" title={t.duplicateWidget}>
+                                                <button onClick={() => handleDuplicateWidget(widget)} className="p-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-blue-500 hover:border-blue-300 transition" title={t.duplicateWidget}>
                                                     <Copy size={14} />
-                                                </button>
-                                                <button onClick={() => toggleCollapse(widget.id)} className="p-1.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 transition">
-                                                    {collapsedWidgets.has(widget.id) ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
                                                 </button>
                                                 <button
                                                     onClick={() => handleDeleteWidget(widget)}
                                                     disabled={deleting === widget.id}
-                                                    className="p-1.5 rounded text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition disabled:opacity-50"
+                                                    className="p-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-red-500 hover:border-red-300 transition disabled:opacity-50"
                                                     title={t.deleteWidget}
                                                 >
                                                     <Trash2 size={14} />
@@ -369,61 +422,73 @@ export function PageEditorClient({
                                             </div>
                                         </div>
 
-                                        {/* AI Topic Input (inline) */}
+                                        {/* AI Generate Toolbar */}
                                         {aiTopicWidgetId === widget.id && (
-                                            <div className="px-4 py-3 bg-amber-50 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800">
-                                                <div className="flex items-center gap-2">
-                                                    <Sparkles size={14} className="text-amber-500 shrink-0" />
-                                                    <input
-                                                        type="text"
-                                                        value={aiTopicInput}
-                                                        onChange={e => setAiTopicInput(e.target.value)}
-                                                        placeholder={t.aiTopicPlaceholder}
-                                                        className="flex-1 px-3 py-1.5 bg-white dark:bg-slate-800 border border-amber-300 dark:border-amber-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
-                                                        onKeyDown={e => { if (e.key === 'Enter') handleAiGenerate(widget) }}
-                                                        autoFocus
-                                                    />
+                                            <div className="px-6 py-5 bg-amber-50/80 dark:bg-amber-900/20 border-b border-amber-200 dark:border-amber-800/40 space-y-4 shrink-0">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label className="block text-[11px] font-bold text-amber-800/70 dark:text-amber-500/70 uppercase tracking-wider mb-1.5">Ne hakkında yazılacak?</label>
+                                                        <input
+                                                            type="text"
+                                                            value={aiTopicInput}
+                                                            onChange={e => setAiTopicInput(e.target.value)}
+                                                            placeholder="Örn: Bodrum'un en iyi koyları"
+                                                            className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-amber-300 dark:border-amber-700/50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 shadow-sm"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <div className="flex items-center justify-between mb-1.5">
+                                                            <label className="text-[11px] font-bold text-amber-800/70 dark:text-amber-500/70 uppercase tracking-wider">Kaynak URL (Opsiyonel)</label>
+                                                            <span className="text-[9px] bg-amber-200 dark:bg-amber-800 text-amber-800 dark:text-amber-200 px-1.5 rounded uppercase font-bold">Scraper</span>
+                                                        </div>
+                                                        <input
+                                                            type="url"
+                                                            value={aiSourceUrl}
+                                                            onChange={e => setAiSourceUrl(e.target.value)}
+                                                            placeholder="https://tripadvisor.com/..."
+                                                            className="w-full px-3 py-2 bg-white dark:bg-slate-900 border border-amber-300 dark:border-amber-700/50 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 shadow-sm"
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center justify-between pt-2 border-t border-amber-200/50 dark:border-amber-800/30">
+                                                    <span className={`text-xs font-medium ${aiMsg.includes('Hata') || aiMsg.includes('failed') ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                                                        {aiMsg}
+                                                    </span>
                                                     <button
                                                         onClick={() => handleAiGenerate(widget)}
-                                                        disabled={aiGenerating === widget.id || !aiTopicInput.trim()}
-                                                        className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-xs font-semibold transition disabled:opacity-50 flex items-center gap-1"
+                                                        disabled={aiGenerating === widget.id || (!aiTopicInput.trim() && !aiSourceUrl.trim())}
+                                                        className="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-lg text-xs font-bold transition-all disabled:opacity-50 flex items-center gap-2 shadow-sm"
                                                     >
-                                                        {aiGenerating === widget.id ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
-                                                        {aiGenerating === widget.id ? t.aiGenerating : t.aiGenerateBtn}
+                                                        {aiGenerating === widget.id ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+                                                        {aiGenerating === widget.id ? 'Yapay Zeka Üretiyor...' : 'İçeriği Otomatik Oluştur'}
                                                     </button>
                                                 </div>
-                                                {aiMsg && <p className={`text-xs mt-1.5 ${aiMsg.includes(t.aiGenerateSuccess) ? 'text-emerald-600' : 'text-red-500'}`}>{aiMsg}</p>}
                                             </div>
                                         )}
 
-                                        {/* Widget editor body (collapsible) */}
-                                        {!collapsedWidgets.has(widget.id) && (
-                                            <div className="p-4">
-                                                <WidgetEditor id={widget.id} type={widget.type} initialData={widget.data} />
-                                            </div>
-                                        )}
+                                        <div className="p-6">
+                                            <WidgetEditor key={widget.id} id={widget.id} type={widget.type} initialData={widget.data} />
+                                        </div>
                                     </div>
-                                ))
-                            )}
-                        </div>
-
-                        {/* Add widget button */}
-                        <div className="p-4 pt-0">
-                            <button
-                                onClick={() => setPickerOpen(true)}
-                                className="w-full py-4 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl text-blue-600 dark:text-blue-400 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-all text-sm font-medium flex items-center justify-center gap-2"
-                            >
-                                <Plus size={16} /> {t.insertBlock}
-                            </button>
-                        </div>
+                                )
+                            })()
+                        ) : (
+                            <div className="py-24 text-center text-slate-400 dark:text-slate-500 flex flex-col items-center justify-center">
+                                <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4 border border-slate-200 dark:border-slate-700">
+                                    <FileText size={32} className="opacity-50" />
+                                </div>
+                                <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">Blok Seçilmedi</h3>
+                                <p className="text-sm max-w-xs mx-auto">Bu sayfayı yapılandırmak ve düzenlemek için soldaki panelden bir blok seçin veya yeni bir blok ekleyin.</p>
+                            </div>
+                        )}
                     </div>
                 </div>
 
-                {/* Right Sidebar */}
-                <div className="space-y-6">
+                {/* 3. Right Sidebar: Settings */}
+                <div className="lg:col-span-1 space-y-6">
                     {/* Publishing Options */}
-                    <div className="bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-                        <div className="flex items-center gap-2 px-5 py-3.5 border-b border-slate-200 dark:border-slate-700">
+                    <div className="bg-white dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden sticky top-6">
+                        <div className="flex items-center gap-2 px-5 py-3.5 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
                             <Rocket size={16} className="text-blue-500" />
                             <h3 className="text-sm font-bold text-slate-900 dark:text-white">{t.publishingOptions}</h3>
                         </div>
@@ -547,7 +612,19 @@ export function PageEditorClient({
 
                             {/* Meta Description */}
                             <div>
-                                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">{t.metaDescription}</label>
+                                <div className="flex items-center justify-between mb-1.5">
+                                    <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t.metaDescription}</label>
+                                    <button
+                                        type="button"
+                                        onClick={handleGenerateSeo}
+                                        disabled={generatingSeo || widgets.length === 0}
+                                        className="text-[11px] text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-500/10 hover:bg-amber-200 dark:hover:bg-amber-500/20 px-2 py-1 rounded font-bold flex items-center gap-1 transition"
+                                        title="Yapay Zeka ile içeriğe bakarak meta açıklaması yaz (max 160 kr)"
+                                    >
+                                        {generatingSeo ? <Loader2 size={10} className="animate-spin" /> : <Sparkles size={10} />}
+                                        {generatingSeo ? 'YAZILIYOR...' : 'AI SEO'}
+                                    </button>
+                                </div>
                                 <textarea
                                     value={metaDesc}
                                     onChange={e => setMetaDesc(e.target.value)}
@@ -555,7 +632,14 @@ export function PageEditorClient({
                                     rows={3}
                                     className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                                 />
-                                <span className="text-xs text-slate-400 mt-1 block">{metaDesc.length}/160</span>
+                                <div className="flex justify-between mt-1">
+                                    <span className={`text-[10px] ${metaDesc.length > 160 ? 'text-red-500 font-bold' : 'text-slate-400'}`}>
+                                        İdeal sınır: 160 karakter
+                                    </span>
+                                    <span className={`text-xs ${metaDesc.length > 160 ? 'text-red-500 font-bold' : 'text-slate-400'}`}>
+                                        {metaDesc.length}/160
+                                    </span>
+                                </div>
                             </div>
 
                             {/* Language badge */}

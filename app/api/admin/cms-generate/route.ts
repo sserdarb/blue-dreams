@@ -67,13 +67,41 @@ function getWidgetPrompt(widgetType: string, topic: string, locale: string, cont
 export async function POST(request: Request) {
     const startTime = Date.now()
     try {
-        const { widgetType, topic, locale, context } = await request.json()
+        const { widgetType, topic, locale, context, sourceUrl } = await request.json()
 
         if (!widgetType || !topic || !locale) {
             return NextResponse.json({ error: 'Missing required fields: widgetType, topic, locale' }, { status: 400 })
         }
 
-        const prompt = getWidgetPrompt(widgetType, topic, locale, context)
+        let finalContext = context || ''
+        if (sourceUrl) {
+            try {
+                // Internal fetch to our scraper endpoint
+                const protocol = request.headers.get('x-forwarded-proto') || 'http'
+                const host = request.headers.get('host') || 'localhost:3000'
+                const baseUrl = `${protocol}://${host}`
+
+                console.log(`[CMS Generate] Fetching source URL content: ${sourceUrl}`)
+                const scrapeRes = await fetch(`${baseUrl}/api/admin/cms-scrape`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: sourceUrl })
+                })
+
+                if (scrapeRes.ok) {
+                    const scrapeData = await scrapeRes.json()
+                    if (scrapeData.text) {
+                        finalContext += `\n\nReference Material from ${sourceUrl}:\n${scrapeData.text}`
+                    }
+                } else {
+                    console.warn(`[CMS Generate] Scraper returned non-ok status: ${scrapeRes.status}`)
+                }
+            } catch (e) {
+                console.error('[CMS Generate] Scrape error:', e)
+            }
+        }
+
+        const prompt = getWidgetPrompt(widgetType, topic, locale, finalContext)
         const { key: apiKey, source } = await getGeminiApiKey(locale)
         console.log(`[CMS Generate] Widget: ${widgetType}, Locale: ${locale}, Key source: ${source}`)
 
