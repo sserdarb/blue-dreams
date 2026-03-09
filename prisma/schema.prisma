@@ -890,10 +890,11 @@ model Booking {
   status      String @default("pending") // pending, paid, confirmed, cancelled, refunded
 
   // Misafir
-  guestName  String
-  guestEmail String
-  guestPhone String
-  guestNotes String?
+  guestName        String
+  guestEmail       String
+  guestPhone       String
+  guestNationality String  @default("TR")
+  guestNotes       String?
 
   // Rezervasyon
   roomTypeId Int

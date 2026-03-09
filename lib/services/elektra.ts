@@ -232,22 +232,78 @@ async function fetchCountries(): Promise<Map<number, string>> {
 }
 
 function resolveCountry(guest: Record<string, unknown>, countryMap: Map<number, string>): string {
-    // 1. Try country-id lookup first
-    const countryId = guest['country-id'] || guest['countryId'] || guest['country_id'] || guest['nation-id'] || guest['nationId'] || guest['NationId'] || guest['nationality_id'] || guest['nationality-id']
-    if (countryId && countryMap.size > 0) {
-        const name = countryMap.get(Number(countryId))
-        if (name) return name
-    }
-    // 2. Try direct country string
-    const nat = guest['country'] as string
-    if (nat && nat !== 'Unknown' && nat.length > 1) return nat
-    // Try various other location identifiers found in Elektra API iterations
-    const genericFields = ['country', 'country-name', 'nationality', 'client-country', 'guest-country', 'nation', 'nation-name'];
-    for (const f of genericFields) {
-        if (guest[f] && typeof guest[f] === 'string' && (guest[f] as string).length > 1 && guest[f] !== 'Unknown') {
-            return guest[f] as string;
+    // 1. The Elektra API guest-list returns 'country' as a NUMERIC country-id (not a string name)
+    //    Also check other common ID field names
+    const idFields = ['country', 'country-id', 'countryId', 'country_id', 'nation-id', 'nationId', 'NationId', 'nationality_id', 'nationality-id']
+    for (const f of idFields) {
+        const val = guest[f]
+        // If it's a number (or numeric string), look up in countryMap
+        if (val !== undefined && val !== null && val !== '' && val !== 0 && val !== '0') {
+            const numVal = Number(val)
+            if (!isNaN(numVal) && countryMap.size > 0) {
+                const name = countryMap.get(numVal)
+                if (name) return name
+            }
+            // If it's a string that's not a number, use it directly as country name
+            if (typeof val === 'string' && isNaN(numVal) && val.length > 1 && val !== 'Unknown') {
+                return val
+            }
         }
     }
+
+    // 2. Try ISO CODE2 nationality string fields (e.g. "TR", "DE", "GB")
+    const isoFields = ['nationality', 'nationality-no', 'client-country', 'guest-country']
+    for (const f of isoFields) {
+        const val = guest[f]
+        if (val && typeof val === 'string' && val.length >= 2) {
+            // Map common ISO codes to readable country names
+            const isoMap: Record<string, string> = {
+                'TR': 'Türkiye', 'TUR': 'Türkiye',
+                'DE': 'Germany', 'DEU': 'Germany',
+                'GB': 'United Kingdom', 'GBR': 'United Kingdom', 'UK': 'United Kingdom',
+                'US': 'United States', 'USA': 'United States',
+                'FR': 'France', 'FRA': 'France',
+                'RU': 'Russia', 'RUS': 'Russia',
+                'NL': 'Netherlands', 'NLD': 'Netherlands',
+                'BE': 'Belgium', 'BEL': 'Belgium',
+                'AT': 'Austria', 'AUT': 'Austria',
+                'CH': 'Switzerland', 'CHE': 'Switzerland',
+                'IT': 'Italy', 'ITA': 'Italy',
+                'ES': 'Spain', 'ESP': 'Spain',
+                'SE': 'Sweden', 'SWE': 'Sweden',
+                'NO': 'Norway', 'NOR': 'Norway',
+                'DK': 'Denmark', 'DNK': 'Denmark',
+                'FI': 'Finland', 'FIN': 'Finland',
+                'PL': 'Poland', 'POL': 'Poland',
+                'CZ': 'Czech Republic', 'CZE': 'Czech Republic',
+                'UA': 'Ukraine', 'UKR': 'Ukraine',
+                'IL': 'Israel', 'ISR': 'Israel',
+                'SA': 'Saudi Arabia', 'SAU': 'Saudi Arabia',
+                'AE': 'UAE', 'ARE': 'UAE',
+                'IR': 'Iran', 'IRN': 'Iran',
+                'CN': 'China', 'CHN': 'China',
+                'JP': 'Japan', 'JPN': 'Japan',
+                'KR': 'South Korea', 'KOR': 'South Korea',
+                'IN': 'India', 'IND': 'India',
+                'BR': 'Brazil', 'BRA': 'Brazil',
+                'AU': 'Australia', 'AUS': 'Australia',
+                'CA': 'Canada', 'CAN': 'Canada',
+            }
+            const upper = (val as string).toUpperCase()
+            if (isoMap[upper]) return isoMap[upper]
+            // If it's a longer string, use it as-is (could be a full country name)
+            if (val.length > 3) return val
+        }
+    }
+
+    // 3. Try direct country-name string fields
+    const nameFields = ['country-name', 'nation', 'nation-name']
+    for (const f of nameFields) {
+        if (guest[f] && typeof guest[f] === 'string' && (guest[f] as string).length > 1 && guest[f] !== 'Unknown') {
+            return guest[f] as string
+        }
+    }
+
     return 'Unknown'
 }
 
@@ -480,7 +536,7 @@ async function fetchReservations(fromDateStr: string, toDateStr: string, status:
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${jwt}`
         },
-        next: { revalidate: 300 }
+        cache: 'no-store'
     })
 
     if (!res.ok) {
@@ -742,6 +798,23 @@ async function createTask(taskData: {
 // ─── Exported Service ──────────────────────────────────────────
 
 export const ElektraService = {
+    // Auth & Basic
+    async testConnection(): Promise<boolean> {
+        try {
+            const jwt = await getJwt()
+            const res = await fetch(`${API_BASE}/hotel/${HOTEL_ID}/test-connection`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${jwt}`
+                },
+                cache: 'no-store'
+            })
+            return res.ok
+        } catch (err) {
+            console.error('[Elektra] Error testing connection:', err)
+            return false
+        }
+    },
     isDemoMode: false,
     isPartialLive: false,
     isFullyLive: true,
@@ -1308,6 +1381,7 @@ export const ElektraService = {
         guestName: string;
         guestEmail: string;
         guestPhone: string;
+        guestNationality?: string;
         guestNotes: string | null;
         totalPrice: number;
         currency: string;
@@ -1322,6 +1396,7 @@ export const ElektraService = {
 
             const [firstName, ...lastNames] = bookingData.guestName.split(' ')
             const lastName = lastNames.join(' ') || 'Misafir'
+            const nationality = bookingData.guestNationality || 'TR'
 
             const payload = {
                 "check-in-date": checkInStr,
@@ -1335,6 +1410,7 @@ export const ElektraService = {
                 "contact-name": bookingData.guestName,
                 "contact-email": bookingData.guestEmail,
                 "contact-phone": bookingData.guestPhone,
+                "nationality": nationality,
                 "agency": "WEB",
                 "voucher-no": bookingData.referenceId,
                 "note": bookingData.guestNotes || "Online Web Rezervasyonu",
@@ -1342,6 +1418,7 @@ export const ElektraService = {
                     {
                         "name": firstName,
                         "surname": lastName,
+                        "country": nationality,
                         "is-main-guest": true
                     }
                 ]
@@ -1378,3 +1455,4 @@ export const ElektraService = {
         }
     }
 }
+// reload
