@@ -1,0 +1,16 @@
+name: Deploy to Coolify
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Coolify Deploy
+        run: |
+          curl -s -X GET \
+            "http://76.13.0.113:8080/api/v1/deploy?uuid=e0ccooowkocck4gossscwg4w&force=true" \
+            -H "Authorization: Bearer ${{ secrets.COOLIFY_WEBHOOK_SECRET }}"
+          echo "Deployment triggered!"
