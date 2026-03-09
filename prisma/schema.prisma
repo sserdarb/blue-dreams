@@ -60,25 +60,39 @@ model MeetingRequest {
 }
 
 model Page {
-  id              String   @id @default(uuid())
+  id              String    @id @default(uuid())
   slug            String
   locale          String
   title           String
   metaDescription String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  status          String    @default("draft") // draft, published
+  visibility      String    @default("public") // public, private, password
+  template        String    @default("default") // default, full-width, sidebar
+  featuredImage   String?
+  parentId        String?
+  parent          Page?     @relation("PageHierarchy", fields: [parentId], references: [id])
+  children        Page[]    @relation("PageHierarchy")
+  order           Int       @default(0)
+  publishedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
   widgets         Widget[]
 
   @@unique([slug, locale])
+  @@index([status])
+  @@index([locale])
 }
 
 model Widget {
-  id     String @id @default(uuid())
+  id     String  @id @default(uuid())
   type   String
+  name   String? // User-defined widget label
   data   String // Storing JSON as string
   order  Int
   pageId String
-  page   Page   @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  page   Page    @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  @@index([pageId])
 }
 
 model ChatSession {
@@ -755,24 +769,26 @@ model GuestSegmentMember {
 }
 
 model SocialMessage {
-  id          String        @id @default(uuid())
-  platform    String        @default("whatsapp") // whatsapp, facebook, instagram
-  waMessageId String?       @unique // can act as a general external message ID
-  guestId     String?
-  guest       GuestProfile? @relation(fields: [guestId], references: [id])
-  phone       String? // Make optional since FB/IG might not have a phone number initially
-  socialId    String? // FB/IG user ID
-  threadId    String? // Group messages by thread/conversation
-  direction   String // inbound, outbound
-  type        String        @default("text") // text, image, template, campaign, audio, video
-  content     String
-  templateId  String?
-  campaignId  String?
-  status      String        @default("received") // received, sent, delivered, read, failed
-  metadata    String? // JSON for additional payload (like IG media URLs)
-  isFromGuest Boolean       @default(false)
-  translated  String? // Store translated version of the message
-  createdAt   DateTime      @default(now())
+  id           String        @id @default(uuid())
+  platform     String        @default("whatsapp") // whatsapp, facebook, instagram
+  waMessageId  String?       @unique // can act as a general external message ID
+  guestId      String?
+  guest        GuestProfile? @relation(fields: [guestId], references: [id])
+  phone        String? // Make optional since FB/IG might not have a phone number initially
+  socialId     String? // FB/IG user ID
+  threadId     String? // Group messages by thread/conversation
+  senderName   String? // Display name resolved from Meta API / WhatsApp contacts
+  senderAvatar String? // Profile picture URL
+  direction    String // inbound, outbound
+  type         String        @default("text") // text, image, template, campaign, audio, video
+  content      String
+  templateId   String?
+  campaignId   String?
+  status       String        @default("received") // received, sent, delivered, read, failed
+  metadata     String? // JSON for additional payload (like IG media URLs)
+  isFromGuest  Boolean       @default(false)
+  translated   String? // Store translated version of the message
+  createdAt    DateTime      @default(now())
 
   @@index([phone])
   @@index([socialId])
@@ -781,6 +797,43 @@ model SocialMessage {
   @@index([guestId])
   @@index([createdAt])
   @@index([direction])
+}
+
+// ─── Social Metrics: Daily page-level metrics for trend analysis ───
+model SocialDailyMetric {
+  id         String   @id @default(uuid())
+  date       DateTime
+  platform   String // facebook, instagram
+  metricName String // page_follows, page_media_view, views, reach, profile_views
+  value      Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  @@unique([date, platform, metricName])
+  @@index([platform])
+  @@index([date])
+}
+
+// ─── Social Metrics: Post-level engagement for content analysis ───
+model SocialPostMetric {
+  id             String    @id @default(uuid())
+  postId         String    @unique // Meta post/media ID
+  platform       String // facebook, instagram
+  mediaType      String? // IMAGE, VIDEO, CAROUSEL_ALBUM, REELS
+  caption        String?
+  mediaUrl       String?
+  permalink      String?
+  publishedAt    DateTime?
+  views          Int       @default(0)
+  reach          Int       @default(0)
+  likes          Int       @default(0)
+  comments       Int       @default(0)
+  shares         Int       @default(0)
+  saves          Int       @default(0)
+  engagementRate Float     @default(0)
+  syncedAt       DateTime  @default(now())
+
+  @@index([platform])
+  @@index([publishedAt])
 }
 
 model Campaign {

@@ -67,7 +67,7 @@ export class BookingService {
 
             // Get exchange rates for EUR conversion
             const rates = await ElektraService.getExchangeRates()
-            const eurRate = rates.EUR_TO_TRY || 38
+            const eurRate = rates.EUR_TO_TRY && rates.EUR_TO_TRY > 0 ? rates.EUR_TO_TRY : 38.5
 
             // Group by room type
             const byRoomType = new Map<string, { roomTypeId: number; dates: RoomAvailability[] }>()

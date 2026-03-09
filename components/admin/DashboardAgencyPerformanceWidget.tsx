@@ -10,19 +10,21 @@ interface DashboardAgencyPerformanceProps {
     exchangeRate?: number
 }
 
-export default function DashboardAgencyPerformanceWidget({ reservations, currency = 'TRY', exchangeRate = 38.5 }: DashboardAgencyPerformanceProps) {
+export default function DashboardAgencyPerformanceWidget({ reservations, currency = 'TRY', exchangeRate }: DashboardAgencyPerformanceProps) {
     const symbol = currency === 'EUR' ? '€' : (currency === 'USD' ? '$' : '₺')
     const usdRate = 35.7
 
     const convertPrice = (price: number, nativeCurrency: string) => {
         let p = price
         nativeCurrency = (nativeCurrency || 'EUR').trim()
+
+        const rate = exchangeRate || 38.5; // safe fallback for rendering
         if (currency === 'TRY') {
-            return nativeCurrency === 'EUR' ? p * exchangeRate : (nativeCurrency === 'USD' ? p * usdRate : p)
+            return nativeCurrency === 'EUR' ? p * rate : (nativeCurrency === 'USD' ? p * usdRate : p)
         } else if (currency === 'EUR') {
-            return nativeCurrency === 'TRY' ? p / exchangeRate : (nativeCurrency === 'USD' ? (p * usdRate) / exchangeRate : p)
+            return nativeCurrency === 'TRY' ? p / rate : (nativeCurrency === 'USD' ? (p * usdRate) / rate : p)
         } else if (currency === 'USD') {
-            return nativeCurrency === 'TRY' ? p / usdRate : (nativeCurrency === 'EUR' ? (p * exchangeRate) / usdRate : p)
+            return nativeCurrency === 'TRY' ? p / usdRate : (nativeCurrency === 'EUR' ? (p * rate) / usdRate : p)
         }
         return p
     }

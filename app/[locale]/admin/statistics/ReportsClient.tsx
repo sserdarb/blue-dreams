@@ -35,7 +35,6 @@ interface WidgetConfig {
 type CurrencyCode = 'TRY' | 'EUR'
 
 const EXCHANGE_RATES: Record<CurrencyCode, number> = { TRY: 1, EUR: 0.026 }
-const REVERSE_RATES: Record<CurrencyCode, number> = { TRY: 1, EUR: 38.5 }
 const CURRENCY_SYMBOLS: Record<CurrencyCode, string> = { TRY: '₺', EUR: '€' }
 const CHANNEL_COLORS: Record<string, string> = {
     'OTA': '#f59e0b', 'Call Center': '#06b6d4', 'Tur Operatörü': '#8b5cf6',
@@ -229,7 +228,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
     // ─── Currency Helper ───
     const convert = useCallback((price: number, originalCurrency: string) => {
         let tryAmount = price
-        if (originalCurrency === 'EUR') tryAmount = price * REVERSE_RATES.EUR
+        if (originalCurrency === 'EUR') tryAmount = price * 38.5 // Fallback if rates not passed (typically shouldn't happen for direct mapped properties now, but safe fallback)
         if (currency === 'TRY') return tryAmount
         return tryAmount * EXCHANGE_RATES[currency]
     }, [currency])
@@ -403,14 +402,14 @@ export default function ReportsClient({ reservations, comparisonReservations = [
         const adrMultiplier = config.adrMultiplier || 1
         const targetAdrMultiplier = config.targetADR || 1.1
 
-        const totalRev = data.reduce((sum, r) => sum + dp(r.totalPrice, r.currency), 0) * revMultiplier
+        const totalRev = data.reduce((sum, r) => sum + (currency === 'EUR' ? displayPrice((r as any).amountEur || 0, priceMode) : displayPrice((r as any).amountTry || 0, priceMode)), 0) * revMultiplier
         const totalRes = data.length * resMultiplier
         const totalNights = data.reduce((sum, r) => sum + r.nights * r.roomCount, 0)
         let adr = totalNights > 0 ? (totalRev / revMultiplier) / totalNights : 0
         adr = adr * adrMultiplier
 
         // Comparison Metrics
-        const compRev = filteredComparison.reduce((sum, r) => sum + dp(r.totalPrice, r.currency), 0) * revMultiplier
+        const compRev = filteredComparison.reduce((sum, r) => sum + (currency === 'EUR' ? displayPrice((r as any).amountEur || 0, priceMode) : displayPrice((r as any).amountTry || 0, priceMode)), 0) * revMultiplier
         const compRes = filteredComparison.length * resMultiplier
         const compNights = filteredComparison.reduce((sum, r) => sum + r.nights * r.roomCount, 0)
         let compAdr = compNights > 0 ? (compRev / revMultiplier) / compNights : 0
@@ -466,11 +465,11 @@ export default function ReportsClient({ reservations, comparisonReservations = [
     const renderMonthlyChart = (data: Reservation[]) => {
         // Current Year Data
         const months: Record<string, number> = {}
-        data.forEach(r => { const m = r.saleDate.slice(0, 7); months[m] = (months[m] || 0) + dp(r.totalPrice, r.currency) })
+        data.forEach(r => { const m = r.saleDate.slice(0, 7); months[m] = (months[m] || 0) + (currency === 'EUR' ? displayPrice((r as any).amountEur || 0, priceMode) : displayPrice((r as any).amountTry || 0, priceMode)) })
 
         // Previous Year Data
         const compMonths: Record<string, number> = {}
-        filteredComparison.forEach(r => { const m = r.saleDate.slice(0, 7); compMonths[m] = (compMonths[m] || 0) + dp(r.totalPrice, r.currency) })
+        filteredComparison.forEach(r => { const m = r.saleDate.slice(0, 7); compMonths[m] = (compMonths[m] || 0) + (currency === 'EUR' ? displayPrice((r as any).amountEur || 0, priceMode) : displayPrice((r as any).amountTry || 0, priceMode)) })
 
         // Get all unique month keys (MM) to align
         const allKeys = new Set<string>()
@@ -527,7 +526,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
 
     const renderChannelChart = (data: Reservation[]) => {
         const channels: Record<string, number> = {}
-        data.forEach(r => { channels[r.channel] = (channels[r.channel] || 0) + dp(r.totalPrice, r.currency) })
+        data.forEach(r => { channels[r.channel] = (channels[r.channel] || 0) + (currency === 'EUR' ? displayPrice((r as any).amountEur || 0, priceMode) : displayPrice((r as any).amountTry || 0, priceMode)) })
         const total = Object.values(channels).reduce((a, b) => a + b, 0) || 1
         const cData = Object.entries(channels).map(([name, value]) => ({ name, value, percent: (value / total) * 100 })).sort((a, b) => b.value - a.value)
         return (
@@ -552,7 +551,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
 
     const renderAgencies = (data: Reservation[]) => {
         const agencies: Record<string, number> = {}
-        data.forEach(r => { agencies[r.agency] = (agencies[r.agency] || 0) + dp(r.totalPrice, r.currency) })
+        data.forEach(r => { agencies[r.agency] = (agencies[r.agency] || 0) + (currency === 'EUR' ? displayPrice((r as any).amountEur || 0, priceMode) : displayPrice((r as any).amountTry || 0, priceMode)) })
         const aData = Object.entries(agencies).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value).slice(0, 15)
         return (
             <div className="overflow-x-auto mt-2">
@@ -583,7 +582,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
         data.forEach(r => {
             if (!rooms[r.roomType]) rooms[r.roomType] = { count: 0, revenue: 0 }
             rooms[r.roomType].count += r.roomCount
-            rooms[r.roomType].revenue += dp(r.totalPrice, r.currency)
+            rooms[r.roomType].revenue += currency === 'EUR' ? displayPrice((r as any).amountEur || 0, priceMode) : displayPrice((r as any).amountTry || 0, priceMode)
         })
         const rData = Object.entries(rooms).map(([name, d]) => ({ name, ...d })).sort((a, b) => b.revenue - a.revenue)
         const totalRevenue = rData.reduce((s, r) => s + r.revenue, 0) || 1

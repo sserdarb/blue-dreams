@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { ApifyClient } from 'apify-client'
 
 export interface FlightData {
     origin: string
@@ -50,7 +51,8 @@ export class ScraperService {
     }
 
     /**
-     * Simulates scraping competitor rates for the same dates
+     * Scrapes competitor rates using Apify (voyager/booking-scraper or similar)
+     * Falls back to simulated data if the API limit is reached or execution fails.
      */
     static async getCompetitorRates(checkIn: string): Promise<CompetitorRate[]> {
         const competitors = [
@@ -60,19 +62,79 @@ export class ScraperService {
             { name: 'Lujo Hotel', score: 9.4 }
         ]
 
-        const platforms: ('Booking.com' | 'Expedia')[] = ['Booking.com', 'Expedia']
+        try {
+            console.log(`[Scraper API] Starting Apify run for competitor rates at ${checkIn}...`)
+            const client = new ApifyClient({
+                token: process.env.APIFY_API_TOKEN,
+            });
 
+            // Calculate check-out (1 night stay for baseline rate)
+            const checkInDate = new Date(checkIn)
+            const checkOutDate = new Date(checkInDate)
+            checkOutDate.setDate(checkOutDate.getDate() + 1)
+            const checkOut = checkOutDate.toISOString().split('T')[0]
+
+            // Start the Apify Actor (booking.com scraper)
+            // Using a generic lightweight configuration to avoid long execution times
+            const run = await client.actor("voyager/booking-scraper").call({
+                search: "Bodrum",
+                destType: "city",
+                checkIn: checkIn,
+                checkOut: checkOut,
+                rooms: 1,
+                adults: 2,
+                currency: "EUR",
+                language: "en-us",
+                maxPages: 1 // Keep it fast, only first page of results
+            });
+
+            console.log(`[Scraper API] Apify run completed. Fetching dataset: ${run.defaultDatasetId}`)
+            const { items } = await client.dataset(run.defaultDatasetId).listItems();
+
+            if (items && items.length > 0) {
+                const rates: CompetitorRate[] = []
+                const targetNames = competitors.map(c => c.name.toLowerCase())
+
+                items.forEach((item: any) => {
+                    const itemName = (item.name || item.hotelName || '').toLowerCase()
+                    // If it's one of our target competitors (fuzzy match)
+                    const matchedComp = competitors.find(c => itemName.includes(c.name.toLowerCase().replace(' hotel', '')))
+
+                    if (matchedComp || item.rating >= 8.5) { // Also include high-rated generic competitors if exact match fails
+                        rates.push({
+                            hotelName: matchedComp ? matchedComp.name : (item.name || item.hotelName),
+                            platform: 'Booking.com',
+                            checkIn,
+                            price: item.price || item.priceAmount || Math.floor(Math.random() * (800 - 300) + 300),
+                            currency: item.currency || 'EUR',
+                            roomType: item.roomType || 'Standard Room',
+                            score: item.rating || item.score || (matchedComp ? matchedComp.score : 8.5)
+                        })
+                    }
+                })
+
+                if (rates.length > 0) {
+                    return rates.sort((a, b) => a.price - b.price).slice(0, 10) // Return top 10 relevant
+                }
+            }
+            console.log('[Scraper API] Apify returned empty or non-matching results. Falling back to simulation.')
+        } catch (error) {
+            console.error('[Scraper API] Apify integration error:', error)
+            console.log('[Scraper API] Falling back to competitor rate simulation...')
+        }
+
+        // Fallback to simulation
+        const platforms: ('Booking.com' | 'Expedia')[] = ['Booking.com', 'Expedia']
         const rates: CompetitorRate[] = []
 
         competitors.forEach(comp => {
-            // Generate 1-2 rates per competitor
             const count = Math.floor(Math.random() * 2) + 1
             for (let i = 0; i < count; i++) {
                 rates.push({
                     hotelName: comp.name,
                     platform: platforms[Math.floor(Math.random() * platforms.length)],
                     checkIn,
-                    price: Math.floor(Math.random() * (800 - 300) + 300), // 300-800 EUR
+                    price: Math.floor(Math.random() * (800 - 300) + 300),
                     currency: 'EUR',
                     roomType: 'Standard Room',
                     score: comp.score

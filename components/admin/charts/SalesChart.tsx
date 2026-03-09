@@ -15,9 +15,10 @@ const CURRENCY_SYMBOLS: Record<string, string> = {
     USD: '$',
 }
 
-export function SalesChart({ data, currency = 'TRY', exchangeRate = 38.5 }: SalesChartProps) {
+export function SalesChart({ data, currency = 'TRY', exchangeRate }: SalesChartProps) {
     const symbol = CURRENCY_SYMBOLS[currency] || '₺'
-    const divisor = currency === 'TRY' ? 1 : exchangeRate
+    const rate = exchangeRate || 38.5;
+    const divisor = currency === 'TRY' ? 1 : rate
 
     // Convert data if not TRY
     const chartData = currency === 'TRY' ? data : data.map(d => ({

@@ -101,7 +101,9 @@ export const ElektraCache = {
                 status: r.status,
                 country: r.country || 'Unknown',
                 dailyAverage: r.totalPrice / Math.max(1, Math.ceil((r.checkOut.getTime() - r.checkIn.getTime()) / 86400000)),
-                nights: Math.max(1, Math.ceil((r.checkOut.getTime() - r.checkIn.getTime()) / 86400000))
+                nights: Math.max(1, Math.ceil((r.checkOut.getTime() - r.checkIn.getTime()) / 86400000)),
+                amountTry: r.currency === 'TRY' ? r.totalPrice : (r.currency === 'EUR' ? r.totalPrice * 38.5 : r.totalPrice * 35.7),
+                amountEur: r.currency === 'TRY' ? r.totalPrice / 38.5 : (r.currency === 'EUR' ? r.totalPrice : (r.totalPrice * 35.7) / 38.5)
             }))
         } catch (e) {
             console.error('[ElektraCache] DB Fetch Error:', e)

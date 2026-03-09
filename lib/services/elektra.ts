@@ -79,6 +79,8 @@ export type Reservation = {
     country: string // derived from first guest or contact
     dailyAverage: number // totalPrice / nights
     nights: number
+    amountTry: number
+    amountEur: number
 }
 
 export type ChannelBreakdown = {
@@ -247,6 +249,53 @@ function resolveCountry(guest: Record<string, unknown>, countryMap: Map<number, 
         }
     }
     return 'Unknown'
+}
+
+// Cache for historical exchange rates (YYYY-MM-DD -> rates)
+const historicalRatesCache = new Map<string, ExchangeRates>()
+
+async function fetchHistoricalExchangeRates(dateStr: string): Promise<ExchangeRates> {
+    const date = dateStr.slice(0, 10)
+    if (historicalRatesCache.has(date)) return historicalRatesCache.get(date)!
+
+    const todayStr = new Date().toISOString().slice(0, 10)
+    if (date === todayStr) {
+        const liveRates = await fetchExchangeRates()
+        historicalRatesCache.set(date, liveRates)
+        return liveRates
+    }
+
+    try {
+        const parts = date.split('-') // [YYYY, MM, DD]
+        if (parts.length === 3) {
+            // TCMB Historical URL Format: https://www.tcmb.gov.tr/kurlar/202401/15012024.xml
+            const url = `https://www.tcmb.gov.tr/kurlar/${parts[0]}${parts[1]}/${parts[2]}${parts[1]}${parts[0]}.xml`
+
+            const res = await fetch(url, { next: { revalidate: 86400 } }) // Cache 1 day
+            if (res.ok) {
+                const text = await res.text()
+                let eurRate = 38.5
+                let usdRate = 35.7
+
+                const eurMatch = text.match(/<Currency CrossOrder="\d+" Kod="EUR" CurrencyCode="EUR">[\s\S]*?<BanknoteSelling>([\d\.]+)/)
+                if (eurMatch) eurRate = parseFloat(eurMatch[1])
+
+                const usdMatch = text.match(/<Currency CrossOrder="\d+" Kod="USD" CurrencyCode="USD">[\s\S]*?<BanknoteSelling>([\d\.]+)/)
+                if (usdMatch) usdRate = parseFloat(usdMatch[1])
+
+                const rates = { EUR_TO_TRY: eurRate, USD_TO_TRY: usdRate, fetchedAt: Date.now() }
+                historicalRatesCache.set(date, rates)
+                return rates
+            }
+        }
+    } catch (e) {
+        console.warn(`[Elektra] Failed to fetch historical TCMB rate for ${date}`, e)
+    }
+
+    // Fallback to today's rates if historical fetch fails
+    const fallbackLive = await fetchExchangeRates()
+    historicalRatesCache.set(date, fallbackLive)
+    return fallbackLive
 }
 
 async function fetchExchangeRates(): Promise<ExchangeRates> {
@@ -442,16 +491,28 @@ async function fetchReservations(fromDateStr: string, toDateStr: string, status:
     const raw = await res.json()
     if (!Array.isArray(raw)) return []
 
-    return raw.map((item: Record<string, unknown>) => {
+    const mappedReservations = await Promise.all(raw.map(async (item: Record<string, unknown>) => {
         const checkIn = (item['check-in-date'] as string) || ''
         const checkOut = (item['check-out-date'] as string) || ''
         const totalPrice = (item['reservation-total-price'] as number) || 0
+        const currency = (item['reservation-currency'] as string) || 'TRY'
+        const reservationDate = (item['reservation-date'] as string) || (item['lastupdate-date'] as string) || ''
 
         // Calculate nights
         const d1 = new Date(checkIn)
         const d2 = new Date(checkOut)
         const nights = Math.max(1, Math.ceil((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24)))
         const dailyAverage = totalPrice / nights
+
+        // Fetch exact exchange rate valid on the day of reservation
+        let effectiveRates = await fetchExchangeRates() // default to today's rates
+        if (reservationDate) {
+            effectiveRates = await fetchHistoricalExchangeRates(reservationDate)
+        }
+
+        // Exact conversions at time of booking
+        const amountTry = toTRY(totalPrice, currency, effectiveRates)
+        const amountEur = currency === 'EUR' ? totalPrice : tryToEur(amountTry, effectiveRates)
 
         // Guests & Country — resolve via country-id map
         const guests = ((item['guest-list'] as Array<Record<string, unknown>>) || []).map(g => ({
@@ -479,21 +540,25 @@ async function fetchReservations(fromDateStr: string, toDateStr: string, status:
             checkOut,
             totalPrice,
             paidPrice: (item['reservation-paid-price'] as number) || 0,
-            currency: (item['reservation-currency'] as string) || 'TRY',
+            currency,
             roomCount: (item['reservation-room-count'] as number) || 1,
             contactName: item['contact-name'] as string | null,
             contactEmail: item['contact-email'] as string | null,
             contactPhone: item['contact-phone'] as string | null,
             lastUpdate: (item['lastupdate-date'] as string) || '',
-            reservationDate: (item['reservation-date'] as string) || (item['lastupdate-date'] as string) || '',
+            reservationDate,
             guests,
             status,
             // Enhanced
             country: firstGuestNationality,
             nights,
-            dailyAverage
+            dailyAverage,
+            amountTry,
+            amountEur
         }
-    })
+    }))
+
+    return mappedReservations
 }
 
 function computeOccupancy(availability: RoomAvailability[]): DailyOccupancy[] {
@@ -861,41 +926,40 @@ export const ElektraService = {
                 })
             }
             const entry = byDate.get(date)!
-            const rates = await fetchExchangeRates()
-            const amount = toTRY(res.totalPrice, res.currency, rates)
+            const amountTry = res.amountTry || 0
             const nights = Math.max(1, res.nights || 1)
             const roomCount = Math.max(1, res.roomCount || 1)
             const roomNights = nights * roomCount
             const isCancelled = res.status === 'Cancelled' || res.status === 'İptal'
 
             if (!isCancelled) {
-                entry.totalRevenue += amount
+                entry.totalRevenue += amountTry
                 entry.totalReservations += 1
                 entry.totalRoomNights += roomNights
 
                 switch (res.channel) {
                     case 'Website':
-                        entry.web += amount;
+                        entry.web += amountTry;
                         entry.webRes += 1;
                         entry.webRN += roomNights;
                         break;
                     case 'Call Center':
-                        entry.callCenter += amount;
+                        entry.callCenter += amountTry;
                         entry.callCenterRes += 1;
                         entry.callCenterRN += roomNights;
                         break;
                     case 'OTA':
-                        entry.ota += amount;
+                        entry.ota += amountTry;
                         entry.otaRes += 1;
                         entry.otaRN += roomNights;
                         break;
                     case 'Direkt':
-                        entry.direct += amount;
+                        entry.direct += amountTry;
                         entry.directRes += 1;
                         entry.directRN += roomNights;
                         break;
                     default:
-                        entry.tourOperator += amount;
+                        entry.tourOperator += amountTry;
                         entry.tourOpRes += 1;
                         entry.tourOpRN += roomNights;
                         break;
@@ -917,8 +981,7 @@ export const ElektraService = {
             if (!channels.has(ch)) channels.set(ch, { count: 0, revenue: 0 })
             const entry = channels.get(ch)!
             entry.count += 1
-            const rates = await fetchExchangeRates()
-            entry.revenue += toTRY(res.totalPrice, res.currency, rates)
+            entry.revenue += res.amountTry || 0
         }
 
         const total = Array.from(channels.values()).reduce((sum, c) => sum + c.count, 0) || 1
@@ -952,11 +1015,9 @@ export const ElektraService = {
         const monthStartStr = monthStart.toISOString().split('T')[0]
         const monthSales = allReservations.filter(r => r.lastUpdate.slice(0, 10) >= monthStartStr)
 
-        // Monthly revenue from sales made this month (in TRY)
-        const monthlyRevenueTRY = monthSales.reduce((sum, r) => {
-            return sum + toTRY(r.totalPrice, r.currency, rates)
-        }, 0)
-        const monthlyRevenueEUR = tryToEur(monthlyRevenueTRY, rates)
+        // Monthly revenue from sales made this month (in TRY and EUR)
+        const monthlyRevenueTRY = monthSales.reduce((sum, r) => sum + (r.amountTry || 0), 0)
+        const monthlyRevenueEUR = monthSales.reduce((sum, r) => sum + (r.amountEur || 0), 0)
 
         // ADR = Average Daily Rate (monthly revenue / booked room nights)
         const totalRoomNights = monthSales.reduce((sum, r) => {
@@ -969,10 +1030,8 @@ export const ElektraService = {
         const adrEUR = totalRoomNights > 0 ? Math.round(monthlyRevenueEUR / totalRoomNights) : 0
 
         // Today's revenue
-        const todayRevenueTRY = todaySales.reduce((sum, r) => {
-            return sum + toTRY(r.totalPrice, r.currency, rates)
-        }, 0)
-        const todayRevenueEUR = tryToEur(todayRevenueTRY, rates)
+        const todayRevenueTRY = todaySales.reduce((sum, r) => sum + (r.amountTry || 0), 0)
+        const todayRevenueEUR = todaySales.reduce((sum, r) => sum + (r.amountEur || 0), 0)
 
         return {
             todaySalesCount: todaySales.length,
@@ -1004,7 +1063,7 @@ export const ElektraService = {
             }
             const entry = monthly.get(month)!
             entry.reservationCount += 1
-            entry.revenue += toTRY(res.totalPrice, res.currency, FALLBACK_RATES)
+            entry.revenue += res.amountTry || 0
         }
 
         return Array.from(monthly.values()).sort((a, b) => a.month.localeCompare(b.month))

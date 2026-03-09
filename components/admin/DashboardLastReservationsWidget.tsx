@@ -10,7 +10,7 @@ interface DashboardLastReservationsProps {
     exchangeRate?: number
 }
 
-export default function DashboardLastReservationsWidget({ reservations, locale = 'tr', currency = 'TRY', exchangeRate = 38.5 }: DashboardLastReservationsProps) {
+export default function DashboardLastReservationsWidget({ reservations, locale = 'tr', currency = 'TRY', exchangeRate }: DashboardLastReservationsProps) {
     if (!reservations || reservations.length === 0) return null
 
     const usdRate = 35.7
@@ -19,12 +19,14 @@ export default function DashboardLastReservationsWidget({ reservations, locale =
     const convertPrice = (price: number, nativeCurrency: string) => {
         let p = price
         nativeCurrency = (nativeCurrency || 'EUR').trim()
+
+        const rate = exchangeRate || 38.5;
         if (currency === 'TRY') {
-            return nativeCurrency === 'EUR' ? p * exchangeRate : (nativeCurrency === 'USD' ? p * usdRate : p)
+            return nativeCurrency === 'EUR' ? p * rate : (nativeCurrency === 'USD' ? p * usdRate : p)
         } else if (currency === 'EUR') {
-            return nativeCurrency === 'TRY' ? p / exchangeRate : (nativeCurrency === 'USD' ? (p * usdRate) / exchangeRate : p)
+            return nativeCurrency === 'TRY' ? p / rate : (nativeCurrency === 'USD' ? (p * usdRate) / rate : p)
         } else if (currency === 'USD') {
-            return nativeCurrency === 'TRY' ? p / usdRate : (nativeCurrency === 'EUR' ? (p * exchangeRate) / usdRate : p)
+            return nativeCurrency === 'TRY' ? p / usdRate : (nativeCurrency === 'EUR' ? (p * rate) / usdRate : p)
         }
         return p
     }

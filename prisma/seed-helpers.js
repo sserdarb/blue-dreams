@@ -7,7 +7,14 @@ async function seedPage(slug, locale, title, widgets) {
     const page = await prisma.page.upsert({
         where: { slug_locale: { slug, locale } },
         update: { title },
-        create: { slug, locale, title },
+        create: {
+            slug,
+            locale,
+            title,
+            status: 'published',
+            visibility: 'public',
+            template: 'default'
+        },
     })
 
     // Delete old widgets for this page

@@ -23,7 +23,7 @@ interface DashboardPickupWidgetProps {
     exchangeRate?: number
 }
 
-export default function DashboardPickupWidget({ data, currency = 'TRY', exchangeRate = 38.5 }: DashboardPickupWidgetProps) {
+export default function DashboardPickupWidget({ data, currency = 'TRY', exchangeRate }: DashboardPickupWidgetProps) {
     if (!data) return null;
 
     const symbol = currency === 'EUR' ? '€' : (currency === 'USD' ? '$' : '₺')
@@ -33,12 +33,14 @@ export default function DashboardPickupWidget({ data, currency = 'TRY', exchange
     const convertPrice = (price: number, nativeCurrency: string) => {
         let p = price
         nativeCurrency = (nativeCurrency || 'EUR').trim()
+
+        const rate = exchangeRate || 38.5; // safe fallback for rendering
         if (currency === 'TRY') {
-            return nativeCurrency === 'EUR' ? p * exchangeRate : (nativeCurrency === 'USD' ? p * usdRate : p)
+            return nativeCurrency === 'EUR' ? p * rate : (nativeCurrency === 'USD' ? p * usdRate : p)
         } else if (currency === 'EUR') {
-            return nativeCurrency === 'TRY' ? p / exchangeRate : (nativeCurrency === 'USD' ? (p * usdRate) / exchangeRate : p)
+            return nativeCurrency === 'TRY' ? p / rate : (nativeCurrency === 'USD' ? (p * usdRate) / rate : p)
         } else if (currency === 'USD') {
-            return nativeCurrency === 'TRY' ? p / usdRate : (nativeCurrency === 'EUR' ? (p * exchangeRate) / usdRate : p)
+            return nativeCurrency === 'TRY' ? p / usdRate : (nativeCurrency === 'EUR' ? (p * rate) / usdRate : p)
         }
         return p
     }
@@ -63,7 +65,7 @@ export default function DashboardPickupWidget({ data, currency = 'TRY', exchange
                         <div className="text-right border-l md:border-l-0 border-slate-200 dark:border-white/10 pl-4">
                             <p className="text-xs text-slate-500 uppercase font-semibold">Ciro Etkisi</p>
                             <p className="text-lg font-bold text-slate-900 dark:text-white">
-                                {symbol}{(data.revenue / divisor).toLocaleString('tr-TR', { maximumFractionDigits: 0 })}
+                                {symbol}{(data.revenue / (divisor || 38.5)).toLocaleString('tr-TR', { maximumFractionDigits: 0 })}
                             </p>
                         </div>
                     </div>

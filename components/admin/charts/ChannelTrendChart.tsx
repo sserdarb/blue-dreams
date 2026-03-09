@@ -14,9 +14,10 @@ interface ChannelTrendChartProps {
     exchangeRate?: number
 }
 
-export function ChannelTrendChart({ data, channel, color, currency = 'TRY', exchangeRate = 38.5 }: ChannelTrendChartProps) {
+export function ChannelTrendChart({ data, channel, color, currency = 'TRY', exchangeRate }: ChannelTrendChartProps) {
     const symbol = currency === 'EUR' ? '€' : (currency === 'USD' ? '$' : '₺')
-    const divisor = currency === 'TRY' ? 1 : (currency === 'EUR' ? exchangeRate : 35.7)
+    const rate = exchangeRate || 38.5;
+    const divisor = currency === 'TRY' ? 1 : (currency === 'EUR' ? rate : 35.7)
 
     // Format dates for X-axis and convert currency
     const formattedData = data.map(d => {

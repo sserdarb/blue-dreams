@@ -126,8 +126,8 @@ export const BigDataService = {
         const byDate = groupBy(reservations, r => r.checkIn.slice(0, 10))
         return Array.from(byDate.entries()).map(([date, rsvs]) => ({
             date,
-            revenue: Math.round(rsvs.reduce((s, r) => s + toTRY(r.totalPrice, r.currency), 0)),
-            revenueEUR: Math.round(rsvs.reduce((s, r) => s + toTRY(r.totalPrice, r.currency), 0) / EUR_RATE),
+            revenue: Math.round(rsvs.reduce((s, r) => s + (r.amountTry || 0), 0)),
+            revenueEUR: Math.round(rsvs.reduce((s, r) => s + (r.amountEur || 0), 0)),
             count: rsvs.length,
         })).sort((a, b) => a.date.localeCompare(b.date))
     },
@@ -140,8 +140,8 @@ export const BigDataService = {
         })
         return Array.from(byWeek.entries()).map(([date, rsvs]) => ({
             date,
-            revenue: Math.round(rsvs.reduce((s, r) => s + toTRY(r.totalPrice, r.currency), 0)),
-            revenueEUR: Math.round(rsvs.reduce((s, r) => s + toTRY(r.totalPrice, r.currency), 0) / EUR_RATE),
+            revenue: Math.round(rsvs.reduce((s, r) => s + (r.amountTry || 0), 0)),
+            revenueEUR: Math.round(rsvs.reduce((s, r) => s + (r.amountEur || 0), 0)),
             count: rsvs.length,
         })).sort((a, b) => a.date.localeCompare(b.date))
     },
@@ -153,7 +153,7 @@ export const BigDataService = {
             return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
         })
         return Array.from(byMonth.entries()).map(([month, rsvs]) => {
-            const totalRevTRY = rsvs.reduce((s, r) => s + toTRY(r.totalPrice, r.currency), 0)
+            const totalRevTRY = rsvs.reduce((s, r) => s + (r.amountTry || 0), 0)
             const totalNights = rsvs.reduce((s, r) => s + r.nights * r.roomCount, 0)
             const adr = totalNights > 0 ? totalRevTRY / totalNights : 0
             const mi = parseInt(month.split('-')[1]) - 1
@@ -171,8 +171,8 @@ export const BigDataService = {
 
     // R4: YoY Revenue Growth
     yoyRevenueComparison(current: Reservation[], previous: Reservation[]): YoYComparison[] {
-        const curRev = current.reduce((s, r) => s + toTRY(r.totalPrice, r.currency), 0)
-        const prevRev = previous.reduce((s, r) => s + toTRY(r.totalPrice, r.currency), 0)
+        const curRev = current.reduce((s, r) => s + (r.amountTry || 0), 0)
+        const prevRev = previous.reduce((s, r) => s + (r.amountTry || 0), 0)
         const curNights = current.reduce((s, r) => s + r.nights * r.roomCount, 0)
         const prevNights = previous.reduce((s, r) => s + r.nights * r.roomCount, 0)
         const curADR = curNights > 0 ? curRev / curNights : 0
@@ -180,7 +180,7 @@ export const BigDataService = {
 
         const metrics: YoYComparison[] = [
             { metric: 'Toplam Gelir (₺)', current: Math.round(curRev), previous: Math.round(prevRev), change: 0, changePercent: 0 },
-            { metric: 'Toplam Gelir (€)', current: Math.round(toEUR(curRev)), previous: Math.round(toEUR(prevRev)), change: 0, changePercent: 0 },
+            { metric: 'Toplam Gelir (€)', current: Math.round((current.reduce((s, r) => s + (r.amountEur || 0), 0))), previous: Math.round((previous.reduce((s, r) => s + (r.amountEur || 0), 0))), change: 0, changePercent: 0 },
             { metric: 'Rezervasyon Sayısı', current: current.length, previous: previous.length, change: 0, changePercent: 0 },
             { metric: 'Oda/Gece', current: curNights, previous: prevNights, change: 0, changePercent: 0 },
             { metric: 'ADR (₺)', current: Math.round(curADR), previous: Math.round(prevADR), change: 0, changePercent: 0 },
@@ -222,9 +222,11 @@ export const BigDataService = {
     // R6: RevPAR Trend (Revenue Per Available Room)
     revparTrend(reservations: Reservation[], occupancy: DailyOccupancy[]): RevenuePoint[] {
         const revByDate = new Map<string, number>()
+        const revByDateEur = new Map<string, number>()
         for (const r of reservations) {
             const date = r.checkIn.slice(0, 10)
-            revByDate.set(date, (revByDate.get(date) || 0) + toTRY(r.totalPrice, r.currency) / Math.max(1, r.nights))
+            revByDate.set(date, (revByDate.get(date) || 0) + (r.amountTry || 0) / Math.max(1, r.nights))
+            revByDateEur.set(date, (revByDateEur.get(date) || 0) + (r.amountEur || 0) / Math.max(1, r.nights))
         }
         return occupancy.map(o => {
             const dailyRev = revByDate.get(o.date) || 0
@@ -232,7 +234,7 @@ export const BigDataService = {
             return {
                 date: o.date,
                 revenue: Math.round(revpar),
-                revenueEUR: Math.round(toEUR(revpar)),
+                revenueEUR: Math.round((o.totalRooms > 0 ? (revByDateEur.get(o.date) || 0) / o.totalRooms : 0)),
                 count: o.occupiedRooms,
             }
         }).sort((a, b) => a.date.localeCompare(b.date))
@@ -242,12 +244,13 @@ export const BigDataService = {
     adrTrend(reservations: Reservation[]): RevenuePoint[] {
         const byMonth = groupBy(reservations, r => r.checkIn.slice(0, 7))
         return Array.from(byMonth.entries()).map(([date, rsvs]) => {
-            const totalRev = rsvs.reduce((s, r) => s + toTRY(r.totalPrice, r.currency), 0)
+            const totalRev = rsvs.reduce((s, r) => s + (r.amountTry || 0), 0)
+            const totalEur = rsvs.reduce((s, r) => s + (r.amountEur || 0), 0)
             const totalNights = rsvs.reduce((s, r) => s + r.nights * r.roomCount, 0)
             return {
                 date,
                 revenue: Math.round(totalNights > 0 ? totalRev / totalNights : 0),
-                revenueEUR: Math.round(totalNights > 0 ? toEUR(totalRev / totalNights) : 0),
+                revenueEUR: Math.round(totalNights > 0 ? (totalNights > 0 ? totalEur / totalNights : 0) : 0),
                 count: rsvs.length,
             }
         }).sort((a, b) => a.date.localeCompare(b.date))
@@ -256,12 +259,12 @@ export const BigDataService = {
     // R8: Revenue by Currency
     revenueByCurrency(reservations: Reservation[]): CurrencyBreakdown[] {
         const byCurrency = groupBy(reservations, r => r.currency || 'TRY')
-        const total = reservations.reduce((s, r) => s + toTRY(r.totalPrice, r.currency), 0)
+        const total = reservations.reduce((s, r) => s + (r.amountTry || 0), 0)
         return Array.from(byCurrency.entries()).map(([currency, rsvs]) => ({
             currency,
             revenue: Math.round(rsvs.reduce((s, r) => s + r.totalPrice, 0)),
             count: rsvs.length,
-            share: Math.round((rsvs.reduce((s, r) => s + toTRY(r.totalPrice, r.currency), 0) / (total || 1)) * 100),
+            share: Math.round((rsvs.reduce((s, r) => s + (r.amountTry || 0), 0) / (total || 1)) * 100),
         })).sort((a, b) => b.revenue - a.revenue)
     },
 
@@ -269,8 +272,8 @@ export const BigDataService = {
     totalVsPaidRevenue(reservations: Reservation[]): { month: string; total: number; paid: number; pending: number }[] {
         const byMonth = groupBy(reservations, r => r.checkIn.slice(0, 7))
         return Array.from(byMonth.entries()).map(([month, rsvs]) => {
-            const total = Math.round(rsvs.reduce((s, r) => s + toTRY(r.totalPrice, r.currency), 0))
-            const paid = Math.round(rsvs.reduce((s, r) => s + toTRY(r.paidPrice, r.currency), 0))
+            const total = Math.round(rsvs.reduce((s, r) => s + (r.amountTry || 0), 0))
+            const paid = Math.round(rsvs.reduce((s, r) => s + ((r.amountTry || 0) * (r.paidPrice / Math.max(1, r.totalPrice))), 0))
             return { month, total, paid, pending: total - paid }
         }).sort((a, b) => a.month.localeCompare(b.month))
     },
@@ -284,7 +287,7 @@ export const BigDataService = {
         })
         for (const [key, rsvs] of byKey) {
             const [day, month] = key.split('|')
-            cells.push({ x: month, y: day, value: Math.round(rsvs.reduce((s, r) => s + toTRY(r.totalPrice, r.currency), 0) / 1000) })
+            cells.push({ x: month, y: day, value: Math.round(rsvs.reduce((s, r) => s + (r.amountTry || 0), 0) / 1000) })
         }
         return cells
     },
@@ -322,7 +325,7 @@ export const BigDataService = {
         return Array.from(byType.entries()).map(([roomType, rsvs]) => ({
             roomType,
             count: rsvs.length,
-            revenue: Math.round(rsvs.reduce((s, r) => s + toTRY(r.totalPrice, r.currency), 0)),
+            revenue: Math.round(rsvs.reduce((s, r) => s + (r.amountTry || 0), 0)),
             avgRate: Math.round(rsvs.reduce((s, r) => s + r.dailyAverage, 0) / (rsvs.length || 1)),
             avgNights: +(rsvs.reduce((s, r) => s + r.nights, 0) / rsvs.length).toFixed(1),
             share: Math.round((rsvs.length / total) * 100),
@@ -334,7 +337,8 @@ export const BigDataService = {
         const byMonth = groupBy(reservations, r => r.checkIn.slice(0, 7))
         const occByMonth = groupBy(occupancy, o => o.date.slice(0, 7))
         return Array.from(byMonth.entries()).map(([month, rsvs]) => {
-            const totalRev = rsvs.reduce((s, r) => s + toTRY(r.totalPrice, r.currency), 0)
+            const totalRev = rsvs.reduce((s, r) => s + (r.amountTry || 0), 0)
+            const totalEur = rsvs.reduce((s, r) => s + (r.amountEur || 0), 0)
             const totalNights = rsvs.reduce((s, r) => s + r.nights * r.roomCount, 0)
             const adr = totalNights > 0 ? totalRev / totalNights : 0
             const occData = occByMonth.get(month) || []
@@ -366,7 +370,7 @@ export const BigDataService = {
         const genMetric = (type: string, rsvs: Reservation[]): WeekdayWeekend => ({
             type,
             count: rsvs.length,
-            revenue: Math.round(rsvs.reduce((s, r) => s + toTRY(r.totalPrice, r.currency), 0)),
+            revenue: Math.round(rsvs.reduce((s, r) => s + (r.amountTry || 0), 0)),
             adr: Math.round(rsvs.length > 0 ? rsvs.reduce((s, r) => s + r.dailyAverage, 0) / rsvs.length : 0),
             avgNights: +(rsvs.length > 0 ? rsvs.reduce((s, r) => s + r.nights, 0) / rsvs.length : 0).toFixed(1),
         })
@@ -378,7 +382,8 @@ export const BigDataService = {
     seasonalComparison(reservations: Reservation[]): SeasonalMetric[] {
         const bySeason = groupBy(reservations, r => seasonOf(new Date(r.checkIn).getMonth()))
         return Array.from(bySeason.entries()).map(([season, rsvs]) => {
-            const totalRev = rsvs.reduce((s, r) => s + toTRY(r.totalPrice, r.currency), 0)
+            const totalRev = rsvs.reduce((s, r) => s + (r.amountTry || 0), 0)
+            const totalEur = rsvs.reduce((s, r) => s + (r.amountEur || 0), 0)
             const totalNights = rsvs.reduce((s, r) => s + r.nights * r.roomCount, 0)
             return {
                 season,
@@ -411,7 +416,8 @@ export const BigDataService = {
         const byChannel = groupBy(reservations, r => r.channel || 'Unknown')
         const total = reservations.length || 1
         return Array.from(byChannel.entries()).map(([channel, rsvs]) => {
-            const totalRev = rsvs.reduce((s, r) => s + toTRY(r.totalPrice, r.currency), 0)
+            const totalRev = rsvs.reduce((s, r) => s + (r.amountTry || 0), 0)
+            const totalEur = rsvs.reduce((s, r) => s + (r.amountEur || 0), 0)
             const totalNights = rsvs.reduce((s, r) => s + r.nights * r.roomCount, 0)
             return {
                 channel,
@@ -432,7 +438,7 @@ export const BigDataService = {
         return Array.from(byMonth.entries()).map(([month, rsvs]) => {
             const row: { month: string;[channel: string]: string | number } = { month }
             for (const ch of channels) {
-                row[ch] = Math.round(rsvs.filter(r => r.channel === ch).reduce((s, r) => s + toTRY(r.totalPrice, r.currency), 0))
+                row[ch] = Math.round(rsvs.filter(r => r.channel === ch).reduce((s, r) => s + (r.amountTry || 0), 0))
             }
             return row
         }).sort((a, b) => (a.month as string).localeCompare(b.month as string))
@@ -477,7 +483,8 @@ export const BigDataService = {
     agencyRanking(reservations: Reservation[]): AgencyMetric[] {
         const byAgency = groupBy(reservations, r => r.agency || 'Unknown')
         return Array.from(byAgency.entries()).map(([agency, rsvs]) => {
-            const totalRev = rsvs.reduce((s, r) => s + toTRY(r.totalPrice, r.currency), 0)
+            const totalRev = rsvs.reduce((s, r) => s + (r.amountTry || 0), 0)
+            const totalEur = rsvs.reduce((s, r) => s + (r.amountEur || 0), 0)
             const totalNights = rsvs.reduce((s, r) => s + r.nights * r.roomCount, 0)
             return {
                 agency,
@@ -514,7 +521,7 @@ export const BigDataService = {
         return Array.from(byCountry.entries()).map(([country, rsvs]) => ({
             country,
             count: rsvs.length,
-            revenue: Math.round(rsvs.reduce((s, r) => s + toTRY(r.totalPrice, r.currency), 0)),
+            revenue: Math.round(rsvs.reduce((s, r) => s + (r.amountTry || 0), 0)),
             avgNights: +(rsvs.reduce((s, r) => s + r.nights, 0) / rsvs.length).toFixed(1),
             avgRate: Math.round(rsvs.reduce((s, r) => s + r.dailyAverage, 0) / rsvs.length),
             share: Math.round((rsvs.length / total) * 100),
@@ -556,13 +563,13 @@ export const BigDataService = {
         const total = reservations.length || 1
         return segments.map(seg => {
             const rsvs = reservations.filter(r => {
-                const tryVal = toTRY(r.totalPrice, r.currency)
+                const tryVal = (r.amountTry || 0)
                 return tryVal >= seg.min && tryVal < seg.max
             })
             return {
                 segment: seg.label,
                 count: rsvs.length,
-                revenue: Math.round(rsvs.reduce((s, r) => s + toTRY(r.totalPrice, r.currency), 0)),
+                revenue: Math.round(rsvs.reduce((s, r) => s + (r.amountTry || 0), 0)),
                 share: Math.round((rsvs.length / total) * 100),
             }
         })
@@ -621,7 +628,7 @@ export const BigDataService = {
             day: dayOfWeekName(parseInt(dayIdx)),
             dayIndex: parseInt(dayIdx),
             count: rsvs.length,
-            revenue: Math.round(rsvs.reduce((s, r) => s + toTRY(r.totalPrice, r.currency), 0)),
+            revenue: Math.round(rsvs.reduce((s, r) => s + (r.amountTry || 0), 0)),
             avgRate: Math.round(rsvs.reduce((s, r) => s + r.dailyAverage, 0) / (rsvs.length || 1)),
         })).sort((a, b) => a.dayIndex - b.dayIndex)
     },
@@ -669,7 +676,7 @@ export const BigDataService = {
         return Array.from(byBoard.entries()).map(([boardType, rsvs]) => ({
             boardType,
             count: rsvs.length,
-            revenue: Math.round(rsvs.reduce((s, r) => s + toTRY(r.totalPrice, r.currency), 0)),
+            revenue: Math.round(rsvs.reduce((s, r) => s + (r.amountTry || 0), 0)),
             share: Math.round((rsvs.length / total) * 100),
         })).sort((a, b) => b.count - a.count)
     },
@@ -697,7 +704,7 @@ export const BigDataService = {
                 nights: range.label,
                 count: rsvs.length,
                 share: Math.round((rsvs.length / total) * 100),
-                revenue: Math.round(rsvs.reduce((s, r) => s + toTRY(r.totalPrice, r.currency), 0)),
+                revenue: Math.round(rsvs.reduce((s, r) => s + (r.amountTry || 0), 0)),
             }
         })
     },
@@ -710,7 +717,7 @@ export const BigDataService = {
     goppar(reservations: Reservation[], totalRooms: number): { month: string; goppar: number; revenue: number }[] {
         const byMonth = groupBy(reservations, r => r.checkIn.slice(0, 7))
         return Array.from(byMonth.entries()).map(([month, rsvs]) => {
-            const revenue = rsvs.reduce((s, r) => s + toTRY(r.totalPrice, r.currency), 0)
+            const revenue = rsvs.reduce((s, r) => s + (r.amountTry || 0), 0)
             const daysInMonth = new Date(parseInt(month.split('-')[0]), parseInt(month.split('-')[1]), 0).getDate()
             const availableRoomDays = totalRooms * daysInMonth
             return {
@@ -725,7 +732,7 @@ export const BigDataService = {
     trevpar(reservations: Reservation[], totalRooms: number): { month: string; trevpar: number }[] {
         const byMonth = groupBy(reservations, r => r.checkIn.slice(0, 7))
         return Array.from(byMonth.entries()).map(([month, rsvs]) => {
-            const revenue = rsvs.reduce((s, r) => s + toTRY(r.totalPrice, r.currency), 0)
+            const revenue = rsvs.reduce((s, r) => s + (r.amountTry || 0), 0)
             const daysInMonth = new Date(parseInt(month.split('-')[0]), parseInt(month.split('-')[1]), 0).getDate()
             return {
                 month,
@@ -767,21 +774,21 @@ export const BigDataService = {
 
     // R45: KPI Scorecard
     kpiScorecard(reservations: Reservation[], occupancy: DailyOccupancy[]): KPICard[] {
-        const totalRev = reservations.reduce((s, r) => s + toTRY(r.totalPrice, r.currency), 0)
+        const totalRev = reservations.reduce((s, r) => s + (r.amountTry || 0), 0)
         const totalNights = reservations.reduce((s, r) => s + r.nights * r.roomCount, 0)
         const adr = totalNights > 0 ? totalRev / totalNights : 0
         const avgOcc = occupancy.length > 0 ? occupancy.reduce((s, o) => s + o.occupancyRate, 0) / occupancy.length : 0
         const totalRooms = occupancy[0]?.totalRooms || 341
         const avgDays = occupancy.length || 1
         const revpar = (totalRooms * avgDays) > 0 ? totalRev / (totalRooms * avgDays) : 0
-        const paidRev = reservations.reduce((s, r) => s + toTRY(r.paidPrice, r.currency), 0)
+        const paidRev = reservations.reduce((s, r) => s + ((r.amountTry || 0) * (r.paidPrice / Math.max(1, r.totalPrice))), 0)
         const collectionRate = totalRev > 0 ? (paidRev / totalRev) * 100 : 0
 
         return [
-            { label: 'Toplam Gelir', value: `₺${Math.round(totalRev).toLocaleString('tr-TR')}`, subValue: `€${Math.round(toEUR(totalRev)).toLocaleString('tr-TR')}`, icon: 'revenue' },
+            { label: 'Toplam Gelir', value: `₺${Math.round(totalRev).toLocaleString('tr-TR')}`, subValue: `€${Math.round((reservations.reduce((s, r) => s + (r.amountEur || 0), 0))).toLocaleString('tr-TR')}`, icon: 'revenue' },
             { label: 'Rezervasyon Sayısı', value: reservations.length.toLocaleString('tr-TR'), icon: 'bookings' },
             { label: 'Oda/Gece', value: totalNights.toLocaleString('tr-TR'), icon: 'nights' },
-            { label: 'ADR', value: `₺${Math.round(adr).toLocaleString('tr-TR')}`, subValue: `€${Math.round(toEUR(adr)).toLocaleString('tr-TR')}`, icon: 'adr' },
+            { label: 'ADR', value: `₺${Math.round(adr).toLocaleString('tr-TR')}`, subValue: `€${Math.round((totalNights > 0 ? (reservations.reduce((s, r) => s + (r.amountEur || 0), 0)) / totalNights : 0)).toLocaleString('tr-TR')}`, icon: 'adr' },
             { label: 'RevPAR', value: `₺${Math.round(revpar).toLocaleString('tr-TR')}`, icon: 'revpar' },
             { label: 'Ort. Doluluk', value: `%${Math.round(avgOcc)}`, icon: 'occupancy' },
             { label: 'Ort. Kalış', value: `${(reservations.length > 0 ? reservations.reduce((s, r) => s + r.nights, 0) / reservations.length : 0).toFixed(1)} gece`, icon: 'stay' },
@@ -798,7 +805,7 @@ export const BigDataService = {
             day: dayOfWeekName(parseInt(dayIdx)),
             dayIndex: parseInt(dayIdx),
             count: rsvs.length,
-            revenue: Math.round(rsvs.reduce((s, r) => s + toTRY(r.totalPrice, r.currency), 0)),
+            revenue: Math.round(rsvs.reduce((s, r) => s + (r.amountTry || 0), 0)),
             avgRate: Math.round(rsvs.reduce((s, r) => s + r.dailyAverage, 0) / (rsvs.length || 1)),
         })).sort((a, b) => a.dayIndex - b.dayIndex)
     },
@@ -808,11 +815,11 @@ export const BigDataService = {
         const byMonth = groupBy(reservations, r => r.checkIn.slice(0, 7))
         return Array.from(byMonth.entries()).map(([month, rsvs]) => ({
             month,
-            ekonomik: rsvs.filter(r => toTRY(r.totalPrice, r.currency) < 10000).length,
-            orta: rsvs.filter(r => { const v = toTRY(r.totalPrice, r.currency); return v >= 10000 && v < 25000 }).length,
-            ust: rsvs.filter(r => { const v = toTRY(r.totalPrice, r.currency); return v >= 25000 && v < 50000 }).length,
-            premium: rsvs.filter(r => { const v = toTRY(r.totalPrice, r.currency); return v >= 50000 && v < 100000 }).length,
-            vip: rsvs.filter(r => toTRY(r.totalPrice, r.currency) >= 100000).length,
+            ekonomik: rsvs.filter(r => (r.amountTry || 0) < 10000).length,
+            orta: rsvs.filter(r => { const v = (r.amountTry || 0); return v >= 10000 && v < 25000 }).length,
+            ust: rsvs.filter(r => { const v = (r.amountTry || 0); return v >= 25000 && v < 50000 }).length,
+            premium: rsvs.filter(r => { const v = (r.amountTry || 0); return v >= 50000 && v < 100000 }).length,
+            vip: rsvs.filter(r => (r.amountTry || 0) >= 100000).length,
         })).sort((a, b) => a.month.localeCompare(b.month))
     },
 
@@ -821,7 +828,8 @@ export const BigDataService = {
         const byMonth = groupBy(reservations, r => r.checkIn.slice(0, 7))
         const occByMonth = groupBy(occupancy, o => o.date.slice(0, 7))
         return Array.from(byMonth.entries()).map(([month, rsvs]) => {
-            const totalRev = rsvs.reduce((s, r) => s + toTRY(r.totalPrice, r.currency), 0)
+            const totalRev = rsvs.reduce((s, r) => s + (r.amountTry || 0), 0)
+            const totalEur = rsvs.reduce((s, r) => s + (r.amountEur || 0), 0)
             const totalNights = rsvs.reduce((s, r) => s + r.nights * r.roomCount, 0)
             const adr = totalNights > 0 ? totalRev / totalNights : 0
             const occData = occByMonth.get(month) || []
@@ -845,7 +853,7 @@ export const BigDataService = {
     // R49: Revenue Concentration (Pareto)
     revenueConcentration(reservations: Reservation[]): { percentile: number; revenueShare: number; bookingShare: number }[] {
         const sorted = [...reservations].sort((a, b) => toTRY(b.totalPrice, b.currency) - toTRY(a.totalPrice, a.currency))
-        const totalRev = sorted.reduce((s, r) => s + toTRY(r.totalPrice, r.currency), 0)
+        const totalRev = sorted.reduce((s, r) => s + (r.amountTry || 0), 0)
         const total = sorted.length
         const points: { percentile: number; revenueShare: number; bookingShare: number }[] = []
         let cumRev = 0
@@ -867,7 +875,7 @@ export const BigDataService = {
         const byRate = groupBy(reservations, r => r.rateType || 'Standard')
         const total = reservations.length || 1
         return Array.from(byRate.entries()).map(([rateType, rsvs]) => {
-            const rev = rsvs.reduce((s, r) => s + toTRY(r.totalPrice, r.currency), 0)
+            const rev = rsvs.reduce((s, r) => s + (r.amountTry || 0), 0)
             const nights = rsvs.reduce((s, r) => s + r.nights * r.roomCount, 0)
             return {
                 rateType,
