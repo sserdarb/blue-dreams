@@ -147,8 +147,8 @@ export default function MarketingClient() {
 
     useEffect(() => { fetchAds() }, [statusFilter])
 
-    const metaConnected = true // assume true if not specifically erroring
-    const googleConnected = true // assume true if not specifically erroring
+    const metaConnected = metaStatus.startsWith('Bağlı')
+    const googleConnected = googleStatus.startsWith('Bağlı')
 
     const handlePdfExport = async () => {
         if (!contentRef.current) return
@@ -258,11 +258,11 @@ export default function MarketingClient() {
                     <div className="flex items-center gap-4 text-sm">
                         <span className="flex items-center gap-2">
                             <span className={`h-2 w-2 rounded-full ${metaConnected ? 'bg-green-500' : 'bg-amber-500 animate-pulse'}`}></span>
-                            Meta: {metaConnected ? 'Bağlı ✓' : metaStatus}
+                            Meta: {metaStatus || (metaConnected ? 'Bağlı ✓' : 'Bağlantı Hatası')}
                         </span>
                         <span className="flex items-center gap-2">
                             <span className={`h-2 w-2 rounded-full ${googleConnected ? 'bg-green-500' : 'bg-amber-500 animate-pulse'}`}></span>
-                            Google: {googleConnected ? 'Bağlı ✓' : googleStatus}
+                            Google: {googleStatus || (googleConnected ? 'Bağlı ✓' : 'Bağlantı Hatası')}
                         </span>
                     </div>
                     <button onClick={fetchAds} className="flex items-center gap-2 text-xs text-cyan-600 hover:text-cyan-700">
