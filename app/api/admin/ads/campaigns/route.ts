@@ -5,8 +5,19 @@ import { isDemoSession } from '@/lib/demo-session'
 async function isDemoMode(): Promise<boolean> {
     try {
         if (await isDemoSession()) return true
-        const s = await prisma.siteSettings.findFirst()
-        return ((s as any)?.demoModeAds ?? s?.demoModeAnalytics) ?? false
+
+        // If demo mode is explicitly forced via env vars
+        if (process.env.DEMO_MODE === 'true' || process.env.DEMO_MODE_ADS === 'true') return true
+
+        // As a fallback to preserve UI state when no real tokens are connected:
+        // Use demo mock campaigns so the page isn't totally empty.
+        const metaToken = process.env.META_ACCESS_TOKEN
+        const googleToken = process.env.GOOGLE_ADS_DEVELOPER_TOKEN
+        if (!metaToken && !googleToken) {
+            return true
+        }
+
+        return false
     } catch { return false }
 }
 
