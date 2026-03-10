@@ -6,7 +6,7 @@ async function isDemoMode(): Promise<boolean> {
     try {
         if (await isDemoSession()) return true
         const s = await prisma.siteSettings.findFirst()
-        return (s as any)?.demoModeAds ?? false
+        return ((s as any)?.demoModeAds ?? s?.demoModeAnalytics) ?? false
     } catch { return false }
 }
 
