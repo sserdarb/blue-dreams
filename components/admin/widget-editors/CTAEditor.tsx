@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { updateWidget } from '@/app/actions/admin'
-import { Plus, Trash2 } from 'lucide-react'
+import { Type, PaintBucket, MousePointerClick } from 'lucide-react'
+import { EditorSection, EditorField, EditorInput, EditorSelect, EditorRepeater, SaveBar, EditorGrid2 } from './EditorUI'
 
 interface Button { text: string; url: string; variant: string }
 
@@ -25,8 +26,6 @@ export function CTAEditor({ id, initialData }: { id: string; initialData: string
         setIsDirty(true)
     }
 
-    const buttons = data.buttons || []
-
     const handleSave = async () => {
         setSaving(true)
         try { await updateWidget(id, data); setIsDirty(false) }
@@ -36,59 +35,59 @@ export function CTAEditor({ id, initialData }: { id: string; initialData: string
 
     return (
         <div className="space-y-4">
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Başlık</label>
-                <input type="text" value={data.heading || ''} onChange={e => set('heading', e.target.value)}
-                    className="w-full border rounded-lg px-3 py-2" placeholder="Sizi Bekliyoruz" />
-            </div>
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Alt Başlık</label>
-                <input type="text" value={data.subtitle || ''} onChange={e => set('subtitle', e.target.value)}
-                    className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Hayalinizdeki tatili birlikte planlayalım." />
-            </div>
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Arka Plan</label>
-                <select value={data.backgroundColor || 'white'} onChange={e => set('backgroundColor', e.target.value)}
-                    className="w-full border rounded-lg px-3 py-2 text-sm">
-                    <option value="white">Beyaz</option>
-                    <option value="dark">Koyu</option>
-                    <option value="brand">Marka Rengi</option>
-                    <option value="gradient">Gradient</option>
-                </select>
-            </div>
-            <div>
-                <div className="flex items-center justify-between mb-2">
-                    <label className="text-sm font-medium text-gray-700">Butonlar</label>
-                    <button type="button" onClick={() => set('buttons', [...buttons, { text: '', url: '', variant: 'primary' }])}
-                        className="flex items-center gap-1 text-xs text-blue-600"><Plus size={14} /> Buton Ekle</button>
-                </div>
-                {buttons.map((btn, i) => (
-                    <div key={i} className="flex gap-2 items-center mb-2 p-2 bg-gray-50 rounded">
-                        <input type="text" value={btn.text} onChange={e => {
-                            const nb = [...buttons]; nb[i] = { ...nb[i], text: e.target.value }; set('buttons', nb)
-                        }} className="w-1/3 border rounded px-2 py-1 text-sm" placeholder="Buton metni" />
-                        <input type="url" value={btn.url} onChange={e => {
-                            const nb = [...buttons]; nb[i] = { ...nb[i], url: e.target.value }; set('buttons', nb)
-                        }} className="flex-1 border rounded px-2 py-1 text-sm" placeholder="URL" />
-                        <select value={btn.variant} onChange={e => {
-                            const nb = [...buttons]; nb[i] = { ...nb[i], variant: e.target.value }; set('buttons', nb)
-                        }} className="w-28 border rounded px-1 py-1 text-xs">
-                            <option value="primary">Primary</option>
-                            <option value="outline">Outline</option>
-                            <option value="white">White</option>
-                            <option value="white-outline">White Outline</option>
-                        </select>
-                        <button type="button" onClick={() => set('buttons', buttons.filter((_, idx) => idx !== i))}
-                            className="text-red-400 hover:text-red-600"><Trash2 size={14} /></button>
-                    </div>
-                ))}
-            </div>
-            {isDirty && (
-                <button onClick={handleSave} disabled={saving}
-                    className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50">
-                    {saving ? 'Kaydediliyor...' : 'Kaydet'}
-                </button>
-            )}
+            <EditorSection title="İçerik" icon={<Type size={14} />} defaultOpen>
+                <EditorField label="Başlık">
+                    <EditorInput value={data.heading || ''} onChange={v => set('heading', v)} placeholder="Sizi Bekliyoruz" />
+                </EditorField>
+                <EditorField label="Alt Başlık">
+                    <EditorInput value={data.subtitle || ''} onChange={v => set('subtitle', v)} placeholder="Hayalinizdeki tatili birlikte planlayalım." />
+                </EditorField>
+            </EditorSection>
+
+            <EditorSection title="Stil" icon={<PaintBucket size={14} />}>
+                <EditorField label="Arka Plan">
+                    <EditorSelect
+                        value={data.backgroundColor || 'white'}
+                        onChange={v => set('backgroundColor', v)}
+                        options={[
+                            { value: 'white', label: 'Beyaz' },
+                            { value: 'dark', label: 'Koyu' },
+                            { value: 'brand', label: 'Marka Rengi' },
+                            { value: 'gradient', label: 'Gradient' },
+                        ]}
+                    />
+                </EditorField>
+            </EditorSection>
+
+            <EditorSection title="Butonlar" icon={<MousePointerClick size={14} />} badge={data.buttons?.length || 0}>
+                <EditorRepeater<Button>
+                    items={data.buttons || []}
+                    onUpdate={items => set('buttons', items)}
+                    createNewItem={() => ({ text: '', url: '', variant: 'primary' })}
+                    addLabel="Buton Ekle"
+                    emptyMessage="Henüz buton eklenmedi"
+                    renderItem={(btn, _i, update) => (
+                        <div className="space-y-2">
+                            <EditorGrid2>
+                                <EditorInput value={btn.text} onChange={v => update({ ...btn, text: v })} placeholder="Buton metni" />
+                                <EditorInput value={btn.url} onChange={v => update({ ...btn, url: v })} placeholder="URL" type="url" />
+                            </EditorGrid2>
+                            <EditorSelect
+                                value={btn.variant}
+                                onChange={v => update({ ...btn, variant: v })}
+                                options={[
+                                    { value: 'primary', label: '● Primary' },
+                                    { value: 'outline', label: '○ Outline' },
+                                    { value: 'white', label: '◌ White' },
+                                    { value: 'white-outline', label: '◌ White Outline' },
+                                ]}
+                            />
+                        </div>
+                    )}
+                />
+            </EditorSection>
+
+            <SaveBar isDirty={isDirty} saving={saving} onSave={handleSave} />
         </div>
     )
 }

@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { updateWidget } from '@/app/actions/admin'
-import { Plus, Trash2 } from 'lucide-react'
+import { Type, MessageSquare, Star, Link as LinkIcon } from 'lucide-react'
+import { EditorSection, EditorField, EditorInput, EditorTextarea, EditorRepeater, SaveBar, EditorGrid2 } from './EditorUI'
 
 interface Review { author: string; text: string; rating: number }
 
@@ -21,7 +22,7 @@ interface ReviewsData {
 
 export function ReviewsEditor({ id, initialData }: { id: string; initialData: string }) {
     const [data, setData] = useState<ReviewsData>(() => {
-        try { return typeof initialData === 'string' ? JSON.parse(initialData) : initialData } catch { return {} }
+        try { return typeof initialData === 'string' ? JSON.parse(initialData) : initialData } catch { return { reviews: [] } }
     })
     const [isDirty, setIsDirty] = useState(false)
     const [saving, setSaving] = useState(false)
@@ -30,11 +31,6 @@ export function ReviewsEditor({ id, initialData }: { id: string; initialData: st
         setData(prev => ({ ...prev, [field]: value }))
         setIsDirty(true)
     }
-
-    const reviews = data.reviews || []
-
-    const addReview = () => set('reviews', [...reviews, { author: '', text: '', rating: 5 }])
-    const removeReview = (i: number) => set('reviews', reviews.filter((_, idx) => idx !== i))
 
     const handleSave = async () => {
         setSaving(true)
@@ -45,96 +41,94 @@ export function ReviewsEditor({ id, initialData }: { id: string; initialData: st
 
     return (
         <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Etiket</label>
-                    <input type="text" value={data.label || ''} onChange={e => set('label', e.target.value)}
-                        className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Misafir Yorumları" />
+            <EditorSection title="Başlık & Kaynak" icon={<Type size={14} />} defaultOpen>
+                <EditorGrid2>
+                    <EditorField label="Etiket (Badge)">
+                        <EditorInput value={data.label || ''} onChange={v => set('label', v)} placeholder="Misafir Yorumları" />
+                    </EditorField>
+                    <EditorField label="Kaynak (Platform)">
+                        <EditorInput value={data.sourceLabel || ''} onChange={v => set('sourceLabel', v)} placeholder="Google Yorumu" />
+                    </EditorField>
+                </EditorGrid2>
+                <div className="mt-3"></div>
+                <EditorGrid2>
+                    <EditorField label="Başlık">
+                        <EditorInput value={data.heading || ''} onChange={v => set('heading', v)} placeholder="Sizden Gelen" />
+                    </EditorField>
+                    <EditorField label="Vurgulu Başlık">
+                        <EditorInput value={data.headingAccent || ''} onChange={v => set('headingAccent', v)} placeholder="Güzel Sözler" />
+                    </EditorField>
+                </EditorGrid2>
+                <div className="mt-3">
+                    <EditorField label="Açıklama">
+                        <EditorTextarea value={data.description || ''} onChange={v => set('description', v)} placeholder="Gerçek misafir deneyimleri..." rows={2} />
+                    </EditorField>
                 </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Kaynak</label>
-                    <input type="text" value={data.sourceLabel || ''} onChange={e => set('sourceLabel', e.target.value)}
-                        className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Google Yorumu" />
-                </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Başlık</label>
-                    <input type="text" value={data.heading || ''} onChange={e => set('heading', e.target.value)}
-                        className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Sizden Gelen" />
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Vurgulu Başlık</label>
-                    <input type="text" value={data.headingAccent || ''} onChange={e => set('headingAccent', e.target.value)}
-                        className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Güzel Sözler" />
-                </div>
-            </div>
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Açıklama</label>
-                <textarea value={data.description || ''} onChange={e => set('description', e.target.value)}
-                    rows={2} className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Gerçek deneyimler..." />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Booking.com Puanı</label>
-                    <input type="text" value={data.bookingScore || ''} onChange={e => set('bookingScore', e.target.value)}
-                        className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="9.4" />
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Puan Etiketi</label>
-                    <input type="text" value={data.bookingLabel || ''} onChange={e => set('bookingLabel', e.target.value)}
-                        className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Booking.com Puanı" />
-                </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Buton Metni</label>
-                    <input type="text" value={data.buttonText || ''} onChange={e => set('buttonText', e.target.value)}
-                        className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Tüm Yorumları Oku" />
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Buton URL</label>
-                    <input type="url" value={data.buttonUrl || ''} onChange={e => set('buttonUrl', e.target.value)}
-                        className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="https://..." />
-                </div>
-            </div>
+            </EditorSection>
 
-            <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-gray-700">Yorumlar ({reviews.length})</label>
-                <button type="button" onClick={addReview} className="flex items-center gap-1 text-xs text-blue-600">
-                    <Plus size={14} /> Yorum Ekle
-                </button>
-            </div>
-            {reviews.map((r, i) => (
-                <div key={i} className="p-3 bg-gray-50 rounded-lg space-y-2">
-                    <div className="flex gap-2 items-center">
-                        <input type="text" value={r.author} onChange={e => {
-                            const nr = [...reviews]; nr[i] = { ...nr[i], author: e.target.value }; set('reviews', nr)
-                        }} className="flex-1 border rounded px-2 py-1 text-sm" placeholder="Misafir adı" />
-                        <div className="flex items-center gap-1">
-                            {[1, 2, 3, 4, 5].map(star => (
-                                <button key={star} type="button" onClick={() => {
-                                    const nr = [...reviews]; nr[i] = { ...nr[i], rating: star }; set('reviews', nr)
-                                }} className={`text-lg ${star <= r.rating ? 'text-yellow-400' : 'text-gray-300'}`}>
-                                    ★
-                                </button>
-                            ))}
+            <EditorSection title="Dış Kaynak Puanı (Örn: Booking.com)" icon={<Star size={14} />} defaultOpen={false}>
+                <EditorGrid2>
+                    <EditorField label="Genel Puan">
+                        <EditorInput value={data.bookingScore || ''} onChange={v => set('bookingScore', v)} placeholder="9.4" />
+                    </EditorField>
+                    <EditorField label="Puan Etiketi">
+                        <EditorInput value={data.bookingLabel || ''} onChange={v => set('bookingLabel', v)} placeholder="Booking.com Puanı" />
+                    </EditorField>
+                </EditorGrid2>
+            </EditorSection>
+
+            <EditorSection title="Misafir Yorumları" icon={<MessageSquare size={14} />} badge={data.reviews?.length || 0} defaultOpen>
+                <EditorRepeater<Review>
+                    items={data.reviews || []}
+                    onUpdate={items => set('reviews', items)}
+                    createNewItem={() => ({ author: '', text: '', rating: 5 })}
+                    addLabel="Yorum Ekle"
+                    emptyMessage="Henüz yorum eklenmedi"
+                    renderItem={(r, _i, update) => (
+                        <div className="space-y-3">
+                            <div className="flex gap-3 items-center">
+                                <div className="flex-1">
+                                    <EditorField label="Misafir Adı">
+                                        <EditorInput value={r.author} onChange={v => update({ ...r, author: v })} placeholder="Misafir adı soyadı" />
+                                    </EditorField>
+                                </div>
+                                <div>
+                                    <EditorField label="Puan">
+                                        <div className="flex bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-1 mt-0.5">
+                                            {[1, 2, 3, 4, 5].map(star => (
+                                                <button
+                                                    key={star}
+                                                    type="button"
+                                                    onClick={() => update({ ...r, rating: star })}
+                                                    className={`p-1.5 transition-colors ${star <= r.rating ? 'text-amber-400' : 'text-slate-300 dark:text-slate-600'}`}
+                                                >
+                                                    <Star size={18} fill={star <= r.rating ? 'currentColor' : 'none'} />
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </EditorField>
+                                </div>
+                            </div>
+                            <EditorField label="Yorum Metni">
+                                <EditorTextarea value={r.text} onChange={v => update({ ...r, text: v })} placeholder="Yorum içeriği..." rows={3} />
+                            </EditorField>
                         </div>
-                        <button type="button" onClick={() => removeReview(i)} className="text-red-400 hover:text-red-600">
-                            <Trash2 size={14} />
-                        </button>
-                    </div>
-                    <textarea value={r.text} onChange={e => {
-                        const nr = [...reviews]; nr[i] = { ...nr[i], text: e.target.value }; set('reviews', nr)
-                    }} rows={2} className="w-full border rounded px-2 py-1 text-sm" placeholder="Yorum metni" />
-                </div>
-            ))}
-            {isDirty && (
-                <button onClick={handleSave} disabled={saving}
-                    className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50">
-                    {saving ? 'Kaydediliyor...' : 'Kaydet'}
-                </button>
-            )}
+                    )}
+                />
+            </EditorSection>
+
+            <EditorSection title="Yönlendirme Butonu" icon={<LinkIcon size={14} />} defaultOpen={false}>
+                <EditorGrid2>
+                    <EditorField label="Buton Metni">
+                        <EditorInput value={data.buttonText || ''} onChange={v => set('buttonText', v)} placeholder="Tüm Yorumları Oku" />
+                    </EditorField>
+                    <EditorField label="Buton URL">
+                        <EditorInput value={data.buttonUrl || ''} onChange={v => set('buttonUrl', v)} placeholder="https://..." type="url" />
+                    </EditorField>
+                </EditorGrid2>
+            </EditorSection>
+
+            <SaveBar isDirty={isDirty} saving={saving} onSave={handleSave} />
         </div>
     )
 }

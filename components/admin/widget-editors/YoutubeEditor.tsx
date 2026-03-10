@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { updateWidget } from '@/app/actions/admin'
-import { Plus, Trash2 } from 'lucide-react'
+import { Youtube, LayoutGrid } from 'lucide-react'
+import { EditorSection, EditorField, EditorInput, EditorSelect, EditorRepeater, SaveBar, EditorGrid2 } from './EditorUI'
 
 interface Video { url: string; title: string }
 
@@ -13,7 +14,7 @@ interface YoutubeData {
 
 export function YoutubeEditor({ id, initialData }: { id: string; initialData: string }) {
     const [data, setData] = useState<YoutubeData>(() => {
-        try { return typeof initialData === 'string' ? JSON.parse(initialData) : initialData } catch { return {} }
+        try { return typeof initialData === 'string' ? JSON.parse(initialData) : initialData } catch { return { videos: [] } }
     })
     const [isDirty, setIsDirty] = useState(false)
     const [saving, setSaving] = useState(false)
@@ -22,15 +23,6 @@ export function YoutubeEditor({ id, initialData }: { id: string; initialData: st
         setData(prev => ({ ...prev, [field]: value }))
         setIsDirty(true)
     }
-
-    const videos = data.videos || []
-
-    const updateVideo = (i: number, field: keyof Video, value: string) => {
-        const nv = [...videos]; nv[i] = { ...nv[i], [field]: value }; set('videos', nv)
-    }
-
-    const addVideo = () => set('videos', [...videos, { url: '', title: '' }])
-    const removeVideo = (i: number) => set('videos', videos.filter((_, idx) => idx !== i))
 
     const handleSave = async () => {
         setSaving(true)
@@ -41,44 +33,54 @@ export function YoutubeEditor({ id, initialData }: { id: string; initialData: st
 
     return (
         <div className="space-y-4">
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Sütun Sayısı</label>
-                <select value={data.columns || 2} onChange={e => set('columns', parseInt(e.target.value))}
-                    className="w-full border rounded-lg px-3 py-2 text-sm">
-                    <option value={1}>1 Sütun</option>
-                    <option value={2}>2 Sütun</option>
-                    <option value={3}>3 Sütun</option>
-                </select>
-            </div>
-            <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-gray-700">Videolar ({videos.length})</label>
-                <button type="button" onClick={addVideo} className="flex items-center gap-1 text-xs text-blue-600">
-                    <Plus size={14} /> Video Ekle
-                </button>
-            </div>
-            {videos.map((v, i) => (
-                <div key={i} className="p-3 bg-gray-50 rounded-lg space-y-2">
-                    <div className="flex gap-2 items-center">
-                        <span className="text-xs text-gray-400 font-mono">#{i + 1}</span>
-                        <input type="text" value={v.title} onChange={e => updateVideo(i, 'title', e.target.value)}
-                            className="flex-1 border rounded px-2 py-1 text-sm" placeholder="Video başlığı" />
-                        <button type="button" onClick={() => removeVideo(i)} className="text-red-400 hover:text-red-600">
-                            <Trash2 size={14} />
-                        </button>
-                    </div>
-                    <input type="url" value={v.url} onChange={e => updateVideo(i, 'url', e.target.value)}
-                        className="w-full border rounded px-2 py-1 text-sm" placeholder="https://www.youtube.com/embed/..." />
-                    {v.url && (
-                        <iframe src={v.url} className="w-full h-32 rounded" allowFullScreen />
-                    )}
+            <EditorSection title="Görünüm" icon={<LayoutGrid size={14} />} defaultOpen={false}>
+                <EditorField label="Sütun Sayısı">
+                    <EditorSelect
+                        value={data.columns || 2}
+                        onChange={v => set('columns', parseInt(v))}
+                        options={[
+                            { value: 1, label: '1 Sütun (Büyük Video)' },
+                            { value: 2, label: '2 Sütun' },
+                            { value: 3, label: '3 Sütun' },
+                        ]}
+                    />
+                </EditorField>
+            </EditorSection>
+
+            <EditorSection title="Videolar" icon={<Youtube size={14} />} badge={data.videos?.length || 0} defaultOpen>
+                <div className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-3 mb-4">
+                    <p className="text-[11px] text-slate-600 dark:text-slate-400">
+                        <strong className="font-bold">Önemli:</strong> Sadece <code className="bg-slate-200 dark:bg-slate-700 px-1 rounded">https://www.youtube.com/embed/...</code> formatındaki 'embed' URL'lerini kullanın.
+                    </p>
                 </div>
-            ))}
-            {isDirty && (
-                <button onClick={handleSave} disabled={saving}
-                    className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50">
-                    {saving ? 'Kaydediliyor...' : 'Kaydet'}
-                </button>
-            )}
+
+                <EditorRepeater<Video>
+                    items={data.videos || []}
+                    onUpdate={items => set('videos', items)}
+                    createNewItem={() => ({ url: '', title: '' })}
+                    addLabel="Video Ekle"
+                    emptyMessage="Henüz video eklenmedi"
+                    renderItem={(v, _i, update) => (
+                        <div className="space-y-3">
+                            <EditorGrid2>
+                                <EditorField label="Video Başlığı">
+                                    <EditorInput value={v.title} onChange={val => update({ ...v, title: val })} placeholder="Tanıtım Filmi" />
+                                </EditorField>
+                                <EditorField label="Embed URL">
+                                    <EditorInput value={v.url} onChange={val => update({ ...v, url: val })} placeholder="https://www.youtube.com/embed/..." type="url" />
+                                </EditorField>
+                            </EditorGrid2>
+                            {v.url && v.url.includes('embed') && (
+                                <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700">
+                                    <iframe src={v.url} className="w-full h-40" allowFullScreen style={{ border: 0 }} />
+                                </div>
+                            )}
+                        </div>
+                    )}
+                />
+            </EditorSection>
+
+            <SaveBar isDirty={isDirty} saving={saving} onSave={handleSave} />
         </div>
     )
 }

@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { updateWidget } from '@/app/actions/admin'
+import { Type, PaintBucket, LayoutTemplate } from 'lucide-react'
+import { EditorSection, EditorField, EditorSelect, EditorTextarea, SaveBar, EditorGrid2 } from './EditorUI'
 
 interface TextData {
     content?: string
@@ -13,114 +15,92 @@ interface TextData {
 
 export function TextEditor({ id, initialData }: { id: string; initialData: string }) {
     const [data, setData] = useState<TextData>(() => {
-        try {
-            return typeof initialData === 'string' ? JSON.parse(initialData) : initialData
-        } catch {
-            return { content: '' }
-        }
+        try { return typeof initialData === 'string' ? JSON.parse(initialData) : initialData } catch { return { content: '' } }
     })
     const [isDirty, setIsDirty] = useState(false)
     const [saving, setSaving] = useState(false)
 
-    const handleChange = (field: keyof TextData, value: any) => {
+    const set = (field: keyof TextData, value: any) => {
         setData(prev => ({ ...prev, [field]: value }))
         setIsDirty(true)
     }
 
     const handleSave = async () => {
         setSaving(true)
-        try {
-            await updateWidget(id, data)
-            setIsDirty(false)
-        } catch (e) {
-            alert('Failed to save')
-        }
+        try { await updateWidget(id, data); setIsDirty(false) }
+        catch (e) { console.error('Save failed:', e) }
         setSaving(false)
     }
 
     return (
         <div className="space-y-4">
-            {/* Content */}
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Content (HTML supported)</label>
-                <textarea
-                    value={data.content || ''}
-                    onChange={e => handleChange('content', e.target.value)}
-                    placeholder="<h2>Welcome</h2><p>Your content here...</p>"
-                    rows={6}
-                    className="w-full border rounded-lg px-3 py-2 font-mono text-sm"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                    Use HTML tags: &lt;h2&gt;, &lt;p&gt;, &lt;strong&gt;, &lt;em&gt;, &lt;ul&gt;, &lt;li&gt;, &lt;a&gt;
-                </p>
-            </div>
+            <EditorSection title="Metin İçeriği" icon={<Type size={14} />} defaultOpen>
+                <EditorField label="İçerik (HTML Destekli)" hint="Kullanılabilir etiketler: <h2>, <p>, <strong>, <em>, <ul>, <li>, <a>">
+                    <EditorTextarea
+                        value={data.content || ''}
+                        onChange={v => set('content', v)}
+                        placeholder="<h2>Hoş Geldiniz</h2><p>İçeriğinizi buraya girin...</p>"
+                        rows={8}
+                    />
+                </EditorField>
+            </EditorSection>
 
-            {/* Styling Options */}
-            <div className="grid grid-cols-2 gap-4">
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Background Color</label>
-                    <select
-                        value={data.backgroundColor || 'white'}
-                        onChange={e => handleChange('backgroundColor', e.target.value)}
-                        className="w-full border rounded-lg px-3 py-2 text-sm"
-                    >
-                        <option value="white">White</option>
-                        <option value="gray">Light Gray</option>
-                        <option value="blue">Light Blue</option>
-                        <option value="dark">Dark</option>
-                    </select>
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Text Color</label>
-                    <select
-                        value={data.textColor || 'dark'}
-                        onChange={e => handleChange('textColor', e.target.value)}
-                        className="w-full border rounded-lg px-3 py-2 text-sm"
-                    >
-                        <option value="dark">Dark</option>
-                        <option value="light">Light</option>
-                        <option value="blue">Blue</option>
-                    </select>
-                </div>
-            </div>
+            <EditorSection title="Renk Seçenekleri" icon={<PaintBucket size={14} />} defaultOpen={false}>
+                <EditorGrid2>
+                    <EditorField label="Arka Plan Rengi">
+                        <EditorSelect
+                            value={data.backgroundColor || 'white'}
+                            onChange={v => set('backgroundColor', v)}
+                            options={[
+                                { value: 'white', label: 'Beyaz' },
+                                { value: 'gray', label: 'Açık Gri' },
+                                { value: 'blue', label: 'Açık Mavi' },
+                                { value: 'dark', label: 'Koyu' },
+                            ]}
+                        />
+                    </EditorField>
+                    <EditorField label="Metin Rengi">
+                        <EditorSelect
+                            value={data.textColor || 'dark'}
+                            onChange={v => set('textColor', v)}
+                            options={[
+                                { value: 'dark', label: 'Koyu' },
+                                { value: 'light', label: 'Açık' },
+                                { value: 'blue', label: 'Mavi' },
+                            ]}
+                        />
+                    </EditorField>
+                </EditorGrid2>
+            </EditorSection>
 
-            <div className="grid grid-cols-2 gap-4">
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Padding</label>
-                    <select
-                        value={data.padding || 'medium'}
-                        onChange={e => handleChange('padding', e.target.value)}
-                        className="w-full border rounded-lg px-3 py-2 text-sm"
-                    >
-                        <option value="small">Small</option>
-                        <option value="medium">Medium</option>
-                        <option value="large">Large</option>
-                    </select>
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Max Width</label>
-                    <select
-                        value={data.maxWidth || 'medium'}
-                        onChange={e => handleChange('maxWidth', e.target.value)}
-                        className="w-full border rounded-lg px-3 py-2 text-sm"
-                    >
-                        <option value="narrow">Narrow (800px)</option>
-                        <option value="medium">Medium (1200px)</option>
-                        <option value="full">Full Width</option>
-                    </select>
-                </div>
-            </div>
+            <EditorSection title="Sayfa Düzeni (Layout)" icon={<LayoutTemplate size={14} />} defaultOpen={false}>
+                <EditorGrid2>
+                    <EditorField label="İç Boşluk (Padding)">
+                        <EditorSelect
+                            value={data.padding || 'medium'}
+                            onChange={v => set('padding', v)}
+                            options={[
+                                { value: 'small', label: 'Küçük' },
+                                { value: 'medium', label: 'Orta' },
+                                { value: 'large', label: 'Büyük' },
+                            ]}
+                        />
+                    </EditorField>
+                    <EditorField label="Maksimum Genişlik">
+                        <EditorSelect
+                            value={data.maxWidth || 'medium'}
+                            onChange={v => set('maxWidth', v)}
+                            options={[
+                                { value: 'narrow', label: 'Dar (800px)' },
+                                { value: 'medium', label: 'Orta (1200px)' },
+                                { value: 'full', label: 'Tam Genişlik' },
+                            ]}
+                        />
+                    </EditorField>
+                </EditorGrid2>
+            </EditorSection>
 
-            {/* Save Button */}
-            {isDirty && (
-                <button
-                    onClick={handleSave}
-                    disabled={saving}
-                    className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50"
-                >
-                    {saving ? 'Saving...' : 'Save Changes'}
-                </button>
-            )}
+            <SaveBar isDirty={isDirty} saving={saving} onSave={handleSave} />
         </div>
     )
 }

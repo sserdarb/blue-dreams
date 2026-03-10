@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { updateWidget } from '@/app/actions/admin'
-import { Plus, Trash2 } from 'lucide-react'
+import { Type, Sparkles } from 'lucide-react'
+import { EditorSection, EditorField, EditorInput, EditorTextarea, EditorImageField, EditorRepeater, SaveBar, EditorGrid2 } from './EditorUI'
 
 interface ExperienceItem {
     title?: string
@@ -23,24 +24,12 @@ export function ExperienceEditor({ id, initialData }: { id: string; initialData:
     const [isDirty, setIsDirty] = useState(false)
     const [saving, setSaving] = useState(false)
 
+    const set = (field: keyof ExperienceData, value: any) => {
+        setData(prev => ({ ...prev, [field]: value }))
+        setIsDirty(true)
+    }
+
     const items = data.items || []
-
-    const updateItem = (index: number, field: keyof ExperienceItem, value: string) => {
-        const newItems = [...items]
-        newItems[index] = { ...newItems[index], [field]: value }
-        setData({ ...data, items: newItems })
-        setIsDirty(true)
-    }
-
-    const addItem = () => {
-        setData({ ...data, items: [...items, { title: '', description: '', imageUrl: '' }] })
-        setIsDirty(true)
-    }
-
-    const removeItem = (index: number) => {
-        setData({ ...data, items: items.filter((_, i) => i !== index) })
-        setIsDirty(true)
-    }
 
     const handleSave = async () => {
         setSaving(true)
@@ -51,43 +40,43 @@ export function ExperienceEditor({ id, initialData }: { id: string; initialData:
 
     return (
         <div className="space-y-4">
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Başlık</label>
-                <input type="text" value={data.title || ''} onChange={e => { setData({ ...data, title: e.target.value }); setIsDirty(true) }}
-                    placeholder="Deneyimler" className="w-full border rounded-lg px-3 py-2" />
-            </div>
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Alt Başlık</label>
-                <input type="text" value={data.subtitle || ''} onChange={e => { setData({ ...data, subtitle: e.target.value }); setIsDirty(true) }}
-                    placeholder="Alt başlık" className="w-full border rounded-lg px-3 py-2 text-sm" />
-            </div>
-            <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-gray-700">Deneyim Öğeleri</label>
-                <button type="button" onClick={addItem} className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800">
-                    <Plus size={14} /> Ekle
-                </button>
-            </div>
-            {items.map((item, i) => (
-                <div key={i} className="p-3 bg-gray-50 rounded-lg space-y-2">
-                    <div className="flex gap-2 items-center">
-                        <input type="text" value={item.title || ''} onChange={e => updateItem(i, 'title', e.target.value)}
-                            className="flex-1 border rounded px-2 py-1 text-sm" placeholder="Deneyim başlığı" />
-                        <button type="button" onClick={() => removeItem(i)} className="text-red-400 hover:text-red-600 p-1">
-                            <Trash2 size={14} />
-                        </button>
-                    </div>
-                    <input type="url" value={item.imageUrl || ''} onChange={e => updateItem(i, 'imageUrl', e.target.value)}
-                        className="w-full border rounded px-2 py-1 text-sm" placeholder="Görsel URL" />
-                    <textarea value={item.description || ''} onChange={e => updateItem(i, 'description', e.target.value)}
-                        rows={2} className="w-full border rounded px-2 py-1 text-sm" placeholder="Açıklama" />
-                </div>
-            ))}
-            {isDirty && (
-                <button onClick={handleSave} disabled={saving}
-                    className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50">
-                    {saving ? 'Kaydediliyor...' : 'Kaydet'}
-                </button>
-            )}
+            <EditorSection title="Bölüm Başlığı" icon={<Type size={14} />} defaultOpen>
+                <EditorGrid2>
+                    <EditorField label="Ana Başlık">
+                        <EditorInput value={data.title || ''} onChange={v => set('title', v)} placeholder="Deneyimler" />
+                    </EditorField>
+                    <EditorField label="Alt Başlık (Opsiyonel)">
+                        <EditorInput value={data.subtitle || ''} onChange={v => set('subtitle', v)} placeholder="Unutulmaz anılar..." />
+                    </EditorField>
+                </EditorGrid2>
+            </EditorSection>
+
+            <EditorSection title="Deneyim Öğeleri" icon={<Sparkles size={14} />} badge={items.length} defaultOpen>
+                <EditorRepeater<ExperienceItem>
+                    items={items}
+                    onUpdate={newItems => set('items', newItems)}
+                    createNewItem={() => ({ title: '', description: '', imageUrl: '' })}
+                    addLabel="Deneyim Ekle"
+                    emptyMessage="Henüz deneyim eklenmedi"
+                    renderItem={(item, _i, update) => (
+                        <div className="space-y-3">
+                            <EditorImageField
+                                value={item.imageUrl || ''}
+                                onChange={v => update({ ...item, imageUrl: v })}
+                                label="Kapak Görseli URL"
+                            />
+                            <EditorField label="Deneyim Başlığı">
+                                <EditorInput value={item.title || ''} onChange={v => update({ ...item, title: v })} placeholder="Örn: Spa & Wellness" />
+                            </EditorField>
+                            <EditorField label="Kısa Açıklama">
+                                <EditorTextarea value={item.description || ''} onChange={v => update({ ...item, description: v })} placeholder="Deneyim detayı..." rows={2} />
+                            </EditorField>
+                        </div>
+                    )}
+                />
+            </EditorSection>
+
+            <SaveBar isDirty={isDirty} saving={saving} onSave={handleSave} />
         </div>
     )
 }

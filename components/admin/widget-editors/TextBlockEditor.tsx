@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { updateWidget } from '@/app/actions/admin'
+import { Type, PaintBucket } from 'lucide-react'
+import { EditorSection, EditorField, EditorInput, EditorTextarea, EditorSelect, SaveBar, EditorGrid2 } from './EditorUI'
 
 interface TextBlockData {
     label?: string
@@ -32,46 +34,39 @@ export function TextBlockEditor({ id, initialData }: { id: string; initialData: 
 
     return (
         <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Etiket (Label)</label>
-                    <input type="text" value={data.label || ''} onChange={e => set('label', e.target.value)}
-                        className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Hikayemiz" />
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Arka Plan Rengi</label>
-                    <select value={data.backgroundColor || 'white'} onChange={e => set('backgroundColor', e.target.value)}
-                        className="w-full border rounded-lg px-3 py-2 text-sm">
-                        <option value="white">Beyaz</option>
-                        <option value="sand">Kum</option>
-                        <option value="dark">Koyu</option>
-                        <option value="gradient">Gradient</option>
-                    </select>
-                </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Başlık</label>
-                    <input type="text" value={data.heading || ''} onChange={e => set('heading', e.target.value)}
-                        className="w-full border rounded-lg px-3 py-2" placeholder="Konfor ve" />
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Vurgulu Başlık</label>
-                    <input type="text" value={data.headingAccent || ''} onChange={e => set('headingAccent', e.target.value)}
-                        className="w-full border rounded-lg px-3 py-2" placeholder="Zerafet" />
-                </div>
-            </div>
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">İçerik</label>
-                <textarea value={data.content || ''} onChange={e => set('content', e.target.value)}
-                    rows={4} className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Metin içeriği..." />
-            </div>
-            {isDirty && (
-                <button onClick={handleSave} disabled={saving}
-                    className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50">
-                    {saving ? 'Kaydediliyor...' : 'Kaydet'}
-                </button>
-            )}
+            <EditorSection title="Başlık & İçerik" icon={<Type size={14} />} defaultOpen>
+                <EditorField label="Etiket (Badge)" hint="Başlığın hemen üstünde küçük metin olarak gösterilir">
+                    <EditorInput value={data.label || ''} onChange={v => set('label', v)} placeholder="Hikayemiz" />
+                </EditorField>
+                <EditorGrid2>
+                    <EditorField label="Başlık">
+                        <EditorInput value={data.heading || ''} onChange={v => set('heading', v)} placeholder="Konfor ve" />
+                    </EditorField>
+                    <EditorField label="Vurgulu Başlık">
+                        <EditorInput value={data.headingAccent || ''} onChange={v => set('headingAccent', v)} placeholder="Zerafet" />
+                    </EditorField>
+                </EditorGrid2>
+                <EditorField label="Metin İçeriği">
+                    <EditorTextarea value={data.content || ''} onChange={v => set('content', v)} placeholder="Açıklama metni..." rows={5} />
+                </EditorField>
+            </EditorSection>
+
+            <EditorSection title="Görünüm" icon={<PaintBucket size={14} />}>
+                <EditorField label="Arka Plan Rengi">
+                    <EditorSelect
+                        value={data.backgroundColor || 'white'}
+                        onChange={v => set('backgroundColor', v)}
+                        options={[
+                            { value: 'white', label: 'Beyaz' },
+                            { value: 'sand', label: 'Kum' },
+                            { value: 'dark', label: 'Koyu' },
+                            { value: 'gradient', label: 'Gradient' },
+                        ]}
+                    />
+                </EditorField>
+            </EditorSection>
+
+            <SaveBar isDirty={isDirty} saving={saving} onSave={handleSave} />
         </div>
     )
 }

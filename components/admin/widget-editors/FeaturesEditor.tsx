@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { updateWidget } from '@/app/actions/admin'
-import { Plus, Trash2, GripVertical } from 'lucide-react'
+import { Type, LayoutTemplate, Star } from 'lucide-react'
+import { EditorSection, EditorField, EditorInput, EditorSelect, EditorTextarea, EditorRepeater, SaveBar, EditorGrid2 } from './EditorUI'
 
 interface Feature {
     icon?: string
@@ -37,168 +38,100 @@ const ICON_OPTIONS = [
 
 export function FeaturesEditor({ id, initialData }: { id: string; initialData: string }) {
     const [data, setData] = useState<FeaturesData>(() => {
-        try {
-            return typeof initialData === 'string' ? JSON.parse(initialData) : initialData
-        } catch {
-            return { features: [] }
-        }
+        try { return typeof initialData === 'string' ? JSON.parse(initialData) : initialData } catch { return { features: [] } }
     })
     const [isDirty, setIsDirty] = useState(false)
     const [saving, setSaving] = useState(false)
 
-    const handleChange = (field: keyof FeaturesData, value: any) => {
+    const set = (field: keyof FeaturesData, value: any) => {
         setData(prev => ({ ...prev, [field]: value }))
         setIsDirty(true)
     }
 
-    const addFeature = () => {
-        const features = [...(data.features || []), { icon: 'star', title: '', description: '' }]
-        handleChange('features', features)
-    }
-
-    const removeFeature = (index: number) => {
-        const features = (data.features || []).filter((_, i) => i !== index)
-        handleChange('features', features)
-    }
-
-    const updateFeature = (index: number, field: keyof Feature, value: string) => {
-        const features = [...(data.features || [])]
-        features[index] = { ...features[index], [field]: value }
-        handleChange('features', features)
-    }
-
     const handleSave = async () => {
         setSaving(true)
-        try {
-            await updateWidget(id, data)
-            setIsDirty(false)
-        } catch (e) {
-            alert('Failed to save')
-        }
+        try { await updateWidget(id, data); setIsDirty(false) }
+        catch (e) { alert('Failed to save') }
         setSaving(false)
     }
 
     return (
         <div className="space-y-4">
-            {/* Section Header */}
-            <div className="grid grid-cols-2 gap-4">
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Section Title</label>
-                    <input
-                        type="text"
-                        value={data.title || ''}
-                        onChange={e => handleChange('title', e.target.value)}
-                        placeholder="Our Amenities"
-                        className="w-full border rounded-lg px-3 py-2 text-sm"
-                    />
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Subtitle</label>
-                    <input
-                        type="text"
-                        value={data.subtitle || ''}
-                        onChange={e => handleChange('subtitle', e.target.value)}
-                        placeholder="Experience luxury at its finest"
-                        className="w-full border rounded-lg px-3 py-2 text-sm"
-                    />
-                </div>
-            </div>
+            <EditorSection title="Başlık & İçerik" icon={<Type size={14} />} defaultOpen>
+                <EditorGrid2>
+                    <EditorField label="Bölüm Başlığı">
+                        <EditorInput value={data.title || ''} onChange={v => set('title', v)} placeholder="Öne Çıkan Özellikler" />
+                    </EditorField>
+                    <EditorField label="Bölüm Alt Başlığı">
+                        <EditorInput value={data.subtitle || ''} onChange={v => set('subtitle', v)} placeholder="Konforunuz için düşünüldü..." />
+                    </EditorField>
+                </EditorGrid2>
+            </EditorSection>
 
-            {/* Layout Options */}
-            <div className="grid grid-cols-2 gap-4">
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Columns</label>
-                    <select
-                        value={data.columns || 3}
-                        onChange={e => handleChange('columns', parseInt(e.target.value))}
-                        className="w-full border rounded-lg px-3 py-2 text-sm"
-                    >
-                        <option value={2}>2 Columns</option>
-                        <option value={3}>3 Columns</option>
-                        <option value={4}>4 Columns</option>
-                    </select>
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Style</label>
-                    <select
-                        value={data.style || 'cards'}
-                        onChange={e => handleChange('style', e.target.value)}
-                        className="w-full border rounded-lg px-3 py-2 text-sm"
-                    >
-                        <option value="cards">Cards with Shadow</option>
-                        <option value="icons">Icons Only</option>
-                        <option value="minimal">Minimal</option>
-                    </select>
-                </div>
-            </div>
-
-            {/* Features List */}
-            <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                    <label className="text-sm font-medium text-gray-700">Features</label>
-                    <button
-                        onClick={addFeature}
-                        className="text-blue-600 hover:text-blue-700 text-sm flex items-center gap-1"
-                    >
-                        <Plus size={14} /> Add Feature
-                    </button>
-                </div>
-
-                {(data.features || []).map((feature, index) => (
-                    <div
-                        key={index}
-                        className="p-3 bg-gray-50 rounded-lg border space-y-2"
-                    >
-                        <div className="flex items-center gap-2">
-                            <GripVertical size={16} className="text-gray-400 cursor-move" />
-                            <select
-                                value={feature.icon || 'star'}
-                                onChange={e => updateFeature(index, 'icon', e.target.value)}
-                                className="border rounded px-2 py-1 text-sm"
-                            >
-                                {ICON_OPTIONS.map(opt => (
-                                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                                ))}
-                            </select>
-                            <input
-                                type="text"
-                                value={feature.title || ''}
-                                onChange={e => updateFeature(index, 'title', e.target.value)}
-                                placeholder="Feature title"
-                                className="flex-1 border rounded px-2 py-1 text-sm"
-                            />
-                            <button
-                                onClick={() => removeFeature(index)}
-                                className="text-red-500 hover:text-red-700 p-1"
-                            >
-                                <Trash2 size={14} />
-                            </button>
-                        </div>
-                        <textarea
-                            value={feature.description || ''}
-                            onChange={e => updateFeature(index, 'description', e.target.value)}
-                            placeholder="Feature description..."
-                            rows={2}
-                            className="w-full border rounded px-2 py-1 text-sm"
+            <EditorSection title="Görünüm Seçenekleri" icon={<LayoutTemplate size={14} />}>
+                <EditorGrid2>
+                    <EditorField label="Sütun Sayısı">
+                        <EditorSelect
+                            value={data.columns || 3}
+                            onChange={v => set('columns', parseInt(v))}
+                            options={[
+                                { value: 2, label: '2 Sütun' },
+                                { value: 3, label: '3 Sütun' },
+                                { value: 4, label: '4 Sütun' },
+                            ]}
                         />
-                    </div>
-                ))}
+                    </EditorField>
+                    <EditorField label="Kart Stili">
+                        <EditorSelect
+                            value={data.style || 'cards'}
+                            onChange={v => set('style', v)}
+                            options={[
+                                { value: 'cards', label: 'Kart (Gölgeli)' },
+                                { value: 'icons', label: 'Sadece İkonlar' },
+                                { value: 'minimal', label: 'Minimal' },
+                            ]}
+                        />
+                    </EditorField>
+                </EditorGrid2>
+            </EditorSection>
 
-                {(data.features || []).length === 0 && (
-                    <p className="text-sm text-gray-500 italic py-4 text-center">No features added yet</p>
-                )}
-            </div>
+            <EditorSection title="Özellikler Listesi" icon={<Star size={14} />} badge={data.features?.length || 0}>
+                <EditorRepeater<Feature>
+                    items={data.features || []}
+                    onUpdate={items => set('features', items)}
+                    createNewItem={() => ({ icon: 'star', title: '', description: '' })}
+                    addLabel="Özellik Ekle"
+                    emptyMessage="Henüz özellik eklenmedi"
+                    renderItem={(feature, _i, update) => (
+                        <div className="space-y-3">
+                            <div className="flex gap-2">
+                                <div className="w-32 shrink-0">
+                                    <EditorSelect
+                                        value={feature.icon || 'star'}
+                                        onChange={v => update({ ...feature, icon: v })}
+                                        options={ICON_OPTIONS}
+                                    />
+                                </div>
+                                <div className="flex-1">
+                                    <EditorInput
+                                        value={feature.title || ''}
+                                        onChange={v => update({ ...feature, title: v })}
+                                        placeholder="Başlık"
+                                    />
+                                </div>
+                            </div>
+                            <EditorTextarea
+                                value={feature.description || ''}
+                                onChange={v => update({ ...feature, description: v })}
+                                placeholder="Açıklama (opsiyonel)"
+                                rows={2}
+                            />
+                        </div>
+                    )}
+                />
+            </EditorSection>
 
-            {/* Save Button */}
-            {isDirty && (
-                <button
-                    onClick={handleSave}
-                    disabled={saving}
-                    className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50"
-                >
-                    {saving ? 'Saving...' : 'Save Changes'}
-                </button>
-            )}
+            <SaveBar isDirty={isDirty} saving={saving} onSave={handleSave} />
         </div>
     )
 }

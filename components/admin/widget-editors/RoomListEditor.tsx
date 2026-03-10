@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { updateWidget } from '@/app/actions/admin'
+import { BedDouble, Settings } from 'lucide-react'
+import { EditorSection, EditorField, EditorInput, EditorSelect, SaveBar, EditorGrid2 } from './EditorUI'
 
 interface RoomListData {
     title?: string
@@ -18,7 +20,7 @@ export function RoomListEditor({ id, initialData }: { id: string; initialData: s
     const [isDirty, setIsDirty] = useState(false)
     const [saving, setSaving] = useState(false)
 
-    const handleChange = (field: keyof RoomListData, value: any) => {
+    const set = (field: keyof RoomListData, value: any) => {
         setData(prev => ({ ...prev, [field]: value }))
         setIsDirty(true)
     }
@@ -32,46 +34,62 @@ export function RoomListEditor({ id, initialData }: { id: string; initialData: s
 
     return (
         <div className="space-y-4">
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Başlık</label>
-                <input type="text" value={data.title || ''} onChange={e => handleChange('title', e.target.value)}
-                    placeholder="Odalarımız" className="w-full border rounded-lg px-3 py-2" />
-            </div>
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Alt Başlık</label>
-                <input type="text" value={data.subtitle || ''} onChange={e => handleChange('subtitle', e.target.value)}
-                    placeholder="En iyi odalarımızı keşfedin" className="w-full border rounded-lg px-3 py-2 text-sm" />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Gösterilecek Oda Sayısı</label>
-                    <input type="number" value={data.maxRooms || 6} onChange={e => handleChange('maxRooms', parseInt(e.target.value))}
-                        min={1} max={20} className="w-full border rounded-lg px-3 py-2 text-sm" />
+            <EditorSection title="Başlık & İçerik" icon={<BedDouble size={14} />} defaultOpen>
+                <div className="bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900 rounded-lg p-3 mb-4">
+                    <p className="text-[11px] text-blue-600 dark:text-blue-400">
+                        <strong className="font-bold">Not:</strong> Odalar veritabanındaki <i>Room</i> tablosundan otomatik çekilir.
+                    </p>
                 </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Görünüm</label>
-                    <select value={data.layout || 'grid'} onChange={e => handleChange('layout', e.target.value)}
-                        className="w-full border rounded-lg px-3 py-2 text-sm">
-                        <option value="grid">Kart Görünümü</option>
-                        <option value="list">Liste Görünümü</option>
-                    </select>
+                <EditorGrid2>
+                    <EditorField label="Ana Başlık">
+                        <EditorInput value={data.title || ''} onChange={v => set('title', v)} placeholder="Odalarımız" />
+                    </EditorField>
+                    <EditorField label="Alt Başlık (Opsiyonel)">
+                        <EditorInput value={data.subtitle || ''} onChange={v => set('subtitle', v)} placeholder="En iyi odalarımızı keşfedin" />
+                    </EditorField>
+                </EditorGrid2>
+            </EditorSection>
+
+            <EditorSection title="Ayarlar" icon={<Settings size={14} />} defaultOpen>
+                <EditorGrid2>
+                    <EditorField label="Maksimum Görüntülenecek Oda">
+                        <EditorInput
+                            value={data.maxRooms?.toString() || '6'}
+                            onChange={v => set('maxRooms', parseInt(v))}
+                            placeholder="6"
+                            type="number"
+                        />
+                    </EditorField>
+                    <EditorField label="Görünüm Şekli">
+                        <EditorSelect
+                            value={data.layout || 'grid'}
+                            onChange={v => set('layout', v as any)}
+                            options={[
+                                { value: 'grid', label: 'Kart Görünümü (Grid)' },
+                                { value: 'list', label: 'Liste Görünümü (Yatay)' },
+                            ]}
+                        />
+                    </EditorField>
+                </EditorGrid2>
+                <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800">
+                    <label className="flex items-center gap-2 cursor-pointer group">
+                        <div className="relative flex items-center justify-center">
+                            <input
+                                type="checkbox"
+                                checked={data.showPrices ?? true}
+                                onChange={e => set('showPrices', e.target.checked)}
+                                className="peer appearance-none w-5 h-5 border-2 border-slate-300 dark:border-slate-600 rounded checked:bg-blue-500 checked:border-blue-500 transition-colors"
+                            />
+                            <svg className="absolute w-3.5 h-3.5 text-white pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                        </div>
+                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
+                            Oda fiyatlarını göster
+                        </span>
+                    </label>
                 </div>
-            </div>
-            <div className="flex items-center gap-2">
-                <input type="checkbox" checked={data.showPrices ?? true}
-                    onChange={e => handleChange('showPrices', e.target.checked)}
-                    className="rounded border-gray-300" id={`prices-${id}`} />
-                <label htmlFor={`prices-${id}`} className="text-sm text-gray-700">Fiyat bilgisi göster</label>
-            </div>
-            <p className="text-xs text-gray-500 bg-blue-50 p-2 rounded">
-                ℹ️ Odalar veritabanındaki Room tablosundan otomatik çekilir
-            </p>
-            {isDirty && (
-                <button onClick={handleSave} disabled={saving}
-                    className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50">
-                    {saving ? 'Kaydediliyor...' : 'Kaydet'}
-                </button>
-            )}
+            </EditorSection>
+
+            <SaveBar isDirty={isDirty} saving={saving} onSave={handleSave} />
         </div>
     )
 }

@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { updateWidget } from '@/app/actions/admin'
-import { Plus, Trash2 } from 'lucide-react'
+import { Table, LayoutTemplate, Columns } from 'lucide-react'
+import { EditorSection, EditorField, EditorInput, EditorSelect, EditorRepeater, SaveBar, EditorGrid2 } from './EditorUI'
 
 interface Column { key: string; label: string; align?: string }
 
@@ -29,23 +30,6 @@ export function TableEditor({ id, initialData }: { id: string; initialData: stri
     const columns = data.columns || []
     const rows = data.rows || []
 
-    const updateColumn = (i: number, field: keyof Column, value: string) => {
-        const nc = [...columns]; nc[i] = { ...nc[i], [field]: value }; set('columns', nc)
-    }
-
-    const addColumn = () => {
-        const key = `col${columns.length + 1}`
-        set('columns', [...columns, { key, label: `Sütun ${columns.length + 1}`, align: 'left' }])
-    }
-
-    const removeColumn = (i: number) => {
-        const removedKey = columns[i].key
-        set('columns', columns.filter((_, idx) => idx !== i))
-        set('rows', rows.map(row => {
-            const newRow = { ...row }; delete newRow[removedKey]; return newRow
-        }))
-    }
-
     const addRow = () => {
         const empty: Record<string, string> = {}
         columns.forEach(c => { empty[c.key] = '' })
@@ -67,102 +51,142 @@ export function TableEditor({ id, initialData }: { id: string; initialData: stri
 
     return (
         <div className="space-y-4">
-            <div className="grid grid-cols-3 gap-3">
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Etiket</label>
-                    <input type="text" value={data.label || ''} onChange={e => set('label', e.target.value)}
-                        className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Toplantı Odaları" />
+            <EditorSection title="Başlık & Görünüm" icon={<LayoutTemplate size={14} />} defaultOpen>
+                <EditorGrid2>
+                    <EditorField label="Etiket (Badge)">
+                        <EditorInput value={data.label || ''} onChange={v => set('label', v)} placeholder="Toplantı Odaları" />
+                    </EditorField>
+                    <EditorField label="Başlık">
+                        <EditorInput value={data.heading || ''} onChange={v => set('heading', v)} placeholder="Farklı İhtiyaçlar İçin" />
+                    </EditorField>
+                </EditorGrid2>
+                <div className="mt-3">
+                    <EditorField label="Arka Plan Rengi">
+                        <EditorSelect
+                            value={data.backgroundColor || 'white'}
+                            onChange={v => set('backgroundColor', v)}
+                            options={[
+                                { value: 'white', label: 'Beyaz' },
+                                { value: 'sand', label: 'Kum' },
+                                { value: 'dark', label: 'Koyu' },
+                            ]}
+                        />
+                    </EditorField>
                 </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Başlık</label>
-                    <input type="text" value={data.heading || ''} onChange={e => set('heading', e.target.value)}
-                        className="w-full border rounded-lg px-3 py-2 text-sm" placeholder="Farklı İhtiyaçlar İçin" />
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Arka Plan</label>
-                    <select value={data.backgroundColor || 'white'} onChange={e => set('backgroundColor', e.target.value)}
-                        className="w-full border rounded-lg px-3 py-2 text-sm">
-                        <option value="white">Beyaz</option>
-                        <option value="sand">Kum</option>
-                        <option value="dark">Koyu</option>
-                    </select>
-                </div>
-            </div>
+            </EditorSection>
 
-            {/* Column definitions */}
-            <div>
-                <div className="flex items-center justify-between mb-2">
-                    <label className="text-sm font-medium text-gray-700">Sütunlar ({columns.length})</label>
-                    <button type="button" onClick={addColumn} className="flex items-center gap-1 text-xs text-blue-600">
-                        <Plus size={14} /> Sütun Ekle
-                    </button>
-                </div>
-                {columns.map((col, i) => (
-                    <div key={i} className="flex gap-2 items-center mb-1">
-                        <input type="text" value={col.key} onChange={e => updateColumn(i, 'key', e.target.value)}
-                            className="w-24 border rounded px-2 py-1 text-xs font-mono" placeholder="key" />
-                        <input type="text" value={col.label} onChange={e => updateColumn(i, 'label', e.target.value)}
-                            className="flex-1 border rounded px-2 py-1 text-sm" placeholder="Sütun başlığı" />
-                        <select value={col.align || 'left'} onChange={e => updateColumn(i, 'align', e.target.value)}
-                            className="w-20 border rounded px-1 py-1 text-xs">
-                            <option value="left">Sol</option>
-                            <option value="center">Orta</option>
-                            <option value="right">Sağ</option>
-                        </select>
-                        <button type="button" onClick={() => removeColumn(i)} className="text-red-400 hover:text-red-600">
-                            <Trash2 size={14} />
-                        </button>
-                    </div>
-                ))}
-            </div>
+            <EditorSection title="Sütun Tanımları" icon={<Columns size={14} />} badge={columns.length} defaultOpen={false}>
+                <EditorRepeater<Column>
+                    items={columns}
+                    onUpdate={newCols => {
+                        // Handle column removals (clean up rows data)
+                        if (newCols.length < columns.length) {
+                            const currentKeys = newCols.map(c => c.key)
+                            const updatedRows = rows.map(row => {
+                                const newRow = { ...row }
+                                Object.keys(newRow).forEach(k => {
+                                    if (!currentKeys.includes(k)) delete newRow[k]
+                                })
+                                return newRow
+                            })
+                            set('rows', updatedRows)
+                        }
+                        set('columns', newCols)
+                    }}
+                    createNewItem={() => ({ key: `col${columns.length + 1}`, label: `Sütun ${columns.length + 1}`, align: 'left' })}
+                    addLabel="Sütun Ekle"
+                    emptyMessage="Henüz sütun eklenmedi"
+                    renderItem={(col, _i, update) => (
+                        <EditorGrid2>
+                            <EditorField label="Sütun Başlığı">
+                                <EditorInput value={col.label} onChange={v => update({ ...col, label: v })} placeholder="Özellik" />
+                            </EditorField>
+                            <div className="flex gap-2">
+                                <div className="flex-1">
+                                    <EditorField label="Hizalama">
+                                        <EditorSelect
+                                            value={col.align || 'left'}
+                                            onChange={v => update({ ...col, align: v })}
+                                            options={[
+                                                { value: 'left', label: '← Sol' },
+                                                { value: 'center', label: '↔ Orta' },
+                                                { value: 'right', label: '→ Sağ' },
+                                            ]}
+                                        />
+                                    </EditorField>
+                                </div>
+                                <div className="w-20">
+                                    <EditorField label="ID (Key)">
+                                        <EditorInput value={col.key} onChange={v => update({ ...col, key: v })} />
+                                    </EditorField>
+                                </div>
+                            </div>
+                        </EditorGrid2>
+                    )}
+                />
+            </EditorSection>
 
-            {/* Data rows */}
-            {columns.length > 0 && (
-                <div>
-                    <div className="flex items-center justify-between mb-2">
-                        <label className="text-sm font-medium text-gray-700">Satırlar ({rows.length})</label>
-                        <button type="button" onClick={addRow} className="flex items-center gap-1 text-xs text-blue-600">
-                            <Plus size={14} /> Satır Ekle
-                        </button>
+            <EditorSection title="Tablo Verileri" icon={<Table size={14} />} badge={rows.length} defaultOpen>
+                {columns.length === 0 ? (
+                    <div className="text-center py-6 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
+                        <p className="text-xs text-slate-400 dark:text-slate-500 italic">Veri eklemeden önce en az bir sütun tanımlamalısınız.</p>
                     </div>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm border-collapse">
-                            <thead>
-                                <tr>
-                                    {columns.map(col => (
-                                        <th key={col.key} className="border p-1 bg-gray-100 text-xs font-medium">{col.label}</th>
-                                    ))}
-                                    <th className="border p-1 w-8 bg-gray-100"></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {rows.map((row, ri) => (
-                                    <tr key={ri}>
+                ) : (
+                    <div className="space-y-3">
+                        <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden bg-white dark:bg-slate-900 overflow-x-auto">
+                            <table className="w-full text-sm border-collapse">
+                                <thead>
+                                    <tr className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700">
+                                        <th className="p-2 w-8 text-center text-xs font-medium text-slate-500">#</th>
                                         {columns.map(col => (
-                                            <td key={col.key} className="border p-1">
-                                                <input type="text" value={row[col.key] || ''} onChange={e => updateCell(ri, col.key, e.target.value)}
-                                                    className="w-full border-0 bg-transparent px-1 py-0.5 text-xs" />
-                                            </td>
+                                            <th key={col.key} className="p-2 text-left text-xs font-bold text-slate-600 dark:text-slate-300">
+                                                {col.label}
+                                            </th>
                                         ))}
-                                        <td className="border p-1 w-8">
-                                            <button type="button" onClick={() => removeRow(ri)} className="text-red-400 hover:text-red-600">
-                                                <Trash2 size={12} />
-                                            </button>
-                                        </td>
+                                        <th className="p-2 w-10 text-center"></th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {rows.map((row, ri) => (
+                                        <tr key={ri} className="border-b border-slate-100 dark:border-slate-800 last:border-0 hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors group">
+                                            <td className="p-2 text-center text-xs font-mono text-slate-400">{ri + 1}</td>
+                                            {columns.map(col => (
+                                                <td key={col.key} className="p-1">
+                                                    <input
+                                                        type="text"
+                                                        value={row[col.key] || ''}
+                                                        onChange={e => updateCell(ri, col.key, e.target.value)}
+                                                        className="w-full bg-transparent border border-transparent hover:border-slate-200 dark:hover:border-slate-700 focus:border-blue-400 focus:bg-white dark:focus:bg-slate-900 rounded px-2 py-1.5 text-sm transition-all outline-none"
+                                                        placeholder="..."
+                                                    />
+                                                </td>
+                                            ))}
+                                            <td className="p-2 text-center">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeRow(ri)}
+                                                    className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></svg>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={addRow}
+                            className="w-full py-2.5 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl text-blue-600 dark:text-blue-400 hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-all text-xs font-bold flex items-center justify-center gap-2 group"
+                        >
+                            <span className="group-hover:scale-110 transition-transform text-lg leading-none">+</span> Satır Ekle
+                        </button>
                     </div>
-                </div>
-            )}
+                )}
+            </EditorSection>
 
-            {isDirty && (
-                <button onClick={handleSave} disabled={saving}
-                    className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50">
-                    {saving ? 'Kaydediliyor...' : 'Kaydet'}
-                </button>
-            )}
+            <SaveBar isDirty={isDirty} saving={saving} onSave={handleSave} />
         </div>
     )
 }
