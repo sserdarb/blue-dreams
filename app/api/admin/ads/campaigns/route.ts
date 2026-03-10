@@ -42,12 +42,15 @@ export async function GET(request: Request) {
         const statusFilter = searchParams.get('status') || 'all' // all, active, paused
 
         const results: any[] = []
+        let metaStatus = 'Bağlantı Bekleniyor'
+        let googleStatus = 'Bağlantı Bekleniyor'
 
         // ─── Meta Ads Campaigns ───
         if (platform === 'all' || platform === 'meta') {
             const token = process.env.META_ACCESS_TOKEN
             const adAccountId = process.env.META_ADS_ACCOUNT_ID || process.env.FB_AD_ACCOUNT_ID
             if (token && adAccountId) {
+                metaStatus = 'Bağlı'
                 const acct = adAccountId.startsWith('act_') ? adAccountId : `act_${adAccountId}`
                 console.log('[Campaign API] Fetching Meta campaigns for account:', acct, 'statusFilter:', statusFilter)
                 // Build status filter for Meta
@@ -103,6 +106,7 @@ export async function GET(request: Request) {
             if (devToken && customerId) {
                 const accessToken = await getGoogleAdsAccessToken()
                 if (accessToken) {
+                    googleStatus = 'Bağlı'
                     let statusClause = ''
                     if (statusFilter === 'active') statusClause = " AND campaign.status = 'ENABLED'"
                     else if (statusFilter === 'paused') statusClause = " AND campaign.status = 'PAUSED'"
@@ -160,8 +164,11 @@ export async function GET(request: Request) {
                             }
                         }
                     } catch (err: any) {
+                        googleStatus = 'API Bağlantı Hatası'
                         console.error('[Campaign API] Google fetch error:', err.message)
                     }
+                } else {
+                    googleStatus = 'API Bağlantı Hatası'
                 }
             }
         }
@@ -173,6 +180,8 @@ export async function GET(request: Request) {
         const demoRequested = searchParams.get('demo') === 'true' || await isDemoMode()
 
         if (results.length === 0 && demoRequested) {
+            metaStatus = 'Bağlı (Demo)'
+            googleStatus = 'Bağlı (Demo)'
             const mocks = [
                 { id: 'mock_m_1', platform: 'meta', name: 'Yaz Erken Rezervasyon (Meta)', status: 'active', objective: 'OUTCOME_TRAFFIC', dailyBudget: 50, spend: 1250.40, impressions: 45000, clicks: 1250, cpc: 1.0, ctr: 2.7, conversions: 45, roas: 4.2 },
                 { id: 'mock_m_2', platform: 'meta', name: 'Spa Paketleri Hedefli', status: 'paused', objective: 'AWARENESS', dailyBudget: 25, spend: 400.0, impressions: 12000, clicks: 300, cpc: 1.33, ctr: 2.5, conversions: 5, roas: 1.5 },
@@ -203,7 +212,7 @@ export async function GET(request: Request) {
         if (totals.totalClicks > 0) totals.avgCpc = totals.totalSpend / totals.totalClicks
         if (totals.totalImpressions > 0) totals.avgCtr = (totals.totalClicks / totals.totalImpressions) * 100
 
-        return NextResponse.json({ success: true, campaigns: results, totals, datePreset })
+        return NextResponse.json({ success: true, campaigns: results, totals, datePreset, metaStatus, googleStatus })
     } catch (error: any) {
         console.error('[Campaign API Error]', error)
         return NextResponse.json({ success: false, error: error.message }, { status: 500 })

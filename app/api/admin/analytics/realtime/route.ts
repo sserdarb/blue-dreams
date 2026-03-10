@@ -20,9 +20,19 @@ export async function GET() {
         let credentials: any = {}
 
         if (clientEmail && privateKey) {
+            let formattedKey: string = privateKey;
+            formattedKey = formattedKey.replace(/\\n/g, '\n').replace(/"/g, '');
+            if (!formattedKey.includes('\n')) {
+                const header = '-----BEGIN PRIVATE KEY-----';
+                const footer = '-----END PRIVATE KEY-----';
+                if (formattedKey.startsWith(header) && formattedKey.endsWith(footer)) {
+                    const body = formattedKey.slice(header.length, -footer.length).trim().replace(/ /g, '\n');
+                    formattedKey = `${header}\n${body}\n${footer}\n`;
+                }
+            }
             credentials = {
                 client_email: clientEmail,
-                private_key: privateKey.replace(/\\n/g, '\n')
+                private_key: formattedKey
             }
         } else if (serviceKeyBase64) {
             try {

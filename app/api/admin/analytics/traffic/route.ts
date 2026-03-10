@@ -60,7 +60,14 @@ function getClient(clientEmail: string, privateKey: string) {
     let formattedKey: string = privateKey;
     if (typeof formattedKey === "string") {
         formattedKey = formattedKey.replace(/\\n/g, "\n").replace(/"/g, "");
-        formattedKey = formattedKey.replace("-----BEGIN PRIVATE KEY-----", "-----BEGIN PRIVATE KEY-----XNXN").replace("-----END PRIVATE KEY-----", "XNXN-----END PRIVATE KEY-----").replace(/XNXN/g, "\n").replace(/\n+/g, "\n");
+        if (!formattedKey.includes('\n')) {
+            const header = '-----BEGIN PRIVATE KEY-----';
+            const footer = '-----END PRIVATE KEY-----';
+            if (formattedKey.startsWith(header) && formattedKey.endsWith(footer)) {
+                const body = formattedKey.slice(header.length, -footer.length).trim().replace(/ /g, '\n');
+                formattedKey = `${header}\n${body}\n${footer}\n`;
+            }
+        }
     }
 
     return new BetaAnalyticsDataClient({
