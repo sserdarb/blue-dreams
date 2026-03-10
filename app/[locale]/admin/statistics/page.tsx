@@ -71,26 +71,33 @@ export default async function StatisticsPage({ params }: { params: Promise<{ loc
         // Current Season (e.g., 2025)
         const raw = await ElektraService.getAllSeasonReservations()
 
-        reservations = raw.map(r => ({
-            id: r.id,
-            voucherNo: r.voucherNo,
-            agency: r.agency,
-            channel: r.channel,
-            roomType: r.roomType,
-            boardType: r.boardType,
-            checkIn: r.checkIn.slice(0, 10),
-            checkOut: r.checkOut.slice(0, 10),
-            nights: Math.max(1, Math.ceil(
-                (new Date(r.checkOut).getTime() - new Date(r.checkIn).getTime()) / 86400000
-            )),
-            totalPrice: r.totalPrice,
-            paidPrice: r.paidPrice,
-            currency: r.currency,
-            roomCount: r.roomCount,
-            status: r.status,
-            saleDate: r.reservationDate.slice(0, 10),
-            country: r.country,
-        }))
+        const EUR_RATE_CURRENT = 38.5
+        reservations = raw.map(r => {
+            const amountTry = r.currency === 'EUR' ? r.totalPrice * EUR_RATE_CURRENT : r.totalPrice
+            const amountEur = r.currency === 'EUR' ? r.totalPrice : r.totalPrice / EUR_RATE_CURRENT
+            return {
+                id: r.id,
+                voucherNo: r.voucherNo,
+                agency: r.agency,
+                channel: r.channel,
+                roomType: r.roomType,
+                boardType: r.boardType,
+                checkIn: r.checkIn.slice(0, 10),
+                checkOut: r.checkOut.slice(0, 10),
+                nights: Math.max(1, Math.ceil(
+                    (new Date(r.checkOut).getTime() - new Date(r.checkIn).getTime()) / 86400000
+                )),
+                totalPrice: r.totalPrice,
+                paidPrice: r.paidPrice,
+                currency: r.currency,
+                roomCount: r.roomCount,
+                status: r.status,
+                saleDate: r.reservationDate.slice(0, 10),
+                country: r.country,
+                amountTry,
+                amountEur,
+            }
+        })
 
         // Use minute-level timestamp to avoid hydration mismatch
         const now = new Date()
@@ -109,18 +116,25 @@ export default async function StatisticsPage({ params }: { params: Promise<{ loc
         const prevEnd = new Date(prevYear, 11, 31) // Dec 31st of prev year
         const rawComp = await ElektraService.getReservations(prevStart, prevEnd)
 
-        comparisonReservations = rawComp.map(r => ({
-            id: r.id,
-            totalPrice: r.totalPrice,
-            currency: r.currency,
-            saleDate: r.reservationDate.slice(0, 10),
-            checkIn: r.checkIn.slice(0, 10),
-            nights: Math.max(1, Math.ceil(
-                (new Date(r.checkOut).getTime() - new Date(r.checkIn).getTime()) / 86400000
-            )),
-            roomCount: r.roomCount,
-            country: r.country,
-        }))
+        const EUR_RATE_CURRENT = 38.5
+        comparisonReservations = rawComp.map(r => {
+            const amountTry = r.currency === 'EUR' ? r.totalPrice * EUR_RATE_CURRENT : r.totalPrice
+            const amountEur = r.currency === 'EUR' ? r.totalPrice : r.totalPrice / EUR_RATE_CURRENT
+            return {
+                id: r.id,
+                totalPrice: r.totalPrice,
+                currency: r.currency,
+                saleDate: r.reservationDate.slice(0, 10),
+                checkIn: r.checkIn.slice(0, 10),
+                nights: Math.max(1, Math.ceil(
+                    (new Date(r.checkOut).getTime() - new Date(r.checkIn).getTime()) / 86400000
+                )),
+                roomCount: r.roomCount,
+                country: r.country,
+                amountTry,
+                amountEur,
+            }
+        })
     } catch (err) {
         console.error('[Reports] Error fetching comparison:', err)
     }

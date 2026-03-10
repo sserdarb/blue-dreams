@@ -35,24 +35,31 @@ export async function GET() {
         // 3. Merge Cache + Live
         const mergedRaw = [...validCacheReservations, ...todayLiveReservations.filter(r => !cancelledIds.has(r.id))]
 
-        const reservations = mergedRaw.map(r => ({
-            id: r.id,
-            voucherNo: r.voucherNo,
-            agency: r.agency,
-            channel: r.channel,
-            roomType: r.roomType,
-            boardType: r.boardType,
-            checkIn: typeof r.checkIn === 'string' ? r.checkIn.slice(0, 10) : new Date(r.checkIn).toISOString().slice(0, 10),
-            checkOut: typeof r.checkOut === 'string' ? r.checkOut.slice(0, 10) : new Date(r.checkOut).toISOString().slice(0, 10),
-            nights: r.nights,
-            totalPrice: r.totalPrice,
-            paidPrice: r.paidPrice,
-            currency: r.currency,
-            roomCount: r.roomCount,
-            status: r.status,
-            saleDate: (r.reservationDate || r.lastUpdate || '').slice(0, 10),
-            country: r.country,
-        }))
+        const EUR_RATE_CURRENT = 38.5
+        const reservations = mergedRaw.map(r => {
+            const amountTry = r.currency === 'EUR' ? r.totalPrice * EUR_RATE_CURRENT : r.totalPrice
+            const amountEur = r.currency === 'EUR' ? r.totalPrice : r.totalPrice / EUR_RATE_CURRENT
+            return {
+                id: r.id,
+                voucherNo: r.voucherNo,
+                agency: r.agency,
+                channel: r.channel,
+                roomType: r.roomType,
+                boardType: r.boardType,
+                checkIn: typeof r.checkIn === 'string' ? r.checkIn.slice(0, 10) : new Date(r.checkIn).toISOString().slice(0, 10),
+                checkOut: typeof r.checkOut === 'string' ? r.checkOut.slice(0, 10) : new Date(r.checkOut).toISOString().slice(0, 10),
+                nights: r.nights,
+                totalPrice: r.totalPrice,
+                paidPrice: r.paidPrice,
+                currency: r.currency,
+                roomCount: r.roomCount,
+                status: r.status,
+                saleDate: (r.reservationDate || r.lastUpdate || '').slice(0, 10),
+                country: r.country,
+                amountTry,
+                amountEur,
+            }
+        })
 
         const fetchedAt = Date.now()
         console.log(`[Cache-Reports] Hybrid Sync Complete. Built ${reservations.length} records in ${Date.now() - start}ms`)

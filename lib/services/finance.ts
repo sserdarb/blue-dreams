@@ -535,29 +535,36 @@ export const FinanceService = {
         const { ElektraService } = await import('./elektra')
         const yStart = new Date(y, 0, 1)
         const yEnd = new Date(y, 11, 31)
+        const pyStart = new Date(y - 1, 0, 1)
+        const pyEnd = new Date(y - 1, 11, 31)
 
-        const [trialBalance, invoices, prevInvoices, currentRes] = await Promise.all([
+        const [trialBalance, invoices, prevInvoices, currentRes, prevRes] = await Promise.all([
             this.getTrialBalance(startDate, endDate),
             this.getInvoiceList(startDate, endDate),
             this.getInvoiceList(prevStartDate, prevEndDate),
-            ElektraService.getReservations(yStart, yEnd)
+            ElektraService.getReservations(yStart, yEnd),
+            ElektraService.getReservations(pyStart, pyEnd)
         ])
 
         const revenueRows = trialBalance.filter(r => r.group === 'Gelir')
         const expenseRows = trialBalance.filter(r => r.group === 'Gider')
 
-        const pmsTotalRevenue = currentRes.reduce((s, r) => s + r.totalPrice, 0)
-        const totalRevenue = pmsTotalRevenue > 0 ? pmsTotalRevenue : revenueRows.reduce((s, r) => s + r.credit, 0)
+        const pmsTotalRevenue = currentRes.reduce((s: number, r: any) => s + r.totalPrice, 0)
+        const totalRevenue = pmsTotalRevenue > 0 ? pmsTotalRevenue : revenueRows.reduce((s: number, r: any) => s + r.credit, 0)
 
-        const totalExpense = expenseRows.reduce((s, r) => s + r.debit, 0)
+        const totalExpense = expenseRows.reduce((s: number, r: any) => s + r.debit, 0)
         const profit = totalRevenue - totalExpense
         const profitMargin = totalRevenue > 0 ? Math.round((profit / totalRevenue) * 100) : 0
 
-        const currentTotal = invoices.reduce((s, i) => s + i.total, 0)
-        const prevTotal = prevInvoices.reduce((s, i) => s + i.total, 0)
+        const currentTotal = invoices.reduce((s: number, i: any) => s + i.total, 0)
+        const prevTotal = prevInvoices.reduce((s: number, i: any) => s + i.total, 0)
         const expenseGrowth = prevTotal > 0 ? Math.round(((currentTotal - prevTotal) / prevTotal) * 100) : 0
 
-        const revenueGrowth = 0
+        const prevPmsTotal = prevRes.reduce((s: number, r: any) => s + r.totalPrice, 0)
+        let revenueGrowth = 0
+        if (prevPmsTotal > 0) {
+            revenueGrowth = Math.round(((pmsTotalRevenue - prevPmsTotal) / prevPmsTotal) * 100)
+        }
 
         return {
             totalRevenue,
@@ -618,6 +625,26 @@ export const FinanceService = {
     // ── Department Revenue Breakdown ─────────────────────────────
     async getDepartmentRevenue(): Promise<DepartmentRevenue[]> {
         const isDemo = await this.checkSettings()
+
+        // Try live first if configured
+        if (erpStock.isConfigured) {
+            const y = new Date().getFullYear();
+            const trialBalance = await this.getTrialBalance(`${y}-01-01`, `${y}-12-31`);
+            const revenueRows = trialBalance.filter(r => r.group === 'Gelir');
+            const totalRevenue = revenueRows.reduce((sum, r) => sum + Math.abs(r.credit), 0);
+
+            if (totalRevenue > 0) {
+                const colors = ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b', '#ec4899', '#6b7280', '#06b6d4'];
+                currentDataSource = 'live';
+                return revenueRows.map((r, i) => ({
+                    department: r.accountName,
+                    revenue: Math.abs(r.credit),
+                    percentage: Math.round((Math.abs(r.credit) / totalRevenue) * 100),
+                    color: colors[i % colors.length]
+                })).sort((a, b) => b.revenue - a.revenue);
+            }
+        }
+
         if (isDemo) {
             currentDataSource = 'demo'
             const totalRevenue = randBetween(20_000_000, 35_000_000)
@@ -653,6 +680,27 @@ export const FinanceService = {
     // ── Expense Category Breakdown ───────────────────────────────
     async getExpenseBreakdown(): Promise<{ category: string; code: string; amount: number; percentage: number; color: string }[]> {
         const isDemo = await this.checkSettings()
+
+        // Try live first
+        if (erpStock.isConfigured) {
+            const y = new Date().getFullYear();
+            const trialBalance = await this.getTrialBalance(`${y}-01-01`, `${y}-12-31`);
+            const expenseRows = trialBalance.filter(r => r.group === 'Gider');
+            const totalExpense = expenseRows.reduce((sum, r) => sum + Math.abs(r.debit), 0);
+
+            if (totalExpense > 0) {
+                const colors = ['#ef4444', '#f97316', '#f59e0b', '#84cc16', '#22c55e', '#14b8a6', '#3b82f6', '#8b5cf6', '#6b7280'];
+                currentDataSource = 'live';
+                return expenseRows.map((r, i) => ({
+                    category: r.accountName,
+                    code: r.accountCode,
+                    amount: Math.abs(r.debit),
+                    percentage: Math.round((Math.abs(r.debit) / totalExpense) * 100),
+                    color: colors[i % colors.length]
+                })).sort((a, b) => b.amount - a.amount);
+            }
+        }
+
         if (isDemo) {
             currentDataSource = 'demo'
             const totalExpense = randBetween(12_000_000, 20_000_000)
