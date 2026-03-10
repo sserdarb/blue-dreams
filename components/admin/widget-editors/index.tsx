@@ -115,7 +115,9 @@ export function WidgetEditor({ id, type, initialData }: WidgetEditorProps) {
 
     if (Editor) {
         return (
-            <div className="border border-gray-200 rounded-lg p-4 bg-white">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 lg:p-6 shadow-sm overflow-hidden relative group">
+                {/* Optional decorative top border based on type */}
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500/20 to-purple-500/20 dark:from-blue-500/10 dark:to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                 <Editor id={id} initialData={initialData} />
             </div>
         )
@@ -123,11 +125,19 @@ export function WidgetEditor({ id, type, initialData }: WidgetEditorProps) {
 
     // Fallback to generic JSON editor with save support
     return (
-        <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
-            <p className="text-sm text-amber-700 mb-3">
-                <strong>{type}</strong> için JSON düzenleyici:
-            </p>
-            <GenericJsonEditor id={id} initialData={initialData} />
+        <div className="bg-amber-50/50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-700/50 rounded-2xl p-5 lg:p-6 shadow-sm relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-1 h-full bg-amber-400 dark:bg-amber-500" />
+            <div className="pl-2">
+                <div className="flex items-center gap-2 mb-4">
+                    <span className="px-2.5 py-1 bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 text-[10px] font-bold uppercase tracking-wider rounded-md">
+                        Fallback Modu
+                    </span>
+                    <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+                        <strong className="font-mono text-amber-600 dark:text-amber-500">{type}</strong> için JSON Düzenleyici
+                    </h4>
+                </div>
+                <GenericJsonEditor id={id} initialData={initialData} />
+            </div>
         </div>
     )
 }
