@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { isDemoSession } from '@/lib/demo-session'
 
+export const dynamic = 'force-dynamic'
+
 async function isDemoMode(): Promise<boolean> {
     try {
         if (await isDemoSession()) return true
@@ -103,8 +105,13 @@ export async function GET(request: Request) {
                                 endDate: c.stop_time,
                             })
                         }
+                    } else {
+                        const errData = await res.json().catch(() => ({}))
+                        console.error('[Campaign API] Meta not ok:', res.status, errData)
+                        metaStatus = `API Hatası: ${errData.error?.message || res.statusText}`
                     }
                 } catch (err: any) {
+                    metaStatus = 'Bağlantı Hatası'
                     console.error('[Campaign API] Meta fetch error:', err.message)
                 }
             }
@@ -173,9 +180,13 @@ export async function GET(request: Request) {
                                     endDate: row.campaign?.endDate,
                                 })
                             }
+                        } else {
+                            const errData = await res.json().catch(() => ({}))
+                            console.error('[Campaign API] Google not ok:', res.status, errData)
+                            googleStatus = `API Hatası: ${errData[0]?.error?.message || res.statusText}`
                         }
                     } catch (err: any) {
-                        googleStatus = 'API Bağlantı Hatası'
+                        googleStatus = 'API Bağlantı Ağı Hatası'
                         console.error('[Campaign API] Google fetch error:', err.message)
                     }
                 } else {
