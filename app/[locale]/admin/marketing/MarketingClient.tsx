@@ -12,7 +12,7 @@ import {
     TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { ArrowUpRight, Target, DollarSign, FileDown, MousePointer, Eye, Zap, TrendingUp, Presentation, Megaphone, Loader2, RefreshCw, AlertCircle } from 'lucide-react'
+import { ArrowUpRight, Target, DollarSign, FileDown, MousePointer, Eye, Zap, TrendingUp, Presentation, Megaphone, Loader2, RefreshCw, AlertCircle, Pencil, Trash2, Calendar, Save } from 'lucide-react'
 import type { AdCampaign, AdPlatform, MarketingOverview } from '@/lib/services/marketing'
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
@@ -38,6 +38,7 @@ export default function MarketingClient() {
     // New Campaign State
     const [createModalOpen, setCreateModalOpen] = useState(false)
     const [statusFilter, setStatusFilter] = useState('all') // all, active, paused
+    const [datePreset, setDatePreset] = useState('last_30d')
     const [isGeneratingCopy, setIsGeneratingCopy] = useState(false)
     const [isCreatingCampaign, setIsCreatingCampaign] = useState(false)
     const [newCampaign, setNewCampaign] = useState({
@@ -50,11 +51,16 @@ export default function MarketingClient() {
         status: 'PAUSED'
     })
 
+    // Edit Campaign State
+    const [editModalOpen, setEditModalOpen] = useState(false)
+    const [editingCampaign, setEditingCampaign] = useState<any>(null)
+    const [isSavingEdit, setIsSavingEdit] = useState(false)
+
     const fetchAds = async () => {
         try {
             setLoading(true)
             setErrorMsg(null)
-            const res = await fetch(`/api/admin/ads/campaigns?status=${statusFilter}`)
+            const res = await fetch(`/api/admin/ads/campaigns?status=${statusFilter}&datePreset=${datePreset}`)
             if (!res.ok) {
                 setErrorMsg(`API isteği başarısız: ${res.status}`)
                 return
@@ -145,7 +151,7 @@ export default function MarketingClient() {
         }
     }
 
-    useEffect(() => { fetchAds() }, [statusFilter])
+    useEffect(() => { fetchAds() }, [statusFilter, datePreset])
 
     const metaConnected = metaStatus.startsWith('Bağlı')
     const googleConnected = googleStatus.startsWith('Bağlı')
@@ -445,8 +451,24 @@ export default function MarketingClient() {
                             <Megaphone size={18} className="text-blue-500" />
                             Tüm Kampanyalar (Meta & Google Ads)
                         </h3>
-                        <div className="flex items-center gap-2">
-                            <label className="text-sm text-slate-500 dark:text-slate-400">Durum Filteresi:</label>
+                        <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2">
+                                <Calendar size={14} className="text-slate-400" />
+                                <select
+                                    value={datePreset}
+                                    onChange={(e) => setDatePreset(e.target.value)}
+                                    className="border border-slate-200 dark:border-slate-700 rounded-md px-3 py-1 text-sm bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+                                >
+                                    <option value="last_7d">Son 7 Gün</option>
+                                    <option value="last_14d">Son 14 Gün</option>
+                                    <option value="last_30d">Son 30 Gün</option>
+                                    <option value="last_90d">Son 90 Gün</option>
+                                    <option value="this_month">Bu Ay</option>
+                                    <option value="last_month">Geçen Ay</option>
+                                    <option value="this_year">Bu Yıl</option>
+                                    <option value="maximum">Tüm Zamanlar</option>
+                                </select>
+                            </div>
                             <select
                                 value={statusFilter}
                                 onChange={(e) => setStatusFilter(e.target.value)}
@@ -511,14 +533,43 @@ export default function MarketingClient() {
                                             {c.conversions || 0}
                                         </TableCell>
                                         <TableCell className="text-right">
-                                            <button
-                                                onClick={() => toggleCampaignStatus(c.id, c.platform, c.status)}
-                                                disabled={actionsLoading[c.id]}
-                                                className="text-xs px-3 py-1.5 border border-slate-200 dark:border-slate-700 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                                            >
-                                                {actionsLoading[c.id] ? <Loader2 size={14} className="animate-spin" /> :
-                                                    (c.status === 'active' || c.status === 'enabled' ? 'Duraklat' : 'Aktifleştir')}
-                                            </button>
+                                            <div className="flex items-center gap-1 justify-end">
+                                                <button
+                                                    onClick={() => toggleCampaignStatus(c.id, c.platform, c.status)}
+                                                    disabled={actionsLoading[c.id]}
+                                                    className="text-xs px-3 py-1.5 border border-slate-200 dark:border-slate-700 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                                                >
+                                                    {actionsLoading[c.id] ? <Loader2 size={14} className="animate-spin" /> :
+                                                        (c.status === 'active' || c.status === 'enabled' ? 'Duraklat' : 'Aktifleştir')}
+                                                </button>
+                                                <button
+                                                    onClick={() => { setEditingCampaign({ ...c, newName: c.name, newBudget: c.dailyBudget || 0, newStatus: c.status }); setEditModalOpen(true) }}
+                                                    className="p-1.5 border border-slate-200 dark:border-slate-700 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
+                                                    title="Düzenle"
+                                                >
+                                                    <Pencil size={13} className="text-blue-500" />
+                                                </button>
+                                                <button
+                                                    onClick={async () => {
+                                                        if (!confirm(`"${c.name}" kampanyasını arşivlemek istediğinize emin misiniz?`)) return
+                                                        setActionsLoading(prev => ({ ...prev, [c.id]: true }))
+                                                        try {
+                                                            const res = await fetch('/api/admin/ads/campaigns', {
+                                                                method: 'DELETE',
+                                                                headers: { 'Content-Type': 'application/json' },
+                                                                body: JSON.stringify({ campaignId: c.id, platform: c.platform })
+                                                            })
+                                                            if (res.ok) fetchAds()
+                                                            else alert('Silme başarısız')
+                                                        } catch { alert('Bağlantı hatası') }
+                                                        finally { setActionsLoading(prev => ({ ...prev, [c.id]: false })) }
+                                                    }}
+                                                    className="p-1.5 border border-red-200 dark:border-red-800 rounded-md hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
+                                                    title="Arşivle"
+                                                >
+                                                    <Trash2 size={13} className="text-red-500" />
+                                                </button>
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 ))}
@@ -663,6 +714,84 @@ export default function MarketingClient() {
                             <button disabled={isCreatingCampaign || !newCampaign.name} onClick={handleCreateCampaign} className="px-4 py-2 rounded-lg text-sm bg-blue-600 text-white font-medium flex items-center gap-2 hover:bg-blue-700 disabled:opacity-50 transition-colors">
                                 {isCreatingCampaign ? <Loader2 size={16} className="animate-spin" /> : <PlusCircle size={16} />}
                                 Kampanyayı API Üzerinden Oluştur
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Edit Campaign Modal */}
+            {editModalOpen && editingCampaign && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-lg flex flex-col overflow-hidden border border-slate-200 dark:border-slate-800">
+                        <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                            <h2 className="text-xl font-bold flex items-center gap-2 tracking-tight text-slate-900 dark:text-white">
+                                <Pencil className="text-blue-500" size={20} />
+                                Kampanya Düzenle
+                            </h2>
+                            <button onClick={() => setEditModalOpen(false)} className="p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <div className="p-6 space-y-4 bg-slate-50 dark:bg-slate-900/50">
+                            <div className="flex items-center gap-2 text-xs text-slate-500">
+                                <span className={`w-2 h-2 rounded-full ${editingCampaign.platform === 'meta' ? 'bg-blue-500' : 'bg-red-500'}`}></span>
+                                {editingCampaign.platform.toUpperCase()} — ID: {editingCampaign.id}
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Kampanya Adı</label>
+                                <input type="text" className="w-full border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                                    value={editingCampaign.newName} onChange={e => setEditingCampaign({ ...editingCampaign, newName: e.target.value })} />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Günlük Bütçe (€)</label>
+                                    <input type="number" min="1" className="w-full border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                                        value={editingCampaign.newBudget} onChange={e => setEditingCampaign({ ...editingCampaign, newBudget: Number(e.target.value) })} />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Durum</label>
+                                    <select className="w-full border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                                        value={editingCampaign.newStatus} onChange={e => setEditingCampaign({ ...editingCampaign, newStatus: e.target.value })}>
+                                        <option value="active">Aktif</option>
+                                        <option value="enabled">Aktif</option>
+                                        <option value="paused">Duraklatılmış</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="p-4 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-3 bg-white dark:bg-slate-900">
+                            <button onClick={() => setEditModalOpen(false)} className="px-4 py-2 rounded-lg text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">İptal</button>
+                            <button
+                                disabled={isSavingEdit}
+                                onClick={async () => {
+                                    setIsSavingEdit(true)
+                                    try {
+                                        const res = await fetch('/api/admin/ads/campaigns', {
+                                            method: 'PUT',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({
+                                                campaignId: editingCampaign.id,
+                                                platform: editingCampaign.platform,
+                                                name: editingCampaign.newName,
+                                                dailyBudget: editingCampaign.newBudget,
+                                                status: editingCampaign.newStatus,
+                                            })
+                                        })
+                                        const data = await res.json()
+                                        if (data.success) {
+                                            setEditModalOpen(false)
+                                            fetchAds()
+                                        } else {
+                                            alert('Güncelleme başarısız: ' + (data.error || 'Bilinmeyen hata'))
+                                        }
+                                    } catch (e: any) { alert('Bağlantı hatası: ' + e.message) }
+                                    finally { setIsSavingEdit(false) }
+                                }}
+                                className="px-4 py-2 rounded-lg text-sm bg-blue-600 text-white font-medium flex items-center gap-2 hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                            >
+                                {isSavingEdit ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                                Değişiklikleri Kaydet
                             </button>
                         </div>
                     </div>

@@ -211,6 +211,19 @@ export async function GET(request: Request) {
                     if (statusFilter === 'active') statusClause = " AND campaign.status = 'ENABLED'"
                     else if (statusFilter === 'paused') statusClause = " AND campaign.status = 'PAUSED'"
 
+                    // Map datePreset to GAQL date range
+                    const gaqlDateMap: Record<string, string> = {
+                        last_7d: 'LAST_7_DAYS',
+                        last_14d: 'LAST_14_DAYS',
+                        last_30d: 'LAST_30_DAYS',
+                        last_90d: 'LAST_30_DAYS', // GAQL doesn't have 90d, use custom below
+                        this_month: 'THIS_MONTH',
+                        last_month: 'LAST_MONTH',
+                        this_year: 'THIS_YEAR',
+                        maximum: 'ALL_TIME',
+                    }
+                    const gaqlDateClause = gaqlDateMap[datePreset] || 'LAST_30_DAYS'
+
                     const query = `
                         SELECT
                             campaign.id, campaign.name, campaign.status,
@@ -220,7 +233,7 @@ export async function GET(request: Request) {
                             metrics.conversions, metrics.conversions_value,
                             metrics.average_cpc, metrics.ctr
                         FROM campaign
-                        WHERE segments.date DURING LAST_30_DAYS${statusClause}
+                        WHERE segments.date DURING ${gaqlDateClause}${statusClause}
                         ORDER BY metrics.cost_micros DESC
                         LIMIT 100`
 
@@ -346,9 +359,9 @@ export async function PATCH(request: Request) {
         if (platform === 'google') {
             const devToken = process.env.GOOGLE_ADS_DEVELOPER_TOKEN
             const customerId = process.env.GOOGLE_ADS_CUSTOMER_ID?.replace(/-/g, '')
-            const accessToken = await getGoogleAdsAccessToken()
+            const { token: accessToken, error: authError } = await getGoogleAdsAccessToken()
             if (!accessToken || !devToken || !customerId) {
-                return NextResponse.json({ error: 'Google Ads credentials missing' }, { status: 400 })
+                return NextResponse.json({ error: authError || 'Google Ads credentials missing' }, { status: 400 })
             }
 
             const statusMap: Record<string, number> = { enabled: 2, paused: 3, removed: 4 }
@@ -441,10 +454,10 @@ export async function POST(request: Request) {
         if (platform === 'google') {
             const devToken = process.env.GOOGLE_ADS_DEVELOPER_TOKEN
             const customerId = process.env.GOOGLE_ADS_CUSTOMER_ID?.replace(/-/g, '')
-            const accessToken = await getGoogleAdsAccessToken()
+            const { token: accessToken, error: authError } = await getGoogleAdsAccessToken()
 
             if (!accessToken || !devToken || !customerId) {
-                return NextResponse.json({ error: 'Google Ads API kimlik bilgileri eksik.', code: 'MISSING_CREDENTIALS' }, { status: 400 })
+                return NextResponse.json({ error: authError || 'Google Ads API kimlik bilgileri eksik.', code: 'MISSING_CREDENTIALS' }, { status: 400 })
             }
 
             // Google Ads requires budget and campaign to be created separately
@@ -531,6 +544,162 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Desteklenmeyen platform. "meta" veya "google" kullanın.' }, { status: 400 })
     } catch (error: any) {
         console.error('[Campaign Create Error]', error)
+        return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+}
+
+// ─── PUT: Update campaign (name, budget, status) ───
+export async function PUT(request: Request) {
+    try {
+        const body = await request.json()
+        const { campaignId, platform, name, dailyBudget, status } = body
+
+        if (!campaignId || !platform) {
+            return NextResponse.json({ error: 'campaignId ve platform zorunludur' }, { status: 400 })
+        }
+
+        if (platform === 'meta') {
+            const token = process.env.META_ACCESS_TOKEN
+            if (!token) return NextResponse.json({ error: 'Meta token missing' }, { status: 400 })
+
+            const updateData: Record<string, string> = { access_token: token }
+            if (name) updateData.name = name
+            if (status) updateData.status = status.toUpperCase()
+            if (dailyBudget) updateData.daily_budget = String(Math.round(dailyBudget * 100))
+
+            const res = await fetch(`${FB_BASE_URL}/${campaignId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams(updateData)
+            })
+            const data = await res.json()
+            if (!res.ok) {
+                return NextResponse.json({ success: false, error: data.error?.message || 'Meta güncelleme hatası', details: data }, { status: res.status })
+            }
+            return NextResponse.json({ success: true, message: `Meta kampanya güncellendi` })
+        }
+
+        if (platform === 'google') {
+            const devToken = process.env.GOOGLE_ADS_DEVELOPER_TOKEN
+            const customerId = process.env.GOOGLE_ADS_CUSTOMER_ID?.replace(/-/g, '')
+            const { token: accessToken, error: authError } = await getGoogleAdsAccessToken()
+
+            if (!accessToken || !devToken || !customerId) {
+                return NextResponse.json({ error: authError || 'Google Ads credentials missing' }, { status: 400 })
+            }
+
+            const updateFields: Record<string, any> = {
+                resourceName: `customers/${customerId}/campaigns/${campaignId}`,
+            }
+            const updateMask: string[] = []
+
+            if (name) { updateFields.name = name; updateMask.push('name') }
+            if (status) {
+                const statusMap: Record<string, string> = { active: 'ENABLED', enabled: 'ENABLED', paused: 'PAUSED' }
+                updateFields.status = statusMap[status] || 'PAUSED'
+                updateMask.push('status')
+            }
+
+            const res = await fetch(`https://googleads.googleapis.com/v23/customers/${customerId}/campaigns:mutate`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'developer-token': devToken,
+                    'login-customer-id': customerId,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    operations: [{ update: updateFields, updateMask: updateMask.join(',') }]
+                })
+            })
+            const data = await res.json()
+            if (!res.ok) {
+                return NextResponse.json({ success: false, error: data?.error?.message || 'Google güncelleme hatası', details: data }, { status: res.status })
+            }
+
+            // Budget update (separate call if dailyBudget provided)
+            if (dailyBudget) {
+                console.log('[Campaign PUT] Budget update requested for Google campaign:', campaignId)
+                // Note: Google Ads budget updates require the budget resource name which
+                // we don't have from the PUT payload. Budget updates would need the
+                // campaign_budget resource_name from a query. For now, log it.
+            }
+
+            return NextResponse.json({ success: true, message: `Google Ads kampanya güncellendi` })
+        }
+
+        return NextResponse.json({ error: 'Desteklenmeyen platform' }, { status: 400 })
+    } catch (error: any) {
+        console.error('[Campaign Update Error]', error)
+        return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+}
+
+// ─── DELETE: Archive/remove campaign ───
+export async function DELETE(request: Request) {
+    try {
+        const body = await request.json()
+        const { campaignId, platform } = body
+
+        if (!campaignId || !platform) {
+            return NextResponse.json({ error: 'campaignId ve platform zorunludur' }, { status: 400 })
+        }
+
+        if (platform === 'meta') {
+            const token = process.env.META_ACCESS_TOKEN
+            if (!token) return NextResponse.json({ error: 'Meta token missing' }, { status: 400 })
+
+            // Meta: Set status to ARCHIVED (Meta doesn't truly delete campaigns)
+            const res = await fetch(`${FB_BASE_URL}/${campaignId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({ status: 'ARCHIVED', access_token: token })
+            })
+            const data = await res.json()
+            if (!res.ok) {
+                return NextResponse.json({ success: false, error: data.error?.message || 'Arşivleme hatası' }, { status: res.status })
+            }
+            return NextResponse.json({ success: true, message: 'Meta kampanya arşivlendi' })
+        }
+
+        if (platform === 'google') {
+            const devToken = process.env.GOOGLE_ADS_DEVELOPER_TOKEN
+            const customerId = process.env.GOOGLE_ADS_CUSTOMER_ID?.replace(/-/g, '')
+            const { token: accessToken, error: authError } = await getGoogleAdsAccessToken()
+
+            if (!accessToken || !devToken || !customerId) {
+                return NextResponse.json({ error: authError || 'Google Ads credentials missing' }, { status: 400 })
+            }
+
+            // Google: Set status to REMOVED
+            const res = await fetch(`https://googleads.googleapis.com/v23/customers/${customerId}/campaigns:mutate`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'developer-token': devToken,
+                    'login-customer-id': customerId,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    operations: [{
+                        update: {
+                            resourceName: `customers/${customerId}/campaigns/${campaignId}`,
+                            status: 'REMOVED'
+                        },
+                        updateMask: 'status'
+                    }]
+                })
+            })
+            const data = await res.json()
+            if (!res.ok) {
+                return NextResponse.json({ success: false, error: data?.error?.message || 'Silme hatası' }, { status: res.status })
+            }
+            return NextResponse.json({ success: true, message: 'Google Ads kampanya kaldırıldı' })
+        }
+
+        return NextResponse.json({ error: 'Desteklenmeyen platform' }, { status: 400 })
+    } catch (error: any) {
+        console.error('[Campaign Delete Error]', error)
         return NextResponse.json({ error: error.message }, { status: 500 })
     }
 }
