@@ -10,6 +10,9 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Missing topic or description' }, { status: 400 })
         }
 
+        if (!process.env.GEMINI_API_KEY) {
+            return NextResponse.json({ error: 'GEMINI_API_KEY not configured' }, { status: 500 })
+        }
         const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
 
         let languagePrompt = "Türkçe (Turkish)"

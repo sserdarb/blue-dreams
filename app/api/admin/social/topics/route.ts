@@ -16,6 +16,9 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
     try {
+        if (!process.env.GEMINI_API_KEY) {
+            return NextResponse.json({ error: 'GEMINI_API_KEY not configured' }, { status: 500 })
+        }
         const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
 
         const prompt = `
