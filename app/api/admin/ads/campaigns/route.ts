@@ -216,13 +216,25 @@ export async function GET(request: Request) {
                         last_7d: 'LAST_7_DAYS',
                         last_14d: 'LAST_14_DAYS',
                         last_30d: 'LAST_30_DAYS',
-                        last_90d: 'LAST_30_DAYS', // GAQL doesn't have 90d, use custom below
                         this_month: 'THIS_MONTH',
                         last_month: 'LAST_MONTH',
-                        this_year: 'THIS_YEAR',
-                        maximum: 'ALL_TIME',
                     }
-                    const gaqlDateClause = gaqlDateMap[datePreset] || 'LAST_30_DAYS'
+
+                    // Build date clause — for maximum/this_year/last_90d, use custom date range
+                    let dateClause = ''
+                    if (datePreset === 'maximum' || datePreset === 'this_year') {
+                        const year = new Date().getFullYear()
+                        const startDate = datePreset === 'maximum' ? `${year - 2}-01-01` : `${year}-01-01`
+                        const today = new Date().toISOString().split('T')[0]
+                        dateClause = `segments.date BETWEEN '${startDate}' AND '${today}'`
+                    } else if (datePreset === 'last_90d') {
+                        const end = new Date()
+                        const start = new Date(); start.setDate(start.getDate() - 90)
+                        dateClause = `segments.date BETWEEN '${start.toISOString().split('T')[0]}' AND '${end.toISOString().split('T')[0]}'`
+                    } else {
+                        const gaqlDateClause = gaqlDateMap[datePreset] || 'LAST_30_DAYS'
+                        dateClause = `segments.date DURING ${gaqlDateClause}`
+                    }
 
                     const query = `
                         SELECT
@@ -233,7 +245,7 @@ export async function GET(request: Request) {
                             metrics.conversions, metrics.conversions_value,
                             metrics.average_cpc, metrics.ctr
                         FROM campaign
-                        WHERE segments.date DURING ${gaqlDateClause}${statusClause}
+                        WHERE ${dateClause}${statusClause}
                         ORDER BY metrics.cost_micros DESC
                         LIMIT 100`
 
