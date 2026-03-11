@@ -460,13 +460,10 @@ export default function MarketingClient() {
                                     onChange={(e) => setDatePreset(e.target.value)}
                                     className="border border-slate-200 dark:border-slate-700 rounded-md px-3 py-1 text-sm bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300"
                                 >
+                                    <option value="today">Bugün</option>
+                                    <option value="yesterday">Dün</option>
                                     <option value="last_7d">Son 7 Gün</option>
-                                    <option value="last_14d">Son 14 Gün</option>
                                     <option value="last_30d">Son 30 Gün</option>
-                                    <option value="last_90d">Son 90 Gün</option>
-                                    <option value="this_month">Bu Ay</option>
-                                    <option value="last_month">Geçen Ay</option>
-                                    <option value="this_year">Bu Yıl</option>
                                     <option value="maximum">Tüm Zamanlar</option>
                                 </select>
                             </div>

@@ -155,11 +155,29 @@ export async function GET(request: Request) {
                 else metaStatusFilter = '&effective_status=["ACTIVE","PAUSED","ARCHIVED","IN_PROCESS","WITH_ISSUES"]'
 
                 try {
+                    // Try fetching campaigns with insights data
                     const url = `${FB_BASE_URL}/${acct}/campaigns?fields=id,name,status,effective_status,objective,daily_budget,lifetime_budget,created_time,start_time,stop_time,insights.date_preset(${datePreset}){spend,impressions,clicks,cpc,ctr,reach,actions,cost_per_action_type}&limit=100${metaStatusFilter}&access_token=${token}`
-                    console.log('[Campaign API] Fetching URL:', url.replace(token, 'TOKEN_HIDDEN'))
-                    const res = await fetch(url)
+                    console.log('[Campaign API] Fetching Meta URL:', url.replace(token, 'TOKEN_HIDDEN'))
+                    let res = await fetch(url)
+                    let data: any = null
+
                     if (res.ok) {
-                        const data = await res.json()
+                        data = await res.json()
+                    } else {
+                        // Fallback: fetch campaigns WITHOUT insights (so they at least show)
+                        console.warn('[Campaign API] Meta insights fetch failed, trying without insights...')
+                        const fallbackUrl = `${FB_BASE_URL}/${acct}/campaigns?fields=id,name,status,effective_status,objective,daily_budget,lifetime_budget,created_time,start_time,stop_time&limit=100${metaStatusFilter}&access_token=${token}`
+                        const fallbackRes = await fetch(fallbackUrl)
+                        if (fallbackRes.ok) {
+                            data = await fallbackRes.json()
+                        } else {
+                            const errData = await fallbackRes.json().catch(() => ({}))
+                            console.error('[Campaign API] Meta fallback also failed:', fallbackRes.status, errData)
+                            metaStatus = `API Hatası: ${errData.error?.message || fallbackRes.statusText}`
+                        }
+                    }
+
+                    if (data) {
                         for (const c of (data.data || [])) {
                             const insights = c.insights?.data?.[0] || {}
                             const conversions = (insights.actions || [])
@@ -187,10 +205,6 @@ export async function GET(request: Request) {
                                 endDate: c.stop_time,
                             })
                         }
-                    } else {
-                        const errData = await res.json().catch(() => ({}))
-                        console.error('[Campaign API] Meta not ok:', res.status, errData)
-                        metaStatus = `API Hatası: ${errData.error?.message || res.statusText}`
                     }
                 } catch (err: any) {
                     metaStatus = 'Bağlantı Hatası'
@@ -214,6 +228,8 @@ export async function GET(request: Request) {
 
                     // Map datePreset to GAQL date range
                     const gaqlDateMap: Record<string, string> = {
+                        today: 'TODAY',
+                        yesterday: 'YESTERDAY',
                         last_7d: 'LAST_7_DAYS',
                         last_14d: 'LAST_14_DAYS',
                         last_30d: 'LAST_30_DAYS',
@@ -221,17 +237,13 @@ export async function GET(request: Request) {
                         last_month: 'LAST_MONTH',
                     }
 
-                    // Build date clause — for maximum/this_year/last_90d, use custom date range
+                    // Build date clause
                     let dateClause = ''
-                    if (datePreset === 'maximum' || datePreset === 'this_year') {
+                    if (datePreset === 'maximum') {
                         const year = new Date().getFullYear()
-                        const startDate = datePreset === 'maximum' ? `${year - 2}-01-01` : `${year}-01-01`
+                        const startDate = `${year - 3}-01-01`
                         const today = new Date().toISOString().split('T')[0]
                         dateClause = `segments.date BETWEEN '${startDate}' AND '${today}'`
-                    } else if (datePreset === 'last_90d') {
-                        const end = new Date()
-                        const start = new Date(); start.setDate(start.getDate() - 90)
-                        dateClause = `segments.date BETWEEN '${start.toISOString().split('T')[0]}' AND '${end.toISOString().split('T')[0]}'`
                     } else {
                         const gaqlDateClause = gaqlDateMap[datePreset] || 'LAST_30_DAYS'
                         dateClause = `segments.date DURING ${gaqlDateClause}`
