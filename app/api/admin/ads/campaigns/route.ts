@@ -203,6 +203,7 @@ export async function GET(request: Request) {
         if (platform === 'all' || platform === 'google') {
             const devToken = process.env.GOOGLE_ADS_DEVELOPER_TOKEN
             const customerId = process.env.GOOGLE_ADS_CUSTOMER_ID?.replace(/-/g, '')
+            const managerId = (process.env.GOOGLE_ADS_MANAGER_ID || '').replace(/-/g, '')
             if (devToken && customerId) {
                 const { token: accessToken, error: googleAuthError } = await getGoogleAdsAccessToken()
                 if (accessToken) {
@@ -258,12 +259,12 @@ export async function GET(request: Request) {
                         LIMIT 100`
 
                     try {
-                        const headers = {
+                        const headers: Record<string, string> = {
                             'Authorization': `Bearer ${accessToken}`,
                             'developer-token': devToken,
-                            'login-customer-id': customerId,
                             'Content-Type': 'application/json'
                         }
+                        if (managerId) headers['login-customer-id'] = managerId
                         const apiUrl = `https://googleads.googleapis.com/v23/customers/${customerId}/googleAds:search`
 
                         // Fetch metrics (with date segment)
@@ -417,20 +418,22 @@ export async function PATCH(request: Request) {
         if (platform === 'google') {
             const devToken = process.env.GOOGLE_ADS_DEVELOPER_TOKEN
             const customerId = process.env.GOOGLE_ADS_CUSTOMER_ID?.replace(/-/g, '')
+            const managerId = (process.env.GOOGLE_ADS_MANAGER_ID || '').replace(/-/g, '')
             const { token: accessToken, error: authError } = await getGoogleAdsAccessToken()
             if (!accessToken || !devToken || !customerId) {
                 return NextResponse.json({ error: authError || 'Google Ads credentials missing' }, { status: 400 })
             }
 
             const statusMap: Record<string, number> = { enabled: 2, paused: 3, removed: 4 }
+            const gHeaders: Record<string, string> = {
+                'Authorization': `Bearer ${accessToken}`,
+                'developer-token': devToken,
+                'Content-Type': 'application/json'
+            }
+            if (managerId) gHeaders['login-customer-id'] = managerId
             const res = await fetch(`https://googleads.googleapis.com/v23/customers/${customerId}/campaigns:mutate`, {
                 method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`,
-                    'developer-token': devToken,
-                    'login-customer-id': customerId,
-                    'Content-Type': 'application/json'
-                },
+                headers: gHeaders,
                 body: JSON.stringify({
                     operations: [{
                         update: {
@@ -512,22 +515,25 @@ export async function POST(request: Request) {
         if (platform === 'google') {
             const devToken = process.env.GOOGLE_ADS_DEVELOPER_TOKEN
             const customerId = process.env.GOOGLE_ADS_CUSTOMER_ID?.replace(/-/g, '')
+            const managerId = (process.env.GOOGLE_ADS_MANAGER_ID || '').replace(/-/g, '')
             const { token: accessToken, error: authError } = await getGoogleAdsAccessToken()
 
             if (!accessToken || !devToken || !customerId) {
                 return NextResponse.json({ error: authError || 'Google Ads API kimlik bilgileri eksik.', code: 'MISSING_CREDENTIALS' }, { status: 400 })
             }
 
+            const gHeaders: Record<string, string> = {
+                'Authorization': `Bearer ${accessToken}`,
+                'developer-token': devToken,
+                'Content-Type': 'application/json',
+            }
+            if (managerId) gHeaders['login-customer-id'] = managerId
+
             // Google Ads requires budget and campaign to be created separately
             // Step 1: Create campaign budget
             const budgetRes = await fetch(`https://googleads.googleapis.com/v23/customers/${customerId}/campaignBudgets:mutate`, {
                 method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`,
-                    'developer-token': devToken,
-                    'login-customer-id': customerId,
-                    'Content-Type': 'application/json',
-                },
+                headers: gHeaders,
                 body: JSON.stringify({
                     operations: [{
                         create: {
@@ -561,12 +567,7 @@ export async function POST(request: Request) {
 
             const campaignRes = await fetch(`https://googleads.googleapis.com/v23/customers/${customerId}/campaigns:mutate`, {
                 method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`,
-                    'developer-token': devToken,
-                    'login-customer-id': customerId,
-                    'Content-Type': 'application/json',
-                },
+                headers: gHeaders,
                 body: JSON.stringify({
                     operations: [{
                         create: {
@@ -640,6 +641,7 @@ export async function PUT(request: Request) {
         if (platform === 'google') {
             const devToken = process.env.GOOGLE_ADS_DEVELOPER_TOKEN
             const customerId = process.env.GOOGLE_ADS_CUSTOMER_ID?.replace(/-/g, '')
+            const managerId = (process.env.GOOGLE_ADS_MANAGER_ID || '').replace(/-/g, '')
             const { token: accessToken, error: authError } = await getGoogleAdsAccessToken()
 
             if (!accessToken || !devToken || !customerId) {
@@ -658,14 +660,16 @@ export async function PUT(request: Request) {
                 updateMask.push('status')
             }
 
+            const gHeaders: Record<string, string> = {
+                'Authorization': `Bearer ${accessToken}`,
+                'developer-token': devToken,
+                'Content-Type': 'application/json'
+            }
+            if (managerId) gHeaders['login-customer-id'] = managerId
+
             const res = await fetch(`https://googleads.googleapis.com/v23/customers/${customerId}/campaigns:mutate`, {
                 method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`,
-                    'developer-token': devToken,
-                    'login-customer-id': customerId,
-                    'Content-Type': 'application/json'
-                },
+                headers: gHeaders,
                 body: JSON.stringify({
                     operations: [{ update: updateFields, updateMask: updateMask.join(',') }]
                 })
@@ -723,21 +727,24 @@ export async function DELETE(request: Request) {
         if (platform === 'google') {
             const devToken = process.env.GOOGLE_ADS_DEVELOPER_TOKEN
             const customerId = process.env.GOOGLE_ADS_CUSTOMER_ID?.replace(/-/g, '')
+            const managerId = (process.env.GOOGLE_ADS_MANAGER_ID || '').replace(/-/g, '')
             const { token: accessToken, error: authError } = await getGoogleAdsAccessToken()
 
             if (!accessToken || !devToken || !customerId) {
                 return NextResponse.json({ error: authError || 'Google Ads credentials missing' }, { status: 400 })
             }
 
+            const gHeaders: Record<string, string> = {
+                'Authorization': `Bearer ${accessToken}`,
+                'developer-token': devToken,
+                'Content-Type': 'application/json'
+            }
+            if (managerId) gHeaders['login-customer-id'] = managerId
+
             // Google: Set status to REMOVED
             const res = await fetch(`https://googleads.googleapis.com/v23/customers/${customerId}/campaigns:mutate`, {
                 method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`,
-                    'developer-token': devToken,
-                    'login-customer-id': customerId,
-                    'Content-Type': 'application/json'
-                },
+                headers: gHeaders,
                 body: JSON.stringify({
                     operations: [{
                         update: {
