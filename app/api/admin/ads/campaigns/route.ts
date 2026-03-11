@@ -236,11 +236,12 @@ export async function GET(request: Request) {
                         dateClause = `segments.date DURING ${gaqlDateClause}`
                     }
 
-                    const query = `
+                    // NOTE: campaign_budget.amount_micros is INCOMPATIBLE with segments.date
+                    // So we query metrics with date segment, and budget info separately
+                    const metricsQuery = `
                         SELECT
                             campaign.id, campaign.name, campaign.status,
                             campaign.advertising_channel_type, campaign.start_date, campaign.end_date,
-                            campaign_budget.amount_micros,
                             metrics.impressions, metrics.clicks, metrics.cost_micros,
                             metrics.conversions, metrics.conversions_value,
                             metrics.average_cpc, metrics.ctr
@@ -249,48 +250,93 @@ export async function GET(request: Request) {
                         ORDER BY metrics.cost_micros DESC
                         LIMIT 100`
 
+                    // Budget query (no date segment, just campaign info)
+                    const budgetQuery = `
+                        SELECT campaign.id, campaign_budget.amount_micros
+                        FROM campaign
+                        WHERE campaign.status != 'REMOVED'
+                        LIMIT 100`
+
                     try {
-                        const res = await fetch(`https://googleads.googleapis.com/v23/customers/${customerId}/googleAds:search`, {
+                        const headers = {
+                            'Authorization': `Bearer ${accessToken}`,
+                            'developer-token': devToken,
+                            'login-customer-id': customerId,
+                            'Content-Type': 'application/json'
+                        }
+                        const apiUrl = `https://googleads.googleapis.com/v23/customers/${customerId}/googleAds:search`
+
+                        // Fetch metrics (with date segment)
+                        const metricsRes = await fetch(apiUrl, {
                             method: 'POST',
-                            headers: {
-                                'Authorization': `Bearer ${accessToken}`,
-                                'developer-token': devToken,
-                                'login-customer-id': customerId,
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({ query })
+                            headers,
+                            body: JSON.stringify({ query: metricsQuery })
                         })
-                        if (res.ok) {
-                            const data = await res.json()
+
+                        // Fetch budgets separately
+                        let budgetMap: Record<string, number> = {}
+                        try {
+                            const budgetRes = await fetch(apiUrl, {
+                                method: 'POST',
+                                headers,
+                                body: JSON.stringify({ query: budgetQuery })
+                            })
+                            if (budgetRes.ok) {
+                                const budgetData = await budgetRes.json()
+                                for (const row of (budgetData.results || [])) {
+                                    const cId = row.campaign?.id
+                                    const micros = parseInt(row.campaignBudget?.amountMicros || '0', 10)
+                                    if (cId) budgetMap[cId] = micros / 1000000
+                                }
+                            }
+                        } catch (e) { console.error('[Campaign API] Budget query failed:', e) }
+
+                        if (metricsRes.ok) {
+                            const data = await metricsRes.json()
+                            // Aggregate metrics per campaign (since date segmentation splits results per day)
+                            const campaignAgg: Record<string, any> = {}
                             for (const row of (data.results || [])) {
+                                const cId = row.campaign?.id
+                                if (!cId) continue
+                                if (!campaignAgg[cId]) {
+                                    campaignAgg[cId] = {
+                                        id: cId,
+                                        platform: 'google',
+                                        name: row.campaign?.name,
+                                        status: (row.campaign?.status || '').toLowerCase(),
+                                        objective: row.campaign?.advertisingChannelType,
+                                        dailyBudget: budgetMap[cId] || null,
+                                        lifetimeBudget: null,
+                                        spend: 0, impressions: 0, clicks: 0, conversions: 0,
+                                        conversionsValue: 0, cpc: 0, ctr: 0, reach: 0,
+                                        createdAt: null,
+                                        startDate: row.campaign?.startDate,
+                                        endDate: row.campaign?.endDate,
+                                        _rowCount: 0,
+                                    }
+                                }
                                 const m = row.metrics || {}
-                                const costMicros = parseInt(m.costMicros || '0', 10)
-                                const budgetMicros = parseInt(row.campaignBudget?.amountMicros || '0', 10)
-                                results.push({
-                                    id: row.campaign?.id,
-                                    platform: 'google',
-                                    name: row.campaign?.name,
-                                    status: (row.campaign?.status || '').toLowerCase(),
-                                    objective: row.campaign?.advertisingChannelType,
-                                    dailyBudget: budgetMicros > 0 ? budgetMicros / 1000000 : null,
-                                    lifetimeBudget: null,
-                                    spend: costMicros / 1000000,
-                                    impressions: parseInt(m.impressions || '0', 10),
-                                    clicks: parseInt(m.clicks || '0', 10),
-                                    cpc: parseInt(m.averageCpc || '0', 10) / 1000000,
-                                    ctr: parseFloat(m.ctr || '0') * 100,
-                                    reach: 0,
-                                    conversions: parseFloat(m.conversions || '0'),
-                                    roas: costMicros > 0 ? (parseFloat(m.conversionsValue || '0') / (costMicros / 1000000)) : 0,
-                                    createdAt: null,
-                                    startDate: row.campaign?.startDate,
-                                    endDate: row.campaign?.endDate,
-                                })
+                                const agg = campaignAgg[cId]
+                                agg.spend += parseInt(m.costMicros || '0', 10) / 1000000
+                                agg.impressions += parseInt(m.impressions || '0', 10)
+                                agg.clicks += parseInt(m.clicks || '0', 10)
+                                agg.conversions += parseFloat(m.conversions || '0')
+                                agg.conversionsValue += parseFloat(m.conversionsValue || '0')
+                                agg._rowCount++
+                            }
+                            // Calculate derived metrics and push results
+                            for (const agg of Object.values(campaignAgg)) {
+                                agg.cpc = agg.clicks > 0 ? agg.spend / agg.clicks : 0
+                                agg.ctr = agg.impressions > 0 ? (agg.clicks / agg.impressions) * 100 : 0
+                                agg.roas = agg.spend > 0 ? agg.conversionsValue / agg.spend : 0
+                                delete agg._rowCount
+                                delete agg.conversionsValue
+                                results.push(agg)
                             }
                         } else {
-                            const errData = await res.json().catch(() => ({}))
-                            console.error('[Campaign API] Google not ok:', res.status, JSON.stringify(errData))
-                            const errMsg = errData?.error?.message || errData?.[0]?.error?.message || res.statusText
+                            const errData = await metricsRes.json().catch(() => ({}))
+                            console.error('[Campaign API] Google not ok:', metricsRes.status, JSON.stringify(errData))
+                            const errMsg = errData?.error?.message || errData?.[0]?.error?.message || metricsRes.statusText
                             googleStatus = `API Hatası: ${errMsg}`
                         }
                     } catch (err: any) {
