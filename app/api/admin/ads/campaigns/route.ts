@@ -31,17 +31,50 @@ async function isDemoMode(): Promise<boolean> {
 const META_API_VERSION = 'v19.0'
 const FB_BASE_URL = `https://graph.facebook.com/${META_API_VERSION}`
 
+const GOOGLE_REFRESH_TOKEN_KEY = 'google_ads_refresh_token'
+
+async function getStoredRefreshToken(): Promise<string | null> {
+    try {
+        const setting = await prisma.siteSetting.findUnique({ where: { key: GOOGLE_REFRESH_TOKEN_KEY } })
+        return setting?.value || null
+    } catch { return null }
+}
+
+async function saveRefreshToken(token: string): Promise<void> {
+    try {
+        await prisma.siteSetting.upsert({
+            where: { key: GOOGLE_REFRESH_TOKEN_KEY },
+            update: { value: token },
+            create: { key: GOOGLE_REFRESH_TOKEN_KEY, value: token }
+        })
+        console.log('[Google Ads] Refresh token DB\'ye kaydedildi')
+    } catch (err: any) {
+        console.error('[Google Ads] Refresh token DB\'ye kaydedilemedi:', err.message)
+    }
+}
+
+async function clearStoredRefreshToken(): Promise<void> {
+    try {
+        await prisma.siteSetting.deleteMany({ where: { key: GOOGLE_REFRESH_TOKEN_KEY } })
+    } catch { }
+}
+
 async function getGoogleAdsAccessToken(): Promise<{ token: string | null; error?: string }> {
     const clientId = process.env.GOOGLE_ADS_CLIENT_ID
     const clientSecret = process.env.GOOGLE_ADS_CLIENT_SECRET
-    const refreshToken = process.env.GOOGLE_ADS_REFRESH_TOKEN
 
     if (!clientId) return { token: null, error: 'GOOGLE_ADS_CLIENT_ID eksik' }
     if (!clientSecret) return { token: null, error: 'GOOGLE_ADS_CLIENT_SECRET eksik' }
-    if (!refreshToken) return { token: null, error: 'GOOGLE_ADS_REFRESH_TOKEN eksik' }
+
+    // Önce DB'den oku, yoksa env var'dan al
+    const dbRefreshToken = await getStoredRefreshToken()
+    const envRefreshToken = process.env.GOOGLE_ADS_REFRESH_TOKEN
+    const refreshToken = dbRefreshToken || envRefreshToken
+
+    if (!refreshToken) return { token: null, error: 'GOOGLE_ADS_REFRESH_TOKEN eksik (DB ve env var)' }
 
     try {
-        console.log('[Google Ads] Refreshing access token...')
+        console.log(`[Google Ads] Refreshing access token (kaynak: ${dbRefreshToken ? 'DB' : 'env'})...`)
         const res = await fetch('https://oauth2.googleapis.com/token', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -51,12 +84,43 @@ async function getGoogleAdsAccessToken(): Promise<{ token: string | null; error?
         if (!res.ok) {
             const errMsg = data.error_description || data.error || `HTTP ${res.status}`
             console.error('[Google Ads] Token refresh failed:', errMsg)
+
+            // Eğer DB'deki token expire olduysa ve env var farklıysa, env var ile tekrar dene
+            if (dbRefreshToken && envRefreshToken && dbRefreshToken !== envRefreshToken) {
+                console.log('[Google Ads] DB token başarısız, env var ile tekrar deneniyor...')
+                await clearStoredRefreshToken()
+                const retryRes = await fetch('https://oauth2.googleapis.com/token', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({ client_id: clientId, client_secret: clientSecret, refresh_token: envRefreshToken, grant_type: 'refresh_token' })
+                })
+                const retryData = await retryRes.json()
+                if (retryRes.ok && retryData.access_token) {
+                    // Env var çalıştı, onu DB'ye kaydet
+                    await saveRefreshToken(envRefreshToken)
+                    console.log('[Google Ads] Env var token ile başarılı, DB güncellendi')
+                    return { token: retryData.access_token }
+                }
+            }
+
             return { token: null, error: `OAuth Hatası: ${errMsg}` }
         }
         if (!data.access_token) {
             console.error('[Google Ads] No access_token in response:', data)
             return { token: null, error: 'OAuth yanıtında access_token yok' }
         }
+
+        // Google bazen yeni bir refresh_token döndürür — otomatik kaydet
+        if (data.refresh_token && data.refresh_token !== refreshToken) {
+            console.log('[Google Ads] Google yeni refresh token döndürdü, DB\'ye kaydediliyor...')
+            await saveRefreshToken(data.refresh_token)
+        }
+
+        // Eğer env var'dan çalıştıysa ve DB'de yoksa, DB'ye kaydet (ilk kullanım)
+        if (!dbRefreshToken && envRefreshToken) {
+            await saveRefreshToken(envRefreshToken)
+        }
+
         console.log('[Google Ads] Token refreshed successfully')
         return { token: data.access_token }
     } catch (err: any) {

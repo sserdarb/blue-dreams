@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
+import { prisma } from '@/lib/prisma'
 
 export const dynamic = 'force-dynamic'
 
@@ -65,10 +66,24 @@ export async function GET(request: Request) {
             })
         }
 
-        // Refresh token'ı göster - kullanıcı bunu Coolify env var'a kopyalayacak
-        return new Response(generateHTML('Başarılı!', 'Yeni Google Ads Refresh Token alındı. Aşağıdaki token\'ı Coolify → Environment Variables → GOOGLE_ADS_REFRESH_TOKEN alanına yapıştırın ve Redeploy yapın.', refreshToken), {
-            headers: { 'Content-Type': 'text/html; charset=utf-8' }
-        })
+        // Refresh token'ı DB'ye otomatik kaydet — artık Coolify restart gerekmez!
+        try {
+            await prisma.siteSetting.upsert({
+                where: { key: 'google_ads_refresh_token' },
+                update: { value: refreshToken },
+                create: { key: 'google_ads_refresh_token', value: refreshToken }
+            })
+            console.log('[Google Ads OAuth] Yeni refresh token DB\'ye kaydedildi — otomatik aktif!')
+            return new Response(generateHTML('Başarılı!', 'Yeni Google Ads Refresh Token alındı ve veritabanına otomatik kaydedildi. Redeploy gerekmez — hemen aktif!', refreshToken), {
+                headers: { 'Content-Type': 'text/html; charset=utf-8' }
+            })
+        } catch (dbErr: any) {
+            console.error('[Google Ads OAuth] DB kayıt hatası:', dbErr.message)
+            // DB başarısız olsa bile token'ı göster (manuel yöntem fallback)
+            return new Response(generateHTML('Kısmi Başarı', `Token alındı ama DB'ye kaydedilemedi (${dbErr.message}). Aşağıdaki token'ı Coolify env var'a manuel yapıştırın.`, refreshToken), {
+                headers: { 'Content-Type': 'text/html; charset=utf-8' }
+            })
+        }
 
     } catch (err: any) {
         return new Response(generateHTML('Bağlantı Hatası', `Google API'ye bağlanılamadı: ${err.message}`, null), {
