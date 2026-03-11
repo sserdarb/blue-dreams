@@ -39,7 +39,7 @@ export default function MarketingClient() {
     // New Campaign State
     const [createModalOpen, setCreateModalOpen] = useState(false)
     const [statusFilter, setStatusFilter] = useState('all') // all, active, paused
-    const [datePreset, setDatePreset] = useState('last_30d')
+    const [datePreset, setDatePreset] = useState('maximum') // Default: Tüm Zamanlar
     const [isGeneratingCopy, setIsGeneratingCopy] = useState(false)
     const [isCreatingCampaign, setIsCreatingCampaign] = useState(false)
     const [newCampaign, setNewCampaign] = useState({
@@ -452,8 +452,9 @@ export default function MarketingClient() {
                             <Megaphone size={18} className="text-blue-500" />
                             Tüm Kampanyalar (Meta & Google Ads)
                         </h3>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-4">
                             <div className="flex items-center gap-2">
+                                <label className="text-sm font-medium text-slate-600 dark:text-slate-300">Zaman Aralığı:</label>
                                 <Calendar size={14} className="text-slate-400" />
                                 <select
                                     value={datePreset}
