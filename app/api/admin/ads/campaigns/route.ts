@@ -70,7 +70,7 @@ export async function GET(request: Request) {
                 let metaStatusFilter = ''
                 if (statusFilter === 'active') metaStatusFilter = '&effective_status=["ACTIVE"]'
                 else if (statusFilter === 'paused') metaStatusFilter = '&effective_status=["PAUSED"]'
-                else metaStatusFilter = '&effective_status=["ACTIVE","PAUSED","ARCHIVED","DELETED","IN_PROCESS","WITH_ISSUES"]'
+                else metaStatusFilter = '&effective_status=["ACTIVE","PAUSED","ARCHIVED","IN_PROCESS","WITH_ISSUES"]'
 
                 try {
                     const url = `${FB_BASE_URL}/${acct}/campaigns?fields=id,name,status,effective_status,objective,daily_budget,lifetime_budget,created_time,start_time,stop_time,insights.date_preset(${datePreset}){spend,impressions,clicks,cpc,ctr,reach,actions,cost_per_action_type}&limit=100${metaStatusFilter}&access_token=${token}`
