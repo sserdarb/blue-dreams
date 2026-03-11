@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { Calendar, Users, ChevronDown, ArrowRight, Phone, Search, Facebook, Instagram, Youtube } from 'lucide-react';
 
 // WhatsApp Icon Component
@@ -10,6 +11,8 @@ const WhatsAppIcon = ({ size = 16, className = "" }: { size?: number, className?
 
 const BookingWidget: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
+  const pathname = usePathname();
+  const locale = pathname?.split('/')[1] || 'tr';
 
   const getToday = () => new Date().toISOString().split('T')[0];
   const getTomorrow = () => {
@@ -40,15 +43,29 @@ const BookingWidget: React.FC = () => {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate Elektra PMS / Reservation System Link with parameters
-    // In a real Elektra setup, params might be: ?arrivalDate=...&departureDate=...&adults=...
-    const baseUrl = '/tr/booking';
+
+    const formatToDDMMYYYY = (dateStr: string) => {
+      const parts = dateStr.split('-');
+      if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+      return dateStr;
+    };
+
+    const langMap: Record<string, string> = { tr: '1', en: '2', de: '3', ru: '4' };
+    const languageid = langMap[locale] || '1';
+
+    const agency = locale === 'tr' ? '1.195.947' : '1.180.998';
+
     const params = new URLSearchParams({
-      arrival: checkIn,
-      departure: checkOut,
-      adults: guests
+      adults: guests,
+      datein: formatToDDMMYYYY(checkIn),
+      dateout: formatToDDMMYYYY(checkOut),
+      domain: 'www.bluedreamsresort.com',
+      languageid,
+      rooms: '1',
+      agency
     });
-    window.location.href = `${baseUrl}?${params.toString()}`;
+
+    window.location.href = `https://reservation.elektraweb.com/book/accommodations?${params.toString()}`;
   };
 
   const socialIconClass = "text-gray-400 hover:text-brand transition-colors p-1.5 border border-transparent hover:border-gray-200 rounded-sm";
