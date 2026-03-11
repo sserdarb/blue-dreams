@@ -53,6 +53,10 @@ export function middleware(request: NextRequest) {
   if (pathname.startsWith('/api')) {
     // Admin API auth check
     if (pathname.startsWith('/api/admin')) {
+      // OAuth callback'leri Google'dan session cookie olmadan gelir
+      if (pathname.startsWith('/api/admin/ads/oauth/callback')) {
+        return NextResponse.next();
+      }
       const authCookie = request.cookies.get('admin_session');
       if (!authCookie) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
