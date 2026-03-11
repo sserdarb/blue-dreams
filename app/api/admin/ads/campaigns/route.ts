@@ -279,6 +279,11 @@ export async function GET(request: Request) {
                         if (managerId) headers['login-customer-id'] = managerId
                         const apiUrl = `https://googleads.googleapis.com/v23/customers/${customerId}/googleAds:search`
 
+                        console.log('[Google Ads] API URL:', apiUrl)
+                        console.log('[Google Ads] Manager ID:', managerId || 'NOT SET')
+                        console.log('[Google Ads] Customer ID:', customerId)
+                        console.log('[Google Ads] Metrics Query:', metricsQuery.trim())
+
                         // Fetch metrics (with date segment)
                         const metricsRes = await fetch(apiUrl, {
                             method: 'POST',
@@ -306,6 +311,7 @@ export async function GET(request: Request) {
 
                         if (metricsRes.ok) {
                             const data = await metricsRes.json()
+                            console.log('[Google Ads] Got', (data.results || []).length, 'result rows')
                             // Aggregate metrics per campaign (since date segmentation splits results per day)
                             const campaignAgg: Record<string, any> = {}
                             for (const row of (data.results || [])) {
@@ -347,10 +353,18 @@ export async function GET(request: Request) {
                                 results.push(agg)
                             }
                         } else {
-                            const errData = await metricsRes.json().catch(() => ({}))
-                            console.error('[Campaign API] Google not ok:', metricsRes.status, JSON.stringify(errData))
-                            const errMsg = errData?.error?.message || errData?.[0]?.error?.message || metricsRes.statusText
-                            googleStatus = `API Hatası: ${errMsg}`
+                            const errText = await metricsRes.text()
+                            console.error('[Google Ads] Error Response Status:', metricsRes.status)
+                            console.error('[Google Ads] Error Response Body:', errText)
+                            try {
+                                const errData = JSON.parse(errText)
+                                const errMsg = errData?.error?.message || errData?.[0]?.error?.message || metricsRes.statusText
+                                const errDetails = errData?.error?.details ? JSON.stringify(errData.error.details) : 'no details'
+                                console.error('[Google Ads] Error Details:', errDetails)
+                                googleStatus = `API Hatası: ${errMsg}`
+                            } catch {
+                                googleStatus = `API Hatası: ${metricsRes.statusText} (${metricsRes.status})`
+                            }
                         }
                     } catch (err: any) {
                         googleStatus = `Ağ Hatası: ${err.message}`
