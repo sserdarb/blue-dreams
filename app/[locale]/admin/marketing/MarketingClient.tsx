@@ -1,4 +1,5 @@
 'use client'
+// v2.1 — Marketing module with date picker + CRUD + MCC support
 
 import React, { useState, useRef, useMemo, useEffect } from 'react'
 import { exportPdf } from '@/lib/export-pdf'
