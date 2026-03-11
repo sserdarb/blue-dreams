@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { headers } from 'next/headers'
 
 export const dynamic = 'force-dynamic'
 
@@ -29,7 +30,11 @@ export async function GET(request: Request) {
         })
     }
 
-    const origin = new URL(request.url).origin
+    // Container içinde request.url localhost olarak görünür — gerçek origin'i header'dan al
+    const headersList = await headers()
+    const forwardedHost = headersList.get('x-forwarded-host') || headersList.get('host')
+    const forwardedProto = headersList.get('x-forwarded-proto') || 'https'
+    const origin = forwardedHost ? `${forwardedProto}://${forwardedHost}` : (process.env.NEXT_PUBLIC_SITE_URL || 'https://new.bluedreamsresort.com')
     const redirectUri = `${origin}/api/admin/ads/oauth/callback`
 
     try {
