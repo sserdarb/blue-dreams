@@ -31,20 +31,38 @@ async function isDemoMode(): Promise<boolean> {
 const META_API_VERSION = 'v19.0'
 const FB_BASE_URL = `https://graph.facebook.com/${META_API_VERSION}`
 
-async function getGoogleAdsAccessToken() {
+async function getGoogleAdsAccessToken(): Promise<{ token: string | null; error?: string }> {
     const clientId = process.env.GOOGLE_ADS_CLIENT_ID
     const clientSecret = process.env.GOOGLE_ADS_CLIENT_SECRET
     const refreshToken = process.env.GOOGLE_ADS_REFRESH_TOKEN
-    if (!clientId || !clientSecret || !refreshToken) return null
+
+    if (!clientId) return { token: null, error: 'GOOGLE_ADS_CLIENT_ID eksik' }
+    if (!clientSecret) return { token: null, error: 'GOOGLE_ADS_CLIENT_SECRET eksik' }
+    if (!refreshToken) return { token: null, error: 'GOOGLE_ADS_REFRESH_TOKEN eksik' }
+
     try {
+        console.log('[Google Ads] Refreshing access token...')
         const res = await fetch('https://oauth2.googleapis.com/token', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: new URLSearchParams({ client_id: clientId, client_secret: clientSecret, refresh_token: refreshToken, grant_type: 'refresh_token' })
         })
-        if (!res.ok) return null
-        return (await res.json()).access_token
-    } catch { return null }
+        const data = await res.json()
+        if (!res.ok) {
+            const errMsg = data.error_description || data.error || `HTTP ${res.status}`
+            console.error('[Google Ads] Token refresh failed:', errMsg)
+            return { token: null, error: `OAuth Hatası: ${errMsg}` }
+        }
+        if (!data.access_token) {
+            console.error('[Google Ads] No access_token in response:', data)
+            return { token: null, error: 'OAuth yanıtında access_token yok' }
+        }
+        console.log('[Google Ads] Token refreshed successfully')
+        return { token: data.access_token }
+    } catch (err: any) {
+        console.error('[Google Ads] Token refresh exception:', err.message)
+        return { token: null, error: `Ağ Hatası: ${err.message}` }
+    }
 }
 
 export async function GET(request: Request) {
@@ -122,7 +140,7 @@ export async function GET(request: Request) {
             const devToken = process.env.GOOGLE_ADS_DEVELOPER_TOKEN
             const customerId = process.env.GOOGLE_ADS_CUSTOMER_ID?.replace(/-/g, '')
             if (devToken && customerId) {
-                const accessToken = await getGoogleAdsAccessToken()
+                const { token: accessToken, error: googleAuthError } = await getGoogleAdsAccessToken()
                 if (accessToken) {
                     googleStatus = 'Bağlı'
                     let statusClause = ''
@@ -182,15 +200,16 @@ export async function GET(request: Request) {
                             }
                         } else {
                             const errData = await res.json().catch(() => ({}))
-                            console.error('[Campaign API] Google not ok:', res.status, errData)
-                            googleStatus = `API Hatası: ${errData[0]?.error?.message || res.statusText}`
+                            console.error('[Campaign API] Google not ok:', res.status, JSON.stringify(errData))
+                            const errMsg = errData?.error?.message || errData?.[0]?.error?.message || res.statusText
+                            googleStatus = `API Hatası: ${errMsg}`
                         }
                     } catch (err: any) {
-                        googleStatus = 'API Bağlantı Ağı Hatası'
+                        googleStatus = `Ağ Hatası: ${err.message}`
                         console.error('[Campaign API] Google fetch error:', err.message)
                     }
                 } else {
-                    googleStatus = 'API Bağlantı Hatası'
+                    googleStatus = googleAuthError || 'OAuth Token Alınamadı'
                 }
             }
         }
