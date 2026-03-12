@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { TrendingUp, Calendar, Filter } from 'lucide-react'
+import { TrendingUp, Calendar, ZoomIn, ZoomOut, ChevronLeft, ChevronRight } from 'lucide-react'
 import {
   LineChart,
   Line,
@@ -26,24 +26,46 @@ export default function DashboardForecastWidget({
 }) {
   const [selectedAgency, setSelectedAgency] = useState<string>('all')
   const [selectedRoomType, setSelectedRoomType] = useState<string>('all')
-  const [dateRange, setDateRange] = useState<'30' | '60' | '90' | '180'>('90')
+  // Season: April 1 – October 31
+  const currentYear = new Date().getFullYear()
+  const SEASON_START = `${currentYear}-04-01`
+  const SEASON_END = `${currentYear}-10-31`
+  const SEASON_DAYS = Math.round((new Date(SEASON_END).getTime() - new Date(SEASON_START).getTime()) / 86400000) + 1
+  const [zoomDays, setZoomDays] = useState(SEASON_DAYS) // full season = no zoom
+  const [zoomOffset, setZoomOffset] = useState(0) // day offset from season start
+
+  const handleZoomIn = () => {
+    const newZoom = Math.max(14, Math.floor(zoomDays / 2))
+    setZoomDays(newZoom)
+  }
+  const handleZoomOut = () => {
+    const newZoom = Math.min(SEASON_DAYS, zoomDays * 2)
+    setZoomDays(newZoom)
+    setZoomOffset(Math.max(0, Math.min(zoomOffset, SEASON_DAYS - newZoom)))
+  }
+  const handlePanLeft = () => setZoomOffset(Math.max(0, zoomOffset - Math.floor(zoomDays / 3)))
+  const handlePanRight = () => setZoomOffset(Math.min(SEASON_DAYS - zoomDays, zoomOffset + Math.floor(zoomDays / 3)))
 
   const { agencies, roomTypes, dailyData, summaryStats, symbol } = useMemo(() => {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const todayStr = today.toISOString().split('T')[0]
+    const seasonStart = new Date(SEASON_START)
+    const seasonEnd = new Date(SEASON_END)
+    seasonEnd.setDate(seasonEnd.getDate() + 1) // inclusive end
 
-    const rangeDays = parseInt(dateRange)
-    const endDate = new Date(today)
-    endDate.setDate(endDate.getDate() + rangeDays)
-    const endStr = endDate.toISOString().split('T')[0]
+    // Visible window
+    const viewStart = new Date(seasonStart)
+    viewStart.setDate(viewStart.getDate() + zoomOffset)
+    const viewEnd = new Date(viewStart)
+    viewEnd.setDate(viewEnd.getDate() + zoomDays)
+    const viewStartStr = viewStart.toISOString().split('T')[0]
+    const viewEndStr = viewEnd.toISOString().split('T')[0]
 
     // Extract future reservations
     const futureRes = reservations.filter(r => {
       if (r.status === 'Cancelled' || r.status === 'İptal') return false
       const checkIn = (r.checkIn || r.reservationDate || '').slice(0, 10)
       const checkOut = (r.checkOut || '').slice(0, 10)
-      return checkIn < endStr && checkOut > todayStr
+      // Filter to season window only
+      return checkIn < viewEndStr && checkOut > viewStartStr
     })
 
     // Extract unique agencies and room types
@@ -80,11 +102,10 @@ export default function DashboardForecastWidget({
       return r.totalPrice
     }
 
-    // Build daily map
+    // Build daily map for visible window only
     const dayMap = new Map<string, { rooms: number; guests: number; revenue: number }>()
 
-    // Initialize all days
-    for (let d = new Date(today); d < endDate; d.setDate(d.getDate() + 1)) {
+    for (let d = new Date(viewStart); d < viewEnd; d.setDate(d.getDate() + 1)) {
       const ds = d.toISOString().split('T')[0]
       dayMap.set(ds, { rooms: 0, guests: 0, revenue: 0 })
     }
@@ -143,7 +164,9 @@ export default function DashboardForecastWidget({
       summaryStats: { totalRevenue, totalRoomNights, avgOccupancy, avgAdr, avgGuests, totalReservations: filtered.length },
       symbol: sym,
     }
-  }, [reservations, selectedAgency, selectedRoomType, dateRange, currency, exchangeRate])
+  }, [reservations, selectedAgency, selectedRoomType, zoomDays, zoomOffset, currency, exchangeRate, SEASON_START, SEASON_END, SEASON_DAYS])
+
+  const isFullSeason = zoomDays >= SEASON_DAYS
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (!active || !payload?.length) return null
@@ -172,27 +195,31 @@ export default function DashboardForecastWidget({
             <TrendingUp size={20} />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-slate-800 dark:text-white">Günlük Doluluk & Gelir Forecast</h3>
-            <p className="text-sm text-slate-500">Gelecek {dateRange} gün • Gün bazlı çizgi grafik</p>
+            <h3 className="text-lg font-bold text-slate-800 dark:text-white">Sezon Forecast (1 Nis – 31 Eki)</h3>
+            <p className="text-sm text-slate-500">{isFullSeason ? 'Tam sezon görünümü' : `${zoomDays} günlük pencere`} • Gün bazlı çizgi grafik</p>
           </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          {/* Date Range */}
-          <div className="flex bg-slate-100 dark:bg-slate-900 rounded-lg p-0.5">
-            {(['30', '60', '90', '180'] as const).map(r => (
-              <button
-                key={r}
-                onClick={() => setDateRange(r)}
-                className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${
-                  dateRange === r
-                    ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
-                    : 'text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                {r}G
+          {/* Zoom Controls */}
+          <div className="flex items-center bg-slate-100 dark:bg-slate-900 rounded-lg p-0.5 gap-0.5">
+            <button onClick={handlePanLeft} disabled={zoomOffset === 0 || isFullSeason} className="p-1.5 rounded-md text-slate-500 hover:text-slate-900 dark:hover:text-white transition disabled:opacity-30" title="Sola Kaydır">
+              <ChevronLeft size={14} />
+            </button>
+            <button onClick={handleZoomIn} disabled={zoomDays <= 14} className="p-1.5 rounded-md text-slate-500 hover:text-slate-900 dark:hover:text-white transition disabled:opacity-30" title="Yakınlaştır">
+              <ZoomIn size={14} />
+            </button>
+            <button onClick={handleZoomOut} disabled={isFullSeason} className="p-1.5 rounded-md text-slate-500 hover:text-slate-900 dark:hover:text-white transition disabled:opacity-30" title="Uzaklaştır">
+              <ZoomOut size={14} />
+            </button>
+            <button onClick={handlePanRight} disabled={zoomOffset >= SEASON_DAYS - zoomDays || isFullSeason} className="p-1.5 rounded-md text-slate-500 hover:text-slate-900 dark:hover:text-white transition disabled:opacity-30" title="Sağa Kaydır">
+              <ChevronRight size={14} />
+            </button>
+            {!isFullSeason && (
+              <button onClick={() => { setZoomDays(SEASON_DAYS); setZoomOffset(0) }} className="px-2 py-1 text-[10px] font-bold text-blue-600 hover:text-blue-800 transition" title="Tam Sezon">
+                TÜM
               </button>
-            ))}
+            )}
           </div>
 
           {/* Agency filter */}

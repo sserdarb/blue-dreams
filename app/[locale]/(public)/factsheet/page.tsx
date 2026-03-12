@@ -70,11 +70,28 @@ export default async function FactsheetPage({ params }: { params: Promise<{ loca
 
   const page = await getPageBySlug('factsheet', locale)
 
-  if (!page || !page.widgets || page.widgets.length === 0) {
-    return <FactsheetWidget data={getFactsheetDataForLocale(locale)} />
+  // If we have a page with a factsheet widget, use it directly
+  if (page && page.widgets && page.widgets.length > 0) {
+    const fsWidget = page.widgets.find((w: any) => w.type === 'factsheet')
+    if (fsWidget) {
+      let widgetData = fsWidget.data
+      // Handle string-encoded data
+      if (typeof widgetData === 'string') {
+        try { widgetData = JSON.parse(widgetData) } catch { widgetData = null }
+      }
+      // Still stringified? (double-encoded edge case)
+      if (typeof widgetData === 'string') {
+        try { widgetData = JSON.parse(widgetData) } catch { widgetData = null }
+      }
+      if (widgetData && widgetData.hero) {
+        return <FactsheetWidget data={widgetData} />
+      }
+    }
+    // Try WidgetRenderer for non-factsheet widget pages
+    const widgets = page.widgets.map((w: any) => ({ id: w.id, type: w.type, data: w.data }))
+    return <WidgetRenderer widgets={widgets} />
   }
 
-  const widgets = page.widgets.map(w => ({ id: w.id, type: w.type, data: w.data }))
-
-  return <WidgetRenderer widgets={widgets} />
+  // Fallback to locale defaults
+  return <FactsheetWidget data={getFactsheetDataForLocale(locale)} />
 }
