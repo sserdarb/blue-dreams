@@ -64,16 +64,17 @@ export default function MeetingPage() {
                 setHalls(data.map((r: any) => ({
                     id: r.id,
                     name: r.title,
-                    description: '',
+                    description: r.description || '',
                     image: r.image || '',
                     area: r.area || '',
+                    dimensions: r.dimensions || '',
                     height: r.height || '',
-                    capacityTheater: r.capacity?.split('/')[0]?.trim() || '',
-                    capacityClass: r.capacity?.split('/')[1]?.trim() || '',
-                    capacityBanquet: '',
-                    capacityCocktail: '',
+                    capacityTheater: r.capacityTheater || '',
+                    capacityClass: r.capacityClass || '',
+                    capacityBanquet: r.capacityBanquet || '',
+                    capacityCocktail: r.capacityCocktail || '',
                     order: r.order || 0,
-                    features: r.type || '',
+                    features: r.features || '',
                 })))
             }
         } catch (err) {
@@ -115,13 +116,20 @@ export default function MeetingPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
         try {
-            const capacity = [formData.capacityTheater, formData.capacityClass].filter(Boolean).join(' / ')
+            const capacity = [formData.capacityTheater, formData.capacityClass, formData.capacityBanquet, formData.capacityCocktail].filter(Boolean).join(' / ')
             const payload = {
                 title: formData.name,
+                description: formData.description,
                 area: formData.area,
                 capacity,
+                capacityTheater: formData.capacityTheater,
+                capacityClass: formData.capacityClass,
+                capacityBanquet: formData.capacityBanquet,
+                capacityCocktail: formData.capacityCocktail,
+                dimensions: formData.dimensions,
                 height: formData.height,
-                type: formData.features || 'meeting',
+                type: 'meeting',
+                features: formData.features,
                 image: formData.image,
                 locale,
                 order: formData.order,

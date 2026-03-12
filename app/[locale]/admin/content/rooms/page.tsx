@@ -8,12 +8,17 @@ import { useParams } from 'next/navigation'
 interface Room {
     id: string
     title: string
+    slug?: string
+    subtitle?: string
     description: string
+    longDescription?: string
     image: string
+    gallery?: string
     locale: string
     size?: string
     view?: string
     capacity?: string
+    amenities?: string
     priceStart?: string
     whyChoose?: string
     features: string // JSON string internally
@@ -32,11 +37,16 @@ export default function RoomsPage() {
     // Form State
     const [formData, setFormData] = useState({
         title: '',
+        slug: '',
+        subtitle: '',
         description: '',
+        longDescription: '',
         image: '',
+        gallery: '',
         size: '',
         view: '',
         capacity: '',
+        amenities: '',
         priceStart: '',
         whyChoose: '',
         features: '', // Comma separated for input
@@ -74,13 +84,42 @@ export default function RoomsPage() {
             featuresStr = room.features
         }
 
+        // Parse gallery JSON to comma separated string
+        let galleryStr = ''
+        try {
+            if (room.gallery) {
+                const parsed = JSON.parse(room.gallery)
+                if (Array.isArray(parsed)) galleryStr = parsed.join(', ')
+            }
+        } catch (e) {
+            galleryStr = room.gallery || ''
+        }
+
+        // Parse amenities JSON to comma separated string
+        let amenitiesStr = ''
+        try {
+            if (room.amenities) {
+                const parsed = JSON.parse(room.amenities)
+                if (Array.isArray(parsed)) {
+                    amenitiesStr = parsed.map((a: any) => typeof a === 'object' ? `${a.icon}:${a.label}` : a).join(', ')
+                }
+            }
+        } catch (e) {
+            amenitiesStr = room.amenities || ''
+        }
+
         setFormData({
             title: room.title,
+            slug: room.slug || '',
+            subtitle: room.subtitle || '',
             description: room.description,
+            longDescription: room.longDescription || '',
             image: room.image,
+            gallery: galleryStr,
             size: room.size || '',
             view: room.view || '',
             capacity: room.capacity || '',
+            amenities: amenitiesStr,
             priceStart: room.priceStart || '',
             whyChoose: room.whyChoose || '',
             features: featuresStr,
@@ -93,11 +132,16 @@ export default function RoomsPage() {
         setEditingRoom(null)
         setFormData({
             title: '',
+            slug: '',
+            subtitle: '',
             description: '',
+            longDescription: '',
             image: '',
+            gallery: '',
             size: '',
             view: '',
             capacity: '',
+            amenities: '',
             priceStart: '',
             whyChoose: '',
             features: '',
@@ -123,9 +167,23 @@ export default function RoomsPage() {
         // Convert features string back to array
         const featuresArray = formData.features.split(',').map(s => s.trim()).filter(Boolean)
 
+        // Convert gallery string back to JSON array
+        const galleryArray = formData.gallery.split(',').map(s => s.trim()).filter(Boolean)
+
+        // Convert amenities string back to JSON array of objects
+        const amenitiesArray = formData.amenities.split(',').map(s => s.trim()).filter(Boolean).map(a => {
+            if (a.includes(':')) {
+                const [icon, label] = a.split(':')
+                return { icon: icon.trim(), label: label.trim() }
+            }
+            return { icon: 'star', label: a }
+        })
+
         const payload = {
             ...formData,
             features: JSON.stringify(featuresArray),
+            gallery: JSON.stringify(galleryArray),
+            amenities: JSON.stringify(amenitiesArray),
             locale
         }
 
@@ -267,6 +325,29 @@ export default function RoomsPage() {
                                         />
                                     </div>
                                     <div>
+                                        <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Slug (URL)</label>
+                                        <input
+                                            type="text"
+                                            value={formData.slug}
+                                            onChange={e => setFormData({ ...formData, slug: e.target.value })}
+                                            placeholder="club, deluxe, aile ..."
+                                            className="w-full bg-[#0f172a] border border-white/10 rounded-lg p-2.5 text-white text-sm focus:border-cyan-500 outline-none"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Altyazı</label>
+                                        <input
+                                            type="text"
+                                            value={formData.subtitle}
+                                            onChange={e => setFormData({ ...formData, subtitle: e.target.value })}
+                                            placeholder="Örn: Club Odalar"
+                                            className="w-full bg-[#0f172a] border border-white/10 rounded-lg p-2.5 text-white text-sm focus:border-cyan-500 outline-none"
+                                        />
+                                    </div>
+                                    <div>
                                         <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Görsel URL</label>
                                         <input
                                             type="text"
@@ -279,12 +360,23 @@ export default function RoomsPage() {
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Açıklama</label>
+                                    <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Kısa Açıklama</label>
                                     <textarea
                                         rows={2}
                                         required
                                         value={formData.description}
                                         onChange={e => setFormData({ ...formData, description: e.target.value })}
+                                        className="w-full bg-[#0f172a] border border-white/10 rounded-lg p-2.5 text-white text-sm focus:border-cyan-500 outline-none"
+                                    ></textarea>
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Detaylı Açıklama</label>
+                                    <textarea
+                                        rows={4}
+                                        value={formData.longDescription}
+                                        onChange={e => setFormData({ ...formData, longDescription: e.target.value })}
+                                        placeholder="Oda detay sayfasında gösterilecek uzun açıklama..."
                                         className="w-full bg-[#0f172a] border border-white/10 rounded-lg p-2.5 text-white text-sm focus:border-cyan-500 outline-none"
                                     ></textarea>
                                 </div>
@@ -342,6 +434,28 @@ export default function RoomsPage() {
                                             className="w-full bg-[#0f172a] border border-white/10 rounded-lg p-2.5 text-white text-sm focus:border-cyan-500 outline-none"
                                         />
                                     </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Galeri (URL virgülle ayırın)</label>
+                                    <textarea
+                                        rows={2}
+                                        value={formData.gallery}
+                                        onChange={e => setFormData({ ...formData, gallery: e.target.value })}
+                                        placeholder="/images/rooms/room1.jpg, /images/rooms/room2.jpg ..."
+                                        className="w-full bg-[#0f172a] border border-white/10 rounded-lg p-2.5 text-white text-sm focus:border-cyan-500 outline-none"
+                                    ></textarea>
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Olanaklar (ikon:etiket virgülle ayırın)</label>
+                                    <textarea
+                                        rows={2}
+                                        value={formData.amenities}
+                                        onChange={e => setFormData({ ...formData, amenities: e.target.value })}
+                                        placeholder="tv:Uydu TV, ac:Klima, wifi:Wifi, minibar:Minibar ..."
+                                        className="w-full bg-[#0f172a] border border-white/10 rounded-lg p-2.5 text-white text-sm focus:border-cyan-500 outline-none"
+                                    ></textarea>
                                 </div>
 
                                 <div>

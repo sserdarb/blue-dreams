@@ -5,16 +5,23 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     try {
         const { id } = await params
         const body = await request.json()
-        const { title, area, capacity, height, type, image, order } = body
+        const { title, description, area, capacity, capacityTheater, capacityClass, capacityBanquet, capacityCocktail, dimensions, height, type, features, image, order } = body
 
         const room = await prisma.meetingRoom.update({
             where: { id },
             data: {
                 ...(title !== undefined && { title }),
+                ...(description !== undefined && { description }),
                 ...(area !== undefined && { area }),
                 ...(capacity !== undefined && { capacity }),
+                ...(capacityTheater !== undefined && { capacityTheater }),
+                ...(capacityClass !== undefined && { capacityClass }),
+                ...(capacityBanquet !== undefined && { capacityBanquet }),
+                ...(capacityCocktail !== undefined && { capacityCocktail }),
+                ...(dimensions !== undefined && { dimensions }),
                 ...(height !== undefined && { height }),
                 ...(type !== undefined && { type }),
+                ...(features !== undefined && { features }),
                 ...(image !== undefined && { image }),
                 ...(order !== undefined && { order }),
             }

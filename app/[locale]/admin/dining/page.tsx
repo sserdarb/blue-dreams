@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Plus, Trash2, Edit, Save, X, RefreshCw, Image as ImageIcon, UtensilsCrossed, Wine, Coffee, ListOrdered } from 'lucide-react'
+import { Plus, Trash2, Edit, Save, X, RefreshCw, Image as ImageIcon, UtensilsCrossed, Wine, Coffee, ListOrdered, Clock, MapPin, Users, Tag, Eye, EyeOff } from 'lucide-react'
 import { useParams } from 'next/navigation'
 
 interface Dining {
@@ -12,7 +12,13 @@ interface Dining {
     description: string | null
     image: string
     images: string[] | null
+    cuisine: string | null
+    hours: string | null
+    capacity: string | null
+    location: string | null
+    features: string | null
     menuUrl: string | null
+    isActive: boolean
     order: number
 }
 
@@ -33,7 +39,9 @@ export default function DiningManagementPage() {
     const [showForm, setShowForm] = useState(false)
     const [editingId, setEditingId] = useState<string | null>(null)
     const [form, setForm] = useState({
-        title: '', type: 'restaurant', description: '', image: '', images: [] as string[], menuUrl: '', order: 0
+        title: '', type: 'restaurant', description: '', image: '', images: [] as string[],
+        cuisine: '', hours: '', capacity: '', location: '', features: '',
+        menuUrl: '', isActive: true, order: 0
     })
 
     const fetchEntries = useCallback(async () => {
@@ -83,7 +91,7 @@ export default function DiningManagementPage() {
             await fetchEntries()
             setShowForm(false)
             setEditingId(null)
-            setForm({ title: '', type: 'restaurant', description: '', image: '', images: [], menuUrl: '', order: 0 })
+            setForm({ title: '', type: 'restaurant', description: '', image: '', images: [], cuisine: '', hours: '', capacity: '', location: '', features: '', menuUrl: '', isActive: true, order: 0 })
         } catch (err: any) {
             setError(err.message)
         } finally {
@@ -98,7 +106,13 @@ export default function DiningManagementPage() {
             description: entry.description || '',
             image: entry.image,
             images: entry.images || [],
+            cuisine: entry.cuisine || '',
+            hours: entry.hours || '',
+            capacity: entry.capacity || '',
+            location: entry.location || '',
+            features: entry.features || '',
             menuUrl: entry.menuUrl || '',
+            isActive: entry.isActive ?? true,
             order: entry.order || 0
         })
         setEditingId(entry.id)
@@ -133,7 +147,7 @@ export default function DiningManagementPage() {
                     </button>
                     {!showForm && (
                         <button onClick={() => {
-                            setForm({ title: '', type: 'restaurant', description: '', image: '', images: [], menuUrl: '', order: entries.length });
+                            setForm({ title: '', type: 'restaurant', description: '', image: '', images: [], cuisine: '', hours: '', capacity: '', location: '', features: '', menuUrl: '', isActive: true, order: entries.length });
                             setShowForm(true); setEditingId(null); setError(null)
                         }} className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
                             <Plus size={18} /> Yeni Mekan Ekle
@@ -189,12 +203,68 @@ export default function DiningManagementPage() {
                                 <input value={form.menuUrl} onChange={e => setForm({ ...form, menuUrl: e.target.value })} placeholder="/tr/menu/x veya https://..."
                                     className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white focus:border-orange-500 outline-none" />
                             </div>
+
+                            {/* Active toggle */}
+                            <div className="flex items-center gap-3 pt-2">
+                                <button type="button" onClick={() => setForm({ ...form, isActive: !form.isActive })}
+                                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                        form.isActive
+                                            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                                            : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
+                                    }`}>
+                                    {form.isActive ? <Eye size={16} /> : <EyeOff size={16} />}
+                                    {form.isActive ? 'Aktif (Sitede Görünür)' : 'Pasif (Sitede Gizli)'}
+                                </button>
+                            </div>
                         </div>
 
                         <div className="space-y-4">
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Ana Görsel URL *</label>
                                 <input value={form.image} onChange={e => setForm({ ...form, image: e.target.value })}
+                                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white focus:border-orange-500 outline-none" />
+                            </div>
+
+                            {/* Cuisine */}
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1">
+                                    <Tag size={14} /> Mutfak Türü
+                                </label>
+                                <input value={form.cuisine} onChange={e => setForm({ ...form, cuisine: e.target.value })} placeholder="Uluslararası & Türk Mutfağı"
+                                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white focus:border-orange-500 outline-none" />
+                            </div>
+
+                            {/* Hours */}
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1">
+                                    <Clock size={14} /> Çalışma Saatleri
+                                </label>
+                                <input value={form.hours} onChange={e => setForm({ ...form, hours: e.target.value })} placeholder="Kahvaltı 07:00-10:00 | Öğle 12:30-14:00"
+                                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white focus:border-orange-500 outline-none" />
+                            </div>
+
+                            {/* Capacity + Location row */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1">
+                                        <Users size={14} /> Kapasite
+                                    </label>
+                                    <input value={form.capacity} onChange={e => setForm({ ...form, capacity: e.target.value })} placeholder="350"
+                                        className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white focus:border-orange-500 outline-none" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1">
+                                        <MapPin size={14} /> Konum
+                                    </label>
+                                    <input value={form.location} onChange={e => setForm({ ...form, location: e.target.value })} placeholder="Ana Bina"
+                                        className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white focus:border-orange-500 outline-none" />
+                                </div>
+                            </div>
+
+                            {/* Features */}
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Özellikler (virgülle ayırın)</label>
+                                <input value={form.features} onChange={e => setForm({ ...form, features: e.target.value })} placeholder="Açık Büfe,Deniz Manzarası,Türk Mutfağı"
                                     className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white focus:border-orange-500 outline-none" />
                             </div>
 

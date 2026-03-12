@@ -91,16 +91,7 @@ export default async function MeetingRoomPage({ params }: { params: Promise<{ lo
         console.error('[Meeting Page] DB Error', e)
     }
 
-    // Fallback data if DB is empty
-    if (meetingRooms.length === 0) {
-        meetingRooms = [
-            { id: '1', title: 'Turunç', area: '29 m²', capacity: '35 Kişi / 10 Kişi', height: '3.20 mt', type: 'meeting', image: 'https://bluedreamsresort.com/wp-content/uploads/2026/01/Ekran-goruntusu-2026-01-14-171200-768x448.png', order: 1 },
-            { id: '2', title: 'Salamis', area: '36 m²', capacity: '45 Kişi / 14 Kişi', height: '2.70 mt', type: 'meeting', image: 'https://bluedreamsresort.com/wp-content/uploads/2026/01/Ekran-goruntusu-2026-01-14-171426-768x453.png', order: 2 },
-            { id: '3', title: 'Belek', area: '19 m²', capacity: '20 Kişi / 10 Kişi', height: '2.70 mt', type: 'meeting', image: 'https://bluedreamsresort.com/wp-content/uploads/2026/01/Ekran-goruntusu-2026-01-14-171524-768x450.png', order: 3 },
-            { id: '4', title: 'Marmaris', area: '23 m²', capacity: '30 Kişi / 10 Kişi', height: '2.70 mt', type: 'meeting', image: 'https://bluedreamsresort.com/wp-content/uploads/2026/01/Ekran-goruntusu-2026-01-14-171826-768x451.png', order: 4 },
-            { id: '5', title: 'Stockholm', area: '19 m²', capacity: '20 Kişi / 10 Kişi', height: '2.70 mt', type: 'meeting', image: 'https://bluedreamsresort.com/wp-content/uploads/2026/01/Ekran-goruntusu-2026-01-14-171917-768x451.png', order: 5 },
-        ]
-    }
+    // No fallback - content managed via admin panel
 
     return (
         <main className="min-h-screen bg-[#FDFBF7]">

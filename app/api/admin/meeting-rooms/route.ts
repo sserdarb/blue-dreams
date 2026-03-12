@@ -21,7 +21,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
     try {
         const body = await request.json()
-        const { title, area, capacity, height, type, image, locale, order } = body
+        const { title, description, area, capacity, capacityTheater, capacityClass, capacityBanquet, capacityCocktail, dimensions, height, type, features, image, locale, order } = body
 
         if (!title || !locale) {
             return new NextResponse('Missing required fields (title, locale)', { status: 400 })
@@ -29,11 +29,18 @@ export async function POST(request: Request) {
 
         const room = await prisma.meetingRoom.create({
             data: {
-                title: title,
+                title,
+                description: description || '',
                 area: area || '',
                 capacity: capacity || '',
+                capacityTheater: capacityTheater || '',
+                capacityClass: capacityClass || '',
+                capacityBanquet: capacityBanquet || '',
+                capacityCocktail: capacityCocktail || '',
+                dimensions: dimensions || '',
                 height: height || '',
                 type: type || 'meeting',
+                features: features || '',
                 image: image || '',
                 locale,
                 order: order || 0,
