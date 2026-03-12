@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import prisma from '@/lib/prisma'
+import { prisma } from '@/lib/prisma'
 import { ALL_PAGES } from '@/lib/seed-page-data'
 
 const LOCALES = ['tr', 'en']
