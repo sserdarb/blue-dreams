@@ -15,11 +15,12 @@ import {
 const TOTAL_ROOMS = 380 // Blue Dreams total room inventory
 
 // Data series definition with colors matching the SalesChart style
+// Each series now has its own yAxisId so large revenue values don't compress ADR/guests
 const SERIES = [
   { key: 'occupancy', name: 'Doluluk %', color: '#3b82f6', yAxisId: 'left', unit: '%' },
   { key: 'adr', name: 'ADR', color: '#f59e0b', yAxisId: 'right', unit: '' },
-  { key: 'revenue', name: 'Günlük Gelir', color: '#6366f1', yAxisId: 'right', unit: '' },
-  { key: 'guests', name: 'Misafir Sayısı', color: '#10b981', yAxisId: 'left', unit: '' },
+  { key: 'revenue', name: 'Günlük Gelir', color: '#6366f1', yAxisId: 'revenue', unit: '' },
+  { key: 'guests', name: 'Misafir Sayısı', color: '#10b981', yAxisId: 'guests', unit: '' },
 ] as const
 
 export default function DashboardForecastWidget({
@@ -331,7 +332,13 @@ export default function DashboardForecastWidget({
       </div>
 
       {/* Chart */}
-      {dailyData.length > 0 ? (
+      {dailyData.length > 0 ? (() => {
+        // Compute ADR domain from data with 20% padding so the line uses full height
+        const adrValues = dailyData.map(d => d.adr).filter(v => v > 0)
+        const adrMin = adrValues.length > 0 ? Math.max(0, Math.floor(Math.min(...adrValues) * 0.8)) : 0
+        const adrMax = adrValues.length > 0 ? Math.ceil(Math.max(...adrValues) * 1.2) : 500
+
+        return (
         <div className="h-[380px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={dailyData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
@@ -351,6 +358,7 @@ export default function DashboardForecastWidget({
                 axisLine={false}
                 interval={Math.max(0, Math.floor(dailyData.length / 15))}
               />
+              {/* Left axis — Doluluk % (0-100) */}
               <YAxis
                 yAxisId="left"
                 stroke="#94a3b8"
@@ -360,6 +368,7 @@ export default function DashboardForecastWidget({
                 tickFormatter={v => `${v}%`}
                 domain={[0, 100]}
               />
+              {/* Right axis — ADR with auto-scaled padded domain */}
               <YAxis
                 yAxisId="right"
                 orientation="right"
@@ -368,7 +377,12 @@ export default function DashboardForecastWidget({
                 tickLine={false}
                 axisLine={false}
                 tickFormatter={v => `${symbol}${v >= 1000 ? `${(v/1000).toFixed(0)}k` : v}`}
+                domain={[adrMin, adrMax]}
               />
+              {/* Hidden axis — Revenue (auto domain, invisible) */}
+              <YAxis yAxisId="revenue" hide domain={['auto', 'auto']} />
+              {/* Hidden axis — Guests (auto domain, invisible) */}
+              <YAxis yAxisId="guests" hide domain={['auto', 'auto']} />
               <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-slate-200 dark:stroke-slate-700" />
               <Tooltip content={<CustomTooltip />} />
               {SERIES.map(s => (
@@ -389,7 +403,8 @@ export default function DashboardForecastWidget({
             </AreaChart>
           </ResponsiveContainer>
         </div>
-      ) : (
+        )
+      })() : (
         <div className="h-[300px] w-full flex flex-col items-center justify-center text-slate-400 border border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
           <Calendar size={48} className="mb-4 opacity-50" />
           <p>Gelecek dönem için onaylı rezervasyon bulunamadı.</p>
