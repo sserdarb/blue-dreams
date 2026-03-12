@@ -13,8 +13,20 @@ const DATE_PRESETS = [
     { label: 'Tüm Sezon', days: 0, type: 'allSeason' as const },
 ] as const
 
-function getPresetDates(preset: typeof DATE_PRESETS[number]) {
+// Get current date in Turkey timezone (UTC+3)
+function getTurkeyNow(): Date {
     const now = new Date()
+    // Create a date string in Turkey timezone and parse it back
+    const turkeyStr = now.toLocaleString('en-US', { timeZone: 'Europe/Istanbul' })
+    return new Date(turkeyStr)
+}
+
+function toDateStr(d: Date): string {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+function getPresetDates(preset: typeof DATE_PRESETS[number]) {
+    const now = getTurkeyNow()
     let from: Date, to: Date
 
     if ('type' in preset && preset.type === 'today') {
@@ -34,14 +46,14 @@ function getPresetDates(preset: typeof DATE_PRESETS[number]) {
         to = new Date(now.getFullYear(), 9, 31) // October 31
         if (now < to) to = now
     } else {
-        from = new Date()
+        from = new Date(now)
         from.setDate(now.getDate() - (preset.days || 7))
         to = now
     }
 
     return {
-        from: from.toISOString().split('T')[0],
-        to: to.toISOString().split('T')[0]
+        from: toDateStr(from),
+        to: toDateStr(to)
     }
 }
 
@@ -55,7 +67,7 @@ export default function DashboardFilter() {
     const [to, setTo] = useState('')
     const [currency, setCurrency] = useState('TRY')
     const [showInfo, setShowInfo] = useState(false)
-    const [activePreset, setActivePreset] = useState<string>('Bu Ay')
+    const [activePreset, setActivePreset] = useState<string>('Bugün')
 
     useEffect(() => {
         const urlFrom = searchParams.get('from')
@@ -66,14 +78,15 @@ export default function DashboardFilter() {
 
         if (urlFrom) setFrom(urlFrom)
         else {
-            // Default: Bu Ay (this month)
-            const d = new Date()
-            setFrom(new Date(d.getFullYear(), d.getMonth(), 1).toISOString().split('T')[0])
+            // Default: Bugün (today) in Turkey timezone
+            const turkeyNow = getTurkeyNow()
+            setFrom(toDateStr(turkeyNow))
         }
 
         if (urlTo) setTo(urlTo)
         else {
-            setTo(new Date().toISOString().split('T')[0])
+            const turkeyNow = getTurkeyNow()
+            setTo(toDateStr(turkeyNow))
         }
     }, [searchParams])
 

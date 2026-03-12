@@ -25,16 +25,13 @@ export default async function AdminDashboard({
   const { from, to, currency = 'TRY' } = await searchParams
   const t = getAdminTranslations(locale as AdminLocale)
 
-  // Determine dates — default: Bu Ay (this month)
-  let endDate = new Date()
-  if (to) endDate = new Date(to)
+  // Determine dates — default: Bugün (today) in Turkey timezone (UTC+3)
+  const turkeyNowStr = new Date().toLocaleString('en-US', { timeZone: 'Europe/Istanbul' })
+  const turkeyNow = new Date(turkeyNowStr)
+  const turkeyToday = `${turkeyNow.getFullYear()}-${String(turkeyNow.getMonth() + 1).padStart(2, '0')}-${String(turkeyNow.getDate()).padStart(2, '0')}`
 
-  let startDate = new Date()
-  if (from) {
-    startDate = new Date(from)
-  } else {
-    startDate = new Date(endDate.getFullYear(), endDate.getMonth(), 1) // First day of current month
-  }
+  let endDate = to ? new Date(to) : new Date(turkeyToday + 'T00:00:00+03:00')
+  let startDate = from ? new Date(from) : new Date(turkeyToday + 'T00:00:00+03:00')
 
   const dateLabel = `${startDate.toLocaleDateString('tr-TR')} – ${endDate.toLocaleDateString('tr-TR')}`
 
@@ -309,7 +306,7 @@ export default async function AdminDashboard({
         </div>
 
         {/* Live Traffic and Social Media Data */}
-        <LiveTrafficSocialWidget />
+        <LiveTrafficSocialWidget from={startDate.toISOString().split('T')[0]} to={endDate.toISOString().split('T')[0]} />
       </div>
     )
   } catch (error) {
