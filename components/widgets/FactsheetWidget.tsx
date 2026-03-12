@@ -86,14 +86,14 @@ export function FactsheetWidget({ data }: { data: any }) {
                   <div className="flex items-start gap-4 mb-6">
                     <MapPin className="text-amber-500 shrink-0 mt-1" size={24} />
                     <div>
-                      <h4 className="font-bold text-slate-900 mb-1">Address</h4>
+                      <h4 className="font-bold text-slate-900 mb-1">{data.labels?.address || "Address"}</h4>
                       <p className="text-slate-600">{data.location.address}</p>
                     </div>
                   </div>
                   
                   {data.location.distances && (
                     <div className="space-y-4">
-                      <h4 className="font-bold text-slate-900 border-b border-slate-200 pb-2">Distances</h4>
+                      <h4 className="font-bold text-slate-900 border-b border-slate-200 pb-2">{data.labels?.distances || "Distances"}</h4>
                       {data.location.distances.map((dist: any, i: number) => (
                         <div key={i} className="flex items-center justify-between text-slate-600">
                           <span className="flex items-center gap-2">
@@ -133,10 +133,10 @@ export function FactsheetWidget({ data }: { data: any }) {
           <div className="container mx-auto px-6 lg:px-12">
             <div className="text-center max-w-2xl mx-auto mb-16">
               <span className="text-amber-600 text-sm uppercase tracking-widest font-bold mb-3 block">
-                Accommodation
+                {data.labels?.accommodation || "Accommodation"}
               </span>
               <h2 className="text-4xl md:text-5xl font-serif text-slate-900 mb-6">
-                Rooms &amp; Suites
+                {data.labels?.roomsAndSuites || "Rooms & Suites"}
               </h2>
               <div className="w-16 h-1 bg-amber-500 mx-auto" />
             </div>
@@ -176,10 +176,10 @@ export function FactsheetWidget({ data }: { data: any }) {
           <div className="container mx-auto px-6 lg:px-12">
             <div className="text-center max-w-2xl mx-auto mb-16">
               <span className="text-amber-600 text-sm uppercase tracking-widest font-bold mb-3 block">
-                Gastronomy
+                {data.labels?.gastronomy || "Gastronomy"}
               </span>
               <h2 className="text-4xl md:text-5xl font-serif text-slate-900 mb-6">
-                Food &amp; Beverage
+                {data.labels?.foodAndBeverage || "Food & Beverage"}
               </h2>
               <div className="w-16 h-1 bg-amber-500 mx-auto" />
             </div>
@@ -216,10 +216,10 @@ export function FactsheetWidget({ data }: { data: any }) {
           <div className="container mx-auto px-6 lg:px-12 relative z-10">
             <div className="text-center max-w-2xl mx-auto mb-20">
               <span className="text-amber-500 text-sm uppercase tracking-widest font-bold mb-3 block">
-                Resort Facilities
+                {data.labels?.resortFacilities || "Resort Facilities"}
               </span>
               <h2 className="text-4xl md:text-5xl font-serif text-white mb-6">
-                Beach &amp; Pools
+                {data.labels?.beachAndPools || "Beach & Pools"}
               </h2>
               <div className="w-16 h-1 bg-amber-500 mx-auto" />
             </div>
@@ -249,7 +249,7 @@ export function FactsheetWidget({ data }: { data: any }) {
                 <div className="bg-slate-50 p-8 rounded-2xl border border-slate-100">
                   <div className="flex items-center gap-3 mb-6 border-b border-slate-200 pb-4">
                     <Sparkles className="text-amber-500" size={24} />
-                    <h3 className="text-xl font-serif text-slate-900">Spa &amp; Wellness</h3>
+                    <h3 className="text-xl font-serif text-slate-900">{data.labels?.spaAndWellness || "Spa & Wellness"}</h3>
                   </div>
                   <ul className="space-y-4">
                     {data.features.spa.map((item: string, i: number) => (
@@ -266,7 +266,7 @@ export function FactsheetWidget({ data }: { data: any }) {
                 <div className="bg-slate-50 p-8 rounded-2xl border border-slate-100">
                   <div className="flex items-center gap-3 mb-6 border-b border-slate-200 pb-4">
                     <Waves className="text-amber-500" size={24} />
-                    <h3 className="text-xl font-serif text-slate-900">Activities</h3>
+                    <h3 className="text-xl font-serif text-slate-900">{data.labels?.activities || "Activities"}</h3>
                   </div>
                   <ul className="space-y-4">
                     {data.features.activities.map((item: string, i: number) => (
@@ -283,7 +283,7 @@ export function FactsheetWidget({ data }: { data: any }) {
                 <div className="bg-slate-50 p-8 rounded-2xl border border-slate-100">
                   <div className="flex items-center gap-3 mb-6 border-b border-slate-200 pb-4">
                     <Info className="text-amber-500" size={24} />
-                    <h3 className="text-xl font-serif text-slate-900">General Info</h3>
+                    <h3 className="text-xl font-serif text-slate-900">{data.labels?.generalInfo || "General Info"}</h3>
                   </div>
                   <ul className="space-y-4">
                     {data.features.info.map((item: string, i: number) => (

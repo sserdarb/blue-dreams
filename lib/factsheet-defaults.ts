@@ -47,6 +47,19 @@ export const factsheetDataEN = {
     spa: ["Turkish Bath (Hamam)", "Sauna", "Steam Room", "Indoor Pool", "Professional massage treatments"],
     activities: ["Windsurfing & Canoeing", "Tennis & Basketball", "Kids Club", "Live Music & Evening Shows"],
     info: ["Check-in: 14:00", "Check-out: 12:00", "High-speed WiFi", "Languages: TR, EN, DE, RU"]
+  },
+  labels: {
+    address: "Address",
+    distances: "Distances",
+    accommodation: "Accommodation",
+    roomsAndSuites: "Rooms & Suites",
+    gastronomy: "Gastronomy",
+    foodAndBeverage: "Food & Beverage",
+    resortFacilities: "Resort Facilities",
+    beachAndPools: "Beach & Pools",
+    spaAndWellness: "Spa & Wellness",
+    activities: "Activities",
+    generalInfo: "General Info"
   }
 }
 
@@ -95,6 +108,19 @@ export const factsheetDataTR = {
     spa: ["Türk Hamamı", "Sauna", "Buhar Odası", "Kapalı Havuz", "Profesyonel masaj terapileri"],
     activities: ["Rüzgar Sörfü ve Kano", "Tenis ve Basketbol", "Çocuk Kulübü", "Canlı Müzik ve Akşam Şovları"],
     info: ["Giriş: 14:00", "Çıkış: 12:00", "Yüksek Hızlı WiFi", "Diller: TR, EN, DE, RU"]
+  },
+  labels: {
+    address: "Adres",
+    distances: "Mesafeler",
+    accommodation: "Konaklama",
+    roomsAndSuites: "Odalar ve Süitler",
+    gastronomy: "Gastronomi",
+    foodAndBeverage: "Yiyecek & İçecek",
+    resortFacilities: "Tesis Olanakları",
+    beachAndPools: "Plaj & Havuzlar",
+    spaAndWellness: "Spa & Wellness",
+    activities: "Aktiviteler",
+    generalInfo: "Genel Bilgiler"
   }
 }
 
@@ -143,6 +169,19 @@ export const factsheetDataDE = {
     spa: ["Türkisches Bad (Hamam)", "Sauna", "Dampfbad", "Hallenbad", "Professionelle Massagebehandlungen"],
     activities: ["Windsurfen & Kanufahren", "Tennis & Basketball", "Kinderclub", "Live-Musik & Abendshows"],
     info: ["Check-in: 14:00", "Check-out: 12:00", "High-Speed WiFi", "Sprachen: TR, EN, DE, RU"]
+  },
+  labels: {
+    address: "Adresse",
+    distances: "Entfernungen",
+    accommodation: "Unterkunft",
+    roomsAndSuites: "Zimmer & Suiten",
+    gastronomy: "Gastronomie",
+    foodAndBeverage: "Speisen & Getränke",
+    resortFacilities: "Resort-Einrichtungen",
+    beachAndPools: "Strand & Pools",
+    spaAndWellness: "Spa & Wellness",
+    activities: "Aktivitäten",
+    generalInfo: "Allgemeine Info"
   }
 }
 
@@ -191,6 +230,19 @@ export const factsheetDataRU = {
     spa: ["Турецкая баня (Хамам)", "Сауна", "Паровая комната", "Крытый бассейн", "Профессиональные массажные процедуры"],
     activities: ["Виндсерфинг и каноэ", "Теннис и баскетбол", "Детский клуб", "Живая музыка и вечерние шоу"],
     info: ["Заезд: 14:00", "Выезд: 12:00", "Высокоскоростной Wi-Fi", "Языки: TR, EN, DE, RU"]
+  },
+  labels: {
+    address: "Адрес",
+    distances: "Расстояния",
+    accommodation: "Размещение",
+    roomsAndSuites: "Номера и Люксы",
+    gastronomy: "Гастрономия",
+    foodAndBeverage: "Еда и Напитки",
+    resortFacilities: "Услуги Курорта",
+    beachAndPools: "Пляж и Бассейны",
+    spaAndWellness: "Спа и Велнес",
+    activities: "Мероприятия",
+    generalInfo: "Общая Инфо"
   }
 }
 
