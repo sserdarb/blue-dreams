@@ -16,12 +16,13 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
 
 async function ensureFactsheetPage(locale: string) {
   try {
+    const localeData = getFactsheetDataForLocale(locale)
     const existing = await prisma.page.findUnique({
       where: { slug_locale: { slug: 'factsheet', locale } },
+      include: { widgets: true },
     })
 
     if (!existing) {
-      const localeData = getFactsheetDataForLocale(locale)
       await prisma.page.create({
         data: {
           slug: 'factsheet',
@@ -41,6 +42,21 @@ async function ensureFactsheetPage(locale: string) {
           },
         },
       })
+    } else {
+      // Check if the existing widget has stale data (e.g. English on a TR page)
+      const fsWidget = existing.widgets.find(w => w.type === 'factsheet')
+      if (fsWidget) {
+        try {
+          const currentData = typeof fsWidget.data === 'string' ? JSON.parse(fsWidget.data as string) : fsWidget.data
+          // If the hero title doesn't match our locale default, update it
+          if (currentData?.hero?.title && currentData.hero.title !== localeData.hero.title) {
+            await prisma.widget.update({
+              where: { id: fsWidget.id },
+              data: { data: JSON.stringify(localeData) },
+            })
+          }
+        } catch {}
+      }
     }
   } catch (err) {
     console.error('Failed to auto-seed factsheet page:', err)
