@@ -48,29 +48,14 @@ export default function BookingWidget({ inline = false }: { inline?: boolean }) 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault()
 
-        const formatToDDMMYYYY = (dateStr: string) => {
-            const parts = dateStr.split('-');
-            if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
-            return dateStr;
-        };
-
-        const langMap: Record<string, string> = { tr: '1', en: '2', de: '3', ru: '4' };
-        const languageid = langMap[locale] || '1';
-
-        const agency = locale === 'tr' ? '1.195.947' : '1.180.998';
-
+        // Navigate to the internal booking page with query params
         const params = new URLSearchParams({
+            arrival: checkIn,
+            departure: checkOut,
             adults: guests,
-            children: kids,
-            datein: formatToDDMMYYYY(checkIn),
-            dateout: formatToDDMMYYYY(checkOut),
-            domain: 'www.bluedreamsresort.com',
-            languageid,
-            rooms: '1',
-            agency
         });
 
-        window.location.href = `https://reservation.elektraweb.com/book/accommodations?${params.toString()}`;
+        window.location.href = `/${locale}/rezervasyon?${params.toString()}`;
     }
 
     const t = {

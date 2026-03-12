@@ -8,7 +8,7 @@ export async function GET(request: Request) {
         const checkOut = searchParams.get('checkOut')
         const locale = searchParams.get('locale') || 'tr'
         const currency = locale === 'tr' ? 'TRY' : 'EUR'
-        const agency = locale === 'tr' ? 'hotelweb-tl' : 'hotelweb'
+        const agency = locale === 'tr' ? 'HOTELWEB TL' : 'HOTELWEB EUR'
         const adults = parseInt(searchParams.get('adults') || '2')
         const children = parseInt(searchParams.get('children') || '0')
 
