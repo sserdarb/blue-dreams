@@ -21,6 +21,7 @@ import { WeatherEditor } from './WeatherEditor'
 import { ExperienceEditor } from './ExperienceEditor'
 import { RoomListEditor } from './RoomListEditor'
 import { DividerEditor } from './DividerEditor'
+import { FactsheetEditor } from './FactsheetEditor'
 import { updateWidget } from '@/app/actions/admin'
 import { Save, Check } from 'lucide-react'
 
@@ -57,6 +58,7 @@ const editorMap: { [key: string]: React.ComponentType<{ id: string; initialData:
     'experience-blocks': ExperienceEditor,  // Homepage variant
     'room-list': RoomListEditor,
     'divider': DividerEditor,
+    'factsheet': FactsheetEditor,
     // Homepage widget aliases → generic JSON (complex structures)
     'location-map': MapEditor,
 }

@@ -9,6 +9,7 @@ import { ReviewTrendChart } from '@/components/admin/charts/ReviewTrendChart'
 import DashboardFilter from '@/components/admin/DashboardFilter'
 import DashboardPickupWidget from '@/components/admin/DashboardPickupWidget'
 import DashboardAgencyPerformanceWidget from '@/components/admin/DashboardAgencyPerformanceWidget'
+import DashboardForecastWidget from '@/components/admin/DashboardForecastWidget'
 import ModuleOffline from '@/components/admin/ModuleOffline'
 import LiveTrafficSocialWidget from '@/components/admin/LiveTrafficSocialWidget'
 import { getAdminTranslations, type AdminLocale } from '@/lib/admin-translations'
@@ -247,6 +248,9 @@ export default async function AdminDashboard({
 
         {/* ACENTE PERFORMANS ANALİZİ */}
         <DashboardAgencyPerformanceWidget reservations={periodReservations} currency={currency as 'TRY' | 'EUR' | 'USD'} exchangeRate={tryRate} />
+
+        {/* SEZON ÖNGÖRÜSÜ (FORECAST) */}
+        <DashboardForecastWidget reservations={allReservations} currency={currency as 'TRY' | 'EUR' | 'USD'} exchangeRate={tryRate} />
 
         {/* TREND CHARTS GRID */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

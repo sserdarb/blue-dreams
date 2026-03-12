@@ -55,7 +55,7 @@ export default function BookingWidget({ inline = false }: { inline?: boolean }) 
             adults: guests,
         });
 
-        window.location.href = `/${locale}/rezervasyon?${params.toString()}`;
+        window.location.href = `/${locale}/booking?${params.toString()}`;
     }
 
     const t = {

@@ -51,7 +51,7 @@ const BookingWidget: React.FC = () => {
       adults: guests,
     });
 
-    window.location.href = `/${locale}/rezervasyon?${params.toString()}`;
+    window.location.href = `/${locale}/booking?${params.toString()}`;
   };
 
   const socialIconClass = "text-gray-400 hover:text-brand transition-colors p-1.5 border border-transparent hover:border-gray-200 rounded-sm";

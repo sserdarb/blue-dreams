@@ -36,6 +36,7 @@ const WIDGET_CATEGORIES: Record<string, string> = {
     'experience': 'interactive',
     'room-list': 'data',
     'table': 'data',
+    'factsheet': 'content',
 }
 
 const POPULAR_WIDGETS = ['hero', 'text', 'text-image', 'gallery', 'cta', 'features', 'image-grid']

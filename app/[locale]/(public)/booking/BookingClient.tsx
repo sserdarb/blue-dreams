@@ -32,11 +32,12 @@ type AvailabilityResponse = {
 }
 
 const ROOM_IMAGES: Record<string, string> = {
-    'Club Room': 'https://bluedreamsresort.com/wp-content/uploads/2023/03/Club-Room-Sea-View-2.jpg',
-    'Club Room Sea View': 'https://bluedreamsresort.com/wp-content/uploads/2023/03/Club-Room-Sea-View-2.jpg',
-    'Club Family Room': 'https://bluedreamsresort.com/wp-content/uploads/2023/03/Family-Club-Room-1.jpg',
-    'Deluxe Room': 'https://bluedreamsresort.com/wp-content/uploads/2023/03/Deluxe-Room-1.jpg',
-    'Deluxe Family Room': 'https://bluedreamsresort.com/wp-content/uploads/2023/03/Family-Club-Room-1.jpg',
+    'Club Room': '/images/rooms/Club%20Room/clubroom.jpg',
+    'Club Room Sea View': '/images/rooms/Club%20Room%20Sea%20View/ClubSeaViewRoom.jpg',
+    'Club Family Room': '/images/rooms/Club%20Family%20Room/ClubFamilyRoom1.jpg',
+    'Deluxe Room': '/images/rooms/Deluxe-Room-1.jpg',
+    'Deluxe Family Room': '/images/rooms/Club%20Family%20Room/ClubFamilyRoom1.jpg',
+    'Deluxe Room Sea View': '/images/rooms/deluxe-sea-view/Deluxe%20Room%20(2).jpg',
 }
 
 const t: Record<string, Record<string, string>> = {

@@ -20,6 +20,7 @@ const widgetTypes = [
     { type: 'weather', label: 'Weather', description: 'Monthly weather data', icon: '🌤️' },
     { type: 'experience', label: 'Experience', description: 'Interactive experience showcase', icon: '🏊' },
     { type: 'room-list', label: 'Room List', description: 'Room cards from database', icon: '🏨' },
+    { type: 'factsheet', label: 'Factsheet Page', description: 'Complete Factsheet builder', icon: '📋' },
     { type: 'divider', label: 'Divider', description: 'Visual separator', icon: '➖' },
 ] as const
 
