@@ -2,7 +2,7 @@
 
 import React from 'react'
 import Image from 'next/image'
-import { MapPin, Plane, Car, Waves, Utensils, Sparkles, Check, Info, BedDouble } from 'lucide-react'
+import { MapPin, Plane, Car, Waves, Utensils, Sparkles, Check, Info, BedDouble, Wine } from 'lucide-react'
 
 export function FactsheetWidget({ data }: { data: any }) {
   if (!data || !data.hero) return null
@@ -78,13 +78,16 @@ export function FactsheetWidget({ data }: { data: any }) {
       {data.overview?.features?.length > 0 && (
         <section className="bg-slate-900 py-10 border-b border-amber-900/30">
           <div className="container mx-auto px-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-slate-800">
+            <div className={`grid grid-cols-2 md:grid-cols-${Math.min(data.overview.features.length, 4)} gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-slate-800`}>
               {data.overview.features.map((feature: string, i: number) => (
                 <div key={i} className="pt-6 md:pt-0 px-4">
                   <span className="text-amber-500 font-serif text-lg lg:text-xl">{feature}</span>
                 </div>
               ))}
             </div>
+            {data.overview.highlights && (
+              <p className="text-center text-slate-400 text-sm mt-6 max-w-2xl mx-auto">{data.overview.highlights}</p>
+            )}
           </div>
         </section>
       )}
@@ -224,9 +227,35 @@ export function FactsheetWidget({ data }: { data: any }) {
                     </div>
                   )}
                   <div className="p-6">
-                    <h3 className="text-lg font-serif text-slate-900 mb-2">{item.title}</h3>
+                    <h3 className="text-lg font-serif text-slate-900 mb-1">{item.title}</h3>
+                    {item.cuisine && (
+                      <span className="inline-block px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-[10px] font-bold uppercase tracking-wider mb-3">{item.cuisine}</span>
+                    )}
                     <p className="text-slate-600 text-sm leading-relaxed">{item.description}</p>
                   </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ═══ 5b. BARS ═══ */}
+      {data.bars?.length > 0 && (
+        <section className="py-16 bg-slate-50 border-t border-slate-200">
+          <div className="container mx-auto px-6 lg:px-12">
+            <div className="text-center max-w-2xl mx-auto mb-12">
+              <h2 className="text-3xl font-serif text-slate-900 mb-4">
+                {data.labels?.bars || "Bars"}
+              </h2>
+              <div className="w-12 h-1 bg-amber-500 mx-auto" />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+              {data.bars.map((bar: any, i: number) => (
+                <div key={i} className="bg-white rounded-xl p-5 border border-slate-100 hover:shadow-md transition-all text-center">
+                  <Wine className="text-amber-500 mx-auto mb-3" size={24} />
+                  <h4 className="font-bold text-slate-900 text-sm mb-2">{bar.title}</h4>
+                  <p className="text-slate-500 text-xs leading-relaxed">{bar.description}</p>
                 </div>
               ))}
             </div>
