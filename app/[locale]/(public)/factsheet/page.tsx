@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic'
 import { getPageBySlug } from '@/app/actions/page-actions'
 import { WidgetRenderer } from '@/components/widgets/WidgetRenderer'
 import { FactsheetWidget } from '@/components/widgets/FactsheetWidget'
-import { defaultFactsheetData } from '@/lib/factsheet-defaults'
+import { getFactsheetDataForLocale, defaultFactsheetData } from '@/lib/factsheet-defaults'
 import { prisma } from '@/lib/prisma'
 import { Metadata } from 'next'
 
@@ -21,6 +21,7 @@ async function ensureFactsheetPage(locale: string) {
     })
 
     if (!existing) {
+      const localeData = getFactsheetDataForLocale(locale)
       await prisma.page.create({
         data: {
           slug: 'factsheet',
@@ -34,7 +35,7 @@ async function ensureFactsheetPage(locale: string) {
             create: [{
               type: 'factsheet',
               name: 'Factsheet Content',
-              data: JSON.stringify(defaultFactsheetData),
+              data: JSON.stringify(localeData),
               order: 0,
             }],
           },
@@ -54,7 +55,7 @@ export default async function FactsheetPage({ params }: { params: Promise<{ loca
   const page = await getPageBySlug('factsheet', locale)
 
   if (!page || !page.widgets || page.widgets.length === 0) {
-    return <FactsheetWidget data={defaultFactsheetData} />
+    return <FactsheetWidget data={getFactsheetDataForLocale(locale)} />
   }
 
   const widgets = page.widgets.map(w => ({ id: w.id, type: w.type, data: w.data }))
