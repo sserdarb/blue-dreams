@@ -61,6 +61,10 @@ export function middleware(request: NextRequest) {
       if (pathname.startsWith('/api/admin/seed-content')) {
         return NextResponse.next();
       }
+      // Seed pages endpoint
+      if (pathname.startsWith('/api/admin/seed-pages')) {
+        return NextResponse.next();
+      }
       const authCookie = request.cookies.get('admin_session');
       if (!authCookie) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
