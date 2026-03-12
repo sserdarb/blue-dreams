@@ -1,19 +1,26 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { TrendingUp, Calendar, ZoomIn, ZoomOut, ChevronLeft, ChevronRight } from 'lucide-react'
 import {
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend
 } from 'recharts'
 
 const TOTAL_ROOMS = 380 // Blue Dreams total room inventory
+
+// Data series definition with colors matching the SalesChart style
+const SERIES = [
+  { key: 'occupancy', name: 'Doluluk %', color: '#3b82f6', yAxisId: 'left', unit: '%' },
+  { key: 'adr', name: 'ADR', color: '#f59e0b', yAxisId: 'right', unit: '' },
+  { key: 'revenue', name: 'Günlük Gelir', color: '#6366f1', yAxisId: 'right', unit: '' },
+  { key: 'guests', name: 'Misafir Sayısı', color: '#10b981', yAxisId: 'left', unit: '' },
+] as const
 
 export default function DashboardForecastWidget({
   reservations,
@@ -26,6 +33,10 @@ export default function DashboardForecastWidget({
 }) {
   const [selectedAgency, setSelectedAgency] = useState<string>('all')
   const [selectedRoomType, setSelectedRoomType] = useState<string>('all')
+  // Toggle visibility of each data series — all visible by default
+  const [visibleSeries, setVisibleSeries] = useState<Set<string>>(
+    new Set(SERIES.map(s => s.key))
+  )
   // Season: April 1 – October 31
   const currentYear = new Date().getFullYear()
   const SEASON_START = `${currentYear}-04-01`
@@ -45,6 +56,19 @@ export default function DashboardForecastWidget({
   }
   const handlePanLeft = () => setZoomOffset(Math.max(0, zoomOffset - Math.floor(zoomDays / 3)))
   const handlePanRight = () => setZoomOffset(Math.min(SEASON_DAYS - zoomDays, zoomOffset + Math.floor(zoomDays / 3)))
+
+  const toggleSeries = useCallback((key: string) => {
+    setVisibleSeries(prev => {
+      const next = new Set(prev)
+      if (next.has(key)) {
+        // Don't allow hiding all series
+        if (next.size > 1) next.delete(key)
+      } else {
+        next.add(key)
+      }
+      return next
+    })
+  }, [])
 
   const { agencies, roomTypes, dailyData, summaryStats, symbol } = useMemo(() => {
     const seasonStart = new Date(SEASON_START)
@@ -168,26 +192,35 @@ export default function DashboardForecastWidget({
 
   const isFullSeason = zoomDays >= SEASON_DAYS
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload }: any) => {
     if (!active || !payload?.length) return null
     const d = payload[0]?.payload
     if (!d) return null
     return (
-      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 shadow-lg text-sm">
+      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 rounded-xl shadow-lg z-50">
         <p className="font-bold text-slate-900 dark:text-white mb-2">{d.label} ({d.date})</p>
-        <div className="space-y-1">
-          <p className="flex justify-between gap-4"><span className="text-slate-500">Doluluk:</span> <span className="font-bold text-blue-600">{d.occupancy}%</span></p>
-          <p className="flex justify-between gap-4"><span className="text-slate-500">ADR:</span> <span className="font-bold text-amber-600">{symbol}{d.adr.toLocaleString('tr-TR')}</span></p>
-          <p className="flex justify-between gap-4"><span className="text-slate-500">Misafir:</span> <span className="font-bold text-emerald-600">{d.guests}</span></p>
-          <p className="flex justify-between gap-4"><span className="text-slate-500">Gelir:</span> <span className="font-bold text-indigo-600">{symbol}{d.revenue.toLocaleString('tr-TR')}</span></p>
-          <p className="flex justify-between gap-4"><span className="text-slate-500">Dolu Oda:</span> <span className="font-bold">{d.rooms}</span></p>
+        {payload.map((p: any, index: number) => {
+          const isPercent = p.dataKey === 'occupancy'
+          const isCount = p.dataKey === 'guests'
+          return (
+            <div key={index} className="flex items-center gap-2 text-xs mb-1">
+              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: p.stroke || p.color }} />
+              <span className="text-slate-500 dark:text-slate-400">{p.name}:</span>
+              <span className="font-bold text-slate-900 dark:text-white ml-auto">
+                {isPercent ? `${p.value}%` : isCount ? p.value : `${symbol}${Number(p.value).toLocaleString('tr-TR', { maximumFractionDigits: 0 })}`}
+              </span>
+            </div>
+          )
+        })}
+        <div className="border-t border-slate-200 dark:border-slate-600 mt-1.5 pt-1.5 text-xs text-slate-500">
+          Dolu Oda: <span className="font-bold text-slate-700 dark:text-white">{d.rooms}</span>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/50 p-6">
+    <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 shadow-sm">
       {/* Header */}
       <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-6">
         <div className="flex items-center gap-3">
@@ -196,7 +229,7 @@ export default function DashboardForecastWidget({
           </div>
           <div>
             <h3 className="text-lg font-bold text-slate-800 dark:text-white">Sezon Forecast (1 Nis – 31 Eki)</h3>
-            <p className="text-sm text-slate-500">{isFullSeason ? 'Tam sezon görünümü' : `${zoomDays} günlük pencere`} • Gün bazlı çizgi grafik</p>
+            <p className="text-sm text-slate-500">{isFullSeason ? 'Tam sezon görünümü' : `${zoomDays} günlük pencere`}</p>
           </div>
         </div>
 
@@ -268,43 +301,92 @@ export default function DashboardForecastWidget({
         </div>
       </div>
 
+      {/* Series Toggle Buttons */}
+      <div className="flex flex-wrap items-center gap-2 mb-4">
+        <span className="text-xs text-slate-400 font-medium mr-1">Veri:</span>
+        {SERIES.map(s => {
+          const isActive = visibleSeries.has(s.key)
+          return (
+            <button
+              key={s.key}
+              onClick={() => toggleSeries(s.key)}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 border ${
+                isActive
+                  ? 'border-transparent shadow-sm'
+                  : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-400 line-through'
+              }`}
+              style={isActive ? {
+                backgroundColor: `${s.color}18`,
+                color: s.color
+              } : {}}
+            >
+              <span
+                className="w-2.5 h-2.5 rounded-full flex-shrink-0 transition-opacity"
+                style={{ backgroundColor: s.color, opacity: isActive ? 1 : 0.25 }}
+              />
+              {s.name}
+            </button>
+          )
+        })}
+      </div>
+
       {/* Chart */}
       {dailyData.length > 0 ? (
         <div className="h-[380px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={dailyData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" opacity={0.15} />
+            <AreaChart data={dailyData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+              <defs>
+                {SERIES.map(s => (
+                  <linearGradient key={s.key} id={`fc-grad-${s.key}`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={s.color} stopOpacity={0.35} />
+                    <stop offset="95%" stopColor={s.color} stopOpacity={0} />
+                  </linearGradient>
+                ))}
+              </defs>
               <XAxis
                 dataKey="label"
-                tick={{ fontSize: 10 }}
-                tickMargin={8}
-                stroke="#64748b"
+                stroke="#94a3b8"
+                fontSize={12}
+                tickLine={false}
+                axisLine={false}
                 interval={Math.max(0, Math.floor(dailyData.length / 15))}
               />
               <YAxis
                 yAxisId="left"
-                tick={{ fontSize: 11 }}
-                stroke="#3b82f6"
+                stroke="#94a3b8"
+                fontSize={12}
+                tickLine={false}
+                axisLine={false}
                 tickFormatter={v => `${v}%`}
                 domain={[0, 100]}
               />
               <YAxis
                 yAxisId="right"
                 orientation="right"
-                tick={{ fontSize: 11 }}
-                stroke="#f59e0b"
+                stroke="#94a3b8"
+                fontSize={10}
+                tickLine={false}
+                axisLine={false}
                 tickFormatter={v => `${symbol}${v >= 1000 ? `${(v/1000).toFixed(0)}k` : v}`}
               />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-slate-200 dark:stroke-slate-700" />
               <Tooltip content={<CustomTooltip />} />
-              <Legend
-                iconType="line"
-                wrapperStyle={{ fontSize: '12px', paddingTop: '8px' }}
-              />
-              <Line yAxisId="left" type="monotone" dataKey="occupancy" stroke="#3b82f6" strokeWidth={2.5} dot={false} name="Doluluk %" />
-              <Line yAxisId="right" type="monotone" dataKey="adr" stroke="#f59e0b" strokeWidth={2} dot={false} name="ADR" strokeDasharray="5 5" />
-              <Line yAxisId="right" type="monotone" dataKey="revenue" stroke="#6366f1" strokeWidth={1.5} dot={false} name="Günlük Gelir" opacity={0.6} />
-              <Line yAxisId="left" type="monotone" dataKey="guests" stroke="#10b981" strokeWidth={1.5} dot={false} name="Misafir Sayısı" opacity={0.7} />
-            </LineChart>
+              {SERIES.map(s => (
+                visibleSeries.has(s.key) && (
+                  <Area
+                    key={s.key}
+                    type="monotone"
+                    dataKey={s.key}
+                    yAxisId={s.yAxisId}
+                    stroke={s.color}
+                    strokeWidth={2}
+                    fill={`url(#fc-grad-${s.key})`}
+                    name={s.name}
+                    animationDuration={600}
+                  />
+                )
+              ))}
+            </AreaChart>
           </ResponsiveContainer>
         </div>
       ) : (
