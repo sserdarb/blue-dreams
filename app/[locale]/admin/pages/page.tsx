@@ -6,7 +6,7 @@ import { PageListClient } from '@/components/admin/PageListClient'
 
 export default async function PageList({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params
-  const pages = await getPages(locale)
+  const pages = await getPages() // Fetch all locales for language filter
   const t = getCmsTranslations(locale)
 
   return (
