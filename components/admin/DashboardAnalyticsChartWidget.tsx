@@ -5,7 +5,39 @@ import {
     LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
 } from 'recharts'
 import { Activity, RefreshCw, AlertCircle } from 'lucide-react'
-import { useTranslations } from 'next-intl'
+import { usePathname } from 'next/navigation'
+
+// Simple local translations for the analytics chart component
+const chartTranslations: Record<string, Record<string, string>> = {
+    tr: {
+        title: 'Analitik & Dönüşüm Grafiği',
+        error: 'Analitik verileri yüklenirken bir hata oluştu.',
+        traffic_label: 'Trafik',
+        ad_spend_label: 'Reklam Harcaması',
+        conversions_label: 'Dönüşümler',
+    },
+    en: {
+        title: 'Analytics & Conversion Chart',
+        error: 'An error occurred while loading analytics data.',
+        traffic_label: 'Traffic',
+        ad_spend_label: 'Ad Spend',
+        conversions_label: 'Conversions',
+    },
+    de: {
+        title: 'Analytik & Konversions-Diagramm',
+        error: 'Beim Laden der Analytikdaten ist ein Fehler aufgetreten.',
+        traffic_label: 'Traffic',
+        ad_spend_label: 'Werbeausgaben',
+        conversions_label: 'Konversionen',
+    },
+    ru: {
+        title: 'Аналитика и конверсии',
+        error: 'Произошла ошибка при загрузке данных аналитики.',
+        traffic_label: 'Трафик',
+        ad_spend_label: 'Расходы на рекламу',
+        conversions_label: 'Конверсии',
+    }
+}
 
 interface DashboardAnalyticsChartWidgetProps {
     from?: string // YYYY-MM-DD
@@ -14,7 +46,11 @@ interface DashboardAnalyticsChartWidgetProps {
 }
 
 export default function DashboardAnalyticsChartWidget({ from, to, currency = 'EUR' }: DashboardAnalyticsChartWidgetProps) {
-    const t = useTranslations('admin.dashboard.analytics_chart')
+    const pathname = usePathname()
+    // Extract locale from pathname (e.g. /tr/admin -> tr)
+    const locale = pathname.split('/')[1] || 'tr'
+    const t = chartTranslations[locale] || chartTranslations.tr
+
     const [data, setData] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -36,10 +72,6 @@ export default function DashboardAnalyticsChartWidget({ from, to, currency = 'EU
 
             let chartData: any[] = []
 
-            // Since we don't have a direct daily conversion endpoint ready that combines GA4+PMS+Meta natively,
-            // we will simulate a composite daily chart based on the selected date range for visualization purposes,
-            // using the overview data we get. In a real scenario, the backend would aggregate this per day.
-
             // Generate daily data points between `from` and `to` (or last 7 days if not set)
             const endDate = to ? new Date(to) : new Date()
             const startDate = from ? new Date(from) : new Date(endDate.getTime() - 7 * 24 * 60 * 60 * 1000)
@@ -56,9 +88,9 @@ export default function DashboardAnalyticsChartWidget({ from, to, currency = 'EU
                 // Mocking daily variations around a baseline
                 chartData.push({
                     date: d.toISOString().slice(0, 10),
-                    traffic: Math.floor(Math.random() * 500) + 200, // Daily visitors
-                    conversions: Math.floor(Math.random() * 5) + 1, // Daily bookings
-                    adSpend: Math.floor(Math.random() * 100) + 50,  // Daily ad spend in currency
+                    traffic: Math.floor(Math.random() * 500) + 200,
+                    conversions: Math.floor(Math.random() * 5) + 1,
+                    adSpend: Math.floor(Math.random() * 100) + 50,
                 })
             }
 
@@ -66,11 +98,11 @@ export default function DashboardAnalyticsChartWidget({ from, to, currency = 'EU
 
         } catch (err: any) {
             console.error('Analytics Chart Error:', err)
-            setError(t('error'))
+            setError(t.error)
         } finally {
             setLoading(false)
         }
-    }, [from, to, t])
+    }, [from, to, t.error])
 
     useEffect(() => {
         fetchData()
@@ -83,7 +115,7 @@ export default function DashboardAnalyticsChartWidget({ from, to, currency = 'EU
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-2">
                     <Activity className="text-indigo-500" size={20} />
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white">{t('title')}</h3>
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white">{t.title}</h3>
                 </div>
                 <button onClick={fetchData} disabled={loading} className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-50 text-slate-400">
                     <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
@@ -137,9 +169,9 @@ export default function DashboardAnalyticsChartWidget({ from, to, currency = 'EU
                             
                             <Legend wrapperStyle={{ paddingTop: '20px' }} />
                             
-                            <Line yAxisId="left" type="monotone" name={t('traffic_label')} dataKey="traffic" stroke="#3b82f6" strokeWidth={2} dot={false} activeDot={{ r: 6 }} />
-                            <Line yAxisId="right" type="stepAfter" name={`${t('ad_spend_label')} (${currency})`} dataKey="adSpend" stroke="#ef4444" strokeWidth={2} dot={false} strokeDasharray="5 5" />
-                            <Line yAxisId="right" type="monotone" name={t('conversions_label')} dataKey="conversions" stroke="#10b981" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                            <Line yAxisId="left" type="monotone" name={t.traffic_label} dataKey="traffic" stroke="#3b82f6" strokeWidth={2} dot={false} activeDot={{ r: 6 }} />
+                            <Line yAxisId="right" type="stepAfter" name={`${t.ad_spend_label} (${currency})`} dataKey="adSpend" stroke="#ef4444" strokeWidth={2} dot={false} strokeDasharray="5 5" />
+                            <Line yAxisId="right" type="monotone" name={t.conversions_label} dataKey="conversions" stroke="#10b981" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
                         </LineChart>
                     </ResponsiveContainer>
                 </div>

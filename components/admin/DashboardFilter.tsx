@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { Info, Calendar, Loader2 } from 'lucide-react'
-import { useTranslations } from 'next-intl'
 
 const DATE_PRESETS = [
     { key: 'today', days: 0, type: 'today' as const },
@@ -13,6 +12,62 @@ const DATE_PRESETS = [
     { key: 'this_year', days: 0, type: 'thisYear' as const },
     { key: 'all_season', days: 0, type: 'allSeason' as const },
 ] as const
+
+// Simple local translations for the filter component
+const filterTranslations: Record<string, Record<string, any>> = {
+    tr: {
+        presets: { today: 'Bugün', last_7_days: 'Son 7 Gün', this_month: 'Bu Ay', last_month: 'Geçen Ay', this_year: 'Bu Yıl', all_season: 'Tüm Sezon' },
+        buttons: { filter: 'Filtrele' },
+        tooltip: 'Filtre bilgisi',
+        currency: 'Para Birimi',
+        info: {
+            title: 'Filtre Bilgisi',
+            reservation_data: 'Rezervasyon verileri seçilen tarih aralığına göre filtrelenir.',
+            channel_breakdown: 'Kanal dağılımı canlı PMS verilerine dayanır.',
+            pickup_analysis: 'Pickup analizi son güncelleme tarihine göre hesaplanır.',
+            currency_conversion: 'Döviz çevirisi güncel kurlarla yapılır.'
+        }
+    },
+    en: {
+        presets: { today: 'Today', last_7_days: 'Last 7 Days', this_month: 'This Month', last_month: 'Last Month', this_year: 'This Year', all_season: 'All Season' },
+        buttons: { filter: 'Filter' },
+        tooltip: 'Filter info',
+        currency: 'Currency',
+        info: {
+            title: 'Filter Info',
+            reservation_data: 'Reservation data is filtered by the selected date range.',
+            channel_breakdown: 'Channel breakdown is based on live PMS data.',
+            pickup_analysis: 'Pickup analysis is calculated by last update date.',
+            currency_conversion: 'Currency conversion uses current exchange rates.'
+        }
+    },
+    de: {
+        presets: { today: 'Heute', last_7_days: 'Letzte 7 Tage', this_month: 'Dieser Monat', last_month: 'Letzter Monat', this_year: 'Dieses Jahr', all_season: 'Gesamte Saison' },
+        buttons: { filter: 'Filtern' },
+        tooltip: 'Filterinformationen',
+        currency: 'Währung',
+        info: {
+            title: 'Filterinformationen',
+            reservation_data: 'Reservierungsdaten werden nach dem gewählten Zeitraum gefiltert.',
+            channel_breakdown: 'Die Kanalverteilung basiert auf Live-PMS-Daten.',
+            pickup_analysis: 'Die Pickup-Analyse wird nach dem letzten Aktualisierungsdatum berechnet.',
+            currency_conversion: 'Die Währungsumrechnung verwendet aktuelle Wechselkurse.'
+        }
+    },
+    ru: {
+        presets: { today: 'Сегодня', last_7_days: 'Последние 7 дней', this_month: 'Этот месяц', last_month: 'Прошлый месяц', this_year: 'Этот год', all_season: 'Весь сезон' },
+        buttons: { filter: 'Фильтр' },
+        tooltip: 'Информация о фильтре',
+        currency: 'Валюта',
+        info: {
+            title: 'Информация о фильтре',
+            reservation_data: 'Данные о бронированиях фильтруются по выбранному диапазону дат.',
+            channel_breakdown: 'Распределение каналов основано на данных PMS в реальном времени.',
+            pickup_analysis: 'Анализ пикапов рассчитывается по дате последнего обновления.',
+            currency_conversion: 'Конвертация валют использует текущие курсы.'
+        }
+    }
+}
 
 // Get current date in Turkey timezone (UTC+3)
 function getTurkeyNow(): Date {
@@ -62,7 +117,11 @@ export default function DashboardFilter() {
     const router = useRouter()
     const pathname = usePathname()
     const searchParams = useSearchParams()
-    const t = useTranslations('admin.dashboard.filter')
+    
+    // Extract locale from pathname (e.g. /tr/admin -> tr)
+    const locale = pathname.split('/')[1] || 'tr'
+    const t = filterTranslations[locale] || filterTranslations.tr
+
     const [loading, setLoading] = useState(false)
 
     const [from, setFrom] = useState('')
@@ -124,7 +183,7 @@ export default function DashboardFilter() {
                             : 'bg-white/5 border border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-300 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 hover:text-cyan-600 dark:hover:text-cyan-400'
                             }`}
                     >
-                        {t(`presets.${preset.key}`)}
+                        {t.presets[preset.key] || preset.key}
                     </button>
                 ))}
             </div>
@@ -154,7 +213,7 @@ export default function DashboardFilter() {
                         className="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-medium transition-colors disabled:opacity-50 flex items-center gap-1"
                     >
                         {loading && <Loader2 size={12} className="animate-spin" />}
-                        {t('buttons.filter')}
+                        {t.buttons.filter}
                     </button>
                 </div>
 
@@ -162,7 +221,7 @@ export default function DashboardFilter() {
                     <button
                         onClick={() => setShowInfo(!showInfo)}
                         className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 hover:text-cyan-600 flex items-center justify-center transition-colors"
-                        title={t('tooltip')}
+                        title={t.tooltip}
                     >
                         <Info size={14} />
                     </button>
@@ -170,14 +229,14 @@ export default function DashboardFilter() {
                     {showInfo && (
                         <div className="absolute right-0 top-9 w-72 bg-white dark:bg-slate-800 p-4 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 z-50">
                             <div className="flex items-center justify-between mb-2">
-                                <h4 className="font-bold text-slate-900 dark:text-white text-sm">{t('info.title')}</h4>
+                                <h4 className="font-bold text-slate-900 dark:text-white text-sm">{t.info.title}</h4>
                                 <button onClick={() => setShowInfo(false)} className="text-slate-400 hover:text-slate-600">✕</button>
                             </div>
                             <ul className="text-xs text-slate-600 dark:text-slate-300 space-y-1.5 list-disc pl-4">
-                                <li>{t('info.reservation_data')}</li>
-                                <li>{t('info.channel_breakdown')}</li>
-                                <li>{t('info.pickup_analysis')}</li>
-                                <li>{t('info.currency_conversion')}</li>
+                                <li>{t.info.reservation_data}</li>
+                                <li>{t.info.channel_breakdown}</li>
+                                <li>{t.info.pickup_analysis}</li>
+                                <li>{t.info.currency_conversion}</li>
                             </ul>
                         </div>
                     )}
@@ -186,7 +245,7 @@ export default function DashboardFilter() {
 
             {/* Currency Selector */}
             <div className="flex items-center gap-1.5 self-end sm:self-auto ml-auto pl-2 border-l border-slate-200 dark:border-white/10">
-                <span className="text-xs font-medium text-slate-500">{t('currency')}:</span>
+                <span className="text-xs font-medium text-slate-500">{t.currency}:</span>
                 <select
                     value={currency}
                     onChange={(e) => applyFilter(from, to, e.target.value)}
