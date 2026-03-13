@@ -12,6 +12,8 @@ import DashboardAgencyPerformanceWidget from '@/components/admin/DashboardAgency
 import DashboardForecastWidget from '@/components/admin/DashboardForecastWidget'
 import ModuleOffline from '@/components/admin/ModuleOffline'
 import LiveTrafficSocialWidget from '@/components/admin/LiveTrafficSocialWidget'
+import DashboardAIAnalysisWidget from '@/components/admin/DashboardAIAnalysisWidget'
+import DashboardAnalyticsChartWidget from '@/components/admin/DashboardAnalyticsChartWidget'
 import { getAdminTranslations, type AdminLocale } from '@/lib/admin-translations'
 
 export default async function AdminDashboard({
@@ -22,7 +24,7 @@ export default async function AdminDashboard({
   searchParams: Promise<{ from?: string, to?: string, currency?: string }>
 }) {
   const { locale } = await params
-  const { from, to, currency = 'TRY' } = await searchParams
+  const { from, to, currency = 'EUR' } = await searchParams
   const t = getAdminTranslations(locale as AdminLocale)
 
   // Determine dates — default: Bugün (today) in Turkey timezone (UTC+3)
@@ -30,8 +32,11 @@ export default async function AdminDashboard({
   const turkeyNow = new Date(turkeyNowStr)
   const turkeyToday = `${turkeyNow.getFullYear()}-${String(turkeyNow.getMonth() + 1).padStart(2, '0')}-${String(turkeyNow.getDate()).padStart(2, '0')}`
 
-  let endDate = to ? new Date(to) : new Date(turkeyToday + 'T00:00:00+03:00')
-  let startDate = from ? new Date(from) : new Date(turkeyToday + 'T00:00:00+03:00')
+  const startDateStr = from || turkeyToday
+  const endDateStr = to || turkeyToday
+
+  let startDate = new Date(`${startDateStr}T00:00:00`)
+  let endDate = new Date(`${endDateStr}T23:59:59`)
 
   const dateLabel = `${startDate.toLocaleDateString('tr-TR')} – ${endDate.toLocaleDateString('tr-TR')}`
 
@@ -42,11 +47,11 @@ export default async function AdminDashboard({
       ElektraService.getRecentReservations(10),
       ElektraService.getGuestReviews(startDate, endDate),
       ElektraService.getAllSeasonReservations(),
-      fetchPickupStats(startDate.toISOString().split('T')[0], endDate.toISOString().split('T')[0])
+      fetchPickupStats(startDateStr, endDateStr)
     ])
 
-    const startStr = startDate.toISOString().split('T')[0];
-    const endStr = endDate.toISOString().split('T')[0];
+    const startStr = startDateStr;
+    const endStr = endDateStr;
 
     // Calculate dashboard stats manually using the booking date (lastUpdate/reservationDate)
     const periodReservations = allReservations.filter((r: any) => {
@@ -95,8 +100,8 @@ export default async function AdminDashboard({
     const secondaryAdrString = `${secondaryAdrSymbol}${Math.round(secondaryAdr).toLocaleString('tr-TR')}`;
 
     // --- PMS Pickup Calculation ---
-    const fromStr = startDate.toISOString().split('T')[0];
-    const toStr = endDate.toISOString().split('T')[0];
+    const fromStr = startDateStr;
+    const toStr = endDateStr;
 
     // Pickups based on last update date being within the selected range
     const pickupsInPeriod = allReservations.filter((r: any) => {
@@ -170,6 +175,23 @@ export default async function AdminDashboard({
           </div>
           <DashboardFilter />
         </div>
+
+        {/* AI ANALYSIS WIDGET */}
+        <DashboardAIAnalysisWidget 
+          startDate={startStr} 
+          endDate={endStr} 
+          stats={asisiaStats} 
+          pickupData={pickupData} 
+          currency={currency as 'TRY' | 'EUR' | 'USD'}
+          locale={locale} 
+        />
+
+        {/* ANALYTICS CHART WIDGET */}
+        <DashboardAnalyticsChartWidget 
+          from={startStr} 
+          to={endStr} 
+          currency={currency as 'TRY' | 'EUR' | 'USD'} 
+        />
 
         {/* PROMINENT METRICS */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
@@ -247,7 +269,13 @@ export default async function AdminDashboard({
         <DashboardAgencyPerformanceWidget reservations={periodReservations} currency={currency as 'TRY' | 'EUR' | 'USD'} exchangeRate={tryRate} />
 
         {/* SEZON ÖNGÖRÜSÜ (FORECAST) */}
-        <DashboardForecastWidget reservations={allReservations} currency={currency as 'TRY' | 'EUR' | 'USD'} exchangeRate={tryRate} />
+        <DashboardForecastWidget 
+          reservations={allReservations} 
+          currency={currency as 'TRY' | 'EUR' | 'USD'} 
+          exchangeRate={tryRate} 
+          filterStartDate={fromStr}
+          filterEndDate={toStr}
+        />
 
         {/* TREND CHARTS GRID */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -306,7 +334,7 @@ export default async function AdminDashboard({
         </div>
 
         {/* Live Traffic and Social Media Data */}
-        <LiveTrafficSocialWidget from={startDate.toISOString().split('T')[0]} to={endDate.toISOString().split('T')[0]} />
+        <LiveTrafficSocialWidget from={startDateStr} to={endDateStr} />
       </div>
     )
   } catch (error) {
