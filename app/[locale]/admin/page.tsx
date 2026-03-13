@@ -5,7 +5,7 @@ import { ElektraService } from '@/lib/services/elektra'
 import { fetchDashboardStats, fetchPickupStats } from '@/lib/services/pms-asisia'
 import { SalesChart } from '@/components/admin/charts/SalesChart'
 import { ChannelTrendChart } from '@/components/admin/charts/ChannelTrendChart'
-import { ReviewTrendChart } from '@/components/admin/charts/ReviewTrendChart'
+
 import DashboardFilter from '@/components/admin/DashboardFilter'
 import DashboardPickupWidget from '@/components/admin/DashboardPickupWidget'
 import DashboardAgencyPerformanceWidget from '@/components/admin/DashboardAgencyPerformanceWidget'
@@ -176,16 +176,6 @@ export default async function AdminDashboard({
           <DashboardFilter />
         </div>
 
-        {/* AI ANALYSIS WIDGET */}
-        <DashboardAIAnalysisWidget 
-          startDate={startStr} 
-          endDate={endStr} 
-          stats={asisiaStats} 
-          pickupData={pickupData} 
-          currency={currency as 'TRY' | 'EUR' | 'USD'}
-          locale={locale} 
-        />
-
 
         {/* PROMINENT METRICS */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
@@ -290,14 +280,7 @@ export default async function AdminDashboard({
             <SalesChart data={salesData} currency={currency as 'TRY' | 'EUR' | 'USD'} exchangeRate={tryRate} />
           </div>
 
-          {/* Misafir Yorum Trendleri */}
-          <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 shadow-sm">
-            <div className="flex items-center gap-2 mb-6">
-              <TrendingUp size={20} className="text-pink-500" />
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white">Misafir Yorum Trendleri</h2>
-            </div>
-            <ReviewTrendChart data={reviews} />
-          </div>
+
 
           {/* OTA Trendleri */}
           <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 shadow-sm">
@@ -336,6 +319,16 @@ export default async function AdminDashboard({
 
         {/* Live Traffic and Social Media Data */}
         <LiveTrafficSocialWidget from={startDateStr} to={endDateStr} />
+
+        {/* AI ANALYSIS WIDGET — at the bottom of the dashboard */}
+        <DashboardAIAnalysisWidget 
+          startDate={startStr} 
+          endDate={endStr} 
+          stats={asisiaStats} 
+          pickupData={pickupData} 
+          currency={currency as 'TRY' | 'EUR' | 'USD'}
+          locale={locale} 
+        />
       </div>
     )
   } catch (error) {

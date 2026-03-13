@@ -15,7 +15,7 @@ import {
   ReferenceDot,
 } from 'recharts'
 
-const TOTAL_ROOMS = 380 // Blue Dreams total room inventory
+const TOTAL_ROOMS = 341 // Blue Dreams total room inventory
 
 // Data series definition with colors matching the SalesChart style
 const SERIES = [
