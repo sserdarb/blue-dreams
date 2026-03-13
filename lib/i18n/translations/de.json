@@ -164,7 +164,36 @@
             "reservationPerformance": "Reservierungsleistung (Letzte 14 Tage)",
             "channelDistribution": "Kanalverteilung",
             "recentReservations": "Aktuelle Reservierungen",
-            "viewAll": "Alle anzeigen"
+            "viewAll": "Alle anzeigen",
+            "analytics_chart": {
+                "title": "Verkehrs- & Konversionsanalyse",
+                "error": "Beim Laden der Daten ist ein Fehler aufgetreten.",
+                "traffic_label": "Besucherverkehr",
+                "ad_spend_label": "Werbeausgaben",
+                "conversions_label": "Konversionen (Reservierungen)"
+            },
+            "filter": {
+                "presets": {
+                    "today": "Heute",
+                    "last_7_days": "Letzte 7 Tage",
+                    "this_month": "Diesen Monat",
+                    "last_month": "Letzten Monat",
+                    "this_year": "Dieses Jahr",
+                    "all_season": "Ganze Saison"
+                },
+                "buttons": {
+                    "filter": "Filtern"
+                },
+                "tooltip": "Informationen zur Datensammlung",
+                "info": {
+                    "title": "Datensammlungsprinzipien",
+                    "reservation_data": "Reservierungsdaten: Stammt aus einer Live-MS-SQL-Verbindung zum Asisia-PMS. Gefiltert nach Erstellungsdatum.",
+                    "channel_breakdown": "Kanalaufschlüsselung: Gruppiert nach den Kanälen OTA, Callcenter, Web, Direkt und Reiseveranstalter.",
+                    "pickup_analysis": "Pickup-Analyse: Zeigt die Anzahl der neu erstellten und stornierten Reservierungen im ausgewählten Zeitraum an.",
+                    "currency_conversion": "Währungsumrechnung: TRY/EUR/USD werden durch automatische Wechselkursumrechnungen unterstützt."
+                },
+                "currency": "Währung"
+            }
         }
     }
 }

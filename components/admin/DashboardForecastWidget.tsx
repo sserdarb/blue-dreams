@@ -1,21 +1,23 @@
 'use client'
 
 import { useState, useMemo, useCallback } from 'react'
-import { TrendingUp, Calendar, ZoomIn, ZoomOut, ChevronLeft, ChevronRight } from 'lucide-react'
+import { TrendingUp, Calendar, ZoomIn, ZoomOut, ChevronLeft, ChevronRight, Activity } from 'lucide-react'
 import {
   AreaChart,
   Area,
+  Bar,
+  ComposedChart,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  ReferenceDot,
 } from 'recharts'
 
 const TOTAL_ROOMS = 380 // Blue Dreams total room inventory
 
 // Data series definition with colors matching the SalesChart style
-// Each series now has its own yAxisId so large revenue values don't compress ADR/guests
 const SERIES = [
   { key: 'occupancy', name: 'Doluluk %', color: '#3b82f6', yAxisId: 'left', unit: '%' },
   { key: 'adr', name: 'ADR', color: '#f59e0b', yAxisId: 'right', unit: '' },
@@ -26,23 +28,47 @@ const SERIES = [
 export default function DashboardForecastWidget({
   reservations,
   currency = 'EUR',
-  exchangeRate = 1
+  exchangeRate = 1,
+  filterStartDate,
+  filterEndDate
 }: {
   reservations: any[]
   currency: 'TRY' | 'EUR' | 'USD'
   exchangeRate: number
+  filterStartDate?: string
+  filterEndDate?: string
 }) {
   const [selectedAgency, setSelectedAgency] = useState<string>('all')
   const [selectedRoomType, setSelectedRoomType] = useState<string>('all')
+  const [showDayEffect, setShowDayEffect] = useState(false)
+
   // Toggle visibility of each data series — all visible by default
   const [visibleSeries, setVisibleSeries] = useState<Set<string>>(
     new Set(SERIES.map(s => s.key))
   )
-  // Season: April 1 – October 31
-  const currentYear = new Date().getFullYear()
-  const SEASON_START = `${currentYear}-04-01`
-  const SEASON_END = `${currentYear}-10-31`
+
+  // Determine the relevant season year from data, or fallback to current year
+  const seasonYear = useMemo(() => {
+    let year = new Date().getFullYear()
+    if (reservations && reservations.length > 0) {
+      // Find the most common check-in year in the future
+      const years = reservations
+        .map(r => parseInt((r.checkIn || r.reservationDate || '').substring(0, 4)))
+        .filter(y => !isNaN(y) && y >= year);
+      if (years.length > 0) {
+        // Mode of years
+        const counts = years.reduce((acc, y) => { acc[y] = (acc[y] || 0) + 1; return acc; }, {} as Record<number, number>);
+        year = parseInt(Object.keys(counts).reduce((a, b) => counts[parseInt(a)] > counts[parseInt(b)] ? a : b));
+      }
+    }
+    return year;
+  }, [reservations])
+
+  // Season: April 1 – October 31 of the determined year
+  const SEASON_START = `${seasonYear}-04-01`
+  const SEASON_END = `${seasonYear}-10-31`
   const SEASON_DAYS = Math.round((new Date(SEASON_END).getTime() - new Date(SEASON_START).getTime()) / 86400000) + 1
+  
   const [zoomDays, setZoomDays] = useState(SEASON_DAYS) // full season = no zoom
   const [zoomOffset, setZoomOffset] = useState(0) // day offset from season start
 
@@ -62,7 +88,6 @@ export default function DashboardForecastWidget({
     setVisibleSeries(prev => {
       const next = new Set(prev)
       if (next.has(key)) {
-        // Don't allow hiding all series
         if (next.size > 1) next.delete(key)
       } else {
         next.add(key)
@@ -71,7 +96,7 @@ export default function DashboardForecastWidget({
     })
   }, [])
 
-  const { agencies, roomTypes, dailyData, summaryStats, symbol } = useMemo(() => {
+  const { agencies, roomTypes, dailyData, summaryStats, symbol, maxOccPoint, minOccPoint, maxAdrPoint, minAdrPoint } = useMemo(() => {
     const seasonStart = new Date(SEASON_START)
     const seasonEnd = new Date(SEASON_END)
     seasonEnd.setDate(seasonEnd.getDate() + 1) // inclusive end
@@ -109,7 +134,7 @@ export default function DashboardForecastWidget({
     })
 
     // Currency helpers
-    const usdRate = 1.05
+    const usdRate = 1.05 // Simplified fallback
     let sym = '€'
     if (currency === 'TRY') sym = '₺'
     else if (currency === 'USD') sym = '$'
@@ -128,11 +153,11 @@ export default function DashboardForecastWidget({
     }
 
     // Build daily map for visible window only
-    const dayMap = new Map<string, { rooms: number; guests: number; revenue: number }>()
+    const dayMap = new Map<string, { rooms: number; guests: number; revenue: number; pickupNet: number }>()
 
     for (let d = new Date(viewStart); d < viewEnd; d.setDate(d.getDate() + 1)) {
       const ds = d.toISOString().split('T')[0]
-      dayMap.set(ds, { rooms: 0, guests: 0, revenue: 0 })
+      dayMap.set(ds, { rooms: 0, guests: 0, revenue: 0, pickupNet: 0 })
     }
 
     // Populate from reservations
@@ -145,6 +170,10 @@ export default function DashboardForecastWidget({
       const totalEur = toEur(r)
       const perNightEur = nights > 0 ? totalEur / nights : totalEur
 
+      // For Day Effect
+      const createdDate = (r.lastUpdate || r.reservationDate || '').slice(0, 10)
+      const isPickup = filterStartDate && filterEndDate && createdDate >= filterStartDate && createdDate <= filterEndDate;
+
       for (let d = new Date(checkIn); d < checkOut; d.setDate(d.getDate() + 1)) {
         const ds = d.toISOString().split('T')[0]
         if (dayMap.has(ds)) {
@@ -152,26 +181,71 @@ export default function DashboardForecastWidget({
           entry.rooms += roomCount
           entry.guests += paxCount
           entry.revenue += perNightEur * roomCount
+          if (isPickup) {
+             entry.pickupNet += roomCount; // Net rooms added in this filter period
+          }
         }
       }
     })
+    
+    // Process Cancellations for Day Effect (Net Pickup)
+    if (filterStartDate && filterEndDate && showDayEffect) {
+       const cancelledRes = reservations.filter(r => {
+         const matchAgency = selectedAgency === 'all' || (r.agency || 'Direct').trim() === selectedAgency
+         const matchRoom = selectedRoomType === 'all' || (r.roomType || r.roomTitle || 'Standart').trim() === selectedRoomType
+         if (!matchAgency || !matchRoom) return false;
+         
+         const isCanceled = r.status === 'Cancelled' || r.status === 'İptal';
+         const editedDate = (r.lastUpdate || r.reservationDate || '').slice(0, 10);
+         const isInFilterPeriod = editedDate >= filterStartDate && editedDate <= filterEndDate;
+         return isCanceled && isInFilterPeriod;
+       });
+       
+       cancelledRes.forEach(r => {
+         const checkIn = new Date((r.checkIn || r.reservationDate || '').slice(0, 10))
+         const checkOut = new Date((r.checkOut || '').slice(0, 10))
+         const roomCount = r.roomCount || 1
+         for (let d = new Date(checkIn); d < checkOut; d.setDate(d.getDate() + 1)) {
+            const ds = d.toISOString().split('T')[0]
+            if (dayMap.has(ds)) {
+               const entry = dayMap.get(ds)!
+               entry.pickupNet -= roomCount; // Subtract canceled rooms
+            }
+         }
+       });
+    }
 
     // Convert to array
+    let maxOcc = -1, minOcc = 101, maxAdr = -1, minAdr = Infinity;
+    let maxOccPoint = null, minOccPoint = null, maxAdrPoint = null, minAdrPoint = null;
+
     const dailyArr = Array.from(dayMap.entries())
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([date, data]) => {
         const occupancy = Math.min(100, Math.round((data.rooms / TOTAL_ROOMS) * 100))
-        const adr = data.rooms > 0 ? toDisplayCurrency(data.revenue / data.rooms) : 0
-        const revenue = toDisplayCurrency(data.revenue)
-        return {
+        const adrRaw = data.rooms > 0 ? toDisplayCurrency(data.revenue / data.rooms) : 0
+        const adr = Math.round(adrRaw);
+        const revenue = Math.round(toDisplayCurrency(data.revenue))
+        
+        const point = {
           date,
           label: new Date(date + 'T12:00:00').toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' }),
           occupancy,
-          adr: Math.round(adr),
+          adr,
           guests: data.guests,
-          revenue: Math.round(revenue),
+          revenue,
           rooms: data.rooms,
+          pickupNet: data.pickupNet
+        };
+        
+        if (data.rooms > 0) { // Only track peaks/troughs for days with actual data
+          if (occupancy > maxOcc) { maxOcc = occupancy; maxOccPoint = point; }
+          if (occupancy < minOcc) { minOcc = occupancy; minOccPoint = point; }
+          if (adr > maxAdr) { maxAdr = adr; maxAdrPoint = point; }
+          if (adr < minAdr) { minAdr = adr; minAdrPoint = point; }
         }
+
+        return point;
       })
 
     // Summary stats
@@ -188,8 +262,9 @@ export default function DashboardForecastWidget({
       dailyData: dailyArr,
       summaryStats: { totalRevenue, totalRoomNights, avgOccupancy, avgAdr, avgGuests, totalReservations: filtered.length },
       symbol: sym,
+      maxOccPoint, minOccPoint, maxAdrPoint, minAdrPoint
     }
-  }, [reservations, selectedAgency, selectedRoomType, zoomDays, zoomOffset, currency, exchangeRate, SEASON_START, SEASON_END, SEASON_DAYS])
+  }, [reservations, selectedAgency, selectedRoomType, zoomDays, zoomOffset, currency, exchangeRate, SEASON_START, SEASON_END, SEASON_DAYS, showDayEffect, filterStartDate, filterEndDate])
 
   const isFullSeason = zoomDays >= SEASON_DAYS
 
@@ -198,23 +273,35 @@ export default function DashboardForecastWidget({
     const d = payload[0]?.payload
     if (!d) return null
     return (
-      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 rounded-xl shadow-lg z-50">
-        <p className="font-bold text-slate-900 dark:text-white mb-2">{d.label} ({d.date})</p>
+      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 rounded-xl shadow-lg z-50 min-w-[200px]">
+        <p className="font-bold text-slate-900 dark:text-white mb-2 pb-2 border-b border-slate-100 dark:border-slate-700">{d.label} ({d.date})</p>
         {payload.map((p: any, index: number) => {
+          if (p.dataKey === 'pickupNet') return null; // Handled separately below
           const isPercent = p.dataKey === 'occupancy'
           const isCount = p.dataKey === 'guests'
           return (
-            <div key={index} className="flex items-center gap-2 text-xs mb-1">
-              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: p.stroke || p.color }} />
-              <span className="text-slate-500 dark:text-slate-400">{p.name}:</span>
+            <div key={index} className="flex items-center gap-2 text-xs mb-1.5">
+              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: p.stroke || p.color || p.fill }} />
+              <span className="text-slate-500 dark:text-slate-400">{p.name || SERIES.find(s=>s.key === p.dataKey)?.name}:</span>
               <span className="font-bold text-slate-900 dark:text-white ml-auto">
                 {isPercent ? `${p.value}%` : isCount ? p.value : `${symbol}${Number(p.value).toLocaleString('tr-TR', { maximumFractionDigits: 0 })}`}
               </span>
             </div>
           )
         })}
-        <div className="border-t border-slate-200 dark:border-slate-600 mt-1.5 pt-1.5 text-xs text-slate-500">
-          Dolu Oda: <span className="font-bold text-slate-700 dark:text-white">{d.rooms}</span>
+        
+        {showDayEffect && (
+           <div className="flex items-center gap-2 text-xs mb-1.5 mt-2 pt-2 border-t border-slate-100 dark:border-slate-700">
+             <div className="w-2 h-2 rounded-full bg-rose-500" />
+             <span className="text-slate-500 dark:text-slate-400 font-medium">Gün Etkisi (Net Oda):</span>
+             <span className={`font-bold ml-auto ${d.pickupNet > 0 ? 'text-emerald-500' : d.pickupNet < 0 ? 'text-rose-500' : 'text-slate-400'}`}>
+               {d.pickupNet > 0 ? '+' : ''}{d.pickupNet}
+             </span>
+           </div>
+        )}
+
+        <div className="border-t border-slate-200 dark:border-slate-600 mt-2 pt-2 text-xs text-slate-500">
+          Dolu Oda: <span className="font-bold text-slate-700 dark:text-white">{d.rooms}</span> / {TOTAL_ROOMS}
         </div>
       </div>
     )
@@ -229,12 +316,28 @@ export default function DashboardForecastWidget({
             <TrendingUp size={20} />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-slate-800 dark:text-white">Sezon Forecast (1 Nis – 31 Eki)</h3>
+            <h3 className="text-lg font-bold text-slate-800 dark:text-white">Sezon Forecast (1 Nis – 31 Eki {seasonYear})</h3>
             <p className="text-sm text-slate-500">{isFullSeason ? 'Tam sezon görünümü' : `${zoomDays} günlük pencere`}</p>
           </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          {/* Day Effect Toggle */}
+          {filterStartDate && filterEndDate && (
+             <button
+                onClick={() => setShowDayEffect(!showDayEffect)}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border ${
+                   showDayEffect 
+                   ? 'bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-900/20 dark:border-rose-800 dark:text-rose-400' 
+                   : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400'
+                }`}
+                title="Seçili tarih aralığında yaratılan veya iptal edilen rezervasyonların (Pickup) gelecekteki günlere net oda etkisi."
+             >
+                <Activity size={14} />
+                Gün Etkisi (Day Effect)
+             </button>
+          )}
+
           {/* Zoom Controls */}
           <div className="flex items-center bg-slate-100 dark:bg-slate-900 rounded-lg p-0.5 gap-0.5">
             <button onClick={handlePanLeft} disabled={zoomOffset === 0 || isFullSeason} className="p-1.5 rounded-md text-slate-500 hover:text-slate-900 dark:hover:text-white transition disabled:opacity-30" title="Sola Kaydır">
@@ -304,7 +407,7 @@ export default function DashboardForecastWidget({
 
       {/* Series Toggle Buttons */}
       <div className="flex flex-wrap items-center gap-2 mb-4">
-        <span className="text-xs text-slate-400 font-medium mr-1">Veri:</span>
+        <span className="text-xs text-slate-400 font-medium mr-1">Temsil:</span>
         {SERIES.map(s => {
           const isActive = visibleSeries.has(s.key)
           return (
@@ -341,7 +444,7 @@ export default function DashboardForecastWidget({
         return (
         <div className="h-[380px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={dailyData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+            <ComposedChart data={dailyData} margin={{ top: 15, right: 10, left: -10, bottom: 0 }}>
               <defs>
                 {SERIES.map(s => (
                   <linearGradient key={s.key} id={`fc-grad-${s.key}`} x1="0" y1="0" x2="0" y2="1">
@@ -358,7 +461,7 @@ export default function DashboardForecastWidget({
                 axisLine={false}
                 interval={Math.max(0, Math.floor(dailyData.length / 15))}
               />
-              {/* Left axis — Doluluk % (0-100) */}
+              {/* Left axis — Doluluk % (0-100) and Day Effect */}
               <YAxis
                 yAxisId="left"
                 stroke="#94a3b8"
@@ -385,6 +488,19 @@ export default function DashboardForecastWidget({
               <YAxis yAxisId="guests" hide domain={['auto', 'auto']} />
               <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-slate-200 dark:stroke-slate-700" />
               <Tooltip content={<CustomTooltip />} />
+              
+              {/* Day Effect bars behind the areas */}
+              {showDayEffect && (
+                 <Bar 
+                   dataKey="pickupNet" 
+                   yAxisId="left" 
+                   fill="#f43f5e" 
+                   name="Gün Etkisi (Net Oda)" 
+                   opacity={0.6}
+                   radius={[4, 4, 0, 0]} 
+                 />
+              )}
+
               {SERIES.map(s => (
                 visibleSeries.has(s.key) && (
                   <Area
@@ -400,16 +516,29 @@ export default function DashboardForecastWidget({
                   />
                 )
               ))}
-            </AreaChart>
+              
+              {/* Markers for Peak / Trough */}
+              {visibleSeries.has('occupancy') && maxOccPoint && (
+                 <ReferenceDot yAxisId="left" x={maxOccPoint.label} y={maxOccPoint.occupancy} r={5} fill="#3b82f6" stroke="#ffffff" strokeWidth={2} label={{ position: 'top', value: `Max ${maxOccPoint.occupancy}%`, fill: '#3b82f6', fontSize: 10, fontWeight: 'bold' }} />
+              )}
+              {visibleSeries.has('occupancy') && minOccPoint && minOccPoint.occupancy < 100 && (
+                 <ReferenceDot yAxisId="left" x={minOccPoint.label} y={minOccPoint.occupancy} r={4} fill="#94a3b8" stroke="#ffffff" strokeWidth={2} label={{ position: 'bottom', value: `Min ${minOccPoint.occupancy}%`, fill: '#94a3b8', fontSize: 10 }} />
+              )}
+              
+              {visibleSeries.has('adr') && maxAdrPoint && (
+                 <ReferenceDot yAxisId="right" x={maxAdrPoint.label} y={maxAdrPoint.adr} r={5} fill="#f59e0b" stroke="#ffffff" strokeWidth={2} label={{ position: 'top', value: `Max ${symbol}${maxAdrPoint.adr}`, fill: '#f59e0b', fontSize: 10, fontWeight: 'bold' }} />
+              )}
+            </ComposedChart>
           </ResponsiveContainer>
         </div>
         )
       })() : (
         <div className="h-[300px] w-full flex flex-col items-center justify-center text-slate-400 border border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
           <Calendar size={48} className="mb-4 opacity-50" />
-          <p>Gelecek dönem için onaylı rezervasyon bulunamadı.</p>
+          <p>Seçili dönem (1 Nis - 31 Eki {seasonYear}) için onaylı rezervasyon bulunamadı.</p>
         </div>
       )}
     </div>
   )
 }
+

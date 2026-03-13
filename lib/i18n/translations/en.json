@@ -164,7 +164,36 @@
             "reservationPerformance": "Reservation Performance (Last 14 Days)",
             "channelDistribution": "Channel Distribution",
             "recentReservations": "Recent Reservations",
-            "viewAll": "View All"
+            "viewAll": "View All",
+            "analytics_chart": {
+                "title": "Traffic & Conversion Analysis",
+                "error": "An error occurred while loading data.",
+                "traffic_label": "Visitor Traffic",
+                "ad_spend_label": "Ad Spend",
+                "conversions_label": "Conversions (Reservations)"
+            },
+            "filter": {
+                "presets": {
+                    "today": "Today",
+                    "last_7_days": "Last 7 Days",
+                    "this_month": "This Month",
+                    "last_month": "Last Month",
+                    "this_year": "This Year",
+                    "all_season": "All Season"
+                },
+                "buttons": {
+                    "filter": "Filter"
+                },
+                "tooltip": "Information About Data Collection",
+                "info": {
+                    "title": "Data Collection Principles",
+                    "reservation_data": "Reservation Data: Comes from live MS SQL connection to Asisia PMS. Filtered by creation date.",
+                    "channel_breakdown": "Channel Breakdown: Grouped by OTA, Call Center, Web, Direct, and Tour Operator channels.",
+                    "pickup_analysis": "Pickup Analysis: Shows the number of new and cancelled reservations created in the selected period.",
+                    "currency_conversion": "Currency Conversion: TRY/EUR/USD are supported with automatic exchange rate conversions."
+                },
+                "currency": "Currency"
+            }
         }
     }
 }

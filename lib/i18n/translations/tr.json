@@ -164,7 +164,36 @@
             "reservationPerformance": "Rezervasyon Performansı (Son 14 Gün)",
             "channelDistribution": "Kanal Dağılımı",
             "recentReservations": "Son Rezervasyonlar",
-            "viewAll": "Tümünü Gör"
+            "viewAll": "Tümünü Gör",
+            "analytics_chart": {
+                "title": "Trafik & Dönüşüm Analizi",
+                "error": "Veriler yüklenirken bir hata oluştu.",
+                "traffic_label": "Ziyaretçi Trafiği",
+                "ad_spend_label": "Reklam Harcaması",
+                "conversions_label": "Dönüşüm (Rezervasyon)"
+            },
+            "filter": {
+                "presets": {
+                    "today": "Bugün",
+                    "last_7_days": "Son 7 Gün",
+                    "this_month": "Bu Ay",
+                    "last_month": "Geçen Ay",
+                    "this_year": "Bu Yıl",
+                    "all_season": "Tüm Sezon"
+                },
+                "buttons": {
+                    "filter": "Filtrele"
+                },
+                "tooltip": "Veri Toplama Hakkında Bilgi",
+                "info": {
+                    "title": "Veri Toplama Prensipleri",
+                    "reservation_data": "Rezervasyon Verileri: Asisia PMS canlı MS SQL bağlantısından gelir. Oluşturma tarihine göre filtrelenir.",
+                    "channel_breakdown": "Kanal Kırılımı: OTA, Call Center, Web, Direkt ve Tur Operatörü kanallarına göre gruplanır.",
+                    "pickup_analysis": "Pickup Analizi: Seçili dönemde oluşturulan yeni ve iptal edilen rez. sayılarını gösterir.",
+                    "currency_conversion": "Döviz Çevrimi: Otomatik kur çevrimleriyle TL/EUR/USD desteklenir."
+                },
+                "currency": "Döviz"
+            }
         }
     }
 }
