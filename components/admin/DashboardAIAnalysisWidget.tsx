@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import { Sparkles, RefreshCcw, AlertCircle, CheckCircle2, Info } from 'lucide-react'
+import React, { useState } from 'react'
+import { Sparkles, RefreshCcw, AlertCircle, Zap, Info, CheckCircle2 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 
 interface DashboardAIAnalysisWidgetProps {
@@ -11,6 +11,14 @@ interface DashboardAIAnalysisWidgetProps {
     pickupData: any
     currency: string
     locale: string
+}
+
+// Progressive loading stages
+const STAGES = {
+    tr: ['Veriler okunuyor...', 'AI modeline gönderiliyor...', 'Analiz oluşturuluyor...', 'Rapor yazılıyor...'],
+    en: ['Reading data...', 'Sending to AI model...', 'Generating analysis...', 'Writing report...'],
+    de: ['Daten werden gelesen...', 'An AI-Modell senden...', 'Analyse wird erstellt...', 'Bericht wird geschrieben...'],
+    ru: ['Чтение данных...', 'Отправка в ИИ...', 'Генерация анализа...', 'Написание отчёта...'],
 }
 
 export default function DashboardAIAnalysisWidget({
@@ -24,13 +32,22 @@ export default function DashboardAIAnalysisWidget({
     const [analysis, setAnalysis] = useState<string | null>(null)
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const [stage, setStage] = useState(0)
 
-    const fetchAnalysis = async (forceRefetch = false) => {
-        // Prevent unnecessary refetches unless explicitly requested
-        if (analysis && !forceRefetch) return
+    const stages = STAGES[locale as keyof typeof STAGES] || STAGES.tr
 
+    const hasValidData = stats && stats.totalReservations > 0
+
+    const fetchAnalysis = async () => {
         setIsLoading(true)
         setError(null)
+        setAnalysis(null)
+        setStage(0)
+
+        // Progressive stage animation
+        const stageInterval = setInterval(() => {
+            setStage(prev => Math.min(prev + 1, stages.length - 1))
+        }, 2000)
 
         try {
             const response = await fetch('/api/admin/dashboard/ai', {
@@ -54,19 +71,26 @@ export default function DashboardAIAnalysisWidget({
                 throw new Error(data.error || 'Yapay zeka analizi alınamadı.')
             }
 
+            clearInterval(stageInterval)
+            setStage(stages.length - 1)
             setAnalysis(data.summary)
         } catch (err: any) {
             console.error('AI Analysis Error:', err)
+            clearInterval(stageInterval)
             setError(err.message || 'Bilinmeyen bir hata oluştu.')
         } finally {
             setIsLoading(false)
         }
     }
 
-    // Automatically fetch analysis on component mount or when dependency data changes meaningfully
-    useEffect(() => {
-        fetchAnalysis()
-    }, [startDate, endDate, currency, stats.totalReservations, pickupData.netPickup])
+    const buttonLabel = locale === 'tr' ? 'Analiz Et' : locale === 'en' ? 'Analyze' : locale === 'de' ? 'Analysieren' : 'Анализ'
+    const refreshLabel = locale === 'tr' ? 'Yenile' : locale === 'en' ? 'Refresh' : locale === 'de' ? 'Aktualisieren' : 'Обновить'
+    const noDataLabel = locale === 'tr' 
+        ? 'Analiz için yeterli veri yok. Lütfen dönem filtrelerini kontrol edin.' 
+        : 'Not enough data for analysis. Please check period filters.'
+    const idleLabel = locale === 'tr' 
+        ? 'Dashboard verilerinizi AI ile analiz etmek için butona tıklayın.' 
+        : 'Click the button to analyze your dashboard data with AI.'
 
     return (
         <div className="bg-gradient-to-r from-violet-600/10 via-fuchsia-600/10 to-indigo-600/10 border border-violet-200 dark:border-violet-500/30 rounded-2xl p-6 shadow-sm relative overflow-hidden">
@@ -87,24 +111,52 @@ export default function DashboardAIAnalysisWidget({
                     </div>
                 </div>
 
-                <button
-                    onClick={() => fetchAnalysis(true)}
-                    disabled={isLoading}
-                    className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-violet-700 dark:text-violet-300 bg-violet-100 dark:bg-violet-900/30 hover:bg-violet-200 dark:hover:bg-violet-800/50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    <RefreshCcw size={14} className={isLoading ? 'animate-spin' : ''} />
-                    {isLoading ? 'Analiz Ediliyor...' : 'Yenile'}
-                </button>
+                {/* Action Button */}
+                {analysis ? (
+                    <button
+                        onClick={fetchAnalysis}
+                        disabled={isLoading || !hasValidData}
+                        className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-violet-700 dark:text-violet-300 bg-violet-100 dark:bg-violet-900/30 hover:bg-violet-200 dark:hover:bg-violet-800/50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <RefreshCcw size={14} className={isLoading ? 'animate-spin' : ''} />
+                        {isLoading ? stages[stage] : refreshLabel}
+                    </button>
+                ) : (
+                    <button
+                        onClick={fetchAnalysis}
+                        disabled={isLoading || !hasValidData}
+                        className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-violet-500 to-fuchsia-600 hover:from-violet-600 hover:to-fuchsia-700 rounded-lg shadow-lg shadow-violet-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
+                    >
+                        <Zap size={16} />
+                        {isLoading ? stages[stage] : buttonLabel}
+                    </button>
+                )}
             </div>
 
             <div className="relative z-10 bg-white/60 dark:bg-slate-900/40 backdrop-blur-sm rounded-xl border border-white/50 dark:border-white/5 p-5 min-h-[100px]">
-                {isLoading && !analysis ? (
+                {isLoading ? (
                     <div className="flex flex-col items-center justify-center py-6 text-violet-600 dark:text-violet-400">
                         <span className="relative flex h-8 w-8 mb-3">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-8 w-8 bg-violet-500"></span>
                         </span>
-                        <p className="text-sm font-medium animate-pulse">Otel performans verileriniz analiz ediliyor...</p>
+                        {/* Progressive stages */}
+                        <div className="space-y-2 text-center">
+                            {stages.map((s, i) => (
+                                <div key={i} className={`flex items-center gap-2 text-sm transition-all duration-500 ${
+                                    i <= stage ? 'opacity-100' : 'opacity-20'
+                                }`}>
+                                    {i < stage ? (
+                                        <CheckCircle2 size={14} className="text-emerald-500" />
+                                    ) : i === stage ? (
+                                        <RefreshCcw size={14} className="animate-spin text-violet-500" />
+                                    ) : (
+                                        <div className="w-3.5 h-3.5 rounded-full border border-slate-300 dark:border-slate-600" />
+                                    )}
+                                    <span className={i === stage ? 'font-medium animate-pulse' : ''}>{s}</span>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 ) : error ? (
                     <div className="flex items-start gap-3 text-red-600 dark:text-red-400 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
@@ -112,6 +164,12 @@ export default function DashboardAIAnalysisWidget({
                         <div>
                             <h4 className="font-semibold text-sm">Analiz Hatası</h4>
                             <p className="text-sm mt-1">{error}</p>
+                            <button 
+                                onClick={fetchAnalysis}
+                                className="mt-2 text-xs text-red-700 dark:text-red-300 underline hover:no-underline"
+                            >
+                                Tekrar dene
+                            </button>
                         </div>
                     </div>
                 ) : analysis ? (
@@ -124,9 +182,18 @@ export default function DashboardAIAnalysisWidget({
                         <ReactMarkdown>{analysis}</ReactMarkdown>
                     </div>
                 ) : (
-                    <div className="flex items-center gap-2 text-slate-500 py-6 justify-center">
-                        <Info size={18} />
-                        <span className="text-sm">Analiz sonucu bekleniyor...</span>
+                    <div className="flex flex-col items-center justify-center py-6 text-slate-400">
+                        {hasValidData ? (
+                            <>
+                                <Sparkles size={24} className="mb-2 opacity-40" />
+                                <p className="text-sm text-center">{idleLabel}</p>
+                            </>
+                        ) : (
+                            <>
+                                <Info size={24} className="mb-2 opacity-40" />
+                                <p className="text-sm text-center">{noDataLabel}</p>
+                            </>
+                        )}
                     </div>
                 )}
             </div>
