@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { ApifyClient } from 'apify-client'
+import { scraperCache } from '@/lib/utils/api-cache'
 
 export interface FlightData {
     origin: string
@@ -55,6 +56,8 @@ export class ScraperService {
      * Falls back to simulated data if the API limit is reached or execution fails.
      */
     static async getCompetitorRates(checkIn: string): Promise<CompetitorRate[]> {
+        const cacheKey = `scraper:competitors:${checkIn}`
+        return scraperCache.getOrFetch(cacheKey, async () => {
         const competitors = [
             { name: 'Rixos Premium Bodrum', score: 9.1 },
             { name: 'Vogue Hotel Supreme', score: 8.8 },
@@ -143,6 +146,7 @@ export class ScraperService {
         })
 
         return rates.sort((a, b) => a.price - b.price)
+        }, 120)
     }
 
     /**
@@ -183,5 +187,9 @@ export class ScraperService {
             demand,
             lastUpdated: new Date().toISOString()
         }
+    }
+
+    static clearCache(): void {
+        scraperCache.invalidatePrefix('scraper:')
     }
 }

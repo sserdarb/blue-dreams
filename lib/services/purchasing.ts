@@ -88,6 +88,7 @@ export type PriceTrend = {
 
 import { prisma } from '@/lib/prisma'
 import { isDemoSession } from '@/lib/demo-session'
+import { erpCache } from '@/lib/utils/api-cache'
 
 // ─── Elektra ERP API Client ────────────────────────────────────
 // API Architecture:
@@ -241,112 +242,118 @@ export const PurchasingService = {
     },
 
     async getStockItems(): Promise<StockItem[]> {
-        currentDataSource = 'live'
+        return erpCache.getOrFetch('purchasing:stockItems', async () => {
+            currentDataSource = 'live'
 
-        if (erpClient.isConfigured) {
-            try {
-                const raw = await erpClient.request({
-                    Action: 'Function',
-                    Object: 'FN_ACCOUNTING_GET_STOCK_LIST',
-                    Parameters: { _OFFSET: 0, _NEXT: 1000 }
-                })
-                let erpData: any[] = []
-                if (raw && Array.isArray(raw) && raw[0]?.[0]?.Return) {
-                    const parsed = JSON.parse(raw[0][0].Return)
-                    erpData = parsed.STOCK_LIST || []
-                }
+            if (erpClient.isConfigured) {
+                try {
+                    const raw = await erpClient.request({
+                        Action: 'Function',
+                        Object: 'FN_ACCOUNTING_GET_STOCK_LIST',
+                        Parameters: { _OFFSET: 0, _NEXT: 1000 }
+                    })
+                    let erpData: any[] = []
+                    if (raw && Array.isArray(raw) && raw[0]?.[0]?.Return) {
+                        const parsed = JSON.parse(raw[0][0].Return)
+                        erpData = parsed.STOCK_LIST || []
+                    }
 
-                if (erpData && erpData.length > 0) {
-                    console.log(`[Purchasing] FN_ACCOUNTING_GET_STOCK_LIST returned ${erpData.length} items`)
-                    return erpData.map((item: any) => ({
-                        id: String(item.ID || item.STOCKCODE || ''),
-                        name: item.NAME || item.STOCKNAME || '',
-                        category: (item.GROUPNAME || 'Genel') as StockCategory,
-                        unit: item.UNITNAME || 'adet',
-                        currentStock: item.CURRENT_STOCK_QUANTITY || 0,
-                        minStock: item.MINLEVEL || 0,
-                        maxStock: item.MAXLEVEL || 0,
-                        avgDailyConsumption: 0, // Not explicitly in this endpoint
-                        lastPrice: item.LASTBUYINGPRICE || item.AVGBUYINGPRICE || 0,
-                        currency: 'TRY', // Default for now
-                        priceHistory: [],
-                        lastOrderDate: item.LASTBUYINGDATE ? item.LASTBUYINGDATE.split('T')[0] : '',
-                        vendor: item.LASTVENDOR || '',
-                    }))
+                    if (erpData && erpData.length > 0) {
+                        console.log(`[Purchasing] FN_ACCOUNTING_GET_STOCK_LIST returned ${erpData.length} items`)
+                        return erpData.map((item: any) => ({
+                            id: String(item.ID || item.STOCKCODE || ''),
+                            name: item.NAME || item.STOCKNAME || '',
+                            category: (item.GROUPNAME || 'Genel') as StockCategory,
+                            unit: item.UNITNAME || 'adet',
+                            currentStock: item.CURRENT_STOCK_QUANTITY || 0,
+                            minStock: item.MINLEVEL || 0,
+                            maxStock: item.MAXLEVEL || 0,
+                            avgDailyConsumption: 0,
+                            lastPrice: item.LASTBUYINGPRICE || item.AVGBUYINGPRICE || 0,
+                            currency: 'TRY',
+                            priceHistory: [],
+                            lastOrderDate: item.LASTBUYINGDATE ? item.LASTBUYINGDATE.split('T')[0] : '',
+                            vendor: item.LASTVENDOR || '',
+                        }))
+                    }
+                } catch (err) {
+                    console.warn('[Purchasing] FN_ACCOUNTING_GET_STOCK_LIST failed:', (err as Error).message)
                 }
-            } catch (err) {
-                console.warn('[Purchasing] FN_ACCOUNTING_GET_STOCK_LIST failed:', (err as Error).message)
             }
-        }
 
-        return []
+            return []
+        }, 30)
     },
 
     async getPurchaseOrders(from?: Date, to?: Date): Promise<PurchaseOrder[]> {
-        currentDataSource = 'live'
+        const cacheKey = `purchasing:orders:${from?.toISOString() || 'all'}:${to?.toISOString() || 'all'}`
+        return erpCache.getOrFetch(cacheKey, async () => {
+            currentDataSource = 'live'
 
-        if (erpClient.isConfigured) {
-            try {
-                // QA_STOCK_FICHE
-                const erpData = await erpClient.request({
-                    Action: "Select",
-                    Object: "QA_STOCK_FICHE",
-                    Select: ["ID", "TDATE", "DOCNUMBER", "TOTALPRICE", "SENDERSTORENAME", "RECIPIENTSTORENAME", "VENDORNAME", "TYPENAME", "GROSSTOTAL", "APPROVALSTATUS", "APPROVALSTATE"],
-                    Paging: { Current: 1, ItemsPerPage: 500 }
-                })
+            if (erpClient.isConfigured) {
+                try {
+                    const erpData = await erpClient.request({
+                        Action: "Select",
+                        Object: "QA_STOCK_FICHE",
+                        Select: ["ID", "TDATE", "DOCNUMBER", "TOTALPRICE", "SENDERSTORENAME", "RECIPIENTSTORENAME", "VENDORNAME", "TYPENAME", "GROSSTOTAL", "APPROVALSTATUS", "APPROVALSTATE"],
+                        Paging: { Current: 1, ItemsPerPage: 500 }
+                    })
 
-                const fiches = erpData?.ResultSets?.[0] || []
-                if (fiches.length > 0) {
-                    return fiches.map((order: any) => ({
-                        id: String(order.ID || order.DOCNUMBER || ''),
-                        date: order.TDATE ? order.TDATE.split(' ')[0] : '',
-                        vendor: order.VENDORNAME || order.SENDERSTORENAME || '',
-                        vendorId: '',
-                        department: order.RECIPIENTSTORENAME || '',
-                        items: [], // Details require QA_STOCK_FICHE_DETAIL queries per fiche, skipped for summary
-                        totalAmount: order.GROSSTOTAL || order.TOTALPRICE || 0,
-                        currency: 'TRY',
-                        status: order.APPROVALSTATE || order.APPROVALSTATUS || order.TYPENAME || 'Beklemede',
-                        deliveryDate: null,
-                        approvedBy: '',
-                        notes: order.TYPENAME || '',
-                    }))
+                    const fiches = erpData?.ResultSets?.[0] || []
+                    if (fiches.length > 0) {
+                        return fiches.map((order: any) => ({
+                            id: String(order.ID || order.DOCNUMBER || ''),
+                            date: order.TDATE ? order.TDATE.split(' ')[0] : '',
+                            vendor: order.VENDORNAME || order.SENDERSTORENAME || '',
+                            vendorId: '',
+                            department: order.RECIPIENTSTORENAME || '',
+                            items: [],
+                            totalAmount: order.GROSSTOTAL || order.TOTALPRICE || 0,
+                            currency: 'TRY',
+                            status: order.APPROVALSTATE || order.APPROVALSTATUS || order.TYPENAME || 'Beklemede',
+                            deliveryDate: null,
+                            approvedBy: '',
+                            notes: order.TYPENAME || '',
+                        }))
+                    }
+                } catch (err) {
+                    console.warn(`[Purchasing] QA_STOCK_FICHE failed:`, (err as Error).message)
                 }
-            } catch (err) {
-                console.warn(`[Purchasing] QA_STOCK_FICHE failed:`, (err as Error).message)
             }
-        }
 
-        return []
+            return []
+        }, 30)
     },
 
     async getVendors(): Promise<Vendor[]> {
-        currentDataSource = 'live'
+        return erpCache.getOrFetch('purchasing:vendors', async () => {
+            currentDataSource = 'live'
 
-        if (erpClient.isConfigured) {
-            const erpData = await erpClient.trySelect<any>([
-                'Supplier', 'SUPPLIER', 'TEDARIKCI', 'Vendor', 'VENDOR', 'CurrentAccount'
-            ])
-            if (erpData && erpData.length > 0) {
-                const vendors = erpData.map((v: any) => ({
-                    id: String(v.Id || v.SupplierId || ''),
-                    name: String(v.Name || v.SupplierName || ''),
-                    category: String(v.Category || v.GroupName || ''),
-                    totalOrders: Number(v.TotalOrders || 0),
-                    totalSpent: Number(v.TotalSpent || v.TotalAmount || 0),
-                    avgDeliveryDays: Number(v.AvgDeliveryDays || 0),
-                    onTimeRate: Number(v.OnTimeRate || 0),
-                    returnRate: Number(v.ReturnRate || 0),
-                    priceCompetitiveness: Number(v.PriceCompetitiveness || 70),
-                    performanceScore: 0,
-                }))
-                return vendors.sort(
-                    (a: any, b: any) => b.performanceScore - a.performanceScore
-                )
+            if (erpClient.isConfigured) {
+                const erpData = await erpClient.trySelect<any>([
+                    'Supplier', 'SUPPLIER', 'TEDARIKCI', 'Vendor', 'VENDOR', 'CurrentAccount'
+                ])
+                if (erpData && erpData.length > 0) {
+                    const vendors = erpData.map((v: any) => ({
+                        id: String(v.Id || v.SupplierId || ''),
+                        name: String(v.Name || v.SupplierName || ''),
+                        category: String(v.Category || v.GroupName || ''),
+                        totalOrders: Number(v.TotalOrders || 0),
+                        totalSpent: Number(v.TotalSpent || v.TotalAmount || 0),
+                        avgDeliveryDays: Number(v.AvgDeliveryDays || 0),
+                        onTimeRate: Number(v.OnTimeRate || 0),
+                        returnRate: Number(v.ReturnRate || 0),
+                        priceCompetitiveness: Number(v.PriceCompetitiveness || 70),
+                        performanceScore: 0,
+                    }))
+                    return vendors.sort(
+                        (a: any, b: any) => b.performanceScore - a.performanceScore
+                    )
+                }
             }
-        }
 
-        return []
+            return []
+        }, 30)
     },
 
     async createPurchaseOrder(payload: any): Promise<boolean> {
@@ -419,5 +426,9 @@ export const PurchasingService = {
             vendorCount: vendors.length,
             dataSource: currentDataSource,
         }
+    },
+
+    clearCache(): void {
+        erpCache.invalidatePrefix('purchasing:')
     }
 }

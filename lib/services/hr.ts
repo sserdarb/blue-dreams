@@ -7,6 +7,7 @@
 // - Seasonal staffing patterns (resort operates Apr-Oct)
 
 import { ElektraERP, ERP_API_KEY_STOCK } from './purchasing'
+import { erpCache } from '@/lib/utils/api-cache'
 
 // ─── Types ─────────────────────────────────────────────────────
 
@@ -182,6 +183,8 @@ export const HRService = {
 
     // ── Personnel Costs (from Trial Balance accounts) ────────────
     async getPersonnelCosts(fromDate: string, toDate: string): Promise<PersonnelCost[]> {
+        const cacheKey = `hr:personnelCosts:${fromDate}:${toDate}`
+        return erpCache.getOrFetch(cacheKey, async () => {
         if (erpClient.isConfigured) {
             try {
                 const result = await erpClient.execute('SP_EASYPMS_ACCOUNT_TRIALBALANCE4', {
@@ -224,6 +227,7 @@ export const HRService = {
 
         currentDataSource = 'live'
         return []
+        }, 30)
     },
 
     // ── KPIs ─────────────────────────────────────────────────────
@@ -302,5 +306,9 @@ export const HRService = {
             { metric: 'Personel Maliyet / Gelir (%)', hotel: 0, industry: 33, status: 'below' },
             { metric: 'Sezonluk / Toplam Personel (%)', hotel: 0, industry: 30, status: 'below' },
         ]
+    },
+
+    clearCache(): void {
+        erpCache.invalidatePrefix('hr:')
     },
 }

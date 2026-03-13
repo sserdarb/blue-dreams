@@ -43,6 +43,22 @@ export async function register() {
                             console.log('[Instrumentation] Auto-refreshing Elektra cache...')
                             await ElektraCache.refresh()
                             console.log('[Instrumentation] Auto-refresh complete')
+
+                            // ─── Nightly 02:00 Deep Archive ───
+                            // If current time is within 15 min of 02:00, also archive the full year
+                            const now = new Date()
+                            const hour = now.getHours()
+                            const minute = now.getMinutes()
+                            if (hour === 2 && minute < 15) {
+                                try {
+                                    const currentYear = now.getFullYear()
+                                    console.log(`[Instrumentation] 🌙 Nightly deep sync: archiving year ${currentYear}...`)
+                                    const count = await ElektraCache.refreshYear(currentYear)
+                                    console.log(`[Instrumentation] 🌙 Nightly deep sync complete: ${count} reservations archived`)
+                                } catch (archiveErr) {
+                                    console.error('[Instrumentation] Nightly archive failed:', archiveErr)
+                                }
+                            }
                         } catch (err) {
                             console.error('[Instrumentation] Auto-refresh failed:', err)
                         } finally {

@@ -6,6 +6,7 @@
  */
 
 import { ElektraService, type Reservation, type RoomAvailability, type DailyOccupancy } from './elektra'
+import { bigdataCache } from '@/lib/utils/api-cache'
 
 // ─── Types ────────────────────────────────────────────────────
 
@@ -110,6 +111,7 @@ function seasonOf(month: number): string {
 export const BigDataService = {
 
     async fetchAllData() {
+        return bigdataCache.getOrFetch('bigdata:allData', async () => {
         const now = new Date()
         const year = now.getFullYear()
 
@@ -134,6 +136,7 @@ export const BigDataService = {
         _ratesFetched = true
 
         return { currentReservations, prevYearReservations, availability, occupancy, rates }
+        }, 5)
     },
 
     // ═══════════════════════════════════════════════════════════
@@ -904,5 +907,9 @@ export const BigDataService = {
                 share: Math.round((rsvs.length / total) * 100),
             }
         }).sort((a, b) => b.revenue - a.revenue)
+    },
+
+    clearCache(): void {
+        bigdataCache.invalidatePrefix('bigdata:')
     },
 }

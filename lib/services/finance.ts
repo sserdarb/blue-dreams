@@ -97,6 +97,7 @@ export type DataSource = 'live' | 'demo'
 
 import { prisma } from '@/lib/prisma'
 import { isDemoSession } from '@/lib/demo-session'
+import { erpCache } from '@/lib/utils/api-cache'
 
 const HOTEL_ID = 33264
 
@@ -333,49 +334,52 @@ export const FinanceService = {
 
     // ── Trial Balance (Mizan) ────────────────────────────────────
     async getTrialBalance(fromDate: string, toDate: string): Promise<TrialBalanceRow[]> {
-        const isDemo = await this.checkSettings();
-        currentDataSource = 'live';
-        if (erpStock.isConfigured) {
-            try {
-                const result = await erpStock.execute('SP_EASYPMS_ACCOUNT_TRIALBALANCE4', {
-                    FROMDATE: fromDate,
-                    TODATE: toDate,
-                    FROMCODE: '',
-                    TOCODE: 'zzz',
-                })
-                if (result && Array.isArray(result)) {
-                    const parsed = result.flat?.() ?? result
-                    const returnData = parsed.find?.((r: any) => r?.Return || r?.BODY)
-                    if (returnData) {
-                        const body = typeof (returnData.Return || returnData.BODY) === 'string'
-                            ? JSON.parse(returnData.Return || returnData.BODY)
-                            : (returnData.Return || returnData.BODY)
-                        if (body?.ACCOUNTS && Array.isArray(body.ACCOUNTS)) {
-                            currentDataSource = 'live'
-                            return body.ACCOUNTS.map((acc: any) => ({
-                                accountCode: acc.CODE || acc.AccountCode || '',
-                                accountName: acc.NAME || acc.AccountName || '',
-                                debit: acc.DEBIT || 0,
-                                credit: acc.CREDIT || 0,
-                                balance: (acc.DEBIT || 0) - (acc.CREDIT || 0),
-                                group: (acc.CODE || '').startsWith('6') ? 'Gelir'
-                                    : (acc.CODE || '').startsWith('7') ? 'Gider'
-                                        : parseInt(acc.CODE || '0') < 300 ? 'Aktif' : 'Pasif',
-                            }))
+        const cacheKey = `finance:trialBalance:${fromDate}:${toDate}`
+        return erpCache.getOrFetch(cacheKey, async () => {
+            const isDemo = await this.checkSettings();
+            currentDataSource = 'live';
+            if (erpStock.isConfigured) {
+                try {
+                    const result = await erpStock.execute('SP_EASYPMS_ACCOUNT_TRIALBALANCE4', {
+                        FROMDATE: fromDate,
+                        TODATE: toDate,
+                        FROMCODE: '',
+                        TOCODE: 'zzz',
+                    })
+                    if (result && Array.isArray(result)) {
+                        const parsed = result.flat?.() ?? result
+                        const returnData = parsed.find?.((r: any) => r?.Return || r?.BODY)
+                        if (returnData) {
+                            const body = typeof (returnData.Return || returnData.BODY) === 'string'
+                                ? JSON.parse(returnData.Return || returnData.BODY)
+                                : (returnData.Return || returnData.BODY)
+                            if (body?.ACCOUNTS && Array.isArray(body.ACCOUNTS)) {
+                                currentDataSource = 'live'
+                                return body.ACCOUNTS.map((acc: any) => ({
+                                    accountCode: acc.CODE || acc.AccountCode || '',
+                                    accountName: acc.NAME || acc.AccountName || '',
+                                    debit: acc.DEBIT || 0,
+                                    credit: acc.CREDIT || 0,
+                                    balance: (acc.DEBIT || 0) - (acc.CREDIT || 0),
+                                    group: (acc.CODE || '').startsWith('6') ? 'Gelir'
+                                        : (acc.CODE || '').startsWith('7') ? 'Gider'
+                                            : parseInt(acc.CODE || '0') < 300 ? 'Aktif' : 'Pasif',
+                                }))
+                            }
                         }
                     }
+                } catch (err) {
+                    console.warn('[Finance] Trial balance error:', (err as Error).message)
                 }
-            } catch (err) {
-                console.warn('[Finance] Trial balance error:', (err as Error).message)
             }
-        }
 
-        if (isDemo) {
-            currentDataSource = 'demo'
-            return generateTrialBalance()
-        }
-        currentDataSource = 'live'
-        return []
+            if (isDemo) {
+                currentDataSource = 'demo'
+                return generateTrialBalance()
+            }
+            currentDataSource = 'live'
+            return []
+        }, 15)
     },
 
     // ── Daily Payments (Tahsilat) ────────────────────────────────
@@ -714,5 +718,9 @@ export const FinanceService = {
         }
         currentDataSource = 'live'
         return []
+    },
+
+    clearCache(): void {
+        erpCache.invalidatePrefix('finance:')
     },
 }

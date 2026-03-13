@@ -252,3 +252,58 @@ input[type="datetime-local"][class*="bg-slate"] {
   outline-offset: 2px;
   border-radius: 4px;
 }
+
+/* ─── Safari CSS Compatibility ─── */
+/* Safari requires -webkit-backdrop-filter prefix for blur effects */
+/* Tailwind v4 lightningcss may not emit this prefix without browserslistrc */
+@supports (-webkit-backdrop-filter: blur(1px)) {
+  [class*="backdrop-blur"] {
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+  }
+
+  [class*="backdrop-blur-sm"] {
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+  }
+
+  [class*="backdrop-blur-md"] {
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+  }
+
+  [class*="backdrop-blur-lg"] {
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+  }
+
+  [class*="backdrop-blur-xl"] {
+    -webkit-backdrop-filter: blur(24px);
+    backdrop-filter: blur(24px);
+  }
+
+  [class*="backdrop-blur-2xl"] {
+    -webkit-backdrop-filter: blur(40px);
+    backdrop-filter: blur(40px);
+  }
+}
+
+/* Safari older versions: ensure bg-opacity patterns don't break rendering */
+@supports not (backdrop-filter: blur(1px)) {
+  [class*="backdrop-blur"] {
+    background-color: rgba(255, 255, 255, 0.95) !important;
+  }
+
+  .dark [class*="backdrop-blur"],
+  [class*="bg-black"] [class*="backdrop-blur"],
+  [class*="bg-slate-9"] [class*="backdrop-blur"] {
+    background-color: rgba(0, 0, 0, 0.95) !important;
+  }
+}
+
+/* Safari flexbox gap fallback for versions < 14.1 */
+@supports not (gap: 1rem) {
+  .flex > * + * {
+    margin-left: 0.25rem;
+  }
+}

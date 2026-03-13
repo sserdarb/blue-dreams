@@ -123,7 +123,7 @@ export const ElektraCache = {
      * Strategy: Fetch +/- 3 months window around today to keep active data fresh.
      */
     async refresh(): Promise<void> {
-        console.log('[ElektraCache] Refreshing from Elektra PMS (DB Sync)...')
+        console.log('[ElektraCache] Refreshing from Elektra PMS (DELETE + REWRITE)...')
         const start = Date.now()
 
         // Fetch window: 3 months back to 12 months forward
@@ -131,138 +131,37 @@ export const ElektraCache = {
         const fromDate = new Date(today.getFullYear(), today.getMonth() - 3, 1)
         const toDate = new Date(today.getFullYear() + 1, today.getMonth(), 0)
 
-        // Fetch Exchange Rates & Upsert
+        // ─── Exchange Rates: DELETE old → write fresh ───
         try {
             const rates = await ElektraService.getExchangeRates()
-            await prisma.elektraRate.upsert({
-                where: { date: new Date() }, // Using today as key (ignoring time for simplicity in model, though standard datetime)
-                update: {
-                    eur: rates.EUR_TO_TRY,
-                    usd: rates.USD_TO_TRY,
-                    fetchedAt: new Date()
-                },
-                create: {
+            await prisma.elektraRate.deleteMany({})
+            await prisma.elektraRate.create({
+                data: {
                     date: new Date(),
                     eur: rates.EUR_TO_TRY,
                     usd: rates.USD_TO_TRY,
                     fetchedAt: new Date()
                 }
             })
+            console.log(`[ElektraCache] ✓ Exchange rates wiped & rewritten`)
         } catch (e) {
             console.error('[ElektraCache] Rate Refresh Error:', e)
         }
 
-        // Fetch Reservations & Upsert
+        // ─── Reservations: DELETE all → bulk INSERT fresh ───
         try {
             const allReservations = await ElektraService.getReservations(fromDate, toDate)
 
-            // ONLY cache data up to 23:59:59 of yesterday. 
-            // Today's dynamically changing data will be fetched in real-time by the dashboard.
-            const todayStr = today.toISOString().split('T')[0]
-            const reservations = allReservations.filter(res => {
-                const updatedDateStr = res.lastUpdate ? res.lastUpdate.slice(0, 10) : ''
-                return updatedDateStr < todayStr
-            })
+            // Wipe all existing reservation data
+            const deleted = await prisma.elektraReservation.deleteMany({})
+            console.log(`[ElektraCache] Wiped ${deleted.count} old reservations`)
 
-            // Batch upsert (PRISMA doesn't support bulk upsert easily, so loop or createMany on conflict)
-            // Using loop is safer for data integrity
-            for (const res of reservations) {
-                await prisma.elektraReservation.upsert({
-                    where: { id: res.id },
-                    update: {
-                        voucherNo: res.voucherNo,
-                        agency: res.agency,
-                        channel: res.channel,
-                        boardType: res.boardType,
-                        roomType: res.roomType,
-                        checkIn: new Date(res.checkIn),
-                        checkOut: new Date(res.checkOut),
-                        totalPrice: res.totalPrice,
-                        paidPrice: res.paidPrice,
-                        currency: res.currency,
-                        status: res.status,
-                        roomCount: res.roomCount,
-                        country: res.country,
-                        bookedAt: new Date(res.lastUpdate),
-                    },
-                    create: {
-                        id: res.id,
-                        voucherNo: res.voucherNo,
-                        agency: res.agency,
-                        channel: res.channel,
-                        boardType: res.boardType,
-                        roomType: res.roomType,
-                        checkIn: new Date(res.checkIn),
-                        checkOut: new Date(res.checkOut),
-                        totalPrice: res.totalPrice,
-                        paidPrice: res.paidPrice,
-                        currency: res.currency,
-                        status: res.status,
-                        roomCount: res.roomCount,
-                        adults: 2, // Default
-                        children: 0,
-                        country: res.country,
-                        bookedAt: new Date(res.lastUpdate),
-                    }
-                })
-            }
-            console.log(`[ElektraCache] Synced ${reservations.length} reservations in ${Date.now() - start}ms`)
-        } catch (e) {
-            console.error('[ElektraCache] Reservation Refresh Error:', e)
-        }
-
-        // ─── Sync Availability (next 6 months) ───
-        try {
-            // Deprecated: DB persistence removed for Availability. Use live fetch in getAvailability.
-            lastAvailabilitySync = Date.now()
-        } catch (e) {
-            console.error('[ElektraCache] Availability Refresh Error:', e)
-        }
-
-        // ─── Sync Countries ───
-        try {
-            // Deprecated: DB persistence removed for Countries. Use live fetch in getCountries.
-            lastCountriesSync = Date.now()
-        } catch (e) {
-            console.error('[ElektraCache] Countries Refresh Error:', e)
-        }
-    },
-
-    /**
-     * Fetch and cache historical data for an entire year.
-     * Unlike `refresh`, this explicitly loads distant past data without
-     * excluding "today/future" explicitly - it's meant for archival.
-     */
-    async refreshYear(year: number): Promise<number> {
-        console.log(`[ElektraCache] Syncing historical data for year ${year}...`)
-        const startMs = Date.now()
-
-        const fromDate = new Date(year, 0, 1)
-        const toDate = new Date(year, 11, 31)
-
-        try {
-            const allReservations = await ElektraService.getReservations(fromDate, toDate)
-
-            for (const res of allReservations) {
-                await prisma.elektraReservation.upsert({
-                    where: { id: res.id },
-                    update: {
-                        voucherNo: res.voucherNo,
-                        agency: res.agency,
-                        channel: res.channel,
-                        boardType: res.boardType,
-                        roomType: res.roomType,
-                        checkIn: new Date(res.checkIn),
-                        checkOut: new Date(res.checkOut),
-                        totalPrice: res.totalPrice,
-                        paidPrice: res.paidPrice,
-                        currency: res.currency,
-                        status: res.status,
-                        roomCount: res.roomCount,
-                        country: res.country,
-                        bookedAt: new Date(res.lastUpdate),
-                    },
-                    create: {
+            // Bulk insert fresh data (batch to avoid memory issues)
+            const BATCH_SIZE = 500
+            for (let i = 0; i < allReservations.length; i += BATCH_SIZE) {
+                const batch = allReservations.slice(i, i + BATCH_SIZE)
+                await prisma.elektraReservation.createMany({
+                    data: batch.map(res => ({
                         id: res.id,
                         voucherNo: res.voucherNo,
                         agency: res.agency,
@@ -280,10 +179,71 @@ export const ElektraCache = {
                         children: 0,
                         country: res.country,
                         bookedAt: new Date(res.lastUpdate),
-                    }
+                    })),
+                    skipDuplicates: true,
                 })
             }
-            console.log(`[ElektraCache] Archived ${allReservations.length} reservations for ${year} in ${Date.now() - startMs}ms`)
+            console.log(`[ElektraCache] ✓ Wrote ${allReservations.length} fresh reservations in ${Date.now() - start}ms`)
+        } catch (e) {
+            console.error('[ElektraCache] Reservation Refresh Error:', e)
+        }
+
+        // ─── Sync Availability (live fetch — no DB) ───
+        lastAvailabilitySync = Date.now()
+        lastCountriesSync = Date.now()
+    },
+
+    /**
+     * Fetch and cache historical data for an entire year.
+     * Unlike `refresh`, this explicitly loads distant past data without
+     * excluding "today/future" explicitly - it's meant for archival.
+     */
+    async refreshYear(year: number): Promise<number> {
+        console.log(`[ElektraCache] Syncing historical data for year ${year} (DELETE + REWRITE)...`)
+        const startMs = Date.now()
+
+        const fromDate = new Date(year, 0, 1)
+        const toDate = new Date(year, 11, 31)
+
+        try {
+            const allReservations = await ElektraService.getReservations(fromDate, toDate)
+
+            // Delete existing reservations for this year's check-in range
+            const deleted = await prisma.elektraReservation.deleteMany({
+                where: {
+                    checkIn: { gte: fromDate, lte: toDate }
+                }
+            })
+            console.log(`[ElektraCache] Wiped ${deleted.count} old reservations for ${year}`)
+
+            // Bulk insert fresh data
+            const BATCH_SIZE = 500
+            for (let i = 0; i < allReservations.length; i += BATCH_SIZE) {
+                const batch = allReservations.slice(i, i + BATCH_SIZE)
+                await prisma.elektraReservation.createMany({
+                    data: batch.map(res => ({
+                        id: res.id,
+                        voucherNo: res.voucherNo,
+                        agency: res.agency,
+                        channel: res.channel,
+                        boardType: res.boardType,
+                        roomType: res.roomType,
+                        checkIn: new Date(res.checkIn),
+                        checkOut: new Date(res.checkOut),
+                        totalPrice: res.totalPrice,
+                        paidPrice: res.paidPrice,
+                        currency: res.currency,
+                        status: res.status,
+                        roomCount: res.roomCount,
+                        adults: 2,
+                        children: 0,
+                        country: res.country,
+                        bookedAt: new Date(res.lastUpdate),
+                    })),
+                    skipDuplicates: true,
+                })
+            }
+            console.log(`[ElektraCache] ✓ Wrote ${allReservations.length} reservations for ${year} in ${Date.now() - startMs}ms`)
             return allReservations.length
         } catch (e) {
             console.error(`[ElektraCache] Year ${year} Archive Error:`, e)

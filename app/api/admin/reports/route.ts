@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from '@/lib/prisma'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -14,6 +15,11 @@ async function fetchMetaInsights(datePreset: string) {
         const insightsUrl = `https://graph.facebook.com/v21.0/${accountId}/insights?fields=impressions,clicks,spend,ctr,cpc,actions,reach,frequency&date_preset=${datePreset}&access_token=${token}`
         const insRes = await fetch(insightsUrl)
         const insData = await insRes.json()
+
+        if (insData.error) {
+            console.error('[Reports Meta] API error:', insData.error.message)
+            return null
+        }
 
         // Page fans & engagement via page
         const pageId = process.env.META_PAGE_ID
@@ -52,6 +58,7 @@ async function fetchGoogleAdsInsights(datePreset: string) {
     const refreshToken = process.env.GOOGLE_ADS_REFRESH_TOKEN
     const devToken = process.env.GOOGLE_ADS_DEVELOPER_TOKEN
     const customerId = process.env.GOOGLE_ADS_CUSTOMER_ID
+    const managerId = process.env.GOOGLE_ADS_MANAGER_ID
 
     if (!clientId || !clientSecret || !refreshToken || !devToken || !customerId) return null
 
@@ -69,7 +76,10 @@ async function fetchGoogleAdsInsights(datePreset: string) {
         })
         const tokenData = await tokenRes.json()
         const accessToken = tokenData.access_token
-        if (!accessToken) return null
+        if (!accessToken) {
+            console.error('[Reports Google] Token refresh failed:', tokenData.error_description || tokenData.error)
+            return null
+        }
 
         // Date range
         const now = new Date()
@@ -83,20 +93,34 @@ async function fetchGoogleAdsInsights(datePreset: string) {
         const endStr = now.toISOString().slice(0, 10)
 
         const cid = customerId.replace(/-/g, '')
+
+        // Use v23 search endpoint (not deprecated searchStream)
         const query = `SELECT metrics.impressions, metrics.clicks, metrics.cost_micros, metrics.ctr, metrics.average_cpc, metrics.conversions FROM customer WHERE segments.date BETWEEN '${startStr}' AND '${endStr}'`
 
-        const searchRes = await fetch(`https://googleads.googleapis.com/v18/customers/${cid}/googleAds:searchStream`, {
+        const headers: Record<string, string> = {
+            'Authorization': `Bearer ${accessToken}`,
+            'developer-token': devToken,
+            'Content-Type': 'application/json'
+        }
+        // MCC (Manager) account header — required when using a manager account
+        if (managerId) {
+            headers['login-customer-id'] = managerId.replace(/-/g, '')
+        }
+
+        const searchRes = await fetch(`https://googleads.googleapis.com/v23/customers/${cid}/googleAds:search`, {
             method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${accessToken}`,
-                'developer-token': devToken,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ query })
+            headers,
+            body: JSON.stringify({ query, pageSize: 10000 })
         })
 
+        if (!searchRes.ok) {
+            const errBody = await searchRes.text()
+            console.error('[Reports Google] API error:', searchRes.status, errBody)
+            return null
+        }
+
         const searchData = await searchRes.json()
-        const results = searchData?.[0]?.results || []
+        const results = searchData?.results || []
 
         let totalImpressions = 0, totalClicks = 0, totalCostMicros = 0, totalConversions = 0
         results.forEach((r: any) => {
@@ -132,6 +156,7 @@ export async function GET(req: NextRequest) {
     try {
         const { searchParams } = new URL(req.url)
         const datePreset = searchParams.get('datePreset') || 'last_30d'
+        const generateInsights = searchParams.get('insights') === 'true'
 
         // Parallel fetch
         const [metaData, googleData] = await Promise.all([
@@ -152,6 +177,80 @@ export async function GET(req: NextRequest) {
         const avgCtr = totalImpressions > 0 ? (totalClicks / totalImpressions * 100) : 0
         const avgCpc = totalClicks > 0 ? (totalSpend / totalClicks) : 0
 
+        // ── Enhanced PMS metrics (Protel/Amadeus/Fidelio style KPIs) ──
+        let pmsMetrics: any = null
+        try {
+            const days = datePreset === 'last_7d' ? 7 : datePreset === 'last_90d' ? 90 : 30
+            const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
+
+            const [recentBookings, totalRooms, revenueData] = await Promise.all([
+                prisma.booking.count({ where: { createdAt: { gte: since } } }),
+                prisma.room.count(),
+                prisma.booking.aggregate({
+                    where: { createdAt: { gte: since } },
+                    _sum: { totalPrice: true },
+                    _avg: { totalPrice: true },
+                })
+            ])
+
+            const totalRevenue = revenueData._sum?.totalPrice || 0
+            const avgDailyRate = revenueData._avg?.totalPrice || 0
+            const occupancy = totalRooms > 0 ? Math.round((recentBookings / (totalRooms * days)) * 100) : 0
+            const revPAR = totalRooms > 0 ? Math.round((totalRevenue / (totalRooms * days)) * 100) / 100 : 0
+            const costPerAcquisition = recentBookings > 0 ? Math.round((totalSpend / recentBookings) * 100) / 100 : 0
+
+            pmsMetrics = {
+                bookings: recentBookings,
+                totalRooms,
+                occupancyRate: Math.min(occupancy, 100),
+                adr: Math.round(avgDailyRate * 100) / 100,   // Average Daily Rate
+                revPAR,                                       // Revenue Per Available Room
+                totalRevenue: Math.round(totalRevenue * 100) / 100,
+                costPerAcquisition,                           // CPA from marketing spend
+                days,
+            }
+        } catch { /* PMS data optional */ }
+
+        // ── AI-Generated Insights (on demand) ──
+        let aiInsights: string | null = null
+        if (generateInsights && process.env.OPENAI_API_KEY) {
+            try {
+                const dataContext = JSON.stringify({
+                    period: datePreset,
+                    marketing: { totalSpend, totalImpressions, totalClicks, totalConversions, avgCtr, avgCpc, totalReach },
+                    platforms: platforms.map(p => ({ platform: p.platform, spend: p.spend, impressions: p.impressions, clicks: p.clicks, conversions: p.conversions })),
+                    hotel: pmsMetrics
+                })
+
+                const aiRes = await fetch('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        model: 'gpt-4o-mini',
+                        temperature: 0.7,
+                        max_tokens: 800,
+                        messages: [
+                            {
+                                role: 'system',
+                                content: `Sen bir otel dijital pazarlama analistisin. Protel, Amadeus Fidelio, Sedna ve ElektraWeb gibi PMS verilerine hakim, RevPAR, ADR, doluluk oranı ve CPA metriklerini analiz eden bir uzmansın. Kısa ve öz, aksiyon odaklı öneriler sun. Türkçe yanıt ver. Format: madde işaretleri ile 4-6 anahtar içgörü.`
+                            },
+                            {
+                                role: 'user',
+                                content: `Aşağıdaki dönem verilerini analiz et ve önerilerde bulun:\n\n${dataContext}`
+                            }
+                        ]
+                    })
+                })
+                const aiData = await aiRes.json()
+                aiInsights = aiData.choices?.[0]?.message?.content || null
+            } catch (err) {
+                console.error('[Reports AI]', err)
+            }
+        }
+
         return NextResponse.json({
             success: true,
             datePreset,
@@ -165,6 +264,8 @@ export async function GET(req: NextRequest) {
                 avgCpc: Math.round(avgCpc * 100) / 100
             },
             platforms,
+            pmsMetrics,
+            aiInsights,
             generated: new Date().toISOString()
         })
     } catch (e: any) {

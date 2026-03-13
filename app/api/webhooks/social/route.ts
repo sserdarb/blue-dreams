@@ -1,169 +1,321 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sendSocialMessage } from '@/lib/whatsapp';
-import { GoogleGenAI } from '@google/genai';
-import { getGeminiApiKey, GEMINI_MODEL } from '@/lib/ai-config';
 import { prisma } from '@/lib/prisma';
 
-// Save incoming/outgoing social message to DB and match guest
-async function saveMessage(platform: string, phone: string, content: string, direction: 'inbound' | 'outbound', waMessageId?: string, type: string = 'text') {
+// ─── Guest Profile Upsert ───────────────────────────────────────────────
+async function upsertGuest(params: { phone?: string; socialId?: string; name?: string; platform: string }) {
     try {
-        // Try to match with existing guest profile (using phone or socialId lookup)
-        const guest = await prisma.guestProfile.findFirst({
-            where: {
-                OR: [
-                    { phone: { contains: phone.replace(/^\+/, '') } }
-                ]
-            }
-        });
+        const { phone, socialId, name, platform } = params;
+        if (!phone && !socialId) return null;
 
-        await prisma.socialMessage.create({
+        // Find existing guest by phone
+        if (phone) {
+            const existing = await prisma.guestProfile.findFirst({
+                where: { phone: { contains: phone.replace(/^\+/, '') } }
+            });
+            if (existing) return existing;
+        }
+
+        // For FB/IG: check if we've seen this socialId before in messages and linked a guest
+        if (socialId && !phone) {
+            const existingMsg = await prisma.socialMessage.findFirst({
+                where: { socialId, guestId: { not: null } },
+                select: { guestId: true },
+            });
+            if (existingMsg?.guestId) {
+                return await prisma.guestProfile.findUnique({ where: { id: existingMsg.guestId } });
+            }
+        }
+
+        // Create new guest from social contact
+        const nameParts = (name || 'Misafir').split(' ');
+        return await prisma.guestProfile.create({
             data: {
-                waMessageId: waMessageId || null,
-                platform,
-                phone: platform === 'whatsapp' ? phone : null,
-                socialId: platform !== 'whatsapp' ? phone : null,
-                direction,
-                type,
-                content,
-                guestId: guest?.id || null,
-                isFromGuest: !!guest,
-                status: direction === 'inbound' ? 'received' : 'sent',
+                name: nameParts[0] || 'Misafir',
+                surname: nameParts.slice(1).join(' ') || '',
+                phone: phone || null,
+                notes: socialId ? `${platform}:${socialId}` : null,
+                source: 'social',
             },
         });
     } catch (err) {
-        console.error(`[${platform}] Failed to save message:`, err);
+        console.error('[Webhook] Guest upsert error:', err);
+        return null;
     }
 }
 
-// Check if auto-reply is enabled in AiSettings
-async function isAutoReplyEnabled(platform: string): Promise<{ enabled: boolean; systemPrompt: string | null }> {
+// ─── Fetch Sender Name from Meta Graph API ──────────────────────────────
+async function fetchSenderName(senderId: string): Promise<string> {
     try {
-        const settings = await prisma.aiSettings.findFirst({
-            where: { language: 'tr' },
+        const token = process.env.META_ACCESS_TOKEN;
+        if (!token) return senderId;
+        const res = await fetch(
+            `https://graph.facebook.com/v21.0/${senderId}?fields=name&access_token=${token}`
+        );
+        if (!res.ok) return senderId;
+        const data = await res.json();
+        return data.name || senderId;
+    } catch {
+        return senderId;
+    }
+}
+
+// ─── Save Message (upsert to avoid duplicates) ──────────────────────────
+async function saveMessage(params: {
+    platform: string;
+    phone?: string | null;
+    socialId?: string | null;
+    content: string;
+    direction: 'inbound' | 'outbound';
+    waMessageId?: string | null;
+    type?: string;
+    senderName?: string;
+    guestId?: string | null;
+    metadata?: string;
+}) {
+    try {
+        const { platform, phone, socialId, content, direction, waMessageId, type, senderName, guestId, metadata } = params;
+
+        // Use upsert for deduplication when we have waMessageId
+        if (waMessageId) {
+            await prisma.socialMessage.upsert({
+                where: { waMessageId },
+                update: {}, // Already exists — skip
+                create: {
+                    waMessageId,
+                    platform,
+                    phone: phone || null,
+                    socialId: socialId || null,
+                    direction,
+                    type: type || 'text',
+                    content,
+                    senderName: senderName || null,
+                    guestId: guestId || null,
+                    isFromGuest: direction === 'inbound',
+                    status: direction === 'inbound' ? 'received' : 'sent',
+                    metadata: metadata || null,
+                },
+            });
+        } else {
+            await prisma.socialMessage.create({
+                data: {
+                    platform,
+                    phone: phone || null,
+                    socialId: socialId || null,
+                    direction,
+                    type: type || 'text',
+                    content,
+                    senderName: senderName || null,
+                    guestId: guestId || null,
+                    isFromGuest: direction === 'inbound',
+                    status: direction === 'inbound' ? 'received' : 'sent',
+                },
+            });
+        }
+    } catch (err) {
+        console.error(`[Webhook] Failed to save ${params.platform} message:`, err);
+    }
+}
+
+// ─── AI Auto-Reply Check ────────────────────────────────────────────────
+async function checkAutoReply(sender: string, text: string, platform: string) {
+    try {
+        const settings = await prisma.aiSettings.findFirst({ where: { isActive: true } });
+        if (!settings?.whatsappAutoReply) return;
+
+        // Only auto-reply for WhatsApp (FB/IG needs Page Send permissions)
+        if (platform !== 'whatsapp') return;
+
+        const apiKey = settings.apiKey;
+        if (!apiKey) return;
+
+        const systemPrompt = settings.whatsappSystemPrompt || settings.systemPrompt ||
+            'Sen Blue Dreams Resort\'un dijital asistanısın. Kısa, samimi ve yardımcı cevaplar ver.';
+
+        const res = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: `${systemPrompt}\n\nMisafir mesajı: ${text}` }] }],
+                    generationConfig: { maxOutputTokens: 300, temperature: 0.7 },
+                }),
+            }
+        );
+
+        if (!res.ok) return;
+        const data = await res.json();
+        const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!reply) return;
+
+        await sendSocialMessage(sender, reply);
+
+        await saveMessage({
+            platform: 'whatsapp',
+            phone: sender,
+            content: reply,
+            direction: 'outbound',
+            senderName: 'AI Bot',
         });
 
-        let enabled = false;
-        let systemPrompt = null;
-
-        if (platform === 'whatsapp') {
-            enabled = settings?.whatsappAutoReply ?? false;
-            systemPrompt = settings?.whatsappSystemPrompt || null;
-        } else if (platform === 'facebook' || platform === 'instagram') {
-            // Reusing WhatsApp settings or we can create specific ones in the future
-            enabled = settings?.whatsappAutoReply ?? false;
-            systemPrompt = settings?.whatsappSystemPrompt || null;
-        }
-
-        return { enabled, systemPrompt };
-    } catch {
-        return { enabled: false, systemPrompt: null };
+        console.log(`[Webhook] AI auto-reply sent to ${sender}`);
+    } catch (err) {
+        console.error('[Webhook] Auto-reply error:', err);
     }
 }
 
-const processSocialMessage = async (platform: string, sender: string, textData: string, messageId: string, messageType: string = 'text') => {
-    console.log(`[${platform}] Received message from ${sender}: ${textData}`);
+// ─── Process Incoming Messages ──────────────────────────────────────────
 
-    await saveMessage(platform, sender, textData || '[unsupported message type]', 'inbound', messageId, messageType);
+async function processWhatsApp(entry: any) {
+    for (const change of (entry.changes || [])) {
+        if (change.field !== 'messages') continue;
+        const value = change.value;
+        const messages = value?.messages || [];
+        const contacts = value?.contacts || [];
 
-    if (messageType === 'text' && textData) {
-        const { enabled, systemPrompt } = await isAutoReplyEnabled(platform);
+        for (const msg of messages) {
+            const phone = msg.from;
+            const contact = contacts.find((c: any) => c.wa_id === phone);
+            const senderName = contact?.profile?.name || phone;
+            const msgType = msg.type || 'text';
 
-        if (!enabled) {
-            console.log(`[${platform}] Auto-reply disabled, message saved only.`);
-            return;
-        }
+            let content = '';
+            if (msgType === 'text') content = msg.text?.body || '';
+            else if (msgType === 'image') content = msg.image?.caption || '[Resim]';
+            else if (msgType === 'video') content = msg.video?.caption || '[Video]';
+            else if (msgType === 'audio') content = '[Ses Mesajı]';
+            else if (msgType === 'document') content = msg.document?.filename || '[Dosya]';
+            else if (msgType === 'location') content = `[Konum: ${msg.location?.latitude}, ${msg.location?.longitude}]`;
+            else if (msgType === 'reaction') content = `[Tepki: ${msg.reaction?.emoji}]`;
+            else content = `[${msgType}]`;
 
-        try {
-            const { key: apiKey } = await getGeminiApiKey('tr');
-            if (apiKey) {
-                const ai = new GoogleGenAI({ apiKey });
-                const prompt = systemPrompt ||
-                    `Sen Blue Dreams Resort'un dijital asistanısın. Kısa, samimi ve yardımcı cevaplar ver. Sadece metin tabanlı yanıtlar üretebilirsin, buton veya arayüz gönderemezsin. Fiyat ve müsaitlik konularında kullanıcıyı web sitemizdeki rezervasyon modülüne yönlendir.`;
+            const guest = await upsertGuest({ phone, name: senderName, platform: 'whatsapp' });
 
-                const response = await ai.models.generateContent({
-                    model: GEMINI_MODEL,
-                    contents: [{ role: 'user', parts: [{ text: textData }] }],
-                    config: { systemInstruction: prompt }
-                });
+            await saveMessage({
+                platform: 'whatsapp',
+                phone,
+                waMessageId: msg.id,
+                direction: 'inbound',
+                type: msgType,
+                content,
+                senderName,
+                guestId: guest?.id,
+                metadata: JSON.stringify(msg),
+            });
 
-                const replyText = response.text?.trim();
+            console.log(`[Webhook] WA from ${senderName} (${phone}): ${content.slice(0, 50)}`);
 
-                if (replyText) {
-                    if (platform === 'whatsapp') {
-                        await sendSocialMessage(sender, replyText);
-                    } else {
-                        // For Facebook and Instagram, graph API send endpoint is needed
-                        // TODO: Implement facebook/instagram graph API send wrapper
-                        console.log(`[Omnichannel] Mock sending to ${platform} for ${sender}: ${replyText}`);
-                    }
-                    await saveMessage(platform, sender, replyText, 'outbound', undefined, 'text');
-                }
+            if (msgType === 'text' && content) {
+                await checkAutoReply(phone, content, 'whatsapp');
             }
-        } catch (err) {
-            console.error(`[${platform}] AI Gen Error:`, err);
         }
     }
-};
+}
 
-// Meta Webhook Verification handler (Shared for WhatsApp, Facebook, Instagram)
+async function processFacebookMessenger(entry: any) {
+    for (const event of (entry.messaging || [])) {
+        if (!event.message || event.message.is_echo) continue;
+
+        const senderId = event.sender?.id;
+        if (!senderId) continue;
+
+        const content = event.message.text || '[Medya]';
+        const msgId = event.message.mid;
+        const senderName = await fetchSenderName(senderId);
+        const guest = await upsertGuest({ socialId: senderId, name: senderName, platform: 'facebook' });
+
+        await saveMessage({
+            platform: 'facebook',
+            socialId: senderId,
+            waMessageId: msgId,
+            direction: 'inbound',
+            type: event.message.attachments ? 'attachment' : 'text',
+            content,
+            senderName,
+            guestId: guest?.id,
+            metadata: JSON.stringify(event),
+        });
+
+        console.log(`[Webhook] FB from ${senderName} (${senderId}): ${content.slice(0, 50)}`);
+    }
+}
+
+async function processInstagramDM(entry: any) {
+    for (const event of (entry.messaging || [])) {
+        if (!event.message || event.message.is_echo) continue;
+
+        const senderId = event.sender?.id;
+        if (!senderId) continue;
+
+        const content = event.message.text || '[Medya]';
+        const msgId = event.message.mid;
+        const senderName = await fetchSenderName(senderId);
+        const guest = await upsertGuest({ socialId: senderId, name: senderName, platform: 'instagram' });
+
+        await saveMessage({
+            platform: 'instagram',
+            socialId: senderId,
+            waMessageId: msgId,
+            direction: 'inbound',
+            type: event.message.attachments ? 'attachment' : 'text',
+            content,
+            senderName,
+            guestId: guest?.id,
+            metadata: JSON.stringify(event),
+        });
+
+        console.log(`[Webhook] IG from ${senderName} (${senderId}): ${content.slice(0, 50)}`);
+    }
+}
+
+// ─── Meta Webhook Verification (GET) ────────────────────────────────────
+
 export async function GET(req: NextRequest) {
-    const searchParams = req.nextUrl.searchParams;
-    const mode = searchParams.get('hub.mode');
-    const token = searchParams.get('hub.verify_token');
-    const challenge = searchParams.get('hub.challenge');
+    const sp = req.nextUrl.searchParams;
+    const mode = sp.get('hub.mode');
+    const token = sp.get('hub.verify_token');
+    const challenge = sp.get('hub.challenge');
 
-    const verifyToken = process.env.WHATSAPP_VERIFY_TOKEN || 'bluedreams_wa_secret_2025';
+    const verifyToken = process.env.WEBHOOK_VERIFY_TOKEN || process.env.WHATSAPP_VERIFY_TOKEN || 'bluedreams_wa_secret_2025';
 
     if (mode === 'subscribe' && token === verifyToken) {
-        console.log('[Meta Webhook] Verified successfully');
+        console.log('[Webhook] ✅ Verification successful');
         return new NextResponse(challenge, { status: 200 });
     }
 
-    return new NextResponse('Forbidden', { status: 403 });
+    console.warn('[Webhook] ❌ Verification failed — token mismatch');
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 }
 
-// Meta Webhook Event receiver (WhatsApp, Facebook, Instagram)
+// ─── Incoming Message Handler (POST) ────────────────────────────────────
+
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
 
-        // 1. WhatsApp API events
-        if (body.object === 'whatsapp_business_account') {
-            for (const entry of body.entry) {
-                for (const change of entry.changes) {
-                    if (change.value && change.value.messages) {
-                        for (const message of change.value.messages) {
-                            const textData = message.type === 'text' ? message.text?.body : `[${message.type}]`;
-                            await processSocialMessage('whatsapp', message.from, textData, message.id, message.type);
-                        }
+        // Process async — Meta expects fast response 
+        const processAsync = async () => {
+            try {
+                if (!body.entry?.length) return;
+                for (const entry of body.entry) {
+                    if (body.object === 'whatsapp_business_account') {
+                        await processWhatsApp(entry);
+                    } else if (body.object === 'page') {
+                        await processFacebookMessenger(entry);
+                    } else if (body.object === 'instagram') {
+                        await processInstagramDM(entry);
                     }
                 }
+            } catch (err) {
+                console.error('[Webhook] Async processing error:', err);
             }
-            return new NextResponse('EVENT_RECEIVED', { status: 200 });
-        }
+        };
 
-        // 2. Facebook Messenger or Instagram Direct messages
-        else if (body.object === 'page' || body.object === 'instagram') {
-            for (const entry of body.entry) {
-                const platform = body.object === 'instagram' ? 'instagram' : 'facebook';
-
-                if (entry.messaging) {
-                    for (const event of entry.messaging) {
-                        if (event.message && !event.message.is_echo) {
-                            const sender = event.sender.id;
-                            const textData = event.message.text || '[attachment]';
-                            const messageId = event.message.mid;
-                            await processSocialMessage(platform, sender, textData, messageId, event.message.attachments ? 'attachment' : 'text');
-                        }
-                    }
-                }
-            }
-            return new NextResponse('EVENT_RECEIVED', { status: 200 });
-        }
-
-        return new NextResponse('Not a supported Meta event', { status: 404 });
+        processAsync(); // Fire-and-forget
+        return new NextResponse('EVENT_RECEIVED', { status: 200 });
     } catch (error) {
-        console.error('[Meta Webhook] Processing error:', error);
-        return new NextResponse('Internal Server Error', { status: 500 });
+        console.error('[Webhook] Parse error:', error);
+        return new NextResponse('EVENT_RECEIVED', { status: 200 }); // Always 200 to prevent retries
     }
 }

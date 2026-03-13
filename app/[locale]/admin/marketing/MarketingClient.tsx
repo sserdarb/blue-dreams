@@ -14,7 +14,18 @@ import {
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { ArrowUpRight, Target, DollarSign, FileDown, MousePointer, Eye, Zap, TrendingUp, Presentation, Megaphone, Loader2, RefreshCw, AlertCircle, Pencil, Trash2, Calendar, Save } from 'lucide-react'
-import type { AdCampaign, AdPlatform, MarketingOverview } from '@/lib/services/marketing'
+// Types (previously from lib/services/marketing.ts — now inlined)
+type AdPlatform = 'meta' | 'google'
+interface AdCampaign {
+    id: string; name: string; platform: AdPlatform; status: string; objective?: string;
+    budget?: number; dailyBudget?: number; spend: number; impressions: number; clicks: number;
+    ctr?: number; cpc?: number; conversions?: number; roas?: number; reach?: number;
+    startDate?: string; endDate?: string;
+}
+interface MarketingOverview {
+    totalSpend: number; totalRevenue: number; totalROAS: number;
+    platformBreakdown: { platform: AdPlatform; spend: number; revenue: number; roas: number }[];
+}
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
     LineChart, Line, AreaChart, Area

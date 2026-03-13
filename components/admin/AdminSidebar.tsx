@@ -110,7 +110,7 @@ export default function AdminSidebar({ locale, t, userRole: propRole = 'admin', 
                 { id: 'nav-social-metrics', href: '/social/metrics', label: t.socialMetrics, icon: BarChart3 },
                 { id: 'nav-content-gen', href: '/ai-planner', label: t.contentCreator, icon: Sparkles },
                 { id: 'nav-competitors', href: '/competitors', label: t.competitorAnalysis, icon: Crosshair },
-                { id: 'nav-inbox', href: '/inbox', label: t.messaging, icon: Inbox },
+                { id: 'nav-inbox', href: '/crm/messaging', label: t.messaging, icon: Inbox },
             ]
         },
         {

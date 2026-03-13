@@ -1,6 +1,7 @@
 // Meta Social Service — Instagram, Facebook, WhatsApp integration via Graph API
 import { prisma } from '@/lib/prisma'
 import { isDemoSession } from '@/lib/demo-session'
+import { metaCache } from '@/lib/utils/api-cache'
 
 const META_GRAPH_URL = 'https://graph.facebook.com/v21.0'
 
@@ -22,6 +23,7 @@ export const MetaSocialService = {
     // ─── Instagram ─────────────────────────────────────────
 
     async getInstagramProfile() {
+        return metaCache.getOrFetch('meta:ig:profile', async () => {
         const isDemo = await checkSettings()
         if (isDemo) {
             return {
@@ -43,9 +45,11 @@ export const MetaSocialService = {
         )
         if (!res.ok) return null
         return res.json()
+        }, 60)
     },
 
     async getInstagramInsights(period: 'day' | 'week' | 'days_28' = 'day') {
+        return metaCache.getOrFetch(`meta:ig:insights:${period}`, async () => {
         const isDemo = await checkSettings()
         if (isDemo) {
             return {
@@ -66,6 +70,7 @@ export const MetaSocialService = {
         )
         if (!res.ok) return null
         return res.json()
+        }, 15)
     },
 
     async getInstagramMedia(limit = 12) {
@@ -367,5 +372,9 @@ export const MetaSocialService = {
             console.error('[MetaSocial] Follower growth error:', e?.message)
             return []
         }
+    },
+
+    clearCache(): void {
+        metaCache.invalidatePrefix('meta:')
     },
 }
