@@ -3,14 +3,15 @@
 import { useState, useEffect } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { Info, Calendar, Loader2 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 
 const DATE_PRESETS = [
-    { label: 'Bugün', days: 0, type: 'today' as const },
-    { label: 'Son 7 Gün', days: 7 },
-    { label: 'Bu Ay', days: 0, type: 'thisMonth' as const },
-    { label: 'Geçen Ay', days: 0, type: 'lastMonth' as const },
-    { label: 'Bu Yıl', days: 0, type: 'thisYear' as const },
-    { label: 'Tüm Sezon', days: 0, type: 'allSeason' as const },
+    { key: 'today', days: 0, type: 'today' as const },
+    { key: 'last_7_days', days: 7, type: 'days' as const },
+    { key: 'this_month', days: 0, type: 'thisMonth' as const },
+    { key: 'last_month', days: 0, type: 'lastMonth' as const },
+    { key: 'this_year', days: 0, type: 'thisYear' as const },
+    { key: 'all_season', days: 0, type: 'allSeason' as const },
 ] as const
 
 // Get current date in Turkey timezone (UTC+3)
@@ -61,13 +62,14 @@ export default function DashboardFilter() {
     const router = useRouter()
     const pathname = usePathname()
     const searchParams = useSearchParams()
+    const t = useTranslations('admin.dashboard.filter')
     const [loading, setLoading] = useState(false)
 
     const [from, setFrom] = useState('')
     const [to, setTo] = useState('')
-    const [currency, setCurrency] = useState('TRY')
+    const [currency, setCurrency] = useState('EUR')
     const [showInfo, setShowInfo] = useState(false)
-    const [activePreset, setActivePreset] = useState<string>('Bugün')
+    const [activePreset, setActivePreset] = useState<string>('today')
 
     useEffect(() => {
         const urlFrom = searchParams.get('from')
@@ -105,7 +107,7 @@ export default function DashboardFilter() {
         const dates = getPresetDates(preset)
         setFrom(dates.from)
         setTo(dates.to)
-        setActivePreset(preset.label)
+        setActivePreset(preset.key)
         applyFilter(dates.from, dates.to, currency)
     }
 
@@ -115,14 +117,14 @@ export default function DashboardFilter() {
             <div className="flex flex-wrap items-center gap-2">
                 {DATE_PRESETS.map(preset => (
                     <button
-                        key={preset.label}
+                        key={preset.key}
                         onClick={() => applyPreset(preset)}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${activePreset === preset.label
+                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${activePreset === preset.key
                             ? 'bg-cyan-600 text-white shadow-md shadow-cyan-900/30'
                             : 'bg-white/5 border border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-300 hover:bg-cyan-50 dark:hover:bg-cyan-900/20 hover:text-cyan-600 dark:hover:text-cyan-400'
                             }`}
                     >
-                        {preset.label}
+                        {t(`presets.${preset.key}`)}
                     </button>
                 ))}
             </div>
@@ -152,7 +154,7 @@ export default function DashboardFilter() {
                         className="px-3 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-medium transition-colors disabled:opacity-50 flex items-center gap-1"
                     >
                         {loading && <Loader2 size={12} className="animate-spin" />}
-                        Filtrele
+                        {t('buttons.filter')}
                     </button>
                 </div>
 
@@ -160,7 +162,7 @@ export default function DashboardFilter() {
                     <button
                         onClick={() => setShowInfo(!showInfo)}
                         className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 hover:text-cyan-600 flex items-center justify-center transition-colors"
-                        title="Veri Toplama Hakkında Bilgi"
+                        title={t('tooltip')}
                     >
                         <Info size={14} />
                     </button>
@@ -168,14 +170,14 @@ export default function DashboardFilter() {
                     {showInfo && (
                         <div className="absolute right-0 top-9 w-72 bg-white dark:bg-slate-800 p-4 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 z-50">
                             <div className="flex items-center justify-between mb-2">
-                                <h4 className="font-bold text-slate-900 dark:text-white text-sm">Veri Toplama Prensipleri</h4>
+                                <h4 className="font-bold text-slate-900 dark:text-white text-sm">{t('info.title')}</h4>
                                 <button onClick={() => setShowInfo(false)} className="text-slate-400 hover:text-slate-600">✕</button>
                             </div>
                             <ul className="text-xs text-slate-600 dark:text-slate-300 space-y-1.5 list-disc pl-4">
-                                <li><strong>Rezervasyon Verileri:</strong> Asisia PMS canlı MS SQL bağlantısından gelir. Oluşturma tarihine göre filtrelenir.</li>
-                                <li><strong>Kanal Kırılımı:</strong> OTA, Call Center, Web, Direkt ve Tur Operatörü kanallarına göre gruplanır.</li>
-                                <li><strong>Pickup Analizi:</strong> Seçili dönemde oluşturulan yeni ve iptal edilen rez. sayılarını gösterir.</li>
-                                <li><strong>Döviz Çevrimi:</strong> Otomatik kur çevrimleriyle TL/EUR/USD desteklenir.</li>
+                                <li>{t('info.reservation_data')}</li>
+                                <li>{t('info.channel_breakdown')}</li>
+                                <li>{t('info.pickup_analysis')}</li>
+                                <li>{t('info.currency_conversion')}</li>
                             </ul>
                         </div>
                     )}
@@ -184,7 +186,7 @@ export default function DashboardFilter() {
 
             {/* Currency Selector */}
             <div className="flex items-center gap-1.5 self-end sm:self-auto ml-auto pl-2 border-l border-slate-200 dark:border-white/10">
-                <span className="text-xs font-medium text-slate-500">Döviz:</span>
+                <span className="text-xs font-medium text-slate-500">{t('currency')}:</span>
                 <select
                     value={currency}
                     onChange={(e) => applyFilter(from, to, e.target.value)}
