@@ -16,7 +16,7 @@ const DATE_PRESETS = [
 // Simple local translations for the filter component
 const filterTranslations: Record<string, Record<string, any>> = {
     tr: {
-        presets: { today: 'Bugün', last_7_days: 'Son 7 Gün', this_month: 'Bu Ay', last_month: 'Geçen Ay', this_year: 'Bu Yıl', all_season: 'Tüm Sezon' },
+        presets: { today: 'Live', last_7_days: 'Son 7 Gün', this_month: 'Bu Ay', last_month: 'Geçen Ay', this_year: 'Bu Yıl', all_season: 'Tüm Sezon' },
         buttons: { filter: 'Filtrele' },
         tooltip: 'Filtre bilgisi',
         currency: 'Para Birimi',
@@ -29,7 +29,7 @@ const filterTranslations: Record<string, Record<string, any>> = {
         }
     },
     en: {
-        presets: { today: 'Today', last_7_days: 'Last 7 Days', this_month: 'This Month', last_month: 'Last Month', this_year: 'This Year', all_season: 'All Season' },
+        presets: { today: 'Live', last_7_days: 'Last 7 Days', this_month: 'This Month', last_month: 'Last Month', this_year: 'This Year', all_season: 'All Season' },
         buttons: { filter: 'Filter' },
         tooltip: 'Filter info',
         currency: 'Currency',
@@ -42,7 +42,7 @@ const filterTranslations: Record<string, Record<string, any>> = {
         }
     },
     de: {
-        presets: { today: 'Heute', last_7_days: 'Letzte 7 Tage', this_month: 'Dieser Monat', last_month: 'Letzter Monat', this_year: 'Dieses Jahr', all_season: 'Gesamte Saison' },
+        presets: { today: 'Live', last_7_days: 'Letzte 7 Tage', this_month: 'Dieser Monat', last_month: 'Letzter Monat', this_year: 'Dieses Jahr', all_season: 'Gesamte Saison' },
         buttons: { filter: 'Filtern' },
         tooltip: 'Filterinformationen',
         currency: 'Währung',
@@ -55,7 +55,7 @@ const filterTranslations: Record<string, Record<string, any>> = {
         }
     },
     ru: {
-        presets: { today: 'Сегодня', last_7_days: 'Последние 7 дней', this_month: 'Этот месяц', last_month: 'Прошлый месяц', this_year: 'Этот год', all_season: 'Весь сезон' },
+        presets: { today: 'Live', last_7_days: 'Последние 7 дней', this_month: 'Этот месяц', last_month: 'Прошлый месяц', this_year: 'Этот год', all_season: 'Весь сезон' },
         buttons: { filter: 'Фильтр' },
         tooltip: 'Информация о фильтре',
         currency: 'Валюта',

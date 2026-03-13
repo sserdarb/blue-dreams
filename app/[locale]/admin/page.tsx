@@ -186,12 +186,6 @@ export default async function AdminDashboard({
           locale={locale} 
         />
 
-        {/* ANALYTICS CHART WIDGET */}
-        <DashboardAnalyticsChartWidget 
-          from={startStr} 
-          to={endStr} 
-          currency={currency as 'TRY' | 'EUR' | 'USD'} 
-        />
 
         {/* PROMINENT METRICS */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
@@ -331,6 +325,13 @@ export default async function AdminDashboard({
             </div>
             <ChannelTrendChart data={salesData} channel="web" color="#10b981" currency={currency as 'TRY' | 'EUR' | 'USD'} exchangeRate={tryRate} />
           </div>
+
+          {/* Web Trafiği & Reklam Performansı - yarım ekran */}
+          <DashboardAnalyticsChartWidget 
+            from={startStr} 
+            to={endStr} 
+            currency={currency as 'TRY' | 'EUR' | 'USD'} 
+          />
         </div>
 
         {/* Live Traffic and Social Media Data */}
