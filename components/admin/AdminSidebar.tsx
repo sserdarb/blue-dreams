@@ -98,19 +98,19 @@ export default function AdminSidebar({ locale, t, userRole: propRole = 'admin', 
             items: [
                 { id: 'nav-reservations', href: '/reservations', label: t.reservations, icon: Calendar },
                 { id: 'nav-yield', href: '/yield', label: t.yieldManagement, icon: TrendingUp },
-                { id: 'nav-channel', href: '/channel-manager', label: 'Kanal Yöneticisi', icon: Globe },
+                { id: 'nav-channel', href: '/channel-manager', label: t.channelManager, icon: Globe },
                 { id: 'nav-extras', href: '/extras', label: t.extras, icon: ShoppingBag },
-                { id: 'nav-crm', href: '/crm', label: 'CRM (Misafir İlişk)', icon: PieChart },
-                { id: 'nav-call-center', href: '/crm/call-center', label: 'Çağrı Merkezi', icon: PhoneCall },
-                { id: 'nav-mice', href: '/crm/meetings', label: 'Toplantı (MICE)', icon: Users },
-                { id: 'nav-crm-marketing', href: '/crm-marketing', label: 'CRM Marketing', icon: Megaphone },
-                { id: 'nav-marketing', href: '/marketing', label: 'Dijital Pazarlama', icon: Share2 },
+                { id: 'nav-crm', href: '/crm', label: t.crmGuest, icon: PieChart },
+                { id: 'nav-call-center', href: '/crm/call-center', label: t.callCenter, icon: PhoneCall },
+                { id: 'nav-mice', href: '/crm/meetings', label: t.meetingMice, icon: Users },
+                { id: 'nav-crm-marketing', href: '/crm-marketing', label: t.crmMarketing, icon: Megaphone },
+                { id: 'nav-marketing', href: '/marketing', label: t.digitalMarketing, icon: Share2 },
                 { id: 'nav-analytics', href: '/analytics', label: t.analytics, icon: BarChart3 },
                 { id: 'nav-social', href: '/social', label: t.socialMedia, icon: Share2 },
-                { id: 'nav-social-metrics', href: '/social/metrics', label: 'Social Metrics', icon: BarChart3 },
+                { id: 'nav-social-metrics', href: '/social/metrics', label: t.socialMetrics, icon: BarChart3 },
                 { id: 'nav-content-gen', href: '/ai-planner', label: t.contentCreator, icon: Sparkles },
-                { id: 'nav-competitors', href: '/competitors', label: 'Rakip Analizi', icon: Crosshair },
-                { id: 'nav-inbox', href: '/inbox', label: 'Mesajlaşma', icon: Inbox },
+                { id: 'nav-competitors', href: '/competitors', label: t.competitorAnalysis, icon: Crosshair },
+                { id: 'nav-inbox', href: '/inbox', label: t.messaging, icon: Inbox },
             ]
         },
         {
@@ -163,7 +163,7 @@ export default function AdminSidebar({ locale, t, userRole: propRole = 'admin', 
             items: [
                 { id: 'nav-concierge', href: '/chat', label: t.blueConcierge, icon: MessageSquare },
                 { id: 'nav-booking', href: '/integrations/booking', label: t.bookingEngine, icon: CreditCard },
-                { id: 'nav-payment-settings', href: '/bookings/settings', label: 'Ödeme Ayarları', icon: Settings },
+                { id: 'nav-payment-settings', href: '/bookings/settings', label: t.paymentSettings, icon: Settings },
             ]
         }
     ]
@@ -219,10 +219,10 @@ export default function AdminSidebar({ locale, t, userRole: propRole = 'admin', 
                     {/* Viewer role banner */}
                     {userRole === 'viewer' && (
                         <div className="mb-4 mx-2 p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-400 text-xs">
-                            <p className="font-semibold mb-1">Sınırlı Erişim</p>
-                            <p className="text-amber-500/80">Görev yönetimi erişiminiz var. Daha fazla yetki için talep oluşturun.</p>
+                            <p className="font-semibold mb-1">{t.viewerLimitedAccess}</p>
+                            <p className="text-amber-500/80">{t.viewerTaskAccess}</p>
                             <a href={`/${locale}/admin/tasks`} className="mt-2 inline-block text-amber-400 hover:text-amber-300 font-bold text-[10px] uppercase tracking-wider">
-                                Yetki Talep Et →
+                                {t.viewerRequestAuth}
                             </a>
                         </div>
                     )}
@@ -343,7 +343,7 @@ export default function AdminSidebar({ locale, t, userRole: propRole = 'admin', 
                             }`}
                     >
                         <UserCog size={16} className={pathname?.includes('/profile') ? 'text-cyan-600' : 'text-slate-400'} />
-                        Profil Yönetimi
+                        {t.profileManagement}
                     </Link>
                 </div>
 

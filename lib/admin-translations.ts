@@ -51,6 +51,20 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         yieldManagement: 'Yield Management',
         socialMedia: 'Sosyal Medya',
         contentCreator: 'İçerik Üretici',
+        channelManager: 'Kanal Yöneticisi',
+        crmGuest: 'CRM (Misafir İlişk)',
+        callCenter: 'Çağrı Merkezi',
+        meetingMice: 'Toplantı (MICE)',
+        crmMarketing: 'CRM Marketing',
+        digitalMarketing: 'Dijital Pazarlama',
+        socialMetrics: 'Social Metrics',
+        competitorAnalysis: 'Rakip Analizi',
+        messaging: 'Mesajlaşma',
+        paymentSettings: 'Ödeme Ayarları',
+        profileManagement: 'Profil Yönetimi',
+        viewerLimitedAccess: 'Sınırlı Erişim',
+        viewerTaskAccess: 'Görev yönetimi erişiminiz var. Daha fazla yetki için talep oluşturun.',
+        viewerRequestAuth: 'Yetki Talep Et →',
         reservationPerformance: 'Rezervasyon Performansı',
         live: 'Canlı',
         recentReservations: 'Son Rezervasyonlar',
@@ -536,6 +550,20 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         yieldManagement: 'Yield Management',
         socialMedia: 'Social Media',
         contentCreator: 'Content Creator',
+        channelManager: 'Channel Manager',
+        crmGuest: 'CRM (Guest Relations)',
+        callCenter: 'Call Center',
+        meetingMice: 'Meeting (MICE)',
+        crmMarketing: 'CRM Marketing',
+        digitalMarketing: 'Digital Marketing',
+        socialMetrics: 'Social Metrics',
+        competitorAnalysis: 'Competitor Analysis',
+        messaging: 'Messaging',
+        paymentSettings: 'Payment Settings',
+        profileManagement: 'Profile Management',
+        viewerLimitedAccess: 'Limited Access',
+        viewerTaskAccess: 'You have task management access. Submit a request for more permissions.',
+        viewerRequestAuth: 'Request Access →',
         reservationPerformance: 'Reservation Performance',
         live: 'Live',
         recentReservations: 'Recent Reservations',
@@ -999,6 +1027,20 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         yieldManagement: 'Yield Management',
         socialMedia: 'Soziale Medien',
         contentCreator: 'Content Creator',
+        channelManager: 'Kanalmanager',
+        crmGuest: 'CRM (Gästebeziehungen)',
+        callCenter: 'Call Center',
+        meetingMice: 'Tagung (MICE)',
+        crmMarketing: 'CRM Marketing',
+        digitalMarketing: 'Digitales Marketing',
+        socialMetrics: 'Social Metrics',
+        competitorAnalysis: 'Wettbewerbsanalyse',
+        messaging: 'Nachrichten',
+        paymentSettings: 'Zahlungseinstellungen',
+        profileManagement: 'Profilverwaltung',
+        viewerLimitedAccess: 'Eingeschränkter Zugang',
+        viewerTaskAccess: 'Sie haben Aufgabenverwaltungszugang. Stellen Sie einen Antrag für mehr Berechtigungen.',
+        viewerRequestAuth: 'Zugang anfordern →',
         reservationPerformance: 'Reservierungsleistung',
         live: 'Live',
         recentReservations: 'Letzte Reservierungen',
@@ -1463,6 +1505,20 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         yieldManagement: 'Yield Management',
         socialMedia: 'Социальные сети',
         contentCreator: 'Создатель контента',
+        channelManager: 'Менеджер каналов',
+        crmGuest: 'CRM (Связь с гостями)',
+        callCenter: 'Колл-центр',
+        meetingMice: 'Конференции (MICE)',
+        crmMarketing: 'CRM Маркетинг',
+        digitalMarketing: 'Цифровой маркетинг',
+        socialMetrics: 'Social Metrics',
+        competitorAnalysis: 'Анализ конкурентов',
+        messaging: 'Сообщения',
+        paymentSettings: 'Настройки оплаты',
+        profileManagement: 'Управление профилем',
+        viewerLimitedAccess: 'Ограниченный доступ',
+        viewerTaskAccess: 'У вас есть доступ к управлению задачами. Подайте запрос на дополнительные разрешения.',
+        viewerRequestAuth: 'Запросить доступ →',
         reservationPerformance: 'Эффективность бронирования',
         live: 'В эфире',
         recentReservations: 'Последние бронирования',
@@ -1928,6 +1984,20 @@ export interface AdminTranslations {
     yieldManagement: string
     socialMedia: string
     contentCreator: string
+    channelManager: string
+    crmGuest: string
+    callCenter: string
+    meetingMice: string
+    crmMarketing: string
+    digitalMarketing: string
+    socialMetrics: string
+    competitorAnalysis: string
+    messaging: string
+    paymentSettings: string
+    profileManagement: string
+    viewerLimitedAccess: string
+    viewerTaskAccess: string
+    viewerRequestAuth: string
     reservationPerformance: string
     live: string
     recentReservations: string
