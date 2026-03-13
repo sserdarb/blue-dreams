@@ -21,20 +21,20 @@ interface DashboardPickupWidgetProps {
     data: PickupStats
     currency?: 'TRY' | 'EUR' | 'USD'
     exchangeRate?: number
+    usdRate?: number
 }
 
-export default function DashboardPickupWidget({ data, currency = 'TRY', exchangeRate }: DashboardPickupWidgetProps) {
+export default function DashboardPickupWidget({ data, currency = 'TRY', exchangeRate, usdRate = 1 }: DashboardPickupWidgetProps) {
     if (!data) return null;
 
     const symbol = currency === 'EUR' ? '€' : (currency === 'USD' ? '$' : '₺')
-    const usdRate = 35.7
     const divisor = currency === 'TRY' ? 1 : (currency === 'EUR' ? exchangeRate : usdRate)
 
     const convertPrice = (price: number, nativeCurrency: string) => {
         let p = price
         nativeCurrency = (nativeCurrency || 'EUR').trim()
 
-        const rate = exchangeRate || 38.5; // safe fallback for rendering
+        const rate = exchangeRate || 1; // Live rate from API
         if (currency === 'TRY') {
             return nativeCurrency === 'EUR' ? p * rate : (nativeCurrency === 'USD' ? p * usdRate : p)
         } else if (currency === 'EUR') {
@@ -65,7 +65,7 @@ export default function DashboardPickupWidget({ data, currency = 'TRY', exchange
                         <div className="text-right border-l md:border-l-0 border-slate-200 dark:border-white/10 pl-4">
                             <p className="text-xs text-slate-500 uppercase font-semibold">Ciro Etkisi</p>
                             <p className="text-lg font-bold text-slate-900 dark:text-white">
-                                {symbol}{(data.revenue / (divisor || 38.5)).toLocaleString('tr-TR', { maximumFractionDigits: 0 })}
+                                {symbol}{(data.revenue / (divisor || 1)).toLocaleString('tr-TR', { maximumFractionDigits: 0 })}
                             </p>
                         </div>
                     </div>

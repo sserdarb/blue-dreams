@@ -67,6 +67,11 @@ export const ElektraCache = {
             const start = from || new Date(new Date().getFullYear(), 0, 1)
             const end = to || new Date(new Date().getFullYear() + 1, 11, 31)
 
+            // Fetch dynamic exchange rates from DB cache
+            const cachedRate = await prisma.elektraRate.findFirst({ orderBy: { fetchedAt: 'desc' } })
+            const eurRate = cachedRate?.eur && cachedRate.eur > 0 ? cachedRate.eur : 1
+            const usdRate = cachedRate?.usd && cachedRate.usd > 0 ? cachedRate.usd : 1
+
             const dbRes = await prisma.elektraReservation.findMany({
                 where: {
                     checkIn: {
@@ -102,8 +107,8 @@ export const ElektraCache = {
                 country: r.country || 'Unknown',
                 dailyAverage: r.totalPrice / Math.max(1, Math.ceil((r.checkOut.getTime() - r.checkIn.getTime()) / 86400000)),
                 nights: Math.max(1, Math.ceil((r.checkOut.getTime() - r.checkIn.getTime()) / 86400000)),
-                amountTry: r.currency === 'TRY' ? r.totalPrice : (r.currency === 'EUR' ? r.totalPrice * 38.5 : r.totalPrice * 35.7),
-                amountEur: r.currency === 'TRY' ? r.totalPrice / 38.5 : (r.currency === 'EUR' ? r.totalPrice : (r.totalPrice * 35.7) / 38.5)
+                amountTry: r.currency === 'TRY' ? r.totalPrice : (r.currency === 'EUR' ? r.totalPrice * eurRate : r.totalPrice * usdRate),
+                amountEur: r.currency === 'TRY' ? r.totalPrice / eurRate : (r.currency === 'EUR' ? r.totalPrice : (r.totalPrice * usdRate) / eurRate)
             }))
         } catch (e) {
             console.error('[ElektraCache] DB Fetch Error:', e)

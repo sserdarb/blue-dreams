@@ -29,14 +29,15 @@ export default function ExtrasClient({ spaData, minibarData, restaurantData, tra
     const [activeTab, setActiveTab] = useState<'overview' | 'spa' | 'minibar' | 'restaurant'>('overview')
     const [currency, setCurrency] = useState<'TRY' | 'EUR'>('EUR')
 
-    const RATES = { EUR: 1, TRY: 38.5 } // Fixed rates for demo/speed or fetch from prop if available
+    const eurRate = data?.exchangeRates?.EUR_TO_TRY || 1 // Live rate from API
+    const RATES = { EUR: 1, TRY: eurRate }
 
     // Helper: Convert
     const convert = (amount: number, fromCurrency: string) => {
         let inEur = amount
-        if (fromCurrency === 'TRY') inEur = amount / 38.5
+        if (fromCurrency === 'TRY') inEur = eurRate > 0 ? amount / eurRate : amount
         if (currency === 'EUR') return inEur
-        return inEur * 38.5
+        return inEur * eurRate
     }
 
     // Helper: Total Revenue

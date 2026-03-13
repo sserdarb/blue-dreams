@@ -23,7 +23,7 @@ export default async function BigDataPage({ params }: { params: Promise<{ locale
             ElektraService.getOccupancy(
                 new Date(year, 0, 1), new Date(year, 11, 31)
             ).catch(() => []),
-            ElektraService.getExchangeRates().catch(() => ({ EUR_TO_TRY: 38.5, USD_TO_TRY: 35.7, fetchedAt: 0 })),
+            ElektraService.getExchangeRates().catch(() => ({ EUR_TO_TRY: 1, USD_TO_TRY: 1, fetchedAt: 0 })),
         ])
 
         // Serialize reservation data for client (strip unnecessary fields)

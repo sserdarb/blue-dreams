@@ -8,19 +8,19 @@ interface DashboardLastReservationsProps {
     locale?: string
     currency?: 'TRY' | 'EUR' | 'USD'
     exchangeRate?: number
+    usdRate?: number
 }
 
-export default function DashboardLastReservationsWidget({ reservations, locale = 'tr', currency = 'TRY', exchangeRate }: DashboardLastReservationsProps) {
+export default function DashboardLastReservationsWidget({ reservations, locale = 'tr', currency = 'TRY', exchangeRate, usdRate = 1 }: DashboardLastReservationsProps) {
     if (!reservations || reservations.length === 0) return null
 
-    const usdRate = 35.7
     const symbol = currency === 'EUR' ? '€' : (currency === 'USD' ? '$' : '₺')
 
     const convertPrice = (price: number, nativeCurrency: string) => {
         let p = price
         nativeCurrency = (nativeCurrency || 'EUR').trim()
 
-        const rate = exchangeRate || 38.5;
+        const rate = exchangeRate || 1; // Live rate from API
         if (currency === 'TRY') {
             return nativeCurrency === 'EUR' ? p * rate : (nativeCurrency === 'USD' ? p * usdRate : p)
         } else if (currency === 'EUR') {

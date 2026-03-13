@@ -34,7 +34,7 @@ interface WidgetConfig {
 
 type CurrencyCode = 'TRY' | 'EUR'
 
-const EXCHANGE_RATES: Record<CurrencyCode, number> = { TRY: 1, EUR: 0.026 }
+const EXCHANGE_RATES_FALLBACK: Record<CurrencyCode, number> = { TRY: 1, EUR: 1 }
 const CURRENCY_SYMBOLS: Record<CurrencyCode, string> = { TRY: '₺', EUR: '€' }
 const CHANNEL_COLORS: Record<string, string> = {
     'OTA': '#f59e0b', 'Call Center': '#06b6d4', 'Tur Operatörü': '#8b5cf6',
@@ -102,12 +102,12 @@ function getDatePresets(t: AdminTranslations) {
 }
 
 // ─── Props ───
-interface Props { reservations: Reservation[]; comparisonReservations?: Reservation[]; error: string | null; lastUpdated?: string | null; locale?: string; taxRates?: { vatAccommodation: number; taxAccommodation: number; vatFnb: number } }
+interface Props { reservations: Reservation[]; comparisonReservations?: Reservation[]; error: string | null; lastUpdated?: string | null; locale?: string; taxRates?: { vatAccommodation: number; taxAccommodation: number; vatFnb: number }; eurRate?: number; totalRooms?: number }
 
 import ModuleOffline from '@/components/admin/ModuleOffline'
 import SocialStatsWidget from './SocialStatsWidget'
 
-export default function ReportsClient({ reservations, comparisonReservations = [], error, lastUpdated, locale: propLocale }: Props) {
+export default function ReportsClient({ reservations, comparisonReservations = [], error, lastUpdated, locale: propLocale, eurRate = 1, totalRooms: totalRoomsProp = 341 }: Props) {
     const params = useParams()
     const locale = (propLocale as AdminLocale) || (params?.locale as AdminLocale) || 'tr'
     const t = getAdminTranslations(locale) as AdminTranslations
@@ -225,13 +225,17 @@ export default function ReportsClient({ reservations, comparisonReservations = [
         setActivePreset('')
     }
 
-    // ─── Currency Helper ───
+    const EXCHANGE_RATES: Record<CurrencyCode, number> = useMemo(() => ({
+        TRY: 1,
+        EUR: eurRate > 0 ? 1 / eurRate : 1,
+    }), [eurRate])
+
     const convert = useCallback((price: number, originalCurrency: string) => {
         let tryAmount = price
-        if (originalCurrency === 'EUR') tryAmount = price * 38.5 // Fallback if rates not passed (typically shouldn't happen for direct mapped properties now, but safe fallback)
+        if (originalCurrency === 'EUR') tryAmount = price * (eurRate || 1)
         if (currency === 'TRY') return tryAmount
         return tryAmount * EXCHANGE_RATES[currency]
-    }, [currency])
+    }, [currency, eurRate, EXCHANGE_RATES])
 
     /** Convert + apply gross/net mode (use for all revenue displays) */
     const dp = useCallback((price: number, originalCurrency: string) => {
@@ -629,7 +633,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
             compMonthly[m].nights += r.nights * r.roomCount
         })
 
-        const TOTAL_ROOMS = 341
+        const TOTAL_ROOMS = totalRoomsProp
 
         // Align months (MM)
         const allKeys = new Set<string>()
@@ -965,7 +969,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
     }
 
     const renderRevPAR = (data: Reservation[]) => {
-        const TOTAL_ROOMS = 341
+        const TOTAL_ROOMS = totalRoomsProp
         const totalRev = data.reduce((sum, r) => sum + dp(r.totalPrice, r.currency), 0)
         const days = Math.max(1, Math.ceil((new Date(endDate).getTime() - new Date(startDate).getTime()) / 86400000))
         const revpar = totalRev / (TOTAL_ROOMS * days)
@@ -995,7 +999,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
 
     const renderBudget = (data: Reservation[]) => {
         // EUR rate for converting actual TRY → EUR
-        const EUR_RATE = currency === 'EUR' ? 1 : 38.5
+        const EUR_RATE_LOCAL = currency === 'EUR' ? 1 : (eurRate || 1)
 
         // Get actual monthly revenue grouped by check-in month
         const monthlyActual: Record<number, number> = {}
@@ -1004,7 +1008,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
             if (m >= 4 && m <= 10) {
                 const tryAmount = dp(r.totalPrice, r.currency)
                 // Convert to EUR for fair comparison with budget
-                monthlyActual[m] = (monthlyActual[m] || 0) + (currency === 'EUR' ? tryAmount : tryAmount / EUR_RATE)
+                monthlyActual[m] = (monthlyActual[m] || 0) + (currency === 'EUR' ? tryAmount : tryAmount / EUR_RATE_LOCAL)
             }
         })
 
@@ -1027,7 +1031,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
         const channelSummary = getChannelBudgetSummary()
 
         // ─── Room-night & ADR target calculations ───
-        const TOTAL_ROOMS = 341
+        const TOTAL_ROOMS = totalRoomsProp
         const monthlyRoomNights: Record<number, number> = {}
         const monthlyResCount: Record<number, number> = {}
         const monthlyNightsSum: Record<number, number> = {}
@@ -2100,7 +2104,7 @@ export default function ReportsClient({ reservations, comparisonReservations = [
 
     // ─── Occupancy Widget Renderers ───
 
-    const TOTAL_ROOMS_ALL = 341
+    const TOTAL_ROOMS_ALL = totalRoomsProp
 
     const renderOccDailyChart = (data: Reservation[]) => {
         const days: Record<string, number> = {}

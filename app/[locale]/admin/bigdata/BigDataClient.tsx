@@ -10,7 +10,7 @@ import ModuleOffline from '@/components/admin/ModuleOffline'
 const fmt = (n: number) => n?.toLocaleString('tr-TR') || '0'
 const fmtK = (n: number) => n >= 1000000 ? `${(n / 1000000).toFixed(1)}M` : n >= 1000 ? `${(n / 1000).toFixed(0)}K` : fmt(n)
 const fmtEur = (n: number) => n >= 1_000_000 ? `€${(n / 1_000_000).toFixed(1)}M` : n >= 1_000 ? `€${(n / 1_000).toFixed(0)}K` : `€${Math.round(n)}`
-const EUR_RATE = 38.5
+// EUR_RATE is now sourced from data.rates (live API)
 
 const getTabs = (t: any) => [
     { id: 'overview', label: t.tabs.overview, icon: LayoutDashboard },
@@ -38,7 +38,8 @@ export default function BigDataClient({ data, error, locale }: { data: any; erro
     const analytics = useMemo(() => {
         if (!reservations.length) return null
         const S = BigDataService
-        const totalRooms = occupancy[0]?.totalRooms || 341
+        const EUR_RATE = data?.rates?.EUR_TO_TRY || 1
+        const totalRooms = occupancy[0]?.totalRooms || 1 // Avoid division by zero; live data from API
         const totalRev = reservations.reduce((s: number, r: any) => s + r.totalPrice, 0)
         const totalNights = reservations.reduce((s: number, r: any) => s + r.nights * r.roomCount, 0)
         const avgADR = totalNights > 0 ? totalRev / totalNights : 0

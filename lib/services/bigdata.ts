@@ -33,18 +33,32 @@ export type SeasonalMetric = { season: string; count: number; revenue: number; o
 export type StayLengthDist = { nights: string; count: number; share: number; revenue: number }
 export type KPICard = { label: string; value: string; subValue?: string; change?: number; icon: string }
 
-// EUR/TRY rate used for conversions
-const EUR_RATE = 38.5
+// Dynamic exchange rate cache — fetched from ElektraService on first use
+let _cachedEurRate = 1
+let _cachedUsdRate = 1
+let _ratesFetched = false
+
+async function ensureRates(): Promise<void> {
+    if (_ratesFetched) return
+    try {
+        const rates = await ElektraService.getExchangeRates()
+        _cachedEurRate = rates.EUR_TO_TRY > 0 ? rates.EUR_TO_TRY : 1
+        _cachedUsdRate = rates.USD_TO_TRY > 0 ? rates.USD_TO_TRY : 1
+        _ratesFetched = true
+    } catch {
+        _ratesFetched = false
+    }
+}
 
 function toTRY(amount: number, currency: string): number {
     if (currency === 'TRY') return amount
-    if (currency === 'EUR') return amount * EUR_RATE
-    if (currency === 'USD') return amount * 35.7
-    return amount * EUR_RATE
+    if (currency === 'EUR') return amount * _cachedEurRate
+    if (currency === 'USD') return amount * _cachedUsdRate
+    return amount * _cachedEurRate
 }
 
 function toEUR(tryAmount: number): number {
-    return tryAmount / EUR_RATE
+    return tryAmount / (_cachedEurRate || 1)
 }
 
 // ─── Channel Colors ────────────────────────────────────────────
@@ -111,8 +125,13 @@ export const BigDataService = {
             ElektraService.getOccupancy(
                 new Date(year, 0, 1), new Date(year, 11, 31)
             ).catch(() => [] as DailyOccupancy[]),
-            ElektraService.getExchangeRates().catch(() => ({ EUR_TO_TRY: 38.5, USD_TO_TRY: 35.7, fetchedAt: 0 })),
+            ElektraService.getExchangeRates().catch(() => ({ EUR_TO_TRY: 1, USD_TO_TRY: 1, fetchedAt: 0 })),
         ])
+
+        // Update module-level rate cache for toTRY/toEUR functions
+        _cachedEurRate = rates.EUR_TO_TRY > 0 ? rates.EUR_TO_TRY : 1
+        _cachedUsdRate = rates.USD_TO_TRY > 0 ? rates.USD_TO_TRY : 1
+        _ratesFetched = true
 
         return { currentReservations, prevYearReservations, availability, occupancy, rates }
     },
@@ -834,7 +853,7 @@ export const BigDataService = {
             const adr = totalNights > 0 ? totalRev / totalNights : 0
             const occData = occByMonth.get(month) || []
             const avgOcc = occData.length > 0 ? occData.reduce((s, o) => s + o.occupancyRate, 0) / occData.length : 0
-            const totalRooms = occData[0]?.totalRooms || 341
+            const totalRooms = occData[0]?.totalRooms || 0
             const daysInMonth = occData.length || 30
             const revpar = (totalRooms * daysInMonth) > 0 ? totalRev / (totalRooms * daysInMonth) : 0
             const mi = parseInt(month.split('-')[1]) - 1

@@ -5,12 +5,12 @@
 Failed to compile.
 
 ./components/admin/DashboardAnalyticsChartWidget.tsx
-Module not found: Can't resolve '@/hooks/useAdminTranslations'
+Module not found: Can't resolve 'next-intl'
 
 https://nextjs.org/docs/messages/module-not-found
 
 ./components/admin/DashboardFilter.tsx
-Module not found: Can't resolve '@/hooks/useAdminTranslations'
+Module not found: Can't resolve 'next-intl'
 
 https://nextjs.org/docs/messages/module-not-found
 

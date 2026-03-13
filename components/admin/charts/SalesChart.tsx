@@ -17,7 +17,7 @@ const CURRENCY_SYMBOLS: Record<string, string> = {
 
 export function SalesChart({ data, currency = 'TRY', exchangeRate }: SalesChartProps) {
     const symbol = CURRENCY_SYMBOLS[currency] || '₺'
-    const rate = exchangeRate || 38.5;
+    const rate = exchangeRate || 1; // Live rate from API
     const divisor = currency === 'TRY' ? 1 : rate
 
     // Convert data if not TRY

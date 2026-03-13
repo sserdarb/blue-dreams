@@ -7,7 +7,7 @@ export default async function YieldManagementPage({ params }: { params: Promise<
     const { locale } = await params
 
     let reservations: any[] = []
-    let exchangeRates: any = { EUR_TO_TRY: 38.5, USD_TO_TRY: 35.7, fetchedAt: 0 }
+    let exchangeRates: any = { EUR_TO_TRY: 1, USD_TO_TRY: 1, fetchedAt: 0 } // Safe init; live rates fetched below
     let cacheStatus: any = { lastUpdated: null, isStale: true, recordCount: 0 }
     let error: string | undefined
 

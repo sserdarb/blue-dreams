@@ -62,9 +62,9 @@ export default async function AdminDashboard({
     const activePeriod = periodReservations.filter((r: any) => r.status !== 'Cancelled' && r.status !== 'İptal');
     const cancelledPeriod = periodReservations.filter((r: any) => r.status === 'Cancelled' || r.status === 'İptal');
 
-    // Aggregate with fallback to TRY rate map if not in TRY
-    const tryRate = stats.exchangeRate?.EUR_TO_TRY || 38.5; // fallback
-    const usdRate = 35.7; // Hardcoded fallback
+    // Aggregate with rates from Elektra API (TCMB live data)
+    const tryRate = stats.exchangeRate?.EUR_TO_TRY || 1;
+    const usdRate = stats.exchangeRate?.USD_TO_TRY || 1;
     const divisor = currency === 'TRY' ? 1 : (currency === 'EUR' ? tryRate : usdRate);
     const symbol = currency === 'EUR' ? '€' : (currency === 'USD' ? '$' : '₺');
 
@@ -257,6 +257,7 @@ export default async function AdminDashboard({
           reservations={allReservations} 
           currency={currency as 'TRY' | 'EUR' | 'USD'} 
           exchangeRate={tryRate} 
+          usdRate={usdRate}
           filterStartDate={fromStr}
           filterEndDate={toStr}
         />

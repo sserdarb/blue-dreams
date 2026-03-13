@@ -67,11 +67,18 @@ export default async function StatisticsPage({ params }: { params: Promise<{ loc
     let error: string | null = null
     let lastUpdated: string | null = null
 
+    // Fetch live exchange rates and total rooms first
+    const [rates, totalRooms] = await Promise.all([
+        ElektraService.getExchangeRates().catch(() => ({ EUR_TO_TRY: 1, USD_TO_TRY: 1, fetchedAt: 0 })),
+        ElektraService.getTotalRooms().catch(() => 341)
+    ])
+    const EUR_RATE_CURRENT = rates.EUR_TO_TRY || 1
+
     try {
         // Current Season (e.g., 2025)
         const raw = await ElektraService.getAllSeasonReservations()
 
-        const EUR_RATE_CURRENT = 38.5
+        // EUR_RATE_CURRENT is fetched from API above
         reservations = raw.map(r => {
             const amountTry = r.currency === 'EUR' ? r.totalPrice * EUR_RATE_CURRENT : r.totalPrice
             const amountEur = r.currency === 'EUR' ? r.totalPrice : r.totalPrice / EUR_RATE_CURRENT
@@ -116,7 +123,7 @@ export default async function StatisticsPage({ params }: { params: Promise<{ loc
         const prevEnd = new Date(prevYear, 11, 31) // Dec 31st of prev year
         const rawComp = await ElektraService.getReservations(prevStart, prevEnd)
 
-        const EUR_RATE_CURRENT = 38.5
+        // EUR_RATE_CURRENT is fetched from API above
         comparisonReservations = rawComp.map(r => {
             const amountTry = r.currency === 'EUR' ? r.totalPrice * EUR_RATE_CURRENT : r.totalPrice
             const amountEur = r.currency === 'EUR' ? r.totalPrice : r.totalPrice / EUR_RATE_CURRENT
@@ -139,5 +146,5 @@ export default async function StatisticsPage({ params }: { params: Promise<{ loc
         console.error('[Reports] Error fetching comparison:', err)
     }
 
-    return <ReportsClient reservations={reservations} comparisonReservations={comparisonReservations} error={error} lastUpdated={lastUpdated} locale={locale} taxRates={taxRates} />
+    return <ReportsClient reservations={reservations} comparisonReservations={comparisonReservations} error={error} lastUpdated={lastUpdated} locale={locale} taxRates={taxRates} eurRate={EUR_RATE_CURRENT} totalRooms={totalRooms} />
 }

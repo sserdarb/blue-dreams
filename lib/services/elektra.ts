@@ -139,11 +139,11 @@ const HOTEL_ID = 33264
 const USER_CODE = process.env.ELEKTRA_USER_CODE || 'asis'
 const PASSWORD = process.env.ELEKTRA_PASSWORD || ''
 
-// The exact saleable room count defined by the hotel management
+// The exact saleable room count defined by the hotel management (fallback only)
 const TOTAL_ROOMS = 341
 
-// Specific saleable room codes that make up the 341 count
-// CFM (58), CR (109), CSEA (108), DLX (38), DLX FAM (28) = 341
+// Specific saleable room codes that make up the room count
+// CFM (58), CR (109), CSEA (108), DLX (38), DLX FAM (28) = 341 (fallback)
 const SALEABLE_ROOM_CODES = ['CFM', 'CR', 'CSEA', 'DLX', 'DLX FAM']
 
 // ─── Channel Grouping ──────────────────────────────────────────
@@ -617,7 +617,7 @@ async function fetchReservations(fromDateStr: string, toDateStr: string, status:
     return mappedReservations
 }
 
-function computeOccupancy(availability: RoomAvailability[]): DailyOccupancy[] {
+function computeOccupancy(availability: RoomAvailability[], dynamicTotalRooms?: number): DailyOccupancy[] {
     const byDate = new Map<string, RoomAvailability[]>()
 
     // Filter out irrelevant rooms (ROH, PROMO, BSR...) when calculating overall hotel occupancy
@@ -632,9 +632,8 @@ function computeOccupancy(availability: RoomAvailability[]): DailyOccupancy[] {
     for (const [date, rooms] of byDate) {
         const availableRooms = rooms.reduce((sum, r) => sum + r.availableCount, 0)
 
-        // Use the hardcoded exactly 341 limit rather than dynamically fluctuating API caps 
-        // which might include ghost rooms.
-        const effectiveTotal = TOTAL_ROOMS
+        // Use dynamic total rooms from API, fallback to TOTAL_ROOMS constant
+        const effectiveTotal = dynamicTotalRooms || TOTAL_ROOMS
         const occupiedRooms = Math.max(0, effectiveTotal - availableRooms)
 
         // Safeguard percentage calculation

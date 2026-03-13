@@ -15,7 +15,7 @@ import {
   ReferenceDot,
 } from 'recharts'
 
-const TOTAL_ROOMS = 341 // Blue Dreams total room inventory
+// TOTAL_ROOMS is now passed as a prop from the API
 
 // Data series definition with colors matching the SalesChart style
 const SERIES = [
@@ -29,12 +29,16 @@ export default function DashboardForecastWidget({
   reservations,
   currency = 'EUR',
   exchangeRate = 1,
+  usdRate = 1,
+  totalRooms = 341,
   filterStartDate,
   filterEndDate
 }: {
   reservations: any[]
   currency: 'TRY' | 'EUR' | 'USD'
   exchangeRate: number
+  usdRate?: number
+  totalRooms?: number
   filterStartDate?: string
   filterEndDate?: string
 }) {
@@ -134,7 +138,7 @@ export default function DashboardForecastWidget({
     })
 
     // Currency helpers
-    const usdRate = 1.05 // Simplified fallback
+    // usdRate comes from props (live API rate)
     let sym = '€'
     if (currency === 'TRY') sym = '₺'
     else if (currency === 'USD') sym = '$'
@@ -222,7 +226,7 @@ export default function DashboardForecastWidget({
     const dailyArr = Array.from(dayMap.entries())
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([date, data]) => {
-        const occupancy = Math.min(100, Math.round((data.rooms / TOTAL_ROOMS) * 100))
+        const occupancy = totalRooms > 0 ? Math.min(100, Math.round((data.rooms / totalRooms) * 100)) : 0
         const adrRaw = data.rooms > 0 ? toDisplayCurrency(data.revenue / data.rooms) : 0
         const adr = Math.round(adrRaw);
         const revenue = Math.round(toDisplayCurrency(data.revenue))
@@ -264,7 +268,7 @@ export default function DashboardForecastWidget({
       symbol: sym,
       maxOccPoint, minOccPoint, maxAdrPoint, minAdrPoint
     }
-  }, [reservations, selectedAgency, selectedRoomType, zoomDays, zoomOffset, currency, exchangeRate, SEASON_START, SEASON_END, SEASON_DAYS, showDayEffect, filterStartDate, filterEndDate])
+  }, [reservations, selectedAgency, selectedRoomType, zoomDays, zoomOffset, currency, exchangeRate, usdRate, totalRooms, SEASON_START, SEASON_END, SEASON_DAYS, showDayEffect, filterStartDate, filterEndDate])
 
   const isFullSeason = zoomDays >= SEASON_DAYS
 
@@ -301,7 +305,7 @@ export default function DashboardForecastWidget({
         )}
 
         <div className="border-t border-slate-200 dark:border-slate-600 mt-2 pt-2 text-xs text-slate-500">
-          Dolu Oda: <span className="font-bold text-slate-700 dark:text-white">{d.rooms}</span> / {TOTAL_ROOMS}
+          Dolu Oda: <span className="font-bold text-slate-700 dark:text-white">{d.rooms}</span> / {totalRooms}
         </div>
       </div>
     )

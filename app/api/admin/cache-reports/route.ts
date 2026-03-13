@@ -15,10 +15,11 @@ export async function GET() {
         today.setHours(0, 0, 0, 0)
 
         // Parallel fetch: DB Cache (Up to Yesterday) + Live Today's Reservations + Live Season Cancellations
-        const [dbRaw, todayLiveReservations, seasonCancellations] = await Promise.all([
+        const [dbRaw, todayLiveReservations, seasonCancellations, rates] = await Promise.all([
             ElektraCache.getReservations(),
             ElektraService.getReservationsByBookingDate(today, new Date(today.getTime() + 86400000)).catch(() => []),
-            ElektraService.getAllSeasonCancellations().catch(() => [])
+            ElektraService.getAllSeasonCancellations().catch(() => []),
+            ElektraService.getExchangeRates().catch(() => ({ EUR_TO_TRY: 1, USD_TO_TRY: 1, fetchedAt: 0 })),
         ])
 
         // Convert Cancelled list into a fast lookup Set based on IDs
@@ -35,7 +36,7 @@ export async function GET() {
         // 3. Merge Cache + Live
         const mergedRaw = [...validCacheReservations, ...todayLiveReservations.filter(r => !cancelledIds.has(r.id))]
 
-        const EUR_RATE_CURRENT = 38.5
+        const EUR_RATE_CURRENT = rates.EUR_TO_TRY || 1 // Live rate from API
         const reservations = mergedRaw.map(r => {
             const amountTry = r.currency === 'EUR' ? r.totalPrice * EUR_RATE_CURRENT : r.totalPrice
             const amountEur = r.currency === 'EUR' ? r.totalPrice : r.totalPrice / EUR_RATE_CURRENT

@@ -34,12 +34,13 @@ interface Props {
         currentYearReservations: ReservationSlim[]
         prevYearReservations: ReservationSlim[]
         exchangeRates: { EUR_TO_TRY: number; USD_TO_TRY: number }
+        totalRooms: number
     }
     taxRates?: { vatAccommodation: number; taxAccommodation: number; vatFnb: number }
 }
 
 // ─── Helpers ──────────────────────────────────────────────────
-const TOTAL_ROOMS = 341 // Blue Dreams Resort total room inventory
+// TOTAL_ROOMS is now dynamically passed from the API via props
 
 // ─── Season Classification ────────────────────────────────────
 // Based on check-in month:
@@ -180,6 +181,9 @@ function aggregateByMonth(reservations: ReservationSlim[], rates: { EUR_TO_TRY: 
 
 // ─── Component ────────────────────────────────────────────────
 export default function ManagementReportsClient({ data, taxRates }: Props) {
+    // Dynamic total rooms from API — no hardcoded value
+    const TOTAL_ROOMS = data.totalRooms
+
     const params = useParams()
     const locale = (params?.locale as AdminLocale) || 'tr'
     const t = getAdminTranslations(locale) as AdminTranslations

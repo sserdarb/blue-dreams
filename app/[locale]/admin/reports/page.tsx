@@ -42,10 +42,11 @@ export default async function ManagementReportsPage({
 
         console.log(`[Reports] Fetching reservations: CY=${currentYear} (${cyStart.toISOString()} - ${cyEnd.toISOString()}), PY=${prevYear} (${pyStart.toISOString()} - ${pyEnd.toISOString()})`)
 
-        const [currentYearRes, prevYearRes, exchangeRates] = await Promise.all([
+        const [currentYearRes, prevYearRes, exchangeRates, totalRooms] = await Promise.all([
             ElektraService.getReservations(cyStart, cyEnd),
             ElektraService.getReservations(pyStart, pyEnd),
-            ElektraService.getExchangeRates()
+            ElektraService.getExchangeRates(),
+            ElektraService.getTotalRooms()
         ])
 
         console.log(`[Reports] CY reservations: ${currentYearRes.length}, PY reservations: ${prevYearRes.length}`)
@@ -77,7 +78,8 @@ export default async function ManagementReportsPage({
             exchangeRates: {
                 EUR_TO_TRY: exchangeRates.EUR_TO_TRY,
                 USD_TO_TRY: exchangeRates.USD_TO_TRY,
-            }
+            },
+            totalRooms
         }
 
         dataSourceLabel = ElektraService.isFullyLive ? 'Elektra Live' : 'Mock Data'
