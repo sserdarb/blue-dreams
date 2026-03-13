@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo, useCallback } from 'react'
+import { usePathname } from 'next/navigation'
 import { TrendingUp, Calendar, ZoomIn, ZoomOut, ChevronLeft, ChevronRight, Activity } from 'lucide-react'
 import {
   AreaChart,
@@ -14,15 +15,16 @@ import {
   ResponsiveContainer,
   ReferenceDot,
 } from 'recharts'
+import { getDashboardTranslations } from '@/lib/dashboard-translations'
 
 // TOTAL_ROOMS is now passed as a prop from the API
 
-// Data series definition with colors matching the SalesChart style
-const SERIES = [
-  { key: 'occupancy', name: 'Doluluk %', color: '#3b82f6', yAxisId: 'left', unit: '%' },
-  { key: 'adr', name: 'ADR', color: '#f59e0b', yAxisId: 'right', unit: '' },
-  { key: 'revenue', name: 'Günlük Gelir', color: '#6366f1', yAxisId: 'revenue', unit: '' },
-  { key: 'guests', name: 'Misafir Sayısı', color: '#10b981', yAxisId: 'guests', unit: '' },
+// Data series definition — name is a translation key resolved inside the component
+const SERIES_KEYS = [
+  { key: 'occupancy', nameKey: 'occupancy' as const, color: '#3b82f6', yAxisId: 'left', unit: '%' },
+  { key: 'adr', nameKey: 'adr' as const, color: '#f59e0b', yAxisId: 'right', unit: '' },
+  { key: 'revenue', nameKey: 'dailyRevenue' as const, color: '#6366f1', yAxisId: 'revenue', unit: '' },
+  { key: 'guests', nameKey: 'guestCount' as const, color: '#10b981', yAxisId: 'guests', unit: '' },
 ] as const
 
 export default function DashboardForecastWidget({
@@ -42,13 +44,23 @@ export default function DashboardForecastWidget({
   filterStartDate?: string
   filterEndDate?: string
 }) {
+  const pathname = usePathname()
+  const locale = pathname?.split('/')[1] || 'tr'
+  const dt = getDashboardTranslations(locale)
+
+  // Resolve localized series
+  const SERIES = useMemo(() => SERIES_KEYS.map(s => ({
+    ...s,
+    name: dt.forecast[s.nameKey]
+  })), [dt])
+
   const [selectedAgency, setSelectedAgency] = useState<string>('all')
   const [selectedRoomType, setSelectedRoomType] = useState<string>('all')
   const [showDayEffect, setShowDayEffect] = useState(false)
 
   // Toggle visibility of each data series — all visible by default
   const [visibleSeries, setVisibleSeries] = useState<Set<string>>(
-    new Set(SERIES.map(s => s.key))
+    new Set(SERIES_KEYS.map(s => s.key))
   )
 
   // Determine the relevant season year from data, or fallback to current year
@@ -286,7 +298,7 @@ export default function DashboardForecastWidget({
           return (
             <div key={index} className="flex items-center gap-2 text-xs mb-1.5">
               <div className="w-2 h-2 rounded-full" style={{ backgroundColor: p.stroke || p.color || p.fill }} />
-              <span className="text-slate-500 dark:text-slate-400">{p.name || SERIES.find(s=>s.key === p.dataKey)?.name}:</span>
+              <span className="text-slate-500 dark:text-slate-400">{p.name || SERIES.find((s: any) =>s.key === p.dataKey)?.name}:</span>
               <span className="font-bold text-slate-900 dark:text-white ml-auto">
                 {isPercent ? `${p.value}%` : isCount ? p.value : `${symbol}${Number(p.value).toLocaleString('tr-TR', { maximumFractionDigits: 0 })}`}
               </span>
@@ -297,7 +309,7 @@ export default function DashboardForecastWidget({
         {showDayEffect && (
            <div className="flex items-center gap-2 text-xs mb-1.5 mt-2 pt-2 border-t border-slate-100 dark:border-slate-700">
              <div className="w-2 h-2 rounded-full bg-rose-500" />
-             <span className="text-slate-500 dark:text-slate-400 font-medium">Gün Etkisi (Net Oda):</span>
+             <span className="text-slate-500 dark:text-slate-400 font-medium">{dt.forecast.dayEffectNet}:</span>
              <span className={`font-bold ml-auto ${d.pickupNet > 0 ? 'text-emerald-500' : d.pickupNet < 0 ? 'text-rose-500' : 'text-slate-400'}`}>
                {d.pickupNet > 0 ? '+' : ''}{d.pickupNet}
              </span>
@@ -305,7 +317,7 @@ export default function DashboardForecastWidget({
         )}
 
         <div className="border-t border-slate-200 dark:border-slate-600 mt-2 pt-2 text-xs text-slate-500">
-          Dolu Oda: <span className="font-bold text-slate-700 dark:text-white">{d.rooms}</span> / {totalRooms}
+          {dt.forecast.occupiedRooms}: <span className="font-bold text-slate-700 dark:text-white">{d.rooms}</span> / {totalRooms}
         </div>
       </div>
     )
@@ -320,8 +332,8 @@ export default function DashboardForecastWidget({
             <TrendingUp size={20} />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-slate-800 dark:text-white">Sezon Forecast (1 Nis – 31 Eki {seasonYear})</h3>
-            <p className="text-sm text-slate-500">{isFullSeason ? 'Tam sezon görünümü' : `${zoomDays} günlük pencere`}</p>
+            <h3 className="text-lg font-bold text-slate-800 dark:text-white">{dt.forecast.seasonForecast} (1 {dt.forecast.apr} – 31 {dt.forecast.oct} {seasonYear})</h3>
+            <p className="text-sm text-slate-500">{isFullSeason ? dt.forecast.fullSeasonView : `${zoomDays} ${dt.forecast.dayWindow}`}</p>
           </div>
         </div>
 
@@ -335,30 +347,30 @@ export default function DashboardForecastWidget({
                    ? 'bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-900/20 dark:border-rose-800 dark:text-rose-400' 
                    : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400'
                 }`}
-                title="Seçili tarih aralığında yaratılan veya iptal edilen rezervasyonların (Pickup) gelecekteki günlere net oda etkisi."
+                title={dt.forecast.dayEffectTooltip}
              >
                 <Activity size={14} />
-                Gün Etkisi (Day Effect)
+                {dt.forecast.dayEffect}
              </button>
           )}
 
           {/* Zoom Controls */}
           <div className="flex items-center bg-slate-100 dark:bg-slate-900 rounded-lg p-0.5 gap-0.5">
-            <button onClick={handlePanLeft} disabled={zoomOffset === 0 || isFullSeason} className="p-1.5 rounded-md text-slate-500 hover:text-slate-900 dark:hover:text-white transition disabled:opacity-30" title="Sola Kaydır">
+            <button onClick={handlePanLeft} disabled={zoomOffset === 0 || isFullSeason} className="p-1.5 rounded-md text-slate-500 hover:text-slate-900 dark:hover:text-white transition disabled:opacity-30" title={dt.forecast.scrollLeft}>
               <ChevronLeft size={14} />
             </button>
-            <button onClick={handleZoomIn} disabled={zoomDays <= 14} className="p-1.5 rounded-md text-slate-500 hover:text-slate-900 dark:hover:text-white transition disabled:opacity-30" title="Yakınlaştır">
+            <button onClick={handleZoomIn} disabled={zoomDays <= 14} className="p-1.5 rounded-md text-slate-500 hover:text-slate-900 dark:hover:text-white transition disabled:opacity-30" title={dt.forecast.zoomIn}>
               <ZoomIn size={14} />
             </button>
-            <button onClick={handleZoomOut} disabled={isFullSeason} className="p-1.5 rounded-md text-slate-500 hover:text-slate-900 dark:hover:text-white transition disabled:opacity-30" title="Uzaklaştır">
+            <button onClick={handleZoomOut} disabled={isFullSeason} className="p-1.5 rounded-md text-slate-500 hover:text-slate-900 dark:hover:text-white transition disabled:opacity-30" title={dt.forecast.zoomOut}>
               <ZoomOut size={14} />
             </button>
-            <button onClick={handlePanRight} disabled={zoomOffset >= SEASON_DAYS - zoomDays || isFullSeason} className="p-1.5 rounded-md text-slate-500 hover:text-slate-900 dark:hover:text-white transition disabled:opacity-30" title="Sağa Kaydır">
+            <button onClick={handlePanRight} disabled={zoomOffset >= SEASON_DAYS - zoomDays || isFullSeason} className="p-1.5 rounded-md text-slate-500 hover:text-slate-900 dark:hover:text-white transition disabled:opacity-30" title={dt.forecast.scrollRight}>
               <ChevronRight size={14} />
             </button>
             {!isFullSeason && (
-              <button onClick={() => { setZoomDays(SEASON_DAYS); setZoomOffset(0) }} className="px-2 py-1 text-[10px] font-bold text-blue-600 hover:text-blue-800 transition" title="Tam Sezon">
-                TÜM
+              <button onClick={() => { setZoomDays(SEASON_DAYS); setZoomOffset(0) }} className="px-2 py-1 text-[10px] font-bold text-blue-600 hover:text-blue-800 transition" title={dt.forecast.fullSeason}>
+                {dt.forecast.all}
               </button>
             )}
           </div>
@@ -369,7 +381,7 @@ export default function DashboardForecastWidget({
             onChange={e => setSelectedAgency(e.target.value)}
             className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
           >
-            <option value="all">Tüm Acenteler</option>
+            <option value="all">{dt.forecast.allAgencies}</option>
             {agencies.map(a => <option key={a} value={a}>{a}</option>)}
           </select>
 
@@ -379,7 +391,7 @@ export default function DashboardForecastWidget({
             onChange={e => setSelectedRoomType(e.target.value)}
             className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
           >
-            <option value="all">Tüm Oda Tipleri</option>
+            <option value="all">{dt.forecast.allRoomTypes}</option>
             {roomTypes.map(r => <option key={r} value={r}>{r}</option>)}
           </select>
         </div>
@@ -388,30 +400,30 @@ export default function DashboardForecastWidget({
       {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
         <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-3 border border-blue-100 dark:border-blue-800">
-          <p className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-1">Ort. Doluluk</p>
+          <p className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-1">{dt.forecast.avgOccupancy}</p>
           <p className="text-xl font-bold text-blue-700 dark:text-blue-300">{summaryStats.avgOccupancy}%</p>
         </div>
         <div className="bg-amber-50 dark:bg-amber-900/20 rounded-xl p-3 border border-amber-100 dark:border-amber-800">
-          <p className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider mb-1">Ort. ADR</p>
-          <p className="text-xl font-bold text-amber-700 dark:text-amber-300">{symbol}{summaryStats.avgAdr.toLocaleString('tr-TR')}</p>
+          <p className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider mb-1">{dt.forecast.avgAdr}</p>
+          <p className="text-xl font-bold text-amber-700 dark:text-amber-300">{symbol}{summaryStats.avgAdr.toLocaleString(locale)}</p>
         </div>
         <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-xl p-3 border border-emerald-100 dark:border-emerald-800">
-          <p className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-1">Ort. Misafir/Gün</p>
+          <p className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-1">{dt.forecast.avgGuestsDay}</p>
           <p className="text-xl font-bold text-emerald-700 dark:text-emerald-300">{summaryStats.avgGuests}</p>
         </div>
         <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-xl p-3 border border-indigo-100 dark:border-indigo-800">
-          <p className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider mb-1">Toplam Gelir</p>
-          <p className="text-xl font-bold text-indigo-700 dark:text-indigo-300">{symbol}{Math.round(summaryStats.totalRevenue).toLocaleString('tr-TR')}</p>
+          <p className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider mb-1">{dt.forecast.totalRevenue}</p>
+          <p className="text-xl font-bold text-indigo-700 dark:text-indigo-300">{symbol}{Math.round(summaryStats.totalRevenue).toLocaleString(locale)}</p>
         </div>
         <div className="bg-slate-50 dark:bg-slate-900/50 rounded-xl p-3 border border-slate-100 dark:border-slate-800">
-          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Oda Geceleme</p>
-          <p className="text-xl font-bold text-slate-800 dark:text-white">{summaryStats.totalRoomNights.toLocaleString('tr-TR')}</p>
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">{dt.forecast.roomNights}</p>
+          <p className="text-xl font-bold text-slate-800 dark:text-white">{summaryStats.totalRoomNights.toLocaleString(locale)}</p>
         </div>
       </div>
 
       {/* Series Toggle Buttons */}
       <div className="flex flex-wrap items-center gap-2 mb-4">
-        <span className="text-xs text-slate-400 font-medium mr-1">Temsil:</span>
+        <span className="text-xs text-slate-400 font-medium mr-1">{dt.forecast.series}:</span>
         {SERIES.map(s => {
           const isActive = visibleSeries.has(s.key)
           return (
@@ -499,7 +511,7 @@ export default function DashboardForecastWidget({
                    dataKey="pickupNet" 
                    yAxisId="left" 
                    fill="#f43f5e" 
-                   name="Gün Etkisi (Net Oda)" 
+                   name={dt.forecast.dayEffectNet} 
                    opacity={0.6}
                    radius={[4, 4, 0, 0]} 
                  />
@@ -539,7 +551,7 @@ export default function DashboardForecastWidget({
       })() : (
         <div className="h-[300px] w-full flex flex-col items-center justify-center text-slate-400 border border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
           <Calendar size={48} className="mb-4 opacity-50" />
-          <p>Seçili dönem (1 Nis - 31 Eki {seasonYear}) için onaylı rezervasyon bulunamadı.</p>
+          <p>{dt.forecast.noDataFound}</p>
         </div>
       )}
     </div>

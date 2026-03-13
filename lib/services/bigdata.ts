@@ -797,7 +797,7 @@ export const BigDataService = {
         const totalNights = reservations.reduce((s, r) => s + r.nights * r.roomCount, 0)
         const adr = totalNights > 0 ? totalRev / totalNights : 0
         const avgOcc = occupancy.length > 0 ? occupancy.reduce((s, o) => s + o.occupancyRate, 0) / occupancy.length : 0
-        const totalRooms = occupancy[0]?.totalRooms || 341
+        const totalRooms = occupancy[0]?.totalRooms || 1 // Dynamic from API, no hardcoded fallback
         const avgDays = occupancy.length || 1
         const revpar = (totalRooms * avgDays) > 0 ? totalRev / (totalRooms * avgDays) : 0
         const paidRev = reservations.reduce((s, r) => s + ((r.amountTry || 0) * (r.paidPrice / Math.max(1, r.totalPrice))), 0)

@@ -1,7 +1,9 @@
 'use client'
 
 import React from 'react'
+import { usePathname } from 'next/navigation'
 import { TrendingUp, TrendingDown, Clock, Activity, AlertCircle } from 'lucide-react'
+import { getDashboardTranslations } from '@/lib/dashboard-translations'
 import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts'
@@ -25,6 +27,10 @@ interface DashboardPickupWidgetProps {
 }
 
 export default function DashboardPickupWidget({ data, currency = 'TRY', exchangeRate, usdRate = 1 }: DashboardPickupWidgetProps) {
+    const pathname = usePathname()
+    const locale = pathname?.split('/')[1] || 'tr'
+    const dt = getDashboardTranslations(locale)
+
     if (!data) return null;
 
     const symbol = currency === 'EUR' ? '€' : (currency === 'USD' ? '$' : '₺')
@@ -53,17 +59,17 @@ export default function DashboardPickupWidget({ data, currency = 'TRY', exchange
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-0 mb-6">
                     <div className="flex items-center gap-2">
                         <Activity size={20} className="text-blue-500" />
-                        <h2 className="text-xl font-bold text-slate-900 dark:text-white">Gelişim (Pickup) Trendi</h2>
+                        <h2 className="text-xl font-bold text-slate-900 dark:text-white">{dt.pickup.pickupTrend}</h2>
                     </div>
                     <div className="flex gap-4">
                         <div className="text-right">
-                            <p className="text-xs text-slate-500 uppercase font-semibold">Net Pickup</p>
+                            <p className="text-xs text-slate-500 uppercase font-semibold">{dt.pickup.netPickup}</p>
                             <p className={`text-lg font-bold ${data.netPickup >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
-                                {data.netPickup > 0 ? '+' : ''}{data.netPickup} Rez.
+                                {data.netPickup > 0 ? '+' : ''}{data.netPickup} {dt.pickup.reservations}
                             </p>
                         </div>
                         <div className="text-right border-l md:border-l-0 border-slate-200 dark:border-white/10 pl-4">
-                            <p className="text-xs text-slate-500 uppercase font-semibold">Ciro Etkisi</p>
+                            <p className="text-xs text-slate-500 uppercase font-semibold">{dt.pickup.revenueImpact}</p>
                             <p className="text-lg font-bold text-slate-900 dark:text-white">
                                 {symbol}{(data.revenue / (divisor || 1)).toLocaleString('tr-TR', { maximumFractionDigits: 0 })}
                             </p>
@@ -104,8 +110,8 @@ export default function DashboardPickupWidget({ data, currency = 'TRY', exchange
                                 contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                                 labelFormatter={(val) => new Date(val as string).toLocaleDateString('tr-TR')}
                             />
-                            <Area type="monotone" name="Yeni Rezervasyon" dataKey="new" stroke="#10b981" fillOpacity={1} fill="url(#colorNew)" strokeWidth={2} />
-                            <Area type="monotone" name="İptal" dataKey="cancelled" stroke="#ef4444" fillOpacity={1} fill="url(#colorCancel)" strokeWidth={2} />
+                            <Area type="monotone" name={dt.pickup.newReservation} dataKey="new" stroke="#10b981" fillOpacity={1} fill="url(#colorNew)" strokeWidth={2} />
+                            <Area type="monotone" name={dt.pickup.cancelled} dataKey="cancelled" stroke="#ef4444" fillOpacity={1} fill="url(#colorCancel)" strokeWidth={2} />
                         </AreaChart>
                     </ResponsiveContainer>
                 </div>
@@ -118,11 +124,11 @@ export default function DashboardPickupWidget({ data, currency = 'TRY', exchange
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-2">
                             <TrendingUp size={18} className="text-emerald-500" />
-                            <h3 className="font-bold text-slate-900 dark:text-white">Pozitif Etki (Ciro Artışı)</h3>
+                            <h3 className="font-bold text-slate-900 dark:text-white">{dt.pickup.positiveImpact}</h3>
                         </div>
                     </div>
                     {data.agencyImpacts?.filter(a => a.pickupRevenue > 0).length === 0 ? (
-                        <p className="text-sm text-slate-500 py-2">Pozitif etki eden acente bulunamadı.</p>
+                        <p className="text-sm text-slate-500 py-2">{dt.pickup.noPositiveAgency}</p>
                     ) : (
                         <div className="space-y-3">
                             {data.agencyImpacts?.filter(a => a.pickupRevenue > 0).slice(0, 5).map((imp, idx) => (
@@ -142,11 +148,11 @@ export default function DashboardPickupWidget({ data, currency = 'TRY', exchange
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-2">
                             <TrendingDown size={18} className="text-red-500" />
-                            <h3 className="font-bold text-slate-900 dark:text-white">Negatif Etki (İptal / Kayıp)</h3>
+                            <h3 className="font-bold text-slate-900 dark:text-white">{dt.pickup.negativeImpact}</h3>
                         </div>
                     </div>
                     {data.agencyImpacts?.filter(a => a.pickupRevenue < 0).length === 0 ? (
-                        <p className="text-sm text-slate-500 py-2">Negatif etki eden acente bulunamadı.</p>
+                        <p className="text-sm text-slate-500 py-2">{dt.pickup.noNegativeAgency}</p>
                     ) : (
                         <div className="space-y-3">
                             {data.agencyImpacts?.filter(a => a.pickupRevenue < 0).sort((a, b) => a.pickupRevenue - b.pickupRevenue).slice(0, 5).map((imp, idx) => (

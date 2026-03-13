@@ -1,8 +1,10 @@
 'use client'
 
 import React, { useMemo, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import { Building2, TrendingUp, TrendingDown, ArrowRight, ChevronDown, ChevronUp, Bed } from 'lucide-react'
 import type { Reservation } from '@/lib/services/elektra'
+import { getDashboardTranslations } from '@/lib/dashboard-translations'
 
 interface DashboardAgencyPerformanceProps {
     reservations: Reservation[]
@@ -36,6 +38,9 @@ interface AgencyRow {
 
 export default function DashboardAgencyPerformanceWidget({ reservations, currency = 'TRY', exchangeRate }: DashboardAgencyPerformanceProps) {
     const [expandedAgency, setExpandedAgency] = useState<string | null>(null)
+    const pathname = usePathname()
+    const locale = pathname?.split('/')[1] || 'tr'
+    const dt = getDashboardTranslations(locale)
 
     const agencyData = useMemo(() => {
         const activeRes = reservations.filter(r => r.status !== 'Cancelled' && r.status !== 'İptal')
@@ -183,8 +188,8 @@ export default function DashboardAgencyPerformanceWidget({ reservations, currenc
                         <Building2 size={20} />
                     </div>
                     <div>
-                        <h3 className="font-bold text-slate-900 dark:text-white text-lg">Acente Performansı ve Pazar Etkisi</h3>
-                        <p className="text-xs text-slate-500">Oda tipi bazlı ADR analizi · Orijinal döviz cinsinden</p>
+                        <h3 className="font-bold text-slate-900 dark:text-white text-lg">{dt.agencyPerformance.title}</h3>
+                        <p className="text-xs text-slate-500">{dt.agencyPerformance.subtitle}</p>
                     </div>
                 </div>
             </div>
@@ -194,17 +199,17 @@ export default function DashboardAgencyPerformanceWidget({ reservations, currenc
                 {agencyData.length === 0 ? (
                     <div className="p-8 text-center text-slate-500 flex flex-col items-center justify-center h-full">
                         <Building2 size={48} className="text-slate-200 dark:text-slate-700 mb-3" />
-                        <p>Bu tarih aralığında acente verisi bulunamadı.</p>
+                        <p>{dt.agencyPerformance.noDataInRange}</p>
                     </div>
                 ) : (
                     <table className="w-full text-sm text-left">
                         <thead className="text-xs text-slate-500 uppercase bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-10 hidden sm:table-header-group">
                             <tr>
-                                <th className="px-4 py-3 font-medium">Acente Adı</th>
-                                <th className="px-4 py-3 font-medium text-center">Rez.</th>
-                                <th className="px-4 py-3 font-medium text-center">Oda Tipi</th>
-                                <th className="px-4 py-3 font-medium text-right">Oda Gecl.</th>
-                                <th className="px-4 py-3 font-medium text-right">Pazar Etkisi</th>
+                                <th className="px-4 py-3 font-medium">{dt.agencyPerformance.agencyName}</th>
+                                <th className="px-4 py-3 font-medium text-center">{dt.agencyPerformance.reservations}</th>
+                                <th className="px-4 py-3 font-medium text-center">{dt.agencyPerformance.roomType}</th>
+                                <th className="px-4 py-3 font-medium text-right">{dt.agencyPerformance.roomNights}</th>
+                                <th className="px-4 py-3 font-medium text-right">{dt.agencyPerformance.marketImpact}</th>
                                 <th className="px-4 py-3 w-10"></th>
                             </tr>
                         </thead>
@@ -220,35 +225,35 @@ export default function DashboardAgencyPerformanceWidget({ reservations, currenc
                                             onClick={() => setExpandedAgency(isExpanded ? null : agency.name)}
                                         >
                                             <td className="px-4 sm:py-3 py-1 flex items-center justify-between sm:table-cell">
-                                                <span className="sm:hidden text-xs text-slate-400 font-medium uppercase">Acente:</span>
+                                                <span className="sm:hidden text-xs text-slate-400 font-medium uppercase">{dt.agencyPerformance.agency}:</span>
                                                 <div className="font-semibold text-slate-900 dark:text-white truncate max-w-[200px]">
                                                     {agency.name}
                                                 </div>
                                             </td>
                                             <td className="px-4 sm:py-3 py-1 flex items-center justify-between sm:table-cell text-center">
-                                                <span className="sm:hidden text-xs text-slate-400 font-medium uppercase">Rez.:</span>
+                                                <span className="sm:hidden text-xs text-slate-400 font-medium uppercase">{dt.agencyPerformance.reservations}:</span>
                                                 <div className="font-medium text-slate-700 dark:text-slate-300">
                                                     {agency.totalCount}
-                                                    {agency.cancelCount > 0 && <span className="text-red-500 text-xs ml-1">({agency.cancelCount} i)</span>}
+                                                    {agency.cancelCount > 0 && <span className="text-red-500 text-xs ml-1">({agency.cancelCount} {dt.agencyPerformance.cancelSuffix})</span>}
                                                 </div>
                                             </td>
                                             <td className="px-4 sm:py-3 py-1 flex items-center justify-between sm:table-cell text-center">
-                                                <span className="sm:hidden text-xs text-slate-400 font-medium uppercase">Oda Tipi:</span>
+                                                <span className="sm:hidden text-xs text-slate-400 font-medium uppercase">{dt.agencyPerformance.roomType}:</span>
                                                 <span className="text-xs text-slate-500 dark:text-slate-400">
-                                                    {agency.roomTypes.length} tip
+                                                    {agency.roomTypes.length} {dt.agencyPerformance.typeSuffix}
                                                 </span>
                                             </td>
                                             <td className="px-4 sm:py-3 py-1 flex items-center justify-between sm:table-cell text-right">
-                                                <span className="sm:hidden text-xs text-slate-400 font-medium uppercase">Oda Gecl.:</span>
+                                                <span className="sm:hidden text-xs text-slate-400 font-medium uppercase">{dt.agencyPerformance.roomNights}:</span>
                                                 <span className="font-semibold text-slate-800 dark:text-slate-200">
                                                     {agency.totalRoomNights.toLocaleString('tr-TR')}
                                                 </span>
                                             </td>
                                             <td className="px-4 sm:py-3 py-1 flex items-center justify-between sm:table-cell text-right">
-                                                <span className="sm:hidden text-xs text-slate-400 font-medium uppercase">Etki:</span>
+                                                <span className="sm:hidden text-xs text-slate-400 font-medium uppercase">{dt.agencyPerformance.impact}:</span>
                                                 <div className={`inline-flex items-center gap-1 font-bold ${hasPositiveImpact ? 'text-emerald-600' : hasNegativeImpact ? 'text-red-500' : 'text-slate-500'}`}>
                                                     {hasPositiveImpact ? <TrendingUp size={14} /> : hasNegativeImpact ? <TrendingDown size={14} /> : null}
-                                                    <span className="text-xs">{hasPositiveImpact ? '↑ Ortalama+' : hasNegativeImpact ? '↓ Ortalama-' : '—'}</span>
+                                                    <span className="text-xs">{hasPositiveImpact ? dt.agencyPerformance.aboveAvg : hasNegativeImpact ? dt.agencyPerformance.belowAvg : '—'}</span>
                                                 </div>
                                             </td>
                                             <td className="px-4 py-2 text-right hidden sm:table-cell">
@@ -265,7 +270,7 @@ export default function DashboardAgencyPerformanceWidget({ reservations, currenc
                                                     <div className="p-4 pl-6 border-l-4 border-blue-500">
                                                         <h4 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-3 flex items-center gap-1.5">
                                                             <Bed size={14} />
-                                                            {agency.name} — Oda Tipi Bazlı ADR Analizi
+                                                            {agency.name} — {dt.agencyPerformance.roomTypeAdrAnalysis}
                                                         </h4>
                                                         <div className="space-y-2">
                                                             {agency.roomTypes.map((rt, rIdx) => {
@@ -282,32 +287,32 @@ export default function DashboardAgencyPerformanceWidget({ reservations, currenc
                                                                                 : isBelow ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
                                                                                 : 'bg-slate-100 text-slate-500'
                                                                             }`}>
-                                                                                {isAbove ? '+' : ''}{diffPct}% pazar ort.
+                                                                                {isAbove ? '+' : ''}{diffPct}% {dt.agencyPerformance.marketAvg}
                                                                             </span>
                                                                         </div>
                                                                         <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-xs">
                                                                             <div>
-                                                                                <p className="text-slate-400 mb-0.5">Rez. Adeti</p>
+                                                                                <p className="text-slate-400 mb-0.5">{dt.agencyPerformance.resCount}</p>
                                                                                 <p className="font-bold text-slate-800 dark:text-white">{rt.count}</p>
                                                                             </div>
                                                                             <div>
-                                                                                <p className="text-slate-400 mb-0.5">Oda Geceleme</p>
+                                                                                <p className="text-slate-400 mb-0.5">{dt.agencyPerformance.roomNightsLabel}</p>
                                                                                 <p className="font-bold text-slate-800 dark:text-white">{rt.roomNights}</p>
                                                                             </div>
                                                                             <div>
-                                                                                <p className="text-slate-400 mb-0.5">Acente ADR</p>
+                                                                                <p className="text-slate-400 mb-0.5">{dt.agencyPerformance.agencyAdr}</p>
                                                                                 <p className={`font-bold ${isAbove ? 'text-emerald-600' : isBelow ? 'text-red-500' : 'text-slate-800 dark:text-white'}`}>
                                                                                     {rt.currency}{rt.adr.toLocaleString('tr-TR')}
                                                                                 </p>
                                                                             </div>
                                                                             <div>
-                                                                                <p className="text-slate-400 mb-0.5">Pazar ADR</p>
+                                                                                <p className="text-slate-400 mb-0.5">{dt.agencyPerformance.marketAdr}</p>
                                                                                 <p className="font-bold text-slate-800 dark:text-white">
                                                                                     {rt.currency}{rt.marketAdr.toLocaleString('tr-TR')}
                                                                                 </p>
                                                                             </div>
                                                                             <div>
-                                                                                <p className="text-slate-400 mb-0.5">Fiyat Etkisi</p>
+                                                                                <p className="text-slate-400 mb-0.5">{dt.agencyPerformance.priceImpact}</p>
                                                                                 <p className={`font-bold flex items-center gap-1 ${isAbove ? 'text-emerald-600' : isBelow ? 'text-red-500' : 'text-slate-500'}`}>
                                                                                     {isAbove ? <TrendingUp size={12} /> : isBelow ? <TrendingDown size={12} /> : null}
                                                                                     {isAbove ? '+' : ''}{rt.currency}{rt.impact.toLocaleString('tr-TR')}
@@ -317,7 +322,7 @@ export default function DashboardAgencyPerformanceWidget({ reservations, currenc
                                                                         {/* ADR comparison bar */}
                                                                         <div className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-700">
                                                                             <div className="flex items-center gap-2 text-[10px] text-slate-400">
-                                                                                <span>Pazar</span>
+                                                                                <span>{dt.agencyPerformance.market}</span>
                                                                                 <div className="flex-1 h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden relative">
                                                                                     {/* Market bar — always 100% */}
                                                                                     <div className="absolute inset-0 bg-slate-300 dark:bg-slate-600 rounded-full" />
@@ -327,7 +332,7 @@ export default function DashboardAgencyPerformanceWidget({ reservations, currenc
                                                                                         style={{ width: `${Math.min(100, rt.marketAdr > 0 ? (rt.adr / rt.marketAdr) * 100 : 100)}%` }}
                                                                                     />
                                                                                 </div>
-                                                                                <span>Acente</span>
+                                                                                <span>{dt.agencyPerformance.agency}</span>
                                                                             </div>
                                                                         </div>
                                                                     </div>
@@ -348,7 +353,7 @@ export default function DashboardAgencyPerformanceWidget({ reservations, currenc
             {agencyData.length > 0 && (
                 <div className="p-3 bg-slate-50 dark:bg-slate-800/30 text-center border-t border-slate-100 dark:border-slate-800">
                     <button className="text-sm text-blue-600 dark:text-blue-400 font-medium hover:underline inline-flex items-center gap-1">
-                        Tüm Acente Raporunu Gör <ArrowRight size={14} />
+                        {dt.agencyPerformance.viewFullReport} <ArrowRight size={14} />
                     </button>
                 </div>
             )}

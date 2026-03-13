@@ -192,7 +192,7 @@ let jwtExpiresAt: number = 0
 // ─── Exchange Rate Cache ───────────────────────────────────────
 let cachedRates: ExchangeRates | null = null
 const RATE_CACHE_TTL = 3600000 // 1 hour
-const FALLBACK_RATES: ExchangeRates = { EUR_TO_TRY: 38.5, USD_TO_TRY: 35.7, fetchedAt: 0 }
+const FALLBACK_RATES: ExchangeRates = { EUR_TO_TRY: 1, USD_TO_TRY: 1, fetchedAt: 0 } // Safe defaults — never use stale hardcoded rates
 
 // ─── Country Cache ─────────────────────────────────────────────
 let cachedCountries: Map<number, string> | null = null
@@ -330,8 +330,8 @@ async function fetchHistoricalExchangeRates(dateStr: string): Promise<ExchangeRa
             const res = await fetch(url, { next: { revalidate: 86400 } }) // Cache 1 day
             if (res.ok) {
                 const text = await res.text()
-                let eurRate = 38.5
-                let usdRate = 35.7
+                let eurRate = 1 // Safe default — will be overwritten from TCMB XML
+                let usdRate = 1
 
                 const eurMatch = text.match(/<Currency CrossOrder="\d+" Kod="EUR" CurrencyCode="EUR">[\s\S]*?<BanknoteSelling>([\d\.]+)/)
                 if (eurMatch) eurRate = parseFloat(eurMatch[1])

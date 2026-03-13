@@ -2,6 +2,7 @@ import React from 'react'
 import { TrendingUp, TrendingDown, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import type { Reservation } from '@/lib/services/elektra'
+import { getDashboardTranslations } from '@/lib/dashboard-translations'
 
 interface DashboardLastReservationsProps {
     reservations: Reservation[]
@@ -12,6 +13,7 @@ interface DashboardLastReservationsProps {
 }
 
 export default function DashboardLastReservationsWidget({ reservations, locale = 'tr', currency = 'TRY', exchangeRate, usdRate = 1 }: DashboardLastReservationsProps) {
+    const dt = getDashboardTranslations(locale)
     if (!reservations || reservations.length === 0) return null
 
     const symbol = currency === 'EUR' ? '€' : (currency === 'USD' ? '$' : '₺')
@@ -77,13 +79,13 @@ export default function DashboardLastReservationsWidget({ reservations, locale =
         <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-6 shadow-sm">
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
-                    <h2 className="text-xl font-bold text-slate-900 dark:text-white">Son Rezervasyonlar</h2>
+                    <h2 className="text-xl font-bold text-slate-900 dark:text-white">{dt.lastReservations.title}</h2>
                     <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                        Canlı
+                        {dt.lastReservations.live}
                     </span>
                 </div>
                 <Link href={`/${locale}/admin/reservations`} className="flex items-center gap-1 text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline">
-                    Tümünü Gör <ArrowRight size={16} />
+                    {dt.lastReservations.viewAll} <ArrowRight size={16} />
                 </Link>
             </div>
 
@@ -95,7 +97,7 @@ export default function DashboardLastReservationsWidget({ reservations, locale =
                             <TrendingUp size={20} />
                         </div>
                         <div>
-                            <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">En Başarılı Acente (Yüksek ADR)</p>
+                            <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">{dt.lastReservations.bestAgency}</p>
                             <p className="text-sm font-bold text-slate-900 dark:text-white mt-0.5">{bestAgency.name} <span className="opacity-70 text-xs font-normal">({bestAgency.score} rez)</span></p>
                         </div>
                     </div>
@@ -104,7 +106,7 @@ export default function DashboardLastReservationsWidget({ reservations, locale =
                             <TrendingDown size={20} />
                         </div>
                         <div>
-                            <p className="text-xs font-semibold text-red-600 dark:text-red-400 uppercase tracking-wider">Gelişime Açık Acente (Düşük ADR)</p>
+                            <p className="text-xs font-semibold text-red-600 dark:text-red-400 uppercase tracking-wider">{dt.lastReservations.worstAgency}</p>
                             <p className="text-sm font-bold text-slate-900 dark:text-white mt-0.5">{worstAgency.name} <span className="opacity-70 text-xs font-normal">({worstAgency.score} rez)</span></p>
                         </div>
                     </div>
@@ -115,17 +117,17 @@ export default function DashboardLastReservationsWidget({ reservations, locale =
                 <table className="w-full text-sm text-left">
                     <thead className="bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-slate-400 border-y border-slate-200 dark:border-white/10">
                         <tr>
-                            <th className="px-4 py-3 font-medium">Voucher & İsim</th>
-                            <th className="px-4 py-3 font-medium">Acente / Kanal</th>
-                            <th className="px-4 py-3 font-medium">Tarih</th>
-                            <th className="px-4 py-3 font-medium">Oda & Gece</th>
-                            <th className="px-4 py-3 font-medium text-right">Günlük Ort. (ADR)</th>
-                            <th className="px-4 py-3 font-medium text-right">Performans</th>
+                            <th className="px-4 py-3 font-medium">{dt.lastReservations.voucherName}</th>
+                            <th className="px-4 py-3 font-medium">{dt.lastReservations.agencyChannel}</th>
+                            <th className="px-4 py-3 font-medium">{dt.lastReservations.date}</th>
+                            <th className="px-4 py-3 font-medium">{dt.lastReservations.roomNight}</th>
+                            <th className="px-4 py-3 font-medium text-right">{dt.lastReservations.dailyAvgAdr}</th>
+                            <th className="px-4 py-3 font-medium text-right">{dt.lastReservations.performance}</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-white/5">
                         {analyzedReservations.map((res) => {
-                            const name = res.guests?.[0] ? `${res.guests[0].name} ${res.guests[0].surname}` : res.contactName || 'Belirtilmemiş'
+                            const name = res.guests?.[0] ? `${res.guests[0].name} ${res.guests[0].surname}` : res.contactName || dt.lastReservations.notSpecified
                             const formatter = new Intl.NumberFormat('tr-TR', { style: 'currency', currency: currency, maximumFractionDigits: 0, minimumFractionDigits: 0 })
                             const entryDate = (res as any).createdAt || (res as any).reservationDate || (res as any).lastUpdate
                             const entryTime = entryDate ? new Date(entryDate).toLocaleString('tr-TR', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' }) : ''
@@ -139,7 +141,7 @@ export default function DashboardLastReservationsWidget({ reservations, locale =
                                         </div>
                                         <div className="text-xs text-slate-500 mt-0.5">
                                             {res.voucherNo || `#${res.id}`} • {res.channel}
-                                            {entryTime && <span className="ml-1">• Giriş: {entryTime}</span>}
+                                            {entryTime && <span className="ml-1">• {dt.lastReservations.entry}: {entryTime}</span>}
                                         </div>
                                     </td>
                                     <td className="px-4 py-3">
@@ -151,26 +153,26 @@ export default function DashboardLastReservationsWidget({ reservations, locale =
                                     </td>
                                     <td className="px-4 py-3">
                                         <div className="text-slate-700 dark:text-slate-300">{res.roomType}</div>
-                                        <div className="text-xs text-slate-500 mt-0.5">{res.nights} Gece, {res.roomCount} Oda</div>
+                                        <div className="text-xs text-slate-500 mt-0.5">{res.nights} {dt.lastReservations.night}, {res.roomCount} {dt.lastReservations.room}</div>
                                     </td>
                                     <td className="px-4 py-3 text-right">
                                         <div className="font-bold text-slate-900 dark:text-white">
                                             {formatter.format(res.convertedDailyAverage)}
                                         </div>
-                                        <div className="text-xs text-slate-500 mt-0.5">Top: {formatter.format(res.convertedTotalPrice)}</div>
+                                        <div className="text-xs text-slate-500 mt-0.5">{dt.lastReservations.total}: {formatter.format(res.convertedTotalPrice)}</div>
                                     </td>
                                     <td className="px-4 py-3 text-right">
                                         {res.status === 'Cancelled' ? (
                                             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">
-                                                İptal
+                                                {dt.lastReservations.cancelledStatus}
                                             </span>
                                         ) : res.isHigh ? (
                                             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
-                                                <TrendingUp size={12} /> Yüksek
+                                                <TrendingUp size={12} /> {dt.lastReservations.high}
                                             </span>
                                         ) : (
                                             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400">
-                                                <TrendingDown size={12} /> Alçak
+                                                <TrendingDown size={12} /> {dt.lastReservations.low}
                                             </span>
                                         )}
                                     </td>
@@ -182,8 +184,8 @@ export default function DashboardLastReservationsWidget({ reservations, locale =
             </div>
 
             <div className="mt-4 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-white/5 pt-4">
-                <div>Hesaplanan Ortalama ADR: <strong className="text-slate-700 dark:text-slate-300">{(baselineAdr || 0).toLocaleString('tr-TR', { maximumFractionDigits: 0 })}</strong></div>
-                <div>Satırların üzerine tıklayarak tüm rezervasyonlar listesine gidebilirsiniz.</div>
+                <div>{dt.lastReservations.calculatedAvgAdr}: <strong className="text-slate-700 dark:text-slate-300">{(baselineAdr || 0).toLocaleString('tr-TR', { maximumFractionDigits: 0 })}</strong></div>
+                <div>{dt.lastReservations.clickToViewAll}</div>
             </div>
         </div>
     )
