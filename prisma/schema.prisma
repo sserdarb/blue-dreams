@@ -714,6 +714,7 @@ model GuestProfile {
   updatedAt      DateTime             @updatedAt
   segments       GuestSegmentMember[]
   socialMessages SocialMessage[]
+  crmCalls       CrmCall[]
 
   @@index([phone])
   @@index([country])
@@ -1121,4 +1122,24 @@ model AnalyticsEvent {
 
   @@index([visitorId])
   @@index([createdAt])
+}
+
+// ===== CRM Call Center Models =====
+
+model CrmCall {
+  id          String        @id @default(uuid())
+  guestId     String?
+  guest       GuestProfile? @relation(fields: [guestId], references: [id])
+  agentName   String        // e.g., "Ahmet Yilmaz"
+  direction   String        @default("outbound") // inbound, outbound
+  status      String        @default("completed") // completed, missed, busy, voicemail
+  duration    Int           @default(0) // in seconds
+  notes       String?       @db.Text
+  callDate    DateTime      @default(now())
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([guestId])
+  @@index([callDate])
+  @@index([agentName])
 }

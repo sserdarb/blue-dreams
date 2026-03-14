@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import {
     PhoneCall, Users, Clock, Loader2, ArrowUpRight, BarChart2, CheckCircle2, XCircle, TrendingUp, Settings2,
-    PhoneMissed, DollarSign, PieChart as PieChartIcon, Target
+    PhoneMissed, DollarSign, PieChart as PieChartIcon, Target, Phone, Plus
 } from 'lucide-react'
 import { AdminTranslations } from '@/lib/admin-translations'
 import {
@@ -71,11 +71,24 @@ interface CallSummary {
     avgDurationSeconds: number
 }
 
+interface CrmCall {
+    id: string
+    guestId?: string
+    guest?: { name: string, surname: string, phone: string }
+    agentName: string
+    direction: string
+    status: string
+    duration: number
+    notes?: string
+    callDate: string
+}
+
 const TAB_OPTIONS = [
     { id: 'overview', label: 'Genel Bakış', icon: BarChart2 },
     { id: 'agents', label: 'Agent Performansı', icon: Users },
     { id: 'quality', label: 'Çağrı Kalitesi', icon: PhoneCall },
     { id: 'attribution', label: 'Kaynak Analizi', icon: PieChartIcon },
+    { id: 'logs', label: 'Arama Kayıtları', icon: Phone },
 ]
 
 const SOURCE_COLORS = ['#06b6d4', '#8b5cf6', '#f59e0b', '#ef4444', '#10b981', '#ec4899', '#3b82f6', '#f97316']
@@ -83,6 +96,8 @@ const SOURCE_COLORS = ['#06b6d4', '#8b5cf6', '#f59e0b', '#ef4444', '#10b981', '#
 export default function CallCenterClient({ locale, t }: Props) {
     const [loading, setLoading] = useState(false)
     const [activeTab, setActiveTab] = useState('overview')
+    const [manualCalls, setManualCalls] = useState<CrmCall[]>([])
+    const [isCallModalOpen, setIsCallModalOpen] = useState(false)
     const [callStats, setCallStats] = useState<CallStat[]>([])
     const [conversionStats, setConversionStats] = useState<ConversionStat[]>([])
     const [agentRevenue, setAgentRevenue] = useState<AgentRevenue[]>([])
@@ -144,8 +159,22 @@ export default function CallCenterClient({ locale, t }: Props) {
         }
     }, [fromDate, toDate])
 
+    const fetchManualCalls = useCallback(async () => {
+        try {
+            let url = '/api/admin/crm/calls'
+            const res = await fetch(url)
+            if (res.ok) {
+                const data = await res.json()
+                setManualCalls(data || [])
+            }
+        } catch (err) {
+            console.error('Failed to fetch manual calls:', err)
+        }
+    }, [])
+
     useEffect(() => {
         fetchAnalysisData()
+        fetchManualCalls()
 
         fetch('/api/admin/formulas?reportId=call-center')
             .then(res => res.json())
@@ -576,6 +605,140 @@ export default function CallCenterClient({ locale, t }: Props) {
                                 </div>
                             </div>
                         </>
+                    )}
+                    {/* ─── TAB: LOGS (Arama Kayıtları) ─── */}
+                    {activeTab === 'logs' && (
+                        <div className="space-y-6">
+                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                                <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                    <Phone size={18} className="text-cyan-500" />
+                                    Manuel Arama Kayıtları
+                                </h3>
+                                <button
+                                    onClick={() => setIsCallModalOpen(true)}
+                                    className="flex items-center gap-2 px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-sm font-medium transition-colors"
+                                >
+                                    <Plus size={16} />
+                                    Yeni Çağrı Ekle
+                                </button>
+                            </div>
+
+                            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left text-sm whitespace-nowrap">
+                                        <thead className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-700/50">
+                                            <tr>
+                                                <th className="px-5 py-3 font-semibold text-slate-600 dark:text-slate-300">Tarih</th>
+                                                <th className="px-5 py-3 font-semibold text-slate-600 dark:text-slate-300">Agent</th>
+                                                <th className="px-5 py-3 font-semibold text-slate-600 dark:text-slate-300">Misafir</th>
+                                                <th className="px-5 py-3 font-semibold text-slate-600 dark:text-slate-300">Yön / Durum</th>
+                                                <th className="px-5 py-3 font-semibold text-slate-600 dark:text-slate-300">Süre</th>
+                                                <th className="px-5 py-3 font-semibold text-slate-600 dark:text-slate-300">Notlar</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
+                                            {manualCalls.length === 0 ? (
+                                                <tr><td colSpan={6} className="px-5 py-8 text-center text-slate-500">Kayıt bulunamadı.</td></tr>
+                                            ) : manualCalls.map((c, i) => (
+                                                <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-colors">
+                                                    <td className="px-5 py-3 text-slate-500">{new Date(c.callDate).toLocaleString('tr-TR')}</td>
+                                                    <td className="px-5 py-3 font-medium text-slate-900 dark:text-white">{c.agentName}</td>
+                                                    <td className="px-5 py-3">
+                                                        {c.guest ? `${c.guest.name} ${c.guest.surname} (${c.guest.phone})` : '-'}
+                                                    </td>
+                                                    <td className="px-5 py-3 capitalize">
+                                                        <span className={`inline-flex items-center py-1 px-2.5 rounded-full text-xs font-medium ${
+                                                            c.status === 'missed' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
+                                                            c.direction === 'inbound' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' :
+                                                            'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                                                        }`}>
+                                                            {c.direction} / {c.status}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-5 py-3">{c.duration > 0 ? `${Math.floor(c.duration / 60)}m ${c.duration % 60}s` : '-'}</td>
+                                                    <td className="px-5 py-3 text-slate-500 truncate max-w-sm">{c.notes || '-'}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            {/* New Call Modal */}
+                            {isCallModalOpen && (
+                                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                                    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md overflow-hidden relative border border-slate-200 dark:border-slate-700">
+                                        <div className="p-5 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
+                                            <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                                <Phone size={18} className="text-cyan-500" />
+                                                Yeni Çağrı Ekle
+                                            </h2>
+                                            <button onClick={() => setIsCallModalOpen(false)} className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors">
+                                                <XCircle size={24} />
+                                            </button>
+                                        </div>
+                                        <form className="p-5 space-y-4" onSubmit={async (e) => {
+                                            e.preventDefault()
+                                            const fd = new FormData(e.currentTarget)
+                                            const body = {
+                                                agentName: fd.get('agentName'),
+                                                direction: fd.get('direction'),
+                                                status: fd.get('status'),
+                                                duration: fd.get('duration'),
+                                                notes: fd.get('notes'),
+                                            }
+                                            try {
+                                                const res = await fetch('/api/admin/crm/calls', { 
+                                                    method: 'POST', 
+                                                    headers: { 'Content-Type': 'application/json' },
+                                                    body: JSON.stringify(body) 
+                                                })
+                                                if (res.ok) {
+                                                    setIsCallModalOpen(false)
+                                                    fetchManualCalls()
+                                                }
+                                            } catch(err) {
+                                                console.error(err)
+                                            }
+                                        }}>
+                                            <div>
+                                                <label className="block text-xs font-semibold text-slate-500 mb-1">Agent (Temsilci) Adı</label>
+                                                <input name="agentName" required placeholder="Örn: Ahmet Yılmaz" className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-cyan-500 outline-none" />
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div>
+                                                    <label className="block text-xs font-semibold text-slate-500 mb-1">Yön</label>
+                                                    <select name="direction" className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white">
+                                                        <option value="outbound">Giden (Outbound)</option>
+                                                        <option value="inbound">Gelen (Inbound)</option>
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <label className="block text-xs font-semibold text-slate-500 mb-1">Durum</label>
+                                                    <select name="status" className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white">
+                                                        <option value="completed">Cevaplandı</option>
+                                                        <option value="missed">Cevapsız</option>
+                                                        <option value="voicemail">Telesekreter</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-semibold text-slate-500 mb-1">Süre (Saniye)</label>
+                                                <input type="number" name="duration" defaultValue="0" min="0" className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-cyan-500 outline-none" />
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-semibold text-slate-500 mb-1">Notlar</label>
+                                                <textarea name="notes" rows={3} placeholder="Müşteri talebi, iptal nedeni vb..." className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-cyan-500 outline-none" />
+                                            </div>
+                                            <div className="pt-2 flex justify-end gap-2">
+                                                <button type="button" onClick={() => setIsCallModalOpen(false)} className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors">İptal</button>
+                                                <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-cyan-600 hover:bg-cyan-500 rounded-lg transition-colors shadow-sm">Kaydet</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     )}
                 </>
             )}

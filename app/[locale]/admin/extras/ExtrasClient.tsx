@@ -29,7 +29,7 @@ export default function ExtrasClient({ spaData, minibarData, restaurantData, tra
     const [activeTab, setActiveTab] = useState<'overview' | 'spa' | 'minibar' | 'restaurant'>('overview')
     const [currency, setCurrency] = useState<'TRY' | 'EUR'>('EUR')
 
-    const eurRate = data?.exchangeRates?.EUR_TO_TRY || 1 // Live rate from API
+    const eurRate = 38 // Fallback rate as `data` is not available
     const RATES = { EUR: 1, TRY: eurRate }
 
     // Helper: Convert
