@@ -102,6 +102,7 @@ export type DepartmentRevenue = {
     departmentId: string
     revenue: number
     currency: string
+    isEstimated?: boolean  // true when data is AI-estimated, not from real PMS
 }
 
 export type GuestReview = {
@@ -800,15 +801,21 @@ export const ElektraService = {
     // Auth & Basic
     async testConnection(): Promise<boolean> {
         try {
-            const jwt = await getJwt()
-            const res = await fetch(`${API_BASE}/hotel/${HOTEL_ID}/test-connection`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${jwt}`
-                },
-                cache: 'no-store'
-            })
-            return res.ok
+            // Use JWT login as the real connection test — if login succeeds, PMS is reachable
+            // Force a fresh login by clearing the cached JWT
+            const savedJwt = cachedJwt
+            const savedExpiry = jwtExpiresAt
+            cachedJwt = null
+            jwtExpiresAt = 0
+            try {
+                await getJwt()
+                return true
+            } catch {
+                // Restore stale JWT on failure so other operations can still try
+                cachedJwt = savedJwt
+                jwtExpiresAt = savedExpiry
+                return false
+            }
         } catch (err) {
             console.error('[Elektra] Error testing connection:', err)
             return false
@@ -1194,7 +1201,9 @@ export const ElektraService = {
             console.warn(`[Elektra] Department revenue API error for ${department}:`, (err as Error).message)
         }
 
-        // Fallback: generate realistic data based on department patterns
+        // Fallback: generate estimated data based on department patterns
+        // Mark as isEstimated so UI can display a warning
+        console.warn(`[Elektra] Department ${department}: using estimated data (no live POS endpoint available)`)
         const days = Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24))
         const data: DepartmentRevenue[] = []
 
@@ -1204,18 +1213,24 @@ export const ElektraService = {
             const dateStr = d.toISOString().split('T')[0]
             const dayOfWeek = d.getDay()
             const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
+            const month = d.getMonth()
+            // Seasonal multiplier: summer peak (Jun-Sep), shoulder (Apr-May, Oct), low (Nov-Mar)
+            const seasonMultiplier = [6, 7, 8].includes(month) ? 1.8
+                : [4, 5, 9].includes(month) ? 1.2
+                : 0.5
 
-            // More realistic patterns by department and day
-            const base = department === 'SPA' ? (isWeekend ? 700 : 400)
-                : department === 'MINIBAR' ? (isWeekend ? 150 : 80)
-                    : (isWeekend ? 2800 : 1800) // RESTAURANT
-            const random = Math.floor(Math.random() * base * 0.4) + base
+            // Base daily revenue estimates for a 341-room resort (EUR)
+            const base = department === 'SPA' ? (isWeekend ? 3500 : 2200)
+                : department === 'MINIBAR' ? (isWeekend ? 800 : 450)
+                    : (isWeekend ? 8500 : 5500) // RESTAURANT
+            const random = Math.floor((base * seasonMultiplier) + (Math.random() * base * 0.3))
 
             data.push({
                 date: dateStr,
                 departmentId: department,
                 revenue: random,
-                currency: 'EUR'
+                currency: 'EUR',
+                isEstimated: true
             })
         }
         return data

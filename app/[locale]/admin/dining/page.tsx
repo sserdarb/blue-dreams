@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { Plus, Trash2, Edit, Save, X, RefreshCw, Image as ImageIcon, UtensilsCrossed, Wine, Coffee, ListOrdered, Clock, MapPin, Users, Tag, Eye, EyeOff } from 'lucide-react'
+import ImageUrlField from '@/components/admin/ImageUrlField'
 import { useParams } from 'next/navigation'
 
 interface Dining {
@@ -198,11 +199,13 @@ export default function DiningManagementPage() {
                                     className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white focus:border-orange-500 outline-none" />
                             </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Menü URL (Menü butonunu göstermek için URL girin)</label>
-                                <input value={form.menuUrl} onChange={e => setForm({ ...form, menuUrl: e.target.value })} placeholder="/tr/menu/x veya https://..."
-                                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white focus:border-orange-500 outline-none" />
-                            </div>
+                            <ImageUrlField
+                                value={form.menuUrl}
+                                onChange={(v) => setForm({ ...form, menuUrl: v })}
+                                label="Menü URL / PDF"
+                                accept="application/pdf,image/*"
+                                placeholder="/tr/menu/x veya PDF yükleyin..."
+                            />
 
                             {/* Active toggle */}
                             <div className="flex items-center gap-3 pt-2">
@@ -219,11 +222,11 @@ export default function DiningManagementPage() {
                         </div>
 
                         <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Ana Görsel URL *</label>
-                                <input value={form.image} onChange={e => setForm({ ...form, image: e.target.value })}
-                                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-4 py-2 text-slate-900 dark:text-white focus:border-orange-500 outline-none" />
-                            </div>
+                            <ImageUrlField
+                                value={form.image}
+                                onChange={(v) => setForm({ ...form, image: v })}
+                                label="Ana Görsel *"
+                            />
 
                             {/* Cuisine */}
                             <div>
@@ -272,14 +275,19 @@ export default function DiningManagementPage() {
                                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Galeri Görselleri (İsteğe bağlı)</label>
                                 <div className="space-y-3">
                                     {(form.images || []).map((img, idx) => (
-                                        <div key={idx} className="flex gap-2 items-center">
-                                            <div className="w-16 h-12 bg-slate-100 dark:bg-slate-800 rounded bg-cover bg-center" style={{ backgroundImage: `url(${img})` }} />
-                                            <input value={img} onChange={(e) => {
-                                                const newImages = [...form.images];
-                                                newImages[idx] = e.target.value;
-                                                setForm({ ...form, images: newImages })
-                                            }} className="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-1.5 text-sm" />
-                                            <button onClick={() => setForm({ ...form, images: form.images.filter((_, i) => i !== idx) })} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"><Trash2 size={16} /></button>
+                                        <div key={idx} className="flex gap-2 items-start">
+                                            <div className="flex-1">
+                                                <ImageUrlField
+                                                    value={img}
+                                                    onChange={(v) => {
+                                                        const newImages = [...form.images];
+                                                        newImages[idx] = v;
+                                                        setForm({ ...form, images: newImages })
+                                                    }}
+                                                    label={`Galeri Görseli ${idx + 1}`}
+                                                />
+                                            </div>
+                                            <button onClick={() => setForm({ ...form, images: form.images.filter((_, i) => i !== idx) })} className="mt-6 p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"><Trash2 size={16} /></button>
                                         </div>
                                     ))}
                                     <button onClick={() => setForm({ ...form, images: [...(form.images || []), ''] })} className="text-sm text-orange-600 dark:text-orange-400 font-medium hover:underline">+ Yeni Galeri Görseli Ekle</button>

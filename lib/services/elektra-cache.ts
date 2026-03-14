@@ -254,7 +254,7 @@ export const ElektraCache = {
     /**
      * Get cache status for admin dashboard
      */
-    async getStatus(): Promise<CacheStatus> {
+    async getStatus(): Promise<CacheStatus & { pmsConnected: boolean }> {
         try {
             const config = getElektraConfig()
             const ttlMs = config.ttlMinutes * 60 * 1000
@@ -264,12 +264,19 @@ export const ElektraCache = {
             const lastUpdated = lastRate?.fetchedAt.toISOString() || null
             const isStale = lastUpdated ? (Date.now() - new Date(lastUpdated).getTime() > ttlMs) : true
 
+            // Test real PMS connection
+            let pmsConnected = false
+            try {
+                pmsConnected = await ElektraService.testConnection()
+            } catch { pmsConnected = false }
+
             return {
                 lastUpdated,
                 isStale,
                 nextRefresh: lastUpdated ? new Date(new Date(lastUpdated).getTime() + ttlMs).toISOString() : null,
                 reservationCount: count,
-                ttlMinutes: config.ttlMinutes
+                ttlMinutes: config.ttlMinutes,
+                pmsConnected
             }
         } catch (e) {
             return {
@@ -277,7 +284,8 @@ export const ElektraCache = {
                 isStale: true,
                 nextRefresh: null,
                 reservationCount: 0,
-                ttlMinutes: 30
+                ttlMinutes: 30,
+                pmsConnected: false
             }
         }
     },

@@ -110,13 +110,26 @@ export function ModuleProvider({ children }: { children: React.ReactNode }) {
 
     const checkElektraStatus = useCallback(async () => {
         try {
-            const res = await fetch('/api/admin/elektra-cache')
-            const status = res.ok ? 'online' : 'offline'
-            persist({ ...config, elektraStatus: status as 'online' | 'offline', lastElektraCheck: Date.now() })
+            const res = await fetch('/api/admin/settings/elektra-cache')
+            if (res.ok) {
+                const data = await res.json()
+                // Use the real PMS connection test result from the backend
+                const status = data?.pmsConnected === true ? 'online' : 'offline'
+                persist({ ...config, elektraStatus: status as 'online' | 'offline', lastElektraCheck: Date.now() })
+            } else {
+                persist({ ...config, elektraStatus: 'offline', lastElektraCheck: Date.now() })
+            }
         } catch {
             persist({ ...config, elektraStatus: 'offline', lastElektraCheck: Date.now() })
         }
     }, [config, persist])
+
+    // Auto-check Elektra status on first mount if never checked
+    useEffect(() => {
+        if (config.elektraStatus === 'unknown' || Date.now() - config.lastElektraCheck > 5 * 60 * 1000) {
+            checkElektraStatus()
+        }
+    }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
     const getModuleOfflineReason = useCallback((id: string): string | null => {
         const mod = MODULE_REGISTRY.find(m => m.id === id)

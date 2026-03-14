@@ -166,47 +166,8 @@ export function EditorSelect({
     )
 }
 
-// ─── Image URL Field with Preview ─────────────────────────────────────
-export function EditorImageField({
-    value,
-    onChange,
-    label = 'Görsel URL',
-    placeholder = 'https://...',
-    previewHeight = 'h-28',
-}: {
-    value: string
-    onChange: (v: string) => void
-    label?: string
-    placeholder?: string
-    previewHeight?: string
-}) {
-    return (
-        <div className="space-y-2">
-            <EditorField label={label}>
-                <EditorInput
-                    value={value}
-                    onChange={onChange}
-                    placeholder={placeholder}
-                    type="url"
-                    icon={<Link2 size={14} />}
-                />
-            </EditorField>
-            {value && (
-                <div className={`relative ${previewHeight} rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 group`}>
-                    <img
-                        src={value}
-                        alt="preview"
-                        className="w-full h-full object-cover"
-                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
-                        <span className="text-white text-[10px] font-medium truncate">{value.split('/').pop()}</span>
-                    </div>
-                </div>
-            )}
-        </div>
-    )
-}
+// ─── Image URL Field with Upload + File Manager + PDF Preview ──────────
+export { default as EditorImageField } from '@/components/admin/ImageUrlField'
 
 // ─── Repeater (Dynamic List) ──────────────────────────────────────────
 export function EditorRepeater<T>({

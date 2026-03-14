@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import {
     Sparkles, Coffee, UtensilsCrossed, TrendingUp, Calendar,
-    DollarSign, BarChart3, Download, ArrowRightLeft, CalendarDays
+    DollarSign, BarChart3, Download, ArrowRightLeft, CalendarDays, AlertTriangle
 } from 'lucide-react'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts'
 import { AdminTranslations } from '@/lib/admin-translations'
@@ -146,6 +146,20 @@ export default function ExtrasClient({ spaData = [], minibarData = [], restauran
                     ))}
                 </div>
             </div>
+
+            {/* Warning: Estimated data */}
+            {[...spaData, ...minibarData, ...restaurantData].some(d => d.isEstimated) && (
+                <div className="flex items-start gap-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4">
+                    <AlertTriangle size={20} className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                    <div>
+                        <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">Tahmini Veriler</p>
+                        <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
+                            Ekstra satış verileri Elektra PMS POS API&apos;sından alınamadığı için AI tahminidir. 
+                            Gerçek veriler için PMS departman satış API entegrasyonu gereklidir.
+                        </p>
+                    </div>
+                </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div onClick={() => setActiveTab('overview')} className={`cursor-pointer p-4 rounded-xl border transition-all ${activeTab === 'overview' ? 'bg-blue-600 text-white border-blue-500 shadow-lg scale-105' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-blue-500/50 text-slate-700 dark:text-slate-300'}`}>

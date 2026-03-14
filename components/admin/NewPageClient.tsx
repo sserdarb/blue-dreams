@@ -3,7 +3,8 @@
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Save, Rocket, Eye, Image, Trash2 } from 'lucide-react'
+import { ArrowLeft, Save, Rocket, Eye, Image } from 'lucide-react'
+import ImageUrlField from '@/components/admin/ImageUrlField'
 import type { CmsTranslations } from '@/lib/cms-translations'
 
 interface ParentOption {
@@ -209,30 +210,11 @@ export function NewPageClient({
                             <h3 className="text-sm font-bold text-slate-900 dark:text-white">{t.featuredImage}</h3>
                         </div>
                         <div className="p-5">
-                            {featuredImage ? (
-                                <div className="relative group">
-                                    <img src={featuredImage} alt="Featured" className="w-full h-40 object-cover rounded-lg" />
-                                    <button
-                                        onClick={() => setFeaturedImage('')}
-                                        className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition"
-                                    >
-                                        <Trash2 size={12} />
-                                    </button>
-                                </div>
-                            ) : (
-                                <div className="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl py-8 flex flex-col items-center gap-2">
-                                    <Image size={24} className="text-slate-300 dark:text-slate-500" />
-                                    <input
-                                        type="text"
-                                        placeholder="Görsel URL giriniz..."
-                                        className="text-xs text-center bg-transparent text-slate-400 dark:text-slate-500 focus:outline-none w-full px-4"
-                                        onKeyDown={e => {
-                                            if (e.key === 'Enter') setFeaturedImage((e.target as HTMLInputElement).value)
-                                        }}
-                                    />
-                                    <span className="text-xs text-slate-400 dark:text-slate-500">{t.clickToUpload}</span>
-                                </div>
-                            )}
+                            <ImageUrlField
+                                value={featuredImage}
+                                onChange={setFeaturedImage}
+                                label={t.featuredImage}
+                            />
                         </div>
                     </div>
 
