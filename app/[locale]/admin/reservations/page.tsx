@@ -22,6 +22,7 @@ export default async function ReservationsPage({ searchParams }: { searchParams:
     let comparisonData: any[] = []
     let comparisonMode: 'pace' | 'aggregate' = 'aggregate'
     let error: string | null = null
+    let roomAvailability: Record<string, Record<string, number>> = {}
 
     try {
         // Use getReservationsByBookingDateForYear for current year
@@ -62,6 +63,34 @@ export default async function ReservationsPage({ searchParams }: { searchParams:
                 country: r.country,
                 dailyAverage: r.dailyAverage,
             }))
+
+        // ─── Room Availability for Quality/Budget Calculation ───
+        // Fetch availability data for the check-in date range of current reservations
+        if (initialData.length > 0) {
+            const checkIns = initialData.map((r: any) => r.checkIn).filter(Boolean).sort()
+            const minCheckIn = checkIns[0]
+            const maxCheckIn = checkIns[checkIns.length - 1]
+            
+            if (minCheckIn && maxCheckIn) {
+                try {
+                    const availability = await ElektraService.getAvailability(
+                        new Date(minCheckIn),
+                        new Date(maxCheckIn)
+                    )
+                    // Group by roomType → date → availableCount
+                    for (const item of availability) {
+                        const rt = item.roomType
+                        const date = (item.date || '').slice(0, 10)
+                        if (!rt || !date) continue
+                        if (!roomAvailability[rt]) roomAvailability[rt] = {}
+                        roomAvailability[rt][date] = item.availableCount
+                    }
+                    console.log(`[Reservations] Room availability fetched: ${Object.keys(roomAvailability).length} room types, ${minCheckIn} → ${maxCheckIn}`)
+                } catch (availErr) {
+                    console.warn('[Reservations] Room availability fetch failed (non-critical):', availErr)
+                }
+            }
+        }
 
         // ─── YoY Comparison — 364-Day Weekday-Aligned ───
         if (compareYearStr) {
@@ -120,6 +149,7 @@ export default async function ReservationsPage({ searchParams }: { searchParams:
             comparisonMode={comparisonMode}
             error={error}
             rates={rates}
+            roomAvailability={roomAvailability}
             initialBookingStart={bookingStart.toISOString().slice(0, 10)}
             initialBookingEnd={bookingEnd.toISOString().slice(0, 10)}
             initialCompareYear={compareYearStr || ''}

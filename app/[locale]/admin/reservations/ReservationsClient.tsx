@@ -55,6 +55,7 @@ interface Props {
     comparisonMode: 'pace' | 'aggregate'
     error: string | null
     rates: ExchangeRates
+    roomAvailability: Record<string, Record<string, number>> // roomType → date → availableCount
     initialBookingStart: string
     initialBookingEnd: string
     initialCompareYear: string
@@ -63,7 +64,7 @@ interface Props {
 import ModuleOffline from '@/components/admin/ModuleOffline'
 import { SalesChart } from '@/components/admin/charts/SalesChart'
 
-export default function ReservationsClient({ initialData, comparisonData, comparisonMode, error, rates, initialBookingStart, initialBookingEnd, initialCompareYear }: Props) {
+export default function ReservationsClient({ initialData, comparisonData, comparisonMode, error, rates, roomAvailability, initialBookingStart, initialBookingEnd, initialCompareYear }: Props) {
     if (error) {
         return <ModuleOffline moduleName="Rezervasyon Yönetimi" dataSource="elektra" offlineReason={error} />
     }
@@ -394,46 +395,128 @@ export default function ReservationsClient({ initialData, comparisonData, compar
         })
     }
 
-    // ─── Room Quality & Budget Performance ───────────────────────
-    const ROOM_QUALITY: Record<string, { tier: string; color: string; budgetHigh: number; budgetLow: number }> = {
-        // Premium tier
-        'Suite': { tier: 'Premium', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30', budgetHigh: 180, budgetLow: 100 },
-        'Villa': { tier: 'Premium', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30', budgetHigh: 220, budgetLow: 120 },
-        'Deluxe': { tier: 'Premium', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30', budgetHigh: 160, budgetLow: 90 },
-        'Family Suite': { tier: 'Premium', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30', budgetHigh: 200, budgetLow: 110 },
-        'Panoramic': { tier: 'Premium', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30', budgetHigh: 170, budgetLow: 95 },
+    // ─── Room Quality & Budget Performance (Date + Room Type Specific) ──
+    // Room type definitions with budget targets and total room counts
+    const ROOM_QUALITY: Record<string, { tier: string; color: string; budgetHigh: number; budgetLow: number; totalRooms: number }> = {
+        // Premium tier — Elektra room type codes match
+        'DLX': { tier: 'Premium', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30', budgetHigh: 160, budgetLow: 90, totalRooms: 38 },
+        'DLX FAM': { tier: 'Premium', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30', budgetHigh: 200, budgetLow: 110, totalRooms: 28 },
+        'Suite': { tier: 'Premium', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30', budgetHigh: 180, budgetLow: 100, totalRooms: 0 },
+        'Villa': { tier: 'Premium', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30', budgetHigh: 220, budgetLow: 120, totalRooms: 0 },
         // Standard tier
-        'Standart': { tier: 'Standart', color: 'bg-slate-500/20 text-slate-400 border-slate-500/30', budgetHigh: 100, budgetLow: 55 },
-        'Standard': { tier: 'Standart', color: 'bg-slate-500/20 text-slate-400 border-slate-500/30', budgetHigh: 100, budgetLow: 55 },
-        'Economy': { tier: 'Standart', color: 'bg-slate-500/20 text-slate-400 border-slate-500/30', budgetHigh: 85, budgetLow: 45 },
+        'CR': { tier: 'Standart', color: 'bg-slate-500/20 text-slate-400 border-slate-500/30', budgetHigh: 100, budgetLow: 55, totalRooms: 109 },
+        'CSEA': { tier: 'Standart+', color: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30', budgetHigh: 115, budgetLow: 65, totalRooms: 108 },
+        'CFM': { tier: 'Standart', color: 'bg-slate-500/20 text-slate-400 border-slate-500/30', budgetHigh: 110, budgetLow: 60, totalRooms: 58 },
+        // Fallback display names
+        'Deluxe': { tier: 'Premium', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30', budgetHigh: 160, budgetLow: 90, totalRooms: 38 },
+        'Deluxe Family': { tier: 'Premium', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30', budgetHigh: 200, budgetLow: 110, totalRooms: 28 },
+        'Standard': { tier: 'Standart', color: 'bg-slate-500/20 text-slate-400 border-slate-500/30', budgetHigh: 100, budgetLow: 55, totalRooms: 109 },
+        'Standart': { tier: 'Standart', color: 'bg-slate-500/20 text-slate-400 border-slate-500/30', budgetHigh: 100, budgetLow: 55, totalRooms: 109 },
+        'Economy': { tier: 'Standart', color: 'bg-slate-500/20 text-slate-400 border-slate-500/30', budgetHigh: 85, budgetLow: 45, totalRooms: 0 },
+        'Panoramic': { tier: 'Premium', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30', budgetHigh: 170, budgetLow: 95, totalRooms: 0 },
     }
-    const DEFAULT_QUALITY = { tier: 'Orta', color: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30', budgetHigh: 110, budgetLow: 60 }
+    const DEFAULT_QUALITY = { tier: 'Orta', color: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30', budgetHigh: 110, budgetLow: 60, totalRooms: 0 }
+
+    // ─── Date + Room-Type Specific ADR Averages ──────────────────
+    const dateRoomTypeAvg = useMemo(() => {
+        // Group ADR by roomType + checkIn date for precise comparison
+        const map: Record<string, { sum: number; count: number }> = {}
+        filtered.forEach(r => {
+            const amount = getAmount(r.dailyAverage, r.currency)
+            if (amount <= 0) return
+            const key = `${r.roomType}__${r.checkIn}`
+            if (!map[key]) map[key] = { sum: 0, count: 0 }
+            map[key].sum += amount
+            map[key].count++
+        })
+        return map
+    }, [filtered, currency, rates])
 
     const getQualityInfo = (res: ReservationRow) => {
         // 1. Room Quality Tier
         const rtLower = (res.roomType || '').toLowerCase()
         let quality = DEFAULT_QUALITY
         for (const [key, val] of Object.entries(ROOM_QUALITY)) {
-            if (rtLower.includes(key.toLowerCase())) { quality = val; break }
+            if (rtLower === key.toLowerCase() || rtLower.includes(key.toLowerCase())) { quality = val; break }
         }
 
         // 2. ADR in selected currency
         const resADR = getAmount(res.dailyAverage, res.currency)
 
-        // 3. Room type average ADR
+        // 3. Room type + DATE specific average ADR (same room type, same check-in date)
+        const dateKey = `${res.roomType}__${res.checkIn}`
+        const dateRtData = dateRoomTypeAvg[dateKey]
+        // Fallback to overall room type average from performances
         const rtData = performances.byRoomType[res.roomType]
-        const rtAvg = rtData && rtData.count > 0 ? rtData.sum / rtData.count : 0
+        const rtAvg = dateRtData && dateRtData.count > 1
+            ? dateRtData.sum / dateRtData.count
+            : (rtData && rtData.count > 0 ? rtData.sum / rtData.count : 0)
         const vsAvgPct = rtAvg > 0 ? ((resADR - rtAvg) / rtAvg) * 100 : 0
 
-        // 4. Budget ADR (EUR) — check if high season (May-Oct) or low season
+        // 4. Room availability on the specific check-in date
+        //    Find the availability for this room type on this date
+        let remainingRooms = -1 // -1 = no data
+        let totalRooms = quality.totalRooms
+        let occupancyPct = -1 // -1 = no data
+
+        // Try exact room type match in availability data
+        const checkInDate = (res.checkIn || '').slice(0, 10)
+        const availForType = roomAvailability[res.roomType]
+        if (availForType && checkInDate && availForType[checkInDate] !== undefined) {
+            remainingRooms = availForType[checkInDate]
+            if (totalRooms > 0) {
+                occupancyPct = Math.round(((totalRooms - remainingRooms) / totalRooms) * 100)
+            }
+        } else {
+            // Try matching availability keys that contain the room type name
+            for (const [availRt, dates] of Object.entries(roomAvailability)) {
+                if (availRt.toLowerCase().includes(rtLower) || rtLower.includes(availRt.toLowerCase())) {
+                    if (checkInDate && dates[checkInDate] !== undefined) {
+                        remainingRooms = dates[checkInDate]
+                        // Try to find total rooms from ROOM_QUALITY for the matched availability key
+                        const matchedQuality = ROOM_QUALITY[availRt]
+                        if (matchedQuality && matchedQuality.totalRooms > 0) {
+                            totalRooms = matchedQuality.totalRooms
+                        }
+                        if (totalRooms > 0) {
+                            occupancyPct = Math.round(((totalRooms - remainingRooms) / totalRooms) * 100)
+                        }
+                        break
+                    }
+                }
+            }
+        }
+
+        // 5. Budget ADR (EUR) — season-adjusted + occupancy-adjusted
         const checkInMonth = res.checkIn ? parseInt(res.checkIn.split('-')[1] || '1') : 1
         const isHighSeason = checkInMonth >= 5 && checkInMonth <= 10
-        const budgetADR_EUR = isHighSeason ? quality.budgetHigh : quality.budgetLow
+        let budgetADR_EUR = isHighSeason ? quality.budgetHigh : quality.budgetLow
+
+        // Dynamic budget adjustment based on remaining rooms
+        if (occupancyPct >= 0) {
+            if (occupancyPct >= 85) {
+                // Very high demand — budget should be 20-30% higher (premium pricing expected)
+                budgetADR_EUR *= 1.25
+            } else if (occupancyPct >= 70) {
+                // High demand — budget 10-15% higher
+                budgetADR_EUR *= 1.12
+            } else if (occupancyPct >= 50) {
+                // Normal demand — keep base budget
+                // No adjustment
+            } else if (occupancyPct >= 30) {
+                // Low demand — accept 10% lower prices
+                budgetADR_EUR *= 0.90
+            } else {
+                // Very low demand — accept 15-20% lower prices
+                budgetADR_EUR *= 0.82
+            }
+        }
+
         // Convert budget to selected currency
         const budgetADR = currency === 'EUR' ? budgetADR_EUR : budgetADR_EUR * rates.EUR_TO_TRY
         const budgetPct = budgetADR > 0 ? (resADR / budgetADR) * 100 : 0
 
-        // 5. Comment
+        // 6. Comment — includes room availability context
         let comment = ''
         let commentIcon = '🟡'
         if (budgetPct >= 110 && quality.tier === 'Premium') {
@@ -456,7 +539,12 @@ export default function ReservationsClient({ initialData, comparisonData, compar
             commentIcon = '⚪'
         }
 
-        return { quality, resADR, rtAvg, vsAvgPct, budgetADR, budgetPct, comment, commentIcon }
+        // Add room availability context to comment
+        if (remainingRooms >= 0 && occupancyPct >= 0) {
+            comment += ` · ${remainingRooms} oda kaldı (%${occupancyPct} dolu)`
+        }
+
+        return { quality, resADR, rtAvg, vsAvgPct, budgetADR, budgetPct, comment, commentIcon, remainingRooms, occupancyPct }
     }
 
     const getStatusBadge = (s: string) => {
