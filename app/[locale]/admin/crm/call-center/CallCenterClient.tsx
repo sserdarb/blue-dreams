@@ -259,7 +259,7 @@ export default function CallCenterClient({ locale, t }: Props) {
                         <p className="text-sm text-slate-500">Asisia PMS üzerinden canlı çağrı hacmi, ciro ve dönüşüm oranları</p>
                     </div>
                 </div>
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-3 w-full md:w-auto">
                     <DashboardFilter />
                 </div>
             </div>

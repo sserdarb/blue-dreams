@@ -134,7 +134,8 @@ interface MonthlyAgg {
     daysInMonth: number
 }
 
-function aggregateByMonth(reservations: ReservationSlim[], rates: { EUR_TO_TRY: number; USD_TO_TRY: number }, year: number, monthNames: string[], priceMode: PriceMode = 'gross', totalTaxRate: number = 12): MonthlyAgg[] {
+function aggregateByMonth(reservations: ReservationSlim[], rates: { EUR_TO_TRY: number; USD_TO_TRY: number }, year: number, monthNames: string[], priceMode: PriceMode = 'gross', totalTaxRate: number = 12, totalRooms: number = 1): MonthlyAgg[] {
+    const TOTAL_ROOMS = totalRooms
     const monthData = Array.from({ length: 12 }, (_, i) => {
         const daysInMonth = new Date(year, i + 1, 0).getDate()
         return {
@@ -289,13 +290,13 @@ export default function ManagementReportsClient({ data, taxRates }: Props) {
     const pyActData = filteredPY; // The final achieved numbers for last year
 
     // Aggregate primary panels (S26, Channels, etc)
-    const cyMonth = useMemo(() => aggregateByMonth(filteredCY, exchangeRates, currentYear, monthNamesLocal, priceMode, totalTaxRate), [filteredCY, exchangeRates, currentYear, monthNamesLocal, priceMode, totalTaxRate])
-    const pyMonth = useMemo(() => aggregateByMonth(filteredPY, exchangeRates, prevYear, monthNamesLocal, priceMode, totalTaxRate), [filteredPY, exchangeRates, prevYear, monthNamesLocal, priceMode, totalTaxRate])
+    const cyMonth = useMemo(() => aggregateByMonth(filteredCY, exchangeRates, currentYear, monthNamesLocal, priceMode, totalTaxRate, TOTAL_ROOMS), [filteredCY, exchangeRates, currentYear, monthNamesLocal, priceMode, totalTaxRate, TOTAL_ROOMS])
+    const pyMonth = useMemo(() => aggregateByMonth(filteredPY, exchangeRates, prevYear, monthNamesLocal, priceMode, totalTaxRate, TOTAL_ROOMS), [filteredPY, exchangeRates, prevYear, monthNamesLocal, priceMode, totalTaxRate, TOTAL_ROOMS])
 
     // Aggregate Pace-specific
-    const cyOtbMonth = useMemo(() => aggregateByMonth(cyOtbData, exchangeRates, currentYear, monthNamesLocal, priceMode, totalTaxRate), [cyOtbData, exchangeRates, currentYear, monthNamesLocal, priceMode, totalTaxRate])
-    const pyOtbMonth = useMemo(() => aggregateByMonth(pyOtbData, exchangeRates, prevYear, monthNamesLocal, priceMode, totalTaxRate), [pyOtbData, exchangeRates, prevYear, monthNamesLocal, priceMode, totalTaxRate])
-    const pyActMonth = useMemo(() => aggregateByMonth(pyActData, exchangeRates, prevYear, monthNamesLocal, priceMode, totalTaxRate), [pyActData, exchangeRates, prevYear, monthNamesLocal, priceMode, totalTaxRate])
+    const cyOtbMonth = useMemo(() => aggregateByMonth(cyOtbData, exchangeRates, currentYear, monthNamesLocal, priceMode, totalTaxRate, TOTAL_ROOMS), [cyOtbData, exchangeRates, currentYear, monthNamesLocal, priceMode, totalTaxRate, TOTAL_ROOMS])
+    const pyOtbMonth = useMemo(() => aggregateByMonth(pyOtbData, exchangeRates, prevYear, monthNamesLocal, priceMode, totalTaxRate, TOTAL_ROOMS), [pyOtbData, exchangeRates, prevYear, monthNamesLocal, priceMode, totalTaxRate, TOTAL_ROOMS])
+    const pyActMonth = useMemo(() => aggregateByMonth(pyActData, exchangeRates, prevYear, monthNamesLocal, priceMode, totalTaxRate, TOTAL_ROOMS), [pyActData, exchangeRates, prevYear, monthNamesLocal, priceMode, totalTaxRate, TOTAL_ROOMS])
 
     // Only show months with some activity (Apr-Oct typical for resort), apply season filter
     const activeMonths = useMemo(() => {

@@ -33,6 +33,7 @@ export default function BigDataClient({ data, error, locale }: { data: any; erro
     const reservations = data?.reservations || []
     const prevReservations = data?.prevReservations || []
     const occupancy = data?.occupancy || []
+    const EUR_RATE = data?.rates?.EUR_TO_TRY || 1
 
     // Pre-compute all analytics
     const analytics = useMemo(() => {
@@ -136,13 +137,13 @@ export default function BigDataClient({ data, error, locale }: { data: any; erro
 
             {/* Content */}
             <div className="p-6">
-                {tab === 'overview' && <OverviewTab a={analytics} t={t} />}
-                {tab === 'revenue' && <RevenueTab a={analytics} t={t} />}
+                {tab === 'overview' && <OverviewTab a={analytics} t={t} eurRate={EUR_RATE} />}
+                {tab === 'revenue' && <RevenueTab a={analytics} t={t} eurRate={EUR_RATE} />}
                 {tab === 'occupancy' && <OccupancyTab a={analytics} t={t} />}
                 {tab === 'channels' && <ChannelsTab a={analytics} t={t} />}
                 {tab === 'guests' && <GuestsTab a={analytics} t={t} />}
                 {tab === 'booking' && <BookingTab a={analytics} t={t} />}
-                {tab === 'performance' && <PerformanceTab a={analytics} t={t} />}
+                {tab === 'performance' && <PerformanceTab a={analytics} t={t} eurRate={EUR_RATE} />}
                 {tab === 'forecast' && <ForecastTab a={analytics} t={t} />}
                 {tab === 'comparative' && <ComparativeTab a={analytics} t={t} />}
                 {tab === 'rawdata' && <RawDataTab reservations={data?.reservations || []} a={analytics} t={t} />}
@@ -152,8 +153,9 @@ export default function BigDataClient({ data, error, locale }: { data: any; erro
 }
 
 // ═══ TAB 1: OVERVIEW ═══
-function OverviewTab({ a, t }: { a: any, t: any }) {
+function OverviewTab({ a, t, eurRate }: { a: any, t: any, eurRate: number }) {
     // Budget comparison
+    const EUR_RATE = eurRate
     const totalRevTRY = a.monthlyRevenue.reduce((s: number, m: any) => s + m.revenue, 0)
     const totalRevEUR = totalRevTRY / EUR_RATE
     const seasonBudget = getSeasonTotal()
@@ -196,7 +198,8 @@ function OverviewTab({ a, t }: { a: any, t: any }) {
 }
 
 // ═══ TAB 2: REVENUE ═══
-function RevenueTab({ a, t }: { a: any, t: any }) {
+function RevenueTab({ a, t, eurRate }: { a: any, t: any, eurRate: number }) {
+    const EUR_RATE = eurRate
     const budgetMonths = getMonthlyBudgetData()
     const seasonBudget = getSeasonTotal()
     const totalRevTRY = a.monthlyRevenue.reduce((s: number, m: any) => s + m.revenue, 0)
@@ -403,7 +406,8 @@ function BookingTab({ a, t }: { a: any, t: any }) {
 }
 
 // ═══ TAB 7: PERFORMANCE ═══
-function PerformanceTab({ a, t }: { a: any, t: any }) {
+function PerformanceTab({ a, t, eurRate }: { a: any, t: any, eurRate: number }) {
+    const EUR_RATE = eurRate
     const budgetMonths = getMonthlyBudgetData()
     const perfWithBudget = a.monthlyPerf.map((m: any) => {
         const mi = m.monthIndex != null ? m.monthIndex + 1 : 0

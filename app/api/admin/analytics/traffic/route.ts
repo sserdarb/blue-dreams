@@ -38,11 +38,22 @@ function getAnalyticsDemoData() {
             { name: 'Russia', users: 520, percentage: 10 },
             { name: 'Netherlands', users: 380, percentage: 8 }
         ],
+        devices: [
+            { name: 'Mobile', users: Math.floor(data.reduce((a, c) => a + c.users, 0) * 0.7), percentage: 70 },
+            { name: 'Desktop', users: Math.floor(data.reduce((a, c) => a + c.users, 0) * 0.28), percentage: 28 },
+            { name: 'Tablet', users: Math.floor(data.reduce((a, c) => a + c.users, 0) * 0.02), percentage: 2 }
+        ],
         totals: {
             users: data.reduce((a, c) => a + c.users, 0),
             pageViews: data.reduce((a, c) => a + c.pageViews, 0),
             sessions: data.reduce((a, c) => a + c.sessions, 0),
             averageBounceRate: '42.50'
+        },
+        previousTotals: {
+            users: Math.floor(data.reduce((a, c) => a + c.users, 0) * 0.85),
+            pageViews: Math.floor(data.reduce((a, c) => a + c.pageViews, 0) * 0.9),
+            sessions: Math.floor(data.reduce((a, c) => a + c.sessions, 0) * 0.82),
+            averageBounceRate: '45.10'
         }
     }
 }
@@ -137,13 +148,35 @@ export async function GET(request: Request) {
         const startDate = searchParams.get('startDate') || '30daysAgo'
         const endDate = searchParams.get('endDate') || 'today'
 
+        // Calculate previous period
+        let previousStartDate = '60daysAgo'
+        let previousEndDate = '31daysAgo'
+        
+        if (startDate.includes('-') && endDate.includes('-')) {
+            const s = new Date(startDate)
+            const e = new Date(endDate)
+            const diffMs = e.getTime() - s.getTime()
+            const pEnd = new Date(s.getTime() - (1000 * 60 * 60 * 24))
+            const pStart = new Date(pEnd.getTime() - diffMs)
+            previousEndDate = pEnd.toISOString().split('T')[0]
+            previousStartDate = pStart.toISOString().split('T')[0]
+        } else if (startDate === '7daysAgo') {
+            previousStartDate = '14daysAgo'
+            previousEndDate = '8daysAgo'
+        } else if (startDate === '90daysAgo') {
+            previousStartDate = '180daysAgo'
+            previousEndDate = '91daysAgo'
+        }
+
         const client = getClient(clientEmail, privateKey)
 
         // Make the API calls to GA4 concurrently
         const [
             [trafficResponse],
             [channelsResponse],
-            [countriesResponse]
+            [countriesResponse],
+            [deviceResponse],
+            [previousTotalsResponse]
         ] = await Promise.all([
             // 1. Daily Traffic
             client.runReport({
@@ -175,6 +208,25 @@ export async function GET(request: Request) {
                 metrics: [{ name: 'activeUsers' }],
                 orderBys: [{ metric: { metricName: 'activeUsers' }, desc: true }],
                 limit: 5 // Top 5
+            }),
+            // 4. Devices
+            client.runReport({
+                property: `properties/${propertyId}`,
+                dateRanges: [{ startDate, endDate }],
+                dimensions: [{ name: 'deviceCategory' }],
+                metrics: [{ name: 'activeUsers' }],
+                orderBys: [{ metric: { metricName: 'activeUsers' }, desc: true }]
+            }),
+            // 5. Previous Totals
+            client.runReport({
+                property: `properties/${propertyId}`,
+                dateRanges: [{ startDate: previousStartDate, endDate: previousEndDate }],
+                metrics: [
+                    { name: 'activeUsers' },
+                    { name: 'screenPageViews' },
+                    { name: 'sessions' },
+                    { name: 'bounceRate' }
+                ]
             })
         ])
 
@@ -221,6 +273,21 @@ export async function GET(request: Request) {
             })
         }
 
+        // Format Devices
+        let formattedDevices: any[] = []
+        if (deviceResponse && deviceResponse.rows) {
+            const totalUsersAllDevices = deviceResponse.rows.reduce((sum, row) => sum + parseInt(row.metricValues?.[0]?.value || '0', 10), 0)
+            formattedDevices = deviceResponse.rows.map(row => {
+                const users = parseInt(row.metricValues?.[0]?.value || '0', 10)
+                const percentage = totalUsersAllDevices > 0 ? Math.round((users / totalUsersAllDevices) * 100) : 0
+                return {
+                    name: row.dimensionValues?.[0]?.value || 'Unknown',
+                    users: users,
+                    percentage: percentage
+                }
+            })
+        }
+
         // Calculate totals across traffic
         const totals = {
             users: formattedTraffic.reduce((acc, curr) => acc + curr.users, 0),
@@ -231,13 +298,30 @@ export async function GET(request: Request) {
                 : 0
         }
 
+        // Previous totals
+        let previousTotals = { users: 0, pageViews: 0, sessions: 0, averageBounceRate: 0 }
+        if (previousTotalsResponse && previousTotalsResponse.rows && previousTotalsResponse.rows.length > 0) {
+            const row = previousTotalsResponse.rows[0]
+            previousTotals = {
+                users: parseInt(row.metricValues?.[0]?.value || '0', 10),
+                pageViews: parseInt(row.metricValues?.[1]?.value || '0', 10),
+                sessions: parseInt(row.metricValues?.[2]?.value || '0', 10),
+                averageBounceRate: parseFloat(row.metricValues?.[3]?.value || '0')
+            }
+        } else {
+            // fallback if previous period empty
+            previousTotals = { ...totals }
+        }
+
         return NextResponse.json({
             success: true,
             data: formattedTraffic, // legacy support 
             traffic: formattedTraffic,
             channels: formattedChannels,
             countries: formattedCountries,
-            totals
+            devices: formattedDevices,
+            totals,
+            previousTotals
         })
 
     } catch (error: any) {

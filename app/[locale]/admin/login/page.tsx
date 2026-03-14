@@ -148,7 +148,7 @@ export default function LoginPage() {
       generateCaptcha();
       return { success: false, error: 'Güvenlik doğrulaması yanlış. Lütfen tekrar deneyin.' };
     }
-    const result = await login(formData);
+    const result = (await login(formData)) || { success: false, error: 'Sunucu hatası' };
     if (result.success) {
       return { success: true, error: '' };
     }

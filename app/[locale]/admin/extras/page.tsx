@@ -4,10 +4,31 @@ import { getAdminTranslations, type AdminLocale } from '@/lib/admin-translations
 import { ElektraService } from '@/lib/services/elektra'
 import ExtrasClient from './ExtrasClient'
 
-export default async function ExtrasPage() {
-    const today = new Date()
-    const startDate = new Date(today.getFullYear(), today.getMonth(), 1) // Start of month
-    const endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0) // End of month
+export default async function ExtrasPage({
+    params,
+    searchParams,
+}: {
+    params: Promise<{ locale: string }>
+    searchParams: Promise<{ month?: string }>
+}) {
+    const { locale } = await params
+    const resolvedSearchParams = await searchParams
+    const monthParam = resolvedSearchParams.month
+
+    let startDate: Date
+    let endDate: Date
+
+    if (monthParam) {
+        const [yearStr, monthStr] = monthParam.split('-')
+        const y = parseInt(yearStr, 10)
+        let m = parseInt(monthStr, 10) - 1 // 0-indexed month
+        startDate = new Date(y, m, 1)
+        endDate = new Date(y, m + 1, 0)
+    } else {
+        const today = new Date()
+        startDate = new Date(today.getFullYear(), today.getMonth(), 1) // Start of month
+        endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0) // End of month
+    }
 
     let spaData: any[] = []
     let minibarData: any[] = []
@@ -25,22 +46,20 @@ export default async function ExtrasPage() {
         error = 'Elektra PMS bağlantı hatası veya veri alınamadı.'
     }
 
-    const t = getAdminTranslations('tr')
+    const t = getAdminTranslations(locale as AdminLocale)
+
+    // Current selected month to pass to MonthPicker (YYYY-MM format)
+    const currentMonth = monthParam || `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}`
 
     return (
         <div className="max-w-6xl mx-auto">
-            <div className="flex items-center justify-between mb-8">
-                <div>
-                    <h1 className="text-3xl font-bold text-white mb-2">Ekstra Satışlar</h1>
-                    <p className="text-slate-400">Spa, Minibar ve Restoran gelirleri (Elektra PMS)</p>
-                </div>
-            </div>
             <ExtrasClient
                 spaData={spaData}
                 minibarData={minibarData}
                 restaurantData={restaurantData}
                 translations={t}
                 error={error}
+                currentMonth={currentMonth}
             />
         </div>
     )

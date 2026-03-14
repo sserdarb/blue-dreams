@@ -11,9 +11,9 @@ import DashboardPickupWidget from '@/components/admin/DashboardPickupWidget'
 import DashboardAgencyPerformanceWidget from '@/components/admin/DashboardAgencyPerformanceWidget'
 import DashboardForecastWidget from '@/components/admin/DashboardForecastWidget'
 import ModuleOffline from '@/components/admin/ModuleOffline'
-import LiveTrafficSocialWidget from '@/components/admin/LiveTrafficSocialWidget'
+import DashboardWebAnalyticsWidget from '@/components/admin/DashboardWebAnalyticsWidget'
+import DashboardAdsWidget from '@/components/admin/DashboardAdsWidget'
 import DashboardAIAnalysisWidget from '@/components/admin/DashboardAIAnalysisWidget'
-import DashboardAnalyticsChartWidget from '@/components/admin/DashboardAnalyticsChartWidget'
 import { getAdminTranslations, type AdminLocale } from '@/lib/admin-translations'
 import { getDashboardTranslations } from '@/lib/dashboard-translations'
 
@@ -312,16 +312,16 @@ export default async function AdminDashboard({
             <ChannelTrendChart data={salesData} channel="web" color="#10b981" currency={currency as 'TRY' | 'EUR' | 'USD'} exchangeRate={tryRate} />
           </div>
 
-          {/* Web Trafiği & Reklam Performansı - yarım ekran */}
-          <DashboardAnalyticsChartWidget 
-            from={startStr} 
-            to={endStr} 
-            currency={currency as 'TRY' | 'EUR' | 'USD'} 
-          />
         </div>
 
-        {/* Live Traffic and Social Media Data */}
-        <LiveTrafficSocialWidget from={startDateStr} to={endDateStr} />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <DashboardWebAnalyticsWidget from={startStr} to={endStr} />
+          <DashboardAdsWidget 
+            currency={currency as 'TRY' | 'EUR' | 'USD'} 
+            exchangeRate={tryRate} 
+            usdRate={usdRate} 
+          />
+        </div>
 
         {/* AI ANALYSIS WIDGET — at the bottom of the dashboard */}
         <DashboardAIAnalysisWidget 

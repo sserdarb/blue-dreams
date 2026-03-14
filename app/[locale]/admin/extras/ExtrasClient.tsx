@@ -1,11 +1,12 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import {
     Sparkles, Coffee, UtensilsCrossed, TrendingUp, Calendar,
-    DollarSign, BarChart3, Download, ArrowRightLeft
+    DollarSign, BarChart3, Download, ArrowRightLeft, CalendarDays
 } from 'lucide-react'
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts'
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts'
 import { AdminTranslations } from '@/lib/admin-translations'
 import { DepartmentRevenue } from '@/lib/services/elektra'
 import ModuleOffline from '@/components/admin/ModuleOffline'
@@ -16,11 +17,25 @@ interface Props {
     restaurantData: DepartmentRevenue[]
     translations: AdminTranslations
     error?: string
+    currentMonth: string
 }
 
-export default function ExtrasClient({ spaData, minibarData, restaurantData, translations: rawT, error }: Props) {
+export default function ExtrasClient({ spaData = [], minibarData = [], restaurantData = [], translations: rawT, error, currentMonth }: Props) {
     const t = rawT;
     const e = rawT.extrasPage;
+
+    const router = useRouter()
+    const pathname = usePathname()
+    const searchParams = useSearchParams()
+
+    const handleMonthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newMonth = e.target.value
+        if (!newMonth) return
+        
+        const params = new URLSearchParams(searchParams.toString())
+        params.set('month', newMonth)
+        router.push(`${pathname}?${params.toString()}`)
+    }
 
     if (error) {
         return <ModuleOffline moduleName="Ekstra Satışlar" dataSource="elektra" offlineReason={error} />
@@ -101,6 +116,24 @@ export default function ExtrasClient({ spaData, minibarData, restaurantData, tra
 
     return (
         <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2">
+                <div>
+                    <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Ekstra Satışlar</h1>
+                    <p className="text-slate-500 dark:text-slate-400">Spa, Minibar ve Restoran gelirleri (Elektra PMS)</p>
+                </div>
+                <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 shadow-sm focus-within:ring-2 focus-within:ring-cyan-500 ring-offset-1 dark:ring-offset-slate-900 transition-all">
+                        <CalendarDays size={16} className="text-slate-400" />
+                        <input 
+                            type="month" 
+                            value={currentMonth}
+                            onChange={handleMonthChange}
+                            className="bg-transparent text-sm font-medium text-slate-700 dark:text-slate-300 outline-none cursor-pointer"
+                        />
+                    </div>
+                </div>
+            </div>
+
             {/* KPIs */}
             <div className="flex justify-end">
                 <div className="flex bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700">
@@ -231,9 +264,9 @@ export default function ExtrasClient({ spaData, minibarData, restaurantData, tra
                             <YAxis fontSize={12} tickFormatter={(v: number) => `${(v / 1000).toFixed(0)}K`} />
                             <Tooltip formatter={(value: any) => [fmt(value), e?.revenue]} />
                             <Bar dataKey="value" name="Gelir" radius={[8, 8, 0, 0]}>
-                                {[
-                                    <rect key="spa" fill="#9333ea" />,
-                                ].map(() => null)}
+                                <Cell fill="#9333ea" />
+                                <Cell fill="#d97706" />
+                                <Cell fill="#059669" />
                             </Bar>
                         </BarChart>
                     </ResponsiveContainer>

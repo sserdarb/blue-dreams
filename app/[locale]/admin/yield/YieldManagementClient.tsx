@@ -662,7 +662,7 @@ export default function YieldManagementClient({ locale, data, error }: Props) {
                                 </div>
                                 <div>
                                     <p className={`text-sm font-bold ${isHigh ? 'text-emerald-700 dark:text-emerald-300' : 'text-red-700 dark:text-red-300'}`}>
-                                        {isHigh ? '{(t as any).highPriceAlert}' : '{(t as any).lowPriceAlert}'}
+                                        {isHigh ? (t as any).highPriceAlert : (t as any).lowPriceAlert}
                                     </p>
                                     <p className="text-xs text-gray-600 dark:text-gray-400">
                                         {(t as any).thisMonthLabel} ({monthlyData[currentMonth]?.label}) ADR: {fmtC(currentMonthData.adr)} — {(t as any).avgAdrLabel} {fmtC(avgAdr)} ({pctDiff > 0 ? '+' : ''}{pctDiff.toFixed(1)}%)
