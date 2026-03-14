@@ -52,6 +52,7 @@ export default async function AnalyticsScripts() {
             {settings.gaId && !settings.gtmId && (
                 <>
                     <Script
+                        id="ga4-src"
                         src={`https://www.googletagmanager.com/gtag/js?id=${settings.gaId}`}
                         strategy="afterInteractive"
                     />

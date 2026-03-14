@@ -1,7 +1,76 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { bigdataCache } from '@/lib/utils/api-cache'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
+
+function getDateRanges(datePreset: string) {
+    const now = new Date()
+    const todayStr = now.toISOString().slice(0, 10)
+    
+    const yesterday = new Date(now)
+    yesterday.setDate(now.getDate() - 1)
+    const yesterdayStr = yesterday.toISOString().slice(0, 10)
+    
+    let startDate = new Date(now)
+    if (datePreset === 'last_7d') startDate.setDate(now.getDate() - 7)
+    else if (datePreset === 'last_30d') startDate.setDate(now.getDate() - 30)
+    else if (datePreset === 'last_90d') startDate.setDate(now.getDate() - 90)
+    else startDate.setDate(now.getDate() - 30)
+    
+    const startStr = startDate.toISOString().slice(0, 10)
+    
+    return { startStr, yesterdayStr, todayStr }
+}
+
+function mergeStats(past: any, today: any, platform: string) {
+    const p = past || { impressions: 0, clicks: 0, spend: 0, conversions: 0, reach: 0, frequency: 0, followers: 0, pageName: '' }
+    const t = today || { impressions: 0, clicks: 0, spend: 0, conversions: 0, reach: 0, frequency: 0, followers: 0, pageName: '' }
+    
+    const impressions = p.impressions + t.impressions
+    const clicks = p.clicks + t.clicks
+    const spend = p.spend + t.spend
+    const conversions = p.conversions + t.conversions
+    const reach = p.reach + t.reach
+
+    return {
+        platform,
+        impressions,
+        clicks,
+        spend: Math.round(spend * 100) / 100,
+        conversions,
+        reach,
+        ctr: impressions > 0 ? (clicks / impressions * 100) : 0,
+        cpc: clicks > 0 ? (spend / clicks) : 0,
+        frequency: p.frequency || t.frequency || 0,
+        followers: p.followers || t.followers || 0,
+        pageName: p.pageName || t.pageName || `${platform} Account`
+    }
+}
+
+async function fetchMetaRange(accountId: string, token: string, since: string, until: string) {
+    const timeRange = JSON.stringify({ since, until })
+    const insightsUrl = `https://graph.facebook.com/v21.0/${accountId}/insights?fields=impressions,clicks,spend,ctr,cpc,actions,reach,frequency&time_range=${timeRange}&access_token=${token}`
+    const insRes = await fetch(insightsUrl)
+    const insData = await insRes.json()
+
+    if (insData.error) {
+        console.error(`[Reports Meta] API error for ${since}-${until}:`, insData.error.message)
+        return null
+    }
+
+    const row = insData?.data?.[0] || {}
+    const conversions = row.actions?.find((a: any) => a.action_type === 'offsite_conversion.fb_pixel_purchase')?.value || 0
+
+    return {
+        impressions: parseInt(row.impressions || '0'),
+        clicks: parseInt(row.clicks || '0'),
+        spend: parseFloat(row.spend || '0'),
+        reach: parseInt(row.reach || '0'),
+        frequency: parseFloat(row.frequency || '0'),
+        conversions: parseInt(conversions),
+    }
+}
 
 async function fetchMetaInsights(datePreset: string) {
     const token = process.env.META_ACCESS_TOKEN
@@ -10,45 +79,76 @@ async function fetchMetaInsights(datePreset: string) {
 
     try {
         const accountId = adAccount.startsWith('act_') ? adAccount : `act_${adAccount}`
+        const { startStr, yesterdayStr, todayStr } = getDateRanges(datePreset)
 
-        // Account-level insights 
-        const insightsUrl = `https://graph.facebook.com/v21.0/${accountId}/insights?fields=impressions,clicks,spend,ctr,cpc,actions,reach,frequency&date_preset=${datePreset}&access_token=${token}`
-        const insRes = await fetch(insightsUrl)
-        const insData = await insRes.json()
+        // 1. Fetch Past Data (Cached for 24 hours = 1440 mins)
+        const pastKey = `meta_past_${accountId}_${startStr}_${yesterdayStr}`
+        const pastData = await bigdataCache.getOrFetch(pastKey, () => fetchMetaRange(accountId, token, startStr, yesterdayStr), 1440)
 
-        if (insData.error) {
-            console.error('[Reports Meta] API error:', insData.error.message)
-            return null
-        }
+        // 2. Fetch Today Data (Cached for 15 mins)
+        const todayKey = `meta_today_${accountId}_${todayStr}`
+        const todayData = await bigdataCache.getOrFetch(todayKey, () => fetchMetaRange(accountId, token, todayStr, todayStr), 15)
 
-        // Page fans & engagement via page
+        // 3. Page Fans (Cached for 24 hours)
         const pageId = process.env.META_PAGE_ID
-        let pageData: any = null
+        let pageFollowers = 0
+        let pageName = 'Meta Page'
         if (pageId) {
-            const pUrl = `https://graph.facebook.com/v21.0/${pageId}?fields=fan_count,followers_count,name&access_token=${token}`
-            const pRes = await fetch(pUrl)
-            pageData = await pRes.json()
+            const pageKey = `meta_page_${pageId}`
+            const pageData = await bigdataCache.getOrFetch(pageKey, async () => {
+                const pUrl = `https://graph.facebook.com/v21.0/${pageId}?fields=fan_count,followers_count,name&access_token=${token}`
+                const pRes = await fetch(pUrl)
+                return await pRes.json()
+            }, 1440)
+            
+            pageFollowers = pageData?.followers_count || pageData?.fan_count || 0
+            pageName = pageData?.name || 'Meta Page'
         }
 
-        const row = insData?.data?.[0] || {}
-        const conversions = row.actions?.find((a: any) => a.action_type === 'offsite_conversion.fb_pixel_purchase')?.value || 0
-
-        return {
-            platform: 'Meta',
-            impressions: parseInt(row.impressions || '0'),
-            clicks: parseInt(row.clicks || '0'),
-            spend: parseFloat(row.spend || '0'),
-            ctr: parseFloat(row.ctr || '0'),
-            cpc: parseFloat(row.cpc || '0'),
-            reach: parseInt(row.reach || '0'),
-            frequency: parseFloat(row.frequency || '0'),
-            conversions: parseInt(conversions),
-            followers: pageData?.followers_count || pageData?.fan_count || 0,
-            pageName: pageData?.name || 'Meta Page'
-        }
+        const merged = mergeStats(pastData, todayData, 'Meta')
+        merged.followers = pageFollowers
+        merged.pageName = pageName
+        return merged
     } catch (e: any) {
         console.error('[Reports Meta]', e?.message)
         return null
+    }
+}
+
+async function fetchGoogleRange(cid: string, headers: any, startDate: string, endDate: string) {
+    const query = `SELECT metrics.impressions, metrics.clicks, metrics.cost_micros, metrics.ctr, metrics.average_cpc, metrics.conversions FROM customer WHERE segments.date BETWEEN '${startDate}' AND '${endDate}'`
+    
+    const searchRes = await fetch(`https://googleads.googleapis.com/v23/customers/${cid}/googleAds:search`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ query, pageSize: 10000 })
+    })
+
+    if (!searchRes.ok) {
+        const errBody = await searchRes.text()
+        console.error(`[Reports Google] API error for ${startDate}-${endDate}:`, searchRes.status, errBody)
+        return null
+    }
+
+    const searchData = await searchRes.json()
+    const results = searchData?.results || []
+
+    let totalImpressions = 0, totalClicks = 0, totalCostMicros = 0, totalConversions = 0
+    results.forEach((r: any) => {
+        const m = r.metrics || {}
+        totalImpressions += parseInt(m.impressions || '0')
+        totalClicks += parseInt(m.clicks || '0')
+        totalCostMicros += parseInt(m.costMicros || '0')
+        totalConversions += parseFloat(m.conversions || '0')
+    })
+
+    return {
+        impressions: totalImpressions,
+        clicks: totalClicks,
+        spend: totalCostMicros / 1_000_000,
+        reach: 0,
+        frequency: 0,
+        conversions: Math.round(totalConversions)
     }
 }
 
@@ -63,87 +163,49 @@ async function fetchGoogleAdsInsights(datePreset: string) {
     if (!clientId || !clientSecret || !refreshToken || !devToken || !customerId) return null
 
     try {
-        // Get access token
-        const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams({
-                client_id: clientId,
-                client_secret: clientSecret,
-                refresh_token: refreshToken,
-                grant_type: 'refresh_token'
+        // Access token cached for 55 minutes
+        const tokenKey = `google_ads_token_${clientId}`
+        const accessToken = await bigdataCache.getOrFetch(tokenKey, async () => {
+            const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({
+                    client_id: clientId,
+                    client_secret: clientSecret,
+                    refresh_token: refreshToken,
+                    grant_type: 'refresh_token'
+                })
             })
-        })
-        const tokenData = await tokenRes.json()
-        const accessToken = tokenData.access_token
+            const tokenData = await tokenRes.json()
+            return tokenData.access_token || null
+        }, 55)
+
         if (!accessToken) {
-            console.error('[Reports Google] Token refresh failed:', tokenData.error_description || tokenData.error)
+            console.error('[Reports Google] Token refresh failed')
             return null
         }
 
-        // Date range
-        const now = new Date()
-        let startDate = new Date()
-        if (datePreset === 'last_7d') startDate.setDate(now.getDate() - 7)
-        else if (datePreset === 'last_30d') startDate.setDate(now.getDate() - 30)
-        else if (datePreset === 'last_90d') startDate.setDate(now.getDate() - 90)
-        else startDate.setDate(now.getDate() - 30)
-
-        const startStr = startDate.toISOString().slice(0, 10)
-        const endStr = now.toISOString().slice(0, 10)
-
         const cid = customerId.replace(/-/g, '')
-
-        // Use v23 search endpoint (not deprecated searchStream)
-        const query = `SELECT metrics.impressions, metrics.clicks, metrics.cost_micros, metrics.ctr, metrics.average_cpc, metrics.conversions FROM customer WHERE segments.date BETWEEN '${startStr}' AND '${endStr}'`
-
         const headers: Record<string, string> = {
             'Authorization': `Bearer ${accessToken}`,
             'developer-token': devToken,
             'Content-Type': 'application/json'
         }
-        // MCC (Manager) account header — required when using a manager account
         if (managerId) {
             headers['login-customer-id'] = managerId.replace(/-/g, '')
         }
 
-        const searchRes = await fetch(`https://googleads.googleapis.com/v23/customers/${cid}/googleAds:search`, {
-            method: 'POST',
-            headers,
-            body: JSON.stringify({ query, pageSize: 10000 })
-        })
+        const { startStr, yesterdayStr, todayStr } = getDateRanges(datePreset)
 
-        if (!searchRes.ok) {
-            const errBody = await searchRes.text()
-            console.error('[Reports Google] API error:', searchRes.status, errBody)
-            return null
-        }
+        // 1. Fetch Past Data (Cached for 24 hours = 1440 mins)
+        const pastKey = `google_past_${cid}_${startStr}_${yesterdayStr}`
+        const pastData = await bigdataCache.getOrFetch(pastKey, () => fetchGoogleRange(cid, headers, startStr, yesterdayStr), 1440)
 
-        const searchData = await searchRes.json()
-        const results = searchData?.results || []
+        // 2. Fetch Today Data (Cached for 15 mins)
+        const todayKey = `google_today_${cid}_${todayStr}`
+        const todayData = await bigdataCache.getOrFetch(todayKey, () => fetchGoogleRange(cid, headers, todayStr, todayStr), 15)
 
-        let totalImpressions = 0, totalClicks = 0, totalCostMicros = 0, totalConversions = 0
-        results.forEach((r: any) => {
-            const m = r.metrics || {}
-            totalImpressions += parseInt(m.impressions || '0')
-            totalClicks += parseInt(m.clicks || '0')
-            totalCostMicros += parseInt(m.costMicros || '0')
-            totalConversions += parseFloat(m.conversions || '0')
-        })
-
-        const spend = totalCostMicros / 1_000_000
-
-        return {
-            platform: 'Google Ads',
-            impressions: totalImpressions,
-            clicks: totalClicks,
-            spend: Math.round(spend * 100) / 100,
-            ctr: totalImpressions > 0 ? (totalClicks / totalImpressions * 100) : 0,
-            cpc: totalClicks > 0 ? (spend / totalClicks) : 0,
-            reach: 0,
-            frequency: 0,
-            conversions: Math.round(totalConversions)
-        }
+        return mergeStats(pastData, todayData, 'Google Ads')
     } catch (e: any) {
         console.error('[Reports Google]', e?.message)
         return null
