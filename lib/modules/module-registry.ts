@@ -106,6 +106,16 @@ export const MODULE_REGISTRY: ModuleDefinition[] = [
         href: '/inbox', dataSource: 'local', defaultEnabled: true,
         description: 'WhatsApp, Instagram ve Facebook mesajlarını tek bir arayüzde birleştiren omnichannel gelen kutusu',
     },
+    {
+        id: 'nav-reviews', label: 'Misafir Yorumları', section: 'section-satis',
+        href: '/reviews', dataSource: 'local', defaultEnabled: true,
+        description: 'Online yorum yönetimi, duygu analizi ve yanıt takibi',
+    },
+    {
+        id: 'nav-seo', label: 'SEO', section: 'section-satis',
+        href: '/seo', dataSource: 'local', defaultEnabled: true,
+        description: 'Arama motoru optimizasyonu, sayfa performansı ve teknik SEO kontrolleri',
+    },
 
     // ── Finans & Tedarik ──
     {
@@ -147,6 +157,11 @@ export const MODULE_REGISTRY: ModuleDefinition[] = [
         id: 'nav-media', label: 'Medya', section: 'section-icerik',
         href: '/files', dataSource: 'local', defaultEnabled: true,
         description: 'Görsel ve dosya yönetimi',
+    },
+    {
+        id: 'nav-gallery', label: 'Galeri', section: 'section-icerik',
+        href: '/gallery', dataSource: 'local', defaultEnabled: true,
+        description: 'Otel fotoğraf galerisi yönetimi, kategorileme ve optimizasyon',
     },
     {
         id: 'nav-localization', label: 'Lokalizasyon', section: 'section-icerik',
@@ -194,6 +209,11 @@ export const MODULE_REGISTRY: ModuleDefinition[] = [
         id: 'nav-users', label: 'Kullanıcılar', section: 'section-operasyon',
         href: '/users', dataSource: 'local', defaultEnabled: true,
         description: 'Admin kullanıcı yönetimi',
+    },
+    {
+        id: 'nav-hr', label: 'İnsan Kaynakları', section: 'section-operasyon',
+        href: '/hr', dataSource: 'local', defaultEnabled: true,
+        description: 'Personel yönetimi, departman takibi, devam durumu ve performans değerlendirme',
     },
 
     // ── Entegrasyonlar ──

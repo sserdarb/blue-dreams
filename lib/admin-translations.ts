@@ -31,6 +31,10 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         pages: 'Sayfalar',
         menu: 'Menü',
         media: 'Medya',
+        reviews: 'Misafir Yorumları',
+        seo: 'SEO',
+        gallery: 'Galeri',
+        hr: 'İnsan Kaynakları',
         localization: 'Lokalizasyon',
         settings: 'Ayarlar',
         analytics: 'Analytics',
@@ -530,6 +534,10 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         pages: 'Pages',
         menu: 'Menu',
         media: 'Media',
+        reviews: 'Guest Reviews',
+        seo: 'SEO',
+        gallery: 'Gallery',
+        hr: 'Human Resources',
         localization: 'Localization',
         settings: 'Settings',
         analytics: 'Analytics',
@@ -1007,6 +1015,10 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         pages: 'Seiten',
         menu: 'Menü',
         media: 'Medien',
+        reviews: 'Gästebewertungen',
+        seo: 'SEO',
+        gallery: 'Galerie',
+        hr: 'Personalwesen',
         localization: 'Lokalisierung',
         settings: 'Einstellungen',
         analytics: 'Analytics',
@@ -1485,6 +1497,10 @@ const translations: Record<AdminLocale, AdminTranslations> = {
         pages: 'Страницы',
         menu: 'Меню',
         media: 'Медиа',
+        reviews: 'Отзывы гостей',
+        seo: 'SEO',
+        gallery: 'Галерея',
+        hr: 'Кадры',
         localization: 'Локализация',
         settings: 'Настройки',
         analytics: 'Аналитика',
@@ -1965,6 +1981,10 @@ export interface AdminTranslations {
     pages: string
     menu: string
     media: string
+    reviews: string
+    seo: string
+    gallery: string
+    hr: string
     settings: string
     analytics: string
     blueConcierge: string

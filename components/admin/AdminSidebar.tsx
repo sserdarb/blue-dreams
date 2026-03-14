@@ -41,7 +41,11 @@ import {
     Mail,
     Crosshair,
     PhoneCall,
-    Inbox
+    Inbox,
+    Star,
+    Briefcase,
+    ImagePlus,
+    Search
 } from 'lucide-react'
 import { AdminTranslations } from '@/lib/admin-translations'
 import { useTheme } from '@/components/admin/ThemeProvider'
@@ -111,6 +115,8 @@ export default function AdminSidebar({ locale, t, userRole: propRole = 'admin', 
                 { id: 'nav-content-gen', href: '/ai-planner', label: t.contentCreator, icon: Sparkles },
                 { id: 'nav-competitors', href: '/competitors', label: t.competitorAnalysis, icon: Crosshair },
                 { id: 'nav-inbox', href: '/crm/messaging', label: t.messaging, icon: Inbox },
+                { id: 'nav-reviews', href: '/reviews', label: t.reviews || 'Yorumlar', icon: Star },
+                { id: 'nav-seo', href: '/seo', label: t.seo || 'SEO', icon: Search },
             ]
         },
         {
@@ -138,6 +144,7 @@ export default function AdminSidebar({ locale, t, userRole: propRole = 'admin', 
                 { id: 'nav-pages', href: '/pages', label: t.pages, icon: FileText },
                 { id: 'nav-menu', href: '/menu', label: t.menu, icon: MenuIcon },
                 { id: 'nav-media', href: '/files', label: t.media, icon: ImageIcon },
+                { id: 'nav-gallery', href: '/gallery', label: t.gallery || 'Galeri', icon: ImagePlus },
                 { id: 'nav-localization', href: '/localization', label: t.localization, icon: Languages },
                 { id: 'nav-settings', href: '/settings', label: t.settings, icon: Settings },
             ]
@@ -155,6 +162,7 @@ export default function AdminSidebar({ locale, t, userRole: propRole = 'admin', 
                 { id: 'nav-local-guide', href: '/local-guide', label: t.localGuide, icon: Compass },
                 { id: 'nav-ai-training', href: '/ai-training', label: t.aiTraining, icon: Sparkles },
                 { id: 'nav-users', href: '/users', label: t.users, icon: UserCog },
+                { id: 'nav-hr', href: '/hr', label: t.hr || 'İnsan Kaynakları', icon: Briefcase },
             ]
         },
         {

@@ -235,6 +235,7 @@ export default function ReservationsClient({ initialData, comparisonData, compar
     const performances = useMemo(() => {
         const byMarket: Record<string, { sum: number, count: number }> = {} // channel_checkIn => metrics
         const byAgency: Record<string, { sum: number, count: number }> = {}
+        const byRoomType: Record<string, { sum: number, count: number }> = {} // roomType => ADR metrics
 
         filtered.forEach(r => {
             const amount = getAmount(r.dailyAverage, r.currency)
@@ -249,9 +250,15 @@ export default function ReservationsClient({ initialData, comparisonData, compar
             if (!byAgency[aKey]) byAgency[aKey] = { sum: 0, count: 0 }
             byAgency[aKey].sum += amount
             byAgency[aKey].count++
+
+            // Room type average
+            const rtKey = r.roomType || 'Unknown'
+            if (!byRoomType[rtKey]) byRoomType[rtKey] = { sum: 0, count: 0 }
+            byRoomType[rtKey].sum += amount
+            byRoomType[rtKey].count++
         })
 
-        return { byMarket, byAgency }
+        return { byMarket, byAgency, byRoomType }
     }, [filtered, currency, rates])
 
     // Filter comparison data
@@ -385,6 +392,71 @@ export default function ReservationsClient({ initialData, comparisonData, compar
             onStart: () => setPdfExporting(true),
             onFinish: () => setPdfExporting(false),
         })
+    }
+
+    // ─── Room Quality & Budget Performance ───────────────────────
+    const ROOM_QUALITY: Record<string, { tier: string; color: string; budgetHigh: number; budgetLow: number }> = {
+        // Premium tier
+        'Suite': { tier: 'Premium', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30', budgetHigh: 180, budgetLow: 100 },
+        'Villa': { tier: 'Premium', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30', budgetHigh: 220, budgetLow: 120 },
+        'Deluxe': { tier: 'Premium', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30', budgetHigh: 160, budgetLow: 90 },
+        'Family Suite': { tier: 'Premium', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30', budgetHigh: 200, budgetLow: 110 },
+        'Panoramic': { tier: 'Premium', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30', budgetHigh: 170, budgetLow: 95 },
+        // Standard tier
+        'Standart': { tier: 'Standart', color: 'bg-slate-500/20 text-slate-400 border-slate-500/30', budgetHigh: 100, budgetLow: 55 },
+        'Standard': { tier: 'Standart', color: 'bg-slate-500/20 text-slate-400 border-slate-500/30', budgetHigh: 100, budgetLow: 55 },
+        'Economy': { tier: 'Standart', color: 'bg-slate-500/20 text-slate-400 border-slate-500/30', budgetHigh: 85, budgetLow: 45 },
+    }
+    const DEFAULT_QUALITY = { tier: 'Orta', color: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30', budgetHigh: 110, budgetLow: 60 }
+
+    const getQualityInfo = (res: ReservationRow) => {
+        // 1. Room Quality Tier
+        const rtLower = (res.roomType || '').toLowerCase()
+        let quality = DEFAULT_QUALITY
+        for (const [key, val] of Object.entries(ROOM_QUALITY)) {
+            if (rtLower.includes(key.toLowerCase())) { quality = val; break }
+        }
+
+        // 2. ADR in selected currency
+        const resADR = getAmount(res.dailyAverage, res.currency)
+
+        // 3. Room type average ADR
+        const rtData = performances.byRoomType[res.roomType]
+        const rtAvg = rtData && rtData.count > 0 ? rtData.sum / rtData.count : 0
+        const vsAvgPct = rtAvg > 0 ? ((resADR - rtAvg) / rtAvg) * 100 : 0
+
+        // 4. Budget ADR (EUR) — check if high season (May-Oct) or low season
+        const checkInMonth = res.checkIn ? parseInt(res.checkIn.split('-')[1] || '1') : 1
+        const isHighSeason = checkInMonth >= 5 && checkInMonth <= 10
+        const budgetADR_EUR = isHighSeason ? quality.budgetHigh : quality.budgetLow
+        // Convert budget to selected currency
+        const budgetADR = currency === 'EUR' ? budgetADR_EUR : budgetADR_EUR * rates.EUR_TO_TRY
+        const budgetPct = budgetADR > 0 ? (resADR / budgetADR) * 100 : 0
+
+        // 5. Comment
+        let comment = ''
+        let commentIcon = '🟡'
+        if (budgetPct >= 110 && quality.tier === 'Premium') {
+            comment = 'Bütçe üstü, premium kalite'
+            commentIcon = '🟢'
+        } else if (budgetPct >= 100) {
+            comment = 'Bütçeyi tutturuyor'
+            commentIcon = '🟢'
+        } else if (budgetPct >= 85) {
+            comment = 'Bütçeye yakın'
+            commentIcon = '🟡'
+        } else if (budgetPct >= 70) {
+            comment = `Bütçenin %${Math.round(100 - budgetPct)} altında`
+            commentIcon = '🟠'
+        } else if (budgetPct > 0) {
+            comment = `Dikkat: Bütçenin %${Math.round(100 - budgetPct)} altında`
+            commentIcon = '🔴'
+        } else {
+            comment = 'Veri yok'
+            commentIcon = '⚪'
+        }
+
+        return { quality, resADR, rtAvg, vsAvgPct, budgetADR, budgetPct, comment, commentIcon }
     }
 
     const getStatusBadge = (s: string) => {
@@ -768,8 +840,8 @@ export default function ReservationsClient({ initialData, comparisonData, compar
                                     <th onClick={() => toggleSort('saleDate')} className="text-left py-3 px-4 text-slate-500 text-xs font-medium uppercase tracking-widest cursor-pointer hover:text-cyan-600 select-none">
                                         Rezervasyon {sortBy === 'saleDate' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
                                     </th>
-                                    <th onClick={() => toggleSort('status')} className="text-left py-3 px-4 text-slate-500 text-xs font-medium uppercase tracking-widest cursor-pointer hover:text-cyan-600 select-none">
-                                        Durum {sortBy === 'status' ? (sortDir === 'asc' ? '▲' : '▼') : ''}
+                                    <th className="text-left py-3 px-4 text-slate-500 text-xs font-medium uppercase tracking-widest">
+                                        Kalite / Bütçe
                                     </th>
                                     <th className="text-right py-3 px-4 text-slate-500 text-xs font-medium uppercase tracking-widest"></th>
                                 </tr>
@@ -813,7 +885,24 @@ export default function ReservationsClient({ initialData, comparisonData, compar
                                             <p className="text-slate-500 dark:text-slate-400 text-sm">{res.saleDate}</p>
                                         </td>
                                         <td className="py-3 px-4">
-                                            {getStatusBadge(res.status)}
+                                            {(() => {
+                                                const qi = getQualityInfo(res)
+                                                return (
+                                                    <div className="space-y-1">
+                                                        <span className={`inline-flex px-1.5 py-0.5 rounded text-[10px] font-medium border ${qi.quality.color}`}>
+                                                            {qi.quality.tier}
+                                                        </span>
+                                                        {qi.budgetPct > 0 && (
+                                                            <div className="flex items-center gap-1">
+                                                                <span className="text-[10px]">{qi.commentIcon}</span>
+                                                                <span className={`text-[10px] font-medium ${qi.budgetPct >= 100 ? 'text-emerald-500' : qi.budgetPct >= 85 ? 'text-amber-500' : 'text-red-500'}`}>
+                                                                    %{Math.round(qi.budgetPct)}
+                                                                </span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )
+                                            })()}
                                         </td>
                                         <td className="py-3 px-4 text-right">
                                             <button
@@ -895,8 +984,25 @@ export default function ReservationsClient({ initialData, comparisonData, compar
                                     <p className="text-slate-500 dark:text-slate-400 text-xs">{selectedRes.country}</p>
                                 </div>
                                 <div>
-                                    <p className="text-slate-500 text-xs uppercase mb-1">Durum</p>
-                                    {getStatusBadge(selectedRes.status)}
+                                    <p className="text-slate-500 text-xs uppercase mb-1">Kalite / Bütçe</p>
+                                    {(() => {
+                                        const qi = getQualityInfo(selectedRes)
+                                        return (
+                                            <div className="space-y-1.5">
+                                                <span className={`inline-flex px-2 py-0.5 rounded text-xs font-medium border ${qi.quality.color}`}>
+                                                    {qi.quality.tier}
+                                                </span>
+                                                {qi.budgetPct > 0 && (
+                                                    <div>
+                                                        <span className={`text-xs font-semibold ${qi.budgetPct >= 100 ? 'text-emerald-500' : qi.budgetPct >= 85 ? 'text-amber-500' : 'text-red-500'}`}>
+                                                            {qi.commentIcon} %{Math.round(qi.budgetPct)} bütçe perf.
+                                                        </span>
+                                                        <p className="text-[10px] text-slate-500 mt-0.5">{qi.comment}</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )
+                                    })()}
                                 </div>
                             </div>
 
