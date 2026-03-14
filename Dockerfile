@@ -31,6 +31,8 @@ FROM base AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
+# Fix GA4 DECODER routines::unsupported — OpenSSL 3.x rejects legacy PKCS#1 keys
+ENV NODE_OPTIONS="--openssl-legacy-provider"
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
