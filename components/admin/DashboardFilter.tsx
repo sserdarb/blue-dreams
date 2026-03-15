@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
-import { Info, Calendar, Loader2 } from 'lucide-react'
+import { Info, Loader2 } from 'lucide-react'
 
 const DATE_PRESETS = [
     { key: 'today', days: 0, type: 'today' as const },
@@ -126,7 +126,7 @@ export default function DashboardFilter() {
 
     const [from, setFrom] = useState('')
     const [to, setTo] = useState('')
-    const [currency, setCurrency] = useState('EUR')
+    const [currency, setCurrency] = useState('TRY')
     const [showInfo, setShowInfo] = useState(false)
     const [activePreset, setActivePreset] = useState<string>('today')
 
@@ -191,9 +191,6 @@ export default function DashboardFilter() {
             {/* Date Range Inputs */}
             <div className="flex flex-col sm:flex-row items-center gap-3 bg-white dark:bg-white/5 p-3 rounded-xl shadow-sm border border-slate-200 dark:border-white/10">
                 <div className="flex flex-1 items-center gap-2">
-                    <div className="w-7 h-7 rounded-lg bg-cyan-100 dark:bg-cyan-900/30 flex items-center justify-center">
-                        <Calendar size={14} className="text-cyan-600 dark:text-cyan-400" />
-                    </div>
                     <input
                         type="date"
                         value={from}
