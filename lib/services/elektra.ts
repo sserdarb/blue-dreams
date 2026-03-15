@@ -200,6 +200,41 @@ let cachedCountries: Map<number, string> | null = null
 let countriesFetchedAt: number = 0
 const COUNTRY_CACHE_TTL = 86400000 // 24 hours
 
+// Hardcoded fallback for common Elektra PMS country IDs (Turkish hotel industry standard)
+// This ensures nationality works even if the /countries API fails
+const COUNTRY_ID_FALLBACK: Record<number, string> = {
+    1: 'Türkiye', 2: 'Germany', 3: 'United Kingdom', 4: 'Russia',
+    5: 'France', 6: 'Netherlands', 7: 'Belgium', 8: 'Austria',
+    9: 'Switzerland', 10: 'Italy', 11: 'Spain', 12: 'United States',
+    13: 'Canada', 14: 'Australia', 15: 'Sweden', 16: 'Norway',
+    17: 'Denmark', 18: 'Finland', 19: 'Poland', 20: 'Czech Republic',
+    21: 'Ukraine', 22: 'Romania', 23: 'Bulgaria', 24: 'Greece',
+    25: 'Israel', 26: 'Iran', 27: 'Saudi Arabia', 28: 'UAE',
+    29: 'China', 30: 'Japan', 31: 'South Korea', 32: 'India',
+    33: 'Brazil', 34: 'Argentina', 35: 'Mexico', 36: 'South Africa',
+    37: 'Egypt', 38: 'Morocco', 39: 'Tunisia', 40: 'Algeria',
+    41: 'Iraq', 42: 'Kazakhstan', 43: 'Azerbaijan', 44: 'Georgia',
+    45: 'Serbia', 46: 'Croatia', 47: 'Slovenia', 48: 'Hungary',
+    49: 'Slovakia', 50: 'Portugal', 51: 'Ireland', 52: 'Scotland',
+    53: 'Lithuania', 54: 'Latvia', 55: 'Estonia',
+    // Extended common Turkish hotel PMS IDs (different ID ranges used by some Elektra setups)
+    100: 'Türkiye', 101: 'Germany', 102: 'United Kingdom', 103: 'Russia',
+    104: 'France', 105: 'Netherlands', 106: 'Belgium',
+    200: 'Türkiye', 201: 'Germany', 202: 'United Kingdom',
+    // Nationality-no style IDs (some use ISO numeric)
+    792: 'Türkiye', 276: 'Germany', 826: 'United Kingdom', 643: 'Russia',
+    250: 'France', 528: 'Netherlands', 56: 'Belgium', 40: 'Austria',
+    756: 'Switzerland', 380: 'Italy', 724: 'Spain', 840: 'United States',
+    124: 'Canada', 36: 'Australia', 752: 'Sweden', 578: 'Norway',
+    208: 'Denmark', 246: 'Finland', 616: 'Poland', 203: 'Czech Republic',
+    804: 'Ukraine', 642: 'Romania', 100: 'Bulgaria', 300: 'Greece',
+    376: 'Israel', 364: 'Iran', 682: 'Saudi Arabia', 784: 'UAE',
+    156: 'China', 392: 'Japan', 410: 'South Korea', 356: 'India',
+    76: 'Brazil',
+}
+
+let countryResolutionFailCount = 0 // diagnostic counter
+
 async function fetchCountries(): Promise<Map<number, string>> {
     if (cachedCountries && Date.now() - countriesFetchedAt < COUNTRY_CACHE_TTL) {
         return cachedCountries
@@ -214,28 +249,58 @@ async function fetchCountries(): Promise<Map<number, string>> {
             const data = await res.json()
             const map = new Map<number, string>()
             const list = Array.isArray(data) ? data : (data?.result || data?.data || [])
+
+            // Diagnostic: log the raw shape of API response
+            if (Array.isArray(list) && list.length > 0) {
+                console.log(`[Elektra] Countries API response sample (first item keys):`, Object.keys(list[0]))
+                console.log(`[Elektra] Countries API first 2 items:`, JSON.stringify(list.slice(0, 2)))
+            } else {
+                console.warn(`[Elektra] Countries API returned non-array or empty. Type: ${typeof data}, keys: ${data ? Object.keys(data).join(',') : 'null'}`)
+            }
+
             if (Array.isArray(list)) {
                 for (const c of list) {
                     const id = c['country-id'] || c['id'] || c['countryId'] || c['nation-id'] || c['nation_id'] || c['NationId']
-                    const name = c['country-name'] || c['name'] || c['countryName'] || c['nation-name'] || c['NationName'] || ''
+                    const name = c['country-name'] || c['name'] || c['countryName'] || c['nation-name'] || c['NationName']
+                        || c['country_name'] || c['Country'] || c['Nation'] || ''
                     if (id && name) map.set(Number(id), String(name))
                 }
             }
-            cachedCountries = map
+
+            // Merge with fallback — API data takes priority
+            const merged = new Map<number, string>()
+            for (const [k, v] of Object.entries(COUNTRY_ID_FALLBACK)) merged.set(Number(k), v)
+            for (const [k, v] of map) merged.set(k, v) // API overrides fallback
+
+            cachedCountries = merged
             countriesFetchedAt = Date.now()
-            console.log(`[Elektra] Countries fetched: ${map.size} entries`)
-            return map
+            console.log(`[Elektra] Countries merged: ${merged.size} entries (${map.size} from API + fallback)`)
+            return merged
+        } else {
+            console.warn(`[Elektra] Countries API HTTP error: ${res.status} ${res.statusText}`)
         }
     } catch (err) {
         console.warn('[Elektra] Countries fetch failed:', err)
     }
-    return cachedCountries || new Map()
+    // If API fails entirely, use fallback map
+    if (!cachedCountries) {
+        const fallback = new Map<number, string>()
+        for (const [k, v] of Object.entries(COUNTRY_ID_FALLBACK)) fallback.set(Number(k), v)
+        cachedCountries = fallback
+        countriesFetchedAt = Date.now()
+        console.log(`[Elektra] Using hardcoded fallback country map: ${fallback.size} entries`)
+    }
+    return cachedCountries
 }
 
 function resolveCountry(guest: Record<string, unknown>, countryMap: Map<number, string>): string {
     // 1. The Elektra API guest-list returns 'country' as a NUMERIC country-id (not a string name)
-    //    Also check other common ID field names
-    const idFields = ['country', 'country-id', 'countryId', 'country_id', 'nation-id', 'nationId', 'NationId', 'nationality_id', 'nationality-id']
+    //    Also check other common ID field names including contact-level fields
+    const idFields = [
+        'country', 'country-id', 'countryId', 'country_id',
+        'nation-id', 'nationId', 'NationId', 'nationality_id', 'nationality-id',
+        'contact-country-id', 'contact-nation-id', 'nationality-no'
+    ]
     for (const f of idFields) {
         const val = guest[f]
         // If it's a number (or numeric string), look up in countryMap
@@ -253,11 +318,10 @@ function resolveCountry(guest: Record<string, unknown>, countryMap: Map<number, 
     }
 
     // 2. Try ISO CODE2 nationality string fields (e.g. "TR", "DE", "GB")
-    const isoFields = ['nationality', 'nationality-no', 'client-country', 'guest-country']
+    const isoFields = ['nationality', 'nationality-no', 'client-country', 'guest-country', 'contact-country']
     for (const f of isoFields) {
         const val = guest[f]
         if (val && typeof val === 'string' && val.length >= 2) {
-            // Map common ISO codes to readable country names
             const isoMap: Record<string, string> = {
                 'TR': 'Türkiye', 'TUR': 'Türkiye',
                 'DE': 'Germany', 'DEU': 'Germany',
@@ -289,20 +353,55 @@ function resolveCountry(guest: Record<string, unknown>, countryMap: Map<number, 
                 'BR': 'Brazil', 'BRA': 'Brazil',
                 'AU': 'Australia', 'AUS': 'Australia',
                 'CA': 'Canada', 'CAN': 'Canada',
+                'RO': 'Romania', 'ROU': 'Romania',
+                'BG': 'Bulgaria', 'BGR': 'Bulgaria',
+                'GR': 'Greece', 'GRC': 'Greece',
+                'HU': 'Hungary', 'HUN': 'Hungary',
+                'PT': 'Portugal', 'PRT': 'Portugal',
+                'IE': 'Ireland', 'IRL': 'Ireland',
+                'KZ': 'Kazakhstan', 'KAZ': 'Kazakhstan',
+                'AZ': 'Azerbaijan', 'AZE': 'Azerbaijan',
+                'GE': 'Georgia', 'GEO': 'Georgia',
+                'EG': 'Egypt', 'EGY': 'Egypt',
+                'MA': 'Morocco', 'MAR': 'Morocco',
             }
             const upper = (val as string).toUpperCase()
             if (isoMap[upper]) return isoMap[upper]
             // If it's a longer string, use it as-is (could be a full country name)
             if (val.length > 3) return val
         }
+        // Also check if nationality-no is a numeric ISO country code
+        if (f === 'nationality-no' && val !== undefined && val !== null && val !== '' && val !== 0 && val !== '0') {
+            const numVal = Number(val)
+            if (!isNaN(numVal) && countryMap.size > 0) {
+                const name = countryMap.get(numVal)
+                if (name) return name
+            }
+        }
     }
 
     // 3. Try direct country-name string fields
-    const nameFields = ['country-name', 'nation', 'nation-name']
+    const nameFields = ['country-name', 'nation', 'nation-name', 'contact-country-name']
     for (const f of nameFields) {
         if (guest[f] && typeof guest[f] === 'string' && (guest[f] as string).length > 1 && guest[f] !== 'Unknown') {
             return guest[f] as string
         }
+    }
+
+    // Diagnostic: log first few unresolved guests to help debug
+    if (countryResolutionFailCount < 3) {
+        countryResolutionFailCount++
+        const relevantKeys = Object.keys(guest).filter(k =>
+            k.toLowerCase().includes('country') || k.toLowerCase().includes('nation') ||
+            k.toLowerCase().includes('contact') || k === 'nationality' || k === 'nationality-no'
+        )
+        const debugInfo: Record<string, unknown> = {}
+        for (const k of relevantKeys) debugInfo[k] = guest[k]
+        // Also just log all keys once
+        if (countryResolutionFailCount === 1) {
+            console.log(`[Elektra] Guest object ALL keys:`, Object.keys(guest))
+        }
+        console.warn(`[Elektra] Country resolution failed #${countryResolutionFailCount}. Relevant fields:`, JSON.stringify(debugInfo))
     }
 
     return 'Unknown'

@@ -31,7 +31,13 @@ const dashboardTranslations: Record<DashboardLocale, DashboardTranslationMap> = 
             onlineTrends: 'Online (Web) Rez. Trendi',
             welcomeMessage: 'Pma Gravity yönetim paneline hoş geldiniz',
             moduleOfflineName: 'Dashboard & Canlı Veriler',
-            moduleOfflineReason: 'Elektra PMS ana veri bağlantısı sağlanamadı. Lütfen ağ ayarlarınızı kontrol edin.'
+            moduleOfflineReason: 'Elektra PMS ana veri bağlantısı sağlanamadı. Lütfen ağ ayarlarınızı kontrol edin.',
+            netReservations: 'Net Rezervasyon',
+            netCount: 'Adet Net (Onaylı - İptal)',
+            totalRevenueLabel: 'Toplam Gelir',
+            avgStay: 'Ort. Konaklama Süresi',
+            avgStayNights: 'Gece Ortalama',
+            roomNightsTotal: 'Toplam Oda Geceleme'
         },
         // Forecast Widget
         forecast: {
@@ -150,7 +156,13 @@ const dashboardTranslations: Record<DashboardLocale, DashboardTranslationMap> = 
             onlineTrends: 'Online (Web) Reservation Trend',
             welcomeMessage: 'Welcome to Pma Gravity management panel',
             moduleOfflineName: 'Dashboard & Live Data',
-            moduleOfflineReason: 'Unable to connect to Elektra PMS. Please check your network settings.'
+            moduleOfflineReason: 'Unable to connect to Elektra PMS. Please check your network settings.',
+            netReservations: 'Net Reservations',
+            netCount: 'Net Count (Confirmed - Cancelled)',
+            totalRevenueLabel: 'Total Revenue',
+            avgStay: 'Avg. Stay Duration',
+            avgStayNights: 'Nights Average',
+            roomNightsTotal: 'Total Room Nights'
         },
         forecast: {
             occupancy: 'Occupancy %',
@@ -265,7 +277,13 @@ const dashboardTranslations: Record<DashboardLocale, DashboardTranslationMap> = 
             onlineTrends: 'Online (Web) Buchungstrend',
             welcomeMessage: 'Willkommen im Pma Gravity Verwaltungspanel',
             moduleOfflineName: 'Dashboard & Live-Daten',
-            moduleOfflineReason: 'Verbindung zum Elektra PMS konnte nicht hergestellt werden. Bitte überprüfen Sie Ihre Netzwerkeinstellungen.'
+            moduleOfflineReason: 'Verbindung zum Elektra PMS konnte nicht hergestellt werden. Bitte überprüfen Sie Ihre Netzwerkeinstellungen.',
+            netReservations: 'Netto-Buchungen',
+            netCount: 'Netto (Bestätigt - Storniert)',
+            totalRevenueLabel: 'Gesamtumsatz',
+            avgStay: 'Durchschn. Aufenthaltsdauer',
+            avgStayNights: 'Nächte Durchschnitt',
+            roomNightsTotal: 'Gesamtübernachtungen'
         },
         forecast: {
             occupancy: 'Belegung %',
@@ -380,7 +398,13 @@ const dashboardTranslations: Record<DashboardLocale, DashboardTranslationMap> = 
             onlineTrends: 'Тренд онлайн (Web) бронирований',
             welcomeMessage: 'Добро пожаловать в панель управления Pma Gravity',
             moduleOfflineName: 'Дашборд и данные в реальном времени',
-            moduleOfflineReason: 'Не удалось подключиться к Elektra PMS. Пожалуйста, проверьте сетевые настройки.'
+            moduleOfflineReason: 'Не удалось подключиться к Elektra PMS. Пожалуйста, проверьте сетевые настройки.',
+            netReservations: 'Чистые бронирования',
+            netCount: 'Нетто (Подтв. - Отменённые)',
+            totalRevenueLabel: 'Общий доход',
+            avgStay: 'Ср. длительность проживания',
+            avgStayNights: 'Ночей в среднем',
+            roomNightsTotal: 'Всего ночей номера'
         },
         forecast: {
             occupancy: 'Загрузка %',
@@ -498,6 +522,12 @@ interface DashboardTranslationMap {
         welcomeMessage: string
         moduleOfflineName: string
         moduleOfflineReason: string
+        netReservations: string
+        netCount: string
+        totalRevenueLabel: string
+        avgStay: string
+        avgStayNights: string
+        roomNightsTotal: string
     }
     forecast: {
         occupancy: string

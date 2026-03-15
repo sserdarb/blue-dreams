@@ -56,8 +56,13 @@ export async function GET(req: NextRequest) {
                             ]
                         },
                         orderBy: { createdAt: 'desc' },
-                        select: { content: true, direction: true, createdAt: true },
+                        select: { content: true, direction: true, createdAt: true, senderName: true },
                     });
+
+                    // Use senderName from lastMessage as fallback display name
+                    const displayName = guest
+                        ? `${guest.name || ''} ${guest.surname || ''}`.trim()
+                        : (lastMessage as any)?.senderName || conv.identifier;
 
                     return {
                         identifier: conv.identifier,
@@ -66,6 +71,7 @@ export async function GET(req: NextRequest) {
                         lastMessageAt: conv.lastmessageat || conv.lastMessageAt,
                         guest,
                         lastMessage,
+                        displayName,
                     };
                 })
             );

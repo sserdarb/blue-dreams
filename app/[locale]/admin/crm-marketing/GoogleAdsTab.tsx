@@ -133,12 +133,12 @@ export default function GoogleAdsTab() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                 <Card className="p-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-slate-900 border-none">
                     <p className="text-sm text-muted-foreground flex items-center gap-1"><DollarSign size={14} /> Toplam Harcama</p>
-                    <p className="text-2xl font-bold mt-1">€{totalCost.toFixed(2)}</p>
+                    <p className="text-2xl font-bold mt-1">₺{totalCost.toFixed(2)}</p>
                 </Card>
                 <Card className="p-4 bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950 dark:to-slate-900 border-none">
                     <p className="text-sm text-muted-foreground flex items-center gap-1"><MousePointerClick size={14} /> Toplam Tıklama</p>
                     <p className="text-2xl font-bold mt-1">{totalClicks.toLocaleString()}</p>
-                    <p className="text-xs text-muted-foreground mt-1">CPC: €{avgCpc}</p>
+                    <p className="text-xs text-muted-foreground mt-1">CPC: ₺{avgCpc}</p>
                 </Card>
                 <Card className="p-4 bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950 dark:to-slate-900 border-none">
                     <p className="text-sm text-muted-foreground flex items-center gap-1"><TrendingUp size={14} /> Dönüşümler</p>
@@ -183,7 +183,7 @@ export default function GoogleAdsTab() {
                                             </td>
                                             <td className="p-3 text-right">{c.impressions.toLocaleString()}</td>
                                             <td className="p-3 text-right">{c.clicks.toLocaleString()}</td>
-                                            <td className="p-3 text-right">€{c.cost.toFixed(2)}</td>
+                                            <td className="p-3 text-right">₺{c.cost.toFixed(2)}</td>
                                             <td className="p-3 text-right font-bold text-emerald-600 dark:text-emerald-400">{c.conversions}</td>
                                         </tr>
                                     )

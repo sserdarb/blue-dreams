@@ -1143,3 +1143,28 @@ model CrmCall {
   @@index([callDate])
   @@index([agentName])
 }
+
+// ===== Daily Snapshot — Historical Data Storage (2022–today) =====
+
+model DailySnapshot {
+  id                String   @id @default(uuid())
+  date              DateTime @unique  // YYYY-MM-DD, one per day
+  totalReservations Int      @default(0)
+  netReservations   Int      @default(0) // confirmed minus cancelled
+  cancelledCount    Int      @default(0)
+  totalRevenueTRY   Float    @default(0)
+  totalRevenueEUR   Float    @default(0)
+  avgStayNights     Float    @default(0)
+  totalGuests       Int      @default(0)
+  totalRoomNights   Int      @default(0)
+  adrEUR            Float    @default(0)
+  adrTRY            Float    @default(0)
+  occupancyPercent  Float    @default(0)
+  eurToTry          Float    @default(0) // exchange rate on this day
+  channelBreakdown  String?  // JSON: {"ota": N, "callCenter": N, "web": N}
+  countryBreakdown  String?  // JSON: {"DE": N, "RU": N, "TR": N, ...}
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([date])
+}

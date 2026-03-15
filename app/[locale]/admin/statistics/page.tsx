@@ -116,12 +116,15 @@ export default async function StatisticsPage({ params }: { params: Promise<{ loc
         error = 'Veri yüklenirken hata oluştu'
     }
 
-    // Previous Year for Comparison — fetch separately so failures don't block main data
+    // Previous Year for Pace Comparison — fetch reservations booked by this same calendar day last year
+    // This gives us true OTB (On The Books) pace: "how many bookings were made by today last year"
     try {
-        const prevYear = new Date().getFullYear() - 1
-        const prevStart = new Date(prevYear, 0, 1) // Jan 1st of prev year
-        const prevEnd = new Date(prevYear, 11, 31) // Dec 31st of prev year
-        const rawComp = await ElektraService.getReservations(prevStart, prevEnd)
+        const today = new Date()
+        const prevYear = today.getFullYear() - 1
+        // Sales window: from earliest possible booking date to the same calendar day last year
+        const salesFrom = new Date(prevYear - 1, 0, 1) // booking start (wide range to capture early bookings)
+        const salesTo = new Date(prevYear, today.getMonth(), today.getDate()) // same calendar day last year
+        const rawComp = await ElektraService.getReservationsByBookingDateForYear(salesFrom, salesTo, prevYear)
 
         // EUR_RATE_CURRENT is fetched from API above
         comparisonReservations = rawComp.map(r => {
@@ -142,6 +145,7 @@ export default async function StatisticsPage({ params }: { params: Promise<{ loc
                 amountEur,
             }
         })
+        console.log(`[Reports] Pace comparison: ${comparisonReservations.length} reservations from ${prevYear} booked by ${salesTo.toISOString().split('T')[0]}`)
     } catch (err) {
         console.error('[Reports] Error fetching comparison:', err)
     }

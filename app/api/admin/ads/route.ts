@@ -28,16 +28,19 @@ async function getGoogleAdsAccessToken() {
 }
 
 async function queryGoogleAds(accessToken: string, customerId: string, devToken: string, query: string) {
+    const managerId = (process.env.GOOGLE_ADS_MANAGER_ID || '').replace(/-/g, '')
+    const headers: Record<string, string> = {
+        'Authorization': `Bearer ${accessToken}`,
+        'developer-token': devToken,
+        'Content-Type': 'application/json'
+    }
+    if (managerId) headers['login-customer-id'] = managerId
+
     const res = await fetch(
         `https://googleads.googleapis.com/${GOOGLE_ADS_API_VERSION}/customers/${customerId}/googleAds:search`,
         {
             method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${accessToken}`,
-                'developer-token': devToken,
-                'login-customer-id': customerId,
-                'Content-Type': 'application/json'
-            },
+            headers,
             body: JSON.stringify({ query })
         }
     )

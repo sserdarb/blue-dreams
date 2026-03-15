@@ -89,6 +89,86 @@ function getClient(clientEmail: string, privateKey: string) {
     })
 }
 
+// ─── REST API fallback for GA4 ───
+// When gRPC fails (DECODER routines::unsupported), use REST API directly
+async function fetchViaRest(
+    propertyId: string,
+    clientEmail: string,
+    privateKey: string,
+    reports: Array<{
+        dateRanges: Array<{ startDate: string; endDate: string }>;
+        dimensions?: Array<{ name: string }>;
+        metrics: Array<{ name: string }>;
+        orderBys?: any[];
+        limit?: number;
+    }>
+) {
+    // 1. Create JWT and get access token via service account using Node.js crypto
+    const crypto = await import('crypto')
+
+    let formattedPK = privateKey.replace(/\\n/g, '\n').replace(/"/g, '')
+    if (!formattedPK.includes('\n')) {
+        const header = '-----BEGIN PRIVATE KEY-----'
+        const footer = '-----END PRIVATE KEY-----'
+        if (formattedPK.startsWith(header) && formattedPK.endsWith(footer)) {
+            const body = formattedPK.slice(header.length, -footer.length).trim().replace(/ /g, '\n')
+            formattedPK = `${header}\n${body}\n${footer}\n`
+        }
+    }
+
+    // Build JWT manually with crypto.sign
+    const now = Math.floor(Date.now() / 1000)
+    const jwtHeader = Buffer.from(JSON.stringify({ alg: 'RS256', typ: 'JWT' })).toString('base64url')
+    const jwtPayload = Buffer.from(JSON.stringify({
+        iss: clientEmail,
+        sub: clientEmail,
+        aud: 'https://oauth2.googleapis.com/token',
+        scope: 'https://www.googleapis.com/auth/analytics.readonly',
+        iat: now,
+        exp: now + 3600,
+    })).toString('base64url')
+    const signInput = `${jwtHeader}.${jwtPayload}`
+    const signature = crypto.createSign('RSA-SHA256').update(signInput).sign(formattedPK, 'base64url')
+    const jwt = `${signInput}.${signature}`
+
+    const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+            grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+            assertion: jwt,
+        })
+    })
+    if (!tokenRes.ok) {
+        const errText = await tokenRes.text()
+        throw new Error(`OAuth token request failed: ${errText}`)
+    }
+    const { access_token } = await tokenRes.json()
+
+    // 2. Run each report via REST
+    const results = await Promise.all(reports.map(async (report) => {
+        const res = await fetch(
+            `https://analyticsdata.googleapis.com/v1beta/properties/${propertyId}:runReport`,
+            {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${access_token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(report)
+            }
+        )
+        if (!res.ok) {
+            const errText = await res.text()
+            console.error('[GA4 REST] Report failed:', errText)
+            return [{ rows: [], rowCount: 0 }]
+        }
+        const data = await res.json()
+        return [data]
+    }))
+    return results
+}
+
 export async function GET(request: Request) {
     try {
         // Check demo mode
@@ -168,19 +248,10 @@ export async function GET(request: Request) {
             previousEndDate = '91daysAgo'
         }
 
-        const client = getClient(clientEmail, privateKey)
-
-        // Make the API calls to GA4 concurrently
-        const [
-            [trafficResponse],
-            [channelsResponse],
-            [countriesResponse],
-            [deviceResponse],
-            [previousTotalsResponse]
-        ] = await Promise.all([
+        // ─── Define report configs ───
+        const reportConfigs = [
             // 1. Daily Traffic
-            client.runReport({
-                property: `properties/${propertyId}`,
+            {
                 dateRanges: [{ startDate, endDate }],
                 dimensions: [{ name: 'date' }],
                 metrics: [
@@ -190,36 +261,32 @@ export async function GET(request: Request) {
                     { name: 'bounceRate' }
                 ],
                 orderBys: [{ dimension: { dimensionName: 'date' }, desc: false }]
-            }),
+            },
             // 2. Channels
-            client.runReport({
-                property: `properties/${propertyId}`,
+            {
                 dateRanges: [{ startDate, endDate }],
                 dimensions: [{ name: 'sessionDefaultChannelGroup' }],
                 metrics: [{ name: 'activeUsers' }],
                 orderBys: [{ metric: { metricName: 'activeUsers' }, desc: true }],
-                limit: 5 // Top 5
-            }),
+                limit: 5
+            },
             // 3. Countries
-            client.runReport({
-                property: `properties/${propertyId}`,
+            {
                 dateRanges: [{ startDate, endDate }],
                 dimensions: [{ name: 'country' }],
                 metrics: [{ name: 'activeUsers' }],
                 orderBys: [{ metric: { metricName: 'activeUsers' }, desc: true }],
-                limit: 5 // Top 5
-            }),
+                limit: 5
+            },
             // 4. Devices
-            client.runReport({
-                property: `properties/${propertyId}`,
+            {
                 dateRanges: [{ startDate, endDate }],
                 dimensions: [{ name: 'deviceCategory' }],
                 metrics: [{ name: 'activeUsers' }],
                 orderBys: [{ metric: { metricName: 'activeUsers' }, desc: true }]
-            }),
+            },
             // 5. Previous Totals
-            client.runReport({
-                property: `properties/${propertyId}`,
+            {
                 dateRanges: [{ startDate: previousStartDate, endDate: previousEndDate }],
                 metrics: [
                     { name: 'activeUsers' },
@@ -227,13 +294,59 @@ export async function GET(request: Request) {
                     { name: 'sessions' },
                     { name: 'bounceRate' }
                 ]
-            })
-        ])
+            }
+        ]
+
+        // ─── Try gRPC client first, fallback to REST ───
+        let trafficResponse: any, channelsResponse: any, countriesResponse: any, deviceResponse: any, previousTotalsResponse: any
+
+        try {
+            // Try gRPC client first
+            const client = getClient(clientEmail, privateKey)
+            const results = await Promise.all(
+                reportConfigs.map(config => client.runReport({
+                    property: `properties/${propertyId}`,
+                    ...config
+                }))
+            );
+
+            [
+                [trafficResponse],
+                [channelsResponse],
+                [countriesResponse],
+                [deviceResponse],
+                [previousTotalsResponse]
+            ] = results
+            console.log('[GA4] gRPC client succeeded')
+        } catch (grpcError: any) {
+            const errMsg = grpcError?.message || ''
+            console.warn('[GA4] gRPC client failed:', errMsg)
+
+            if (errMsg.includes('DECODER') || errMsg.includes('unsupported') || errMsg.includes('ERR_OSSL')) {
+                console.log('[GA4] Falling back to REST API due to OpenSSL/DECODER error...')
+                try {
+                    const restResults = await fetchViaRest(propertyId, clientEmail, privateKey, reportConfigs);
+                    [
+                        [trafficResponse],
+                        [channelsResponse],
+                        [countriesResponse],
+                        [deviceResponse],
+                        [previousTotalsResponse]
+                    ] = restResults
+                    console.log('[GA4] REST API fallback succeeded')
+                } catch (restError: any) {
+                    console.error('[GA4] REST API fallback also failed:', restError.message)
+                    throw new Error(`Analytics API failed: ${restError.message}`)
+                }
+            } else {
+                throw grpcError
+            }
+        }
 
         // Format Daily Traffic
         let formattedTraffic: any[] = []
         if (trafficResponse && trafficResponse.rows) {
-            formattedTraffic = trafficResponse.rows.map(row => {
+            formattedTraffic = trafficResponse.rows.map((row: any) => {
                 const dateStr = row.dimensionValues?.[0]?.value || ''
                 const formattedDate = dateStr.length === 8
                     ? `${dateStr.substring(0, 4)}-${dateStr.substring(4, 6)}-${dateStr.substring(6, 8)}`
@@ -252,7 +365,7 @@ export async function GET(request: Request) {
         // Format Channels
         let formattedChannels: any[] = []
         if (channelsResponse && channelsResponse.rows) {
-            formattedChannels = channelsResponse.rows.map(row => ({
+            formattedChannels = channelsResponse.rows.map((row: any) => ({
                 name: row.dimensionValues?.[0]?.value || 'Unknown',
                 value: parseInt(row.metricValues?.[0]?.value || '0', 10)
             }))
@@ -261,8 +374,10 @@ export async function GET(request: Request) {
         // Format Countries
         let formattedCountries: any[] = []
         if (countriesResponse && countriesResponse.rows) {
-            const totalUsersAllCountries = countriesResponse.rows.reduce((sum, row) => sum + parseInt(row.metricValues?.[0]?.value || '0', 10), 0)
-            formattedCountries = countriesResponse.rows.map(row => {
+            const totalUsersAllCountries = countriesResponse.rows.reduce(
+                (sum: number, row: any) => sum + parseInt(row.metricValues?.[0]?.value || '0', 10), 0
+            )
+            formattedCountries = countriesResponse.rows.map((row: any) => {
                 const users = parseInt(row.metricValues?.[0]?.value || '0', 10)
                 const percentage = totalUsersAllCountries > 0 ? Math.round((users / totalUsersAllCountries) * 100) : 0
                 return {
@@ -276,8 +391,10 @@ export async function GET(request: Request) {
         // Format Devices
         let formattedDevices: any[] = []
         if (deviceResponse && deviceResponse.rows) {
-            const totalUsersAllDevices = deviceResponse.rows.reduce((sum, row) => sum + parseInt(row.metricValues?.[0]?.value || '0', 10), 0)
-            formattedDevices = deviceResponse.rows.map(row => {
+            const totalUsersAllDevices = deviceResponse.rows.reduce(
+                (sum: number, row: any) => sum + parseInt(row.metricValues?.[0]?.value || '0', 10), 0
+            )
+            formattedDevices = deviceResponse.rows.map((row: any) => {
                 const users = parseInt(row.metricValues?.[0]?.value || '0', 10)
                 const percentage = totalUsersAllDevices > 0 ? Math.round((users / totalUsersAllDevices) * 100) : 0
                 return {
@@ -294,7 +411,7 @@ export async function GET(request: Request) {
             pageViews: formattedTraffic.reduce((acc, curr) => acc + curr.pageViews, 0),
             sessions: formattedTraffic.reduce((acc, curr) => acc + curr.sessions, 0),
             averageBounceRate: formattedTraffic.length > 0
-                ? (formattedTraffic.reduce((acc, curr) => acc + parseFloat(curr.bounceRate as any), 0) / formattedTraffic.length).toFixed(2)
+                ? parseFloat((formattedTraffic.reduce((acc, curr) => acc + parseFloat(curr.bounceRate as any), 0) / formattedTraffic.length).toFixed(2))
                 : 0
         }
 
@@ -310,7 +427,7 @@ export async function GET(request: Request) {
             }
         } else {
             // fallback if previous period empty
-            previousTotals = { ...totals }
+            previousTotals = { ...totals, averageBounceRate: Number(totals.averageBounceRate) }
         }
 
         return NextResponse.json({

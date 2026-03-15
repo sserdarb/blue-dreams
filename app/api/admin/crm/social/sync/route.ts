@@ -43,11 +43,12 @@ export async function POST(request: Request) {
                             // Upsert — don't duplicate
                             await prisma.socialMessage.upsert({
                                 where: { waMessageId: msg.id },
-                                update: {},
+                                update: { senderName },
                                 create: {
                                     waMessageId: msg.id,
                                     platform: 'instagram',
                                     socialId: senderId,
+                                    senderName,
                                     direction: isFromPage ? 'outbound' : 'inbound',
                                     type: 'text',
                                     content: msg.message || '',
@@ -89,11 +90,12 @@ export async function POST(request: Request) {
 
                             await prisma.socialMessage.upsert({
                                 where: { waMessageId: msg.id },
-                                update: {},
+                                update: { senderName },
                                 create: {
                                     waMessageId: msg.id,
                                     platform: 'facebook',
                                     socialId: senderId,
+                                    senderName,
                                     direction: isFromPage ? 'outbound' : 'inbound',
                                     type: 'text',
                                     content: msg.message || '',

@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic'
 
-import { Calendar, TrendingUp, DollarSign, Activity, XCircle, Info } from 'lucide-react'
+import { Calendar, TrendingUp, DollarSign, Activity, XCircle, Info, CheckCircle, Wallet, Moon } from 'lucide-react'
 import { ElektraService } from '@/lib/services/elektra'
 import { fetchDashboardStats, fetchPickupStats } from '@/lib/services/pms-asisia'
 import { SalesChart } from '@/components/admin/charts/SalesChart'
@@ -179,8 +179,9 @@ export default async function AdminDashboard({
         </div>
 
 
-        {/* PROMINENT METRICS */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
+        {/* PROMINENT METRICS — 6-Widget Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10">
+          {/* 1. Toplam Rezervasyon */}
           <div className="bg-gradient-to-br from-cyan-600 to-blue-700 rounded-2xl p-6 text-white shadow-xl shadow-cyan-900/20">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
@@ -203,6 +204,30 @@ export default async function AdminDashboard({
             </div>
           </div>
 
+          {/* 2. Net Rezervasyon (NEW) */}
+          <div className="bg-gradient-to-br from-emerald-600 to-teal-700 rounded-2xl p-6 text-white shadow-xl shadow-emerald-900/20">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                <CheckCircle size={24} className="text-white" />
+              </div>
+              <div>
+                <p className="text-emerald-100 font-medium">{dt.page.netReservations}</p>
+                <p className="text-xs text-emerald-200">{dt.page.selectedPeriod}: {dateLabel}</p>
+              </div>
+            </div>
+            <div className="flex items-end justify-between">
+              <div>
+                <h2 className="text-5xl font-black">{(asisiaStats.totalReservations - asisiaStats.cancelledReservations).toLocaleString('tr-TR')}</h2>
+                <p className="text-emerald-100 mt-1">{dt.page.netCount}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-xl font-bold text-emerald-200">+{asisiaStats.totalReservations.toLocaleString('tr-TR')}</p>
+                <p className="text-sm font-medium text-red-300">-{asisiaStats.cancelledReservations.toLocaleString('tr-TR')}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* 3. ADR */}
           <div className="bg-gradient-to-br from-orange-500 to-rose-600 rounded-2xl p-6 text-white shadow-xl shadow-orange-900/20">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
@@ -225,6 +250,30 @@ export default async function AdminDashboard({
             </div>
           </div>
 
+          {/* 4. Toplam Gelir (NEW) */}
+          <div className="bg-gradient-to-br from-violet-600 to-purple-700 rounded-2xl p-6 text-white shadow-xl shadow-violet-900/20">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                <Wallet size={24} className="text-white" />
+              </div>
+              <div>
+                <p className="text-violet-100 font-medium">{dt.page.totalRevenueLabel}</p>
+                <p className="text-xs text-violet-200">{dt.page.selectedPeriod}: {dateLabel}</p>
+              </div>
+            </div>
+            <div className="flex items-end justify-between">
+              <div>
+                <h2 className="text-4xl font-black">€{Math.round(calcRevEur(activePeriod)).toLocaleString('tr-TR')}</h2>
+                <p className="text-violet-100 mt-1">EUR</p>
+              </div>
+              <div className="text-right">
+                <p className="text-2xl font-bold">₺{Math.round(calcRevTry(activePeriod)).toLocaleString('tr-TR')}</p>
+                <p className="text-sm font-medium text-violet-200">TRY</p>
+              </div>
+            </div>
+          </div>
+
+          {/* 5. İptal Edilen */}
           <div className="bg-gradient-to-br from-red-600 to-red-800 rounded-2xl p-6 text-white shadow-xl shadow-red-900/20">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
@@ -243,6 +292,29 @@ export default async function AdminDashboard({
               <div className="text-right">
                 <p className="text-xl font-bold">{symbol}{(asisiaStats.cancelledRevenue || 0).toLocaleString('tr-TR', { maximumFractionDigits: 0 })}</p>
                 <p className="text-sm font-medium text-red-200">{dt.page.lostRevenue}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* 6. Ort. Konaklama Süresi (NEW) */}
+          <div className="bg-gradient-to-br from-amber-500 to-yellow-600 rounded-2xl p-6 text-white shadow-xl shadow-amber-900/20">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                <Moon size={24} className="text-white" />
+              </div>
+              <div>
+                <p className="text-amber-100 font-medium">{dt.page.avgStay}</p>
+                <p className="text-xs text-amber-200">{dt.page.selectedPeriod}: {dateLabel}</p>
+              </div>
+            </div>
+            <div className="flex items-end justify-between">
+              <div>
+                <h2 className="text-5xl font-black">{asisiaStats.averageStay.toFixed(1)}</h2>
+                <p className="text-amber-100 mt-1">{dt.page.avgStayNights}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-xl font-bold">{totalRoomNights.toLocaleString('tr-TR')}</p>
+                <p className="text-sm font-medium text-amber-200">{dt.page.roomNightsTotal}</p>
               </div>
             </div>
           </div>

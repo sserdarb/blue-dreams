@@ -41,10 +41,10 @@ export default function CompetitorAnalysisClient({ locale, t }: Props) {
     const [competitors, setCompetitors] = useState<CompetitorData[]>([])
     const [aiInsights, setAiInsights] = useState<AIAnalysis | null>(null)
     const [lastSync, setLastSync] = useState<string | null>(null)
-    const [activeTab, setActiveTab] = useState<'overview' | 'strategies' | 'reviews' | 'pricing' | 'brand'>('overview')
+    const [activeTab, setActiveTab] = useState<'overview' | 'strategies' | 'reviews' | 'pricing' | 'brand' | 'season'>('overview')
     const [trends, setTrends] = useState<{ pricingTrends: any[], reviewsTrends: any[], brandInterestTrends: any[] } | null>(null)
     const [market, setMarket] = useState<'domestic' | 'international'>('domestic')
-    const [selectedCompetitors, setSelectedCompetitors] = useState<string[]>(['Blue Dreams Resort', 'Duja Bodrum'])
+    const [selectedCompetitors, setSelectedCompetitors] = useState<string[]>(['Blue Dreams Resort', 'Duja Bodrum', 'La Blanche Resort', 'Samara Hotel Bodrum', 'Kefaluka Resort'])
     const [dbCompetitors, setDbCompetitors] = useState<{ id: string, name: string }[]>([])
     const [newCompName, setNewCompName] = useState('')
 
@@ -57,6 +57,8 @@ export default function CompetitorAnalysisClient({ locale, t }: Props) {
     const [apifyLoading, setApifyLoading] = useState(false)
     const [apifyData, setApifyData] = useState<any[] | null>(null)
     const [apifySyncTime, setApifySyncTime] = useState<string | null>(null)
+    const [seasonLoading, setSeasonLoading] = useState(false)
+    const [seasonData, setSeasonData] = useState<{ pivoted: any[], competitors: string[] } | null>(null)
 
     const fetchAnalysisData = useCallback(async (forceRefresh = false) => {
         setLoading(true)
@@ -117,6 +119,31 @@ export default function CompetitorAnalysisClient({ locale, t }: Props) {
             console.error("Failed to fetch Apify data:", e);
         }
         setApifyLoading(false);
+    };
+
+    const fetchSeasonData = async () => {
+        setSeasonLoading(true);
+        try {
+            const res = await fetch('/api/admin/competitors/google-travel', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    currency: market === 'domestic' ? 'TRY' : 'EUR',
+                    competitors: selectedCompetitors,
+                    year: new Date().getFullYear(),
+                    mode: 'season'
+                })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                if (data.success) {
+                    setSeasonData({ pivoted: data.pivoted || [], competitors: data.competitors || [] });
+                }
+            }
+        } catch (e) {
+            console.error('Failed to fetch season data:', e);
+        }
+        setSeasonLoading(false);
     };
 
     useEffect(() => {
@@ -252,10 +279,10 @@ export default function CompetitorAnalysisClient({ locale, t }: Props) {
                         </div>
 
                         <div className="flex gap-2 overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0 mt-4 md:mt-0">
-                            {(['overview', 'strategies', 'reviews', 'pricing', 'brand'] as const).map(tab => (
+                            {(['overview', 'strategies', 'reviews', 'pricing', 'brand', 'season'] as const).map(tab => (
                                 <button key={tab} onClick={() => setActiveTab(tab)}
                                     className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${activeTab === tab ? 'bg-cyan-600 text-white shadow-lg shadow-cyan-600/20' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 border border-slate-200 dark:border-slate-700'}`}>
-                                    {tab === 'overview' ? 'Genel Bakış' : tab === 'strategies' ? 'AI Strateji' : tab === 'reviews' ? 'Gelişmiş Yorum Trendi' : tab === 'pricing' ? 'Fiyatlandırma Trendi' : 'Marka İlgisi (Brand Interest)'}
+                                    {tab === 'overview' ? 'Genel Bakış' : tab === 'strategies' ? 'AI Strateji' : tab === 'reviews' ? 'Gelişmiş Yorum Trendi' : tab === 'pricing' ? 'Fiyatlandırma Trendi' : tab === 'season' ? '📅 Sezon Müsaitliği' : 'Marka İlgisi (Brand Interest)'}
                                 </button>
                             ))}
                         </div>
@@ -626,6 +653,123 @@ export default function CompetitorAnalysisClient({ locale, t }: Props) {
                                     </LineChart>
                                 </ResponsiveContainer>
                             </div>
+                        </div>
+                    )}
+
+                    {/* Season Availability Heatmap */}
+                    {activeTab === 'season' && (
+                        <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm">
+                            <div className="flex items-center justify-between mb-6">
+                                <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                    📅 Sezon Müsaitlik & Fiyat Haritası ({new Date().getFullYear()})
+                                </h3>
+                                <button
+                                    onClick={fetchSeasonData}
+                                    disabled={seasonLoading}
+                                    className="flex items-center gap-2 bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:hover:bg-emerald-800 text-emerald-700 dark:text-emerald-300 font-medium px-4 py-2 rounded-xl transition-colors disabled:opacity-50 text-sm"
+                                >
+                                    {seasonLoading ? <Loader2 size={16} className="animate-spin" /> : <RefreshCw size={16} />}
+                                    {seasonLoading ? 'Sezon Taranıyor...' : 'Tüm Sezonu Tara'}
+                                </button>
+                            </div>
+
+                            {seasonLoading && (
+                                <div className="flex flex-col items-center justify-center h-64 gap-4">
+                                    <Loader2 size={32} className="animate-spin text-emerald-500" />
+                                    <p className="text-sm text-slate-500">8 ay × {selectedCompetitors.length} otel taranıyor... Bu işlem birkaç dakika sürebilir.</p>
+                                </div>
+                            )}
+
+                            {!seasonLoading && !seasonData && (
+                                <div className="flex flex-col items-center justify-center h-64 gap-4">
+                                    <Building2 size={48} className="text-slate-300" />
+                                    <p className="text-sm text-slate-500">Sezon verilerini görmek için yukarıdaki butona tıklayın.</p>
+                                    <p className="text-xs text-slate-400">Nisan – Kasım arası aylık fiyat ve müsaitlik durumu taranacaktır.</p>
+                                </div>
+                            )}
+
+                            {seasonData && seasonData.pivoted.length > 0 && (
+                                <>
+                                    {/* Heatmap Table */}
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-sm">
+                                            <thead>
+                                                <tr className="border-b dark:border-slate-700">
+                                                    <th className="text-left py-3 px-2 font-semibold text-slate-600 dark:text-slate-300">Ay</th>
+                                                    {seasonData.competitors.map(name => (
+                                                        <th key={name} className="text-center py-3 px-2 font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                                                            {name.replace(' Resort', '').replace(' Hotel Bodrum', '')}
+                                                        </th>
+                                                    ))}
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {seasonData.pivoted.map((row, idx) => {
+                                                    const prices = seasonData.competitors.map(n => row[n] || 0).filter(p => p > 0);
+                                                    const minPrice = Math.min(...prices);
+                                                    const maxPrice = Math.max(...prices);
+                                                    return (
+                                                        <tr key={idx} className="border-b dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-700/30">
+                                                            <td className="py-3 px-2 font-medium text-slate-800 dark:text-white">{row.month}</td>
+                                                            {seasonData.competitors.map(name => {
+                                                                const price = row[name] || 0;
+                                                                const available = row[`${name}_available`] !== false;
+                                                                // Color coding: green=cheapest, yellow=mid, red=most expensive
+                                                                let bgColor = 'bg-slate-50 dark:bg-slate-800';
+                                                                if (price > 0 && prices.length > 1) {
+                                                                    const ratio = (price - minPrice) / (maxPrice - minPrice || 1);
+                                                                    if (ratio <= 0.33) bgColor = 'bg-emerald-100 dark:bg-emerald-900/30';
+                                                                    else if (ratio <= 0.66) bgColor = 'bg-amber-100 dark:bg-amber-900/30';
+                                                                    else bgColor = 'bg-red-100 dark:bg-red-900/30';
+                                                                }
+                                                                return (
+                                                                    <td key={name} className={`text-center py-3 px-2 ${bgColor} rounded`}>
+                                                                        {price > 0 ? (
+                                                                            <>
+                                                                                <span className="font-bold text-slate-800 dark:text-white">
+                                                                                    {market === 'domestic' ? '₺' : '€'}{price.toLocaleString()}
+                                                                                </span>
+                                                                                <span className="block text-[10px] text-slate-400">/gece</span>
+                                                                            </>
+                                                                        ) : (
+                                                                            <span className="text-slate-400 text-xs">{available ? 'Veri yok' : 'Dolu'}</span>
+                                                                        )}
+                                                                    </td>
+                                                                );
+                                                            })}
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    {/* Season Price Chart */}
+                                    <div className="mt-6">
+                                        <h4 className="text-xs font-bold text-slate-600 dark:text-slate-400 mb-3">Aylık Fiyat Karşılaştırması</h4>
+                                        <div className="h-72">
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <LineChart data={seasonData.pivoted} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+                                                    <CartesianGrid strokeDasharray="3 3" vertical={false} strokeOpacity={0.2} />
+                                                    <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 11 }} />
+                                                    <YAxis axisLine={false} tickLine={false} />
+                                                    <Tooltip contentStyle={{ borderRadius: '12px', border: 'none' }} />
+                                                    <Legend />
+                                                    {seasonData.competitors.map((name, i) => {
+                                                        const colors = ['#06b6d4', '#8b5cf6', '#f59e0b', '#3b82f6', '#ef4444', '#10b981'];
+                                                        return (
+                                                            <Line key={name} type="monotone" dataKey={name} stroke={colors[i % colors.length]}
+                                                                strokeWidth={name === 'Blue Dreams Resort' ? 3 : 2} dot={true} />
+                                                        );
+                                                    })}
+                                                </LineChart>
+                                            </ResponsiveContainer>
+                                        </div>
+                                    </div>
+
+                                    <p className="text-[10px] text-slate-400 mt-3">Fiyatlar her ayın 15'i için 2 gecelik konaklama bazında alınmaktadır. Yeşil = en uygun, kırmızı = en pahalı.</p>
+                                </>
+                            )}
                         </div>
                     )}
                 </>
