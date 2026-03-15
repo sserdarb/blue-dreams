@@ -183,12 +183,15 @@ export async function fetchCallCenterStats(startDate?: string, endDate?: string)
                     ISNULL(u.FIRSTNAME + ' ' + u.LASTNAME, 'Bilinmiyor') as AgentName,
                     ISNULL(u.USERNAME, '-') as AgentExtension,
                     COUNT(DISTINCT r.ID) as TotalCalls,
-                    ISNULL(SUM(DATEDIFF(SECOND, r.CREATIONDATE, ISNULL(r.UPDDATE, r.CREATIONDATE))), 0) as TotalSeconds,
-                    CASE WHEN COUNT(DISTINCT r.ID) > 0 
-                        THEN ISNULL(SUM(DATEDIFF(SECOND, r.CREATIONDATE, ISNULL(r.UPDDATE, r.CREATIONDATE))), 0) / COUNT(DISTINCT r.ID)
+                    ISNULL(SUM(CASE WHEN r.UPDDATE IS NOT NULL AND r.UPDDATE > r.CREATIONDATE 
+                        THEN DATEDIFF(SECOND, r.CREATIONDATE, r.UPDDATE) ELSE 0 END), 0) as TotalSeconds,
+                    CASE WHEN SUM(CASE WHEN r.UPDDATE IS NOT NULL AND r.UPDDATE > r.CREATIONDATE THEN 1 ELSE 0 END) > 0
+                        THEN SUM(CASE WHEN r.UPDDATE IS NOT NULL AND r.UPDDATE > r.CREATIONDATE 
+                            THEN DATEDIFF(SECOND, r.CREATIONDATE, r.UPDDATE) ELSE 0 END) 
+                            / SUM(CASE WHEN r.UPDDATE IS NOT NULL AND r.UPDDATE > r.CREATIONDATE THEN 1 ELSE 0 END)
                         ELSE 0 END as AvgDuration,
-                    SUM(CASE WHEN r.RESNO IS NULL THEN 1 ELSE 0 END) as MissedCalls,
-                    SUM(CASE WHEN r.RESNO IS NOT NULL THEN 1 ELSE 0 END) as AnsweredCalls
+                    SUM(CASE WHEN r.UPDDATE IS NULL OR r.UPDDATE = r.CREATIONDATE THEN 1 ELSE 0 END) as MissedCalls,
+                    SUM(CASE WHEN r.UPDDATE IS NOT NULL AND r.UPDDATE > r.CREATIONDATE THEN 1 ELSE 0 END) as AnsweredCalls
                 FROM REQUEST r
                 JOIN USERS u ON r.ADDUSER = u.ID
                 WHERE u.FIRSTNAME IS NOT NULL ${reqDateFilter}
@@ -242,8 +245,14 @@ export async function fetchCallCenterStats(startDate?: string, endDate?: string)
             const hourlyQuery = await pool.request().query(`
                 SELECT 
                     DATEPART(hour, r.CREATIONDATE) as Hour,
-                    COUNT(DISTINCT r.ID) as CallCount,
-                    SUM(CASE WHEN r.RESNO IS NULL THEN 1 ELSE 0 END) as MissedCount
+                    COUNT(DISTINCT r.ID) as TotalCount,
+                    CASE WHEN COUNT(DISTINCT CAST(r.CREATIONDATE AS DATE)) > 0
+                        THEN COUNT(DISTINCT r.ID) / COUNT(DISTINCT CAST(r.CREATIONDATE AS DATE))
+                        ELSE 0 END as CallCount,
+                    ISNULL(
+                        SUM(CASE WHEN r.UPDDATE IS NULL OR r.UPDDATE = r.CREATIONDATE THEN 1 ELSE 0 END) 
+                        / NULLIF(COUNT(DISTINCT CAST(r.CREATIONDATE AS DATE)), 0)
+                    , 0) as MissedCount
                 FROM REQUEST r
                 WHERE r.CREATIONDATE IS NOT NULL ${reqDateFilter}
                 GROUP BY DATEPART(hour, r.CREATIONDATE)
@@ -259,8 +268,8 @@ export async function fetchCallCenterStats(startDate?: string, endDate?: string)
                 SELECT 
                     CAST(r.CREATIONDATE as DATE) as Date,
                     COUNT(DISTINCT r.ID) as CallCount,
-                    SUM(CASE WHEN r.RESNO IS NULL THEN 1 ELSE 0 END) as MissedCount,
-                    SUM(CASE WHEN r.RESNO IS NOT NULL THEN 1 ELSE 0 END) as AnsweredCount
+                    SUM(CASE WHEN r.UPDDATE IS NULL OR r.UPDDATE = r.CREATIONDATE THEN 1 ELSE 0 END) as MissedCount,
+                    SUM(CASE WHEN r.UPDDATE IS NOT NULL AND r.UPDDATE > r.CREATIONDATE THEN 1 ELSE 0 END) as AnsweredCount
                 FROM REQUEST r
                 WHERE r.CREATIONDATE IS NOT NULL ${reqDateFilter}
                 GROUP BY CAST(r.CREATIONDATE as DATE)
@@ -303,8 +312,11 @@ export async function fetchCallCenterStats(startDate?: string, endDate?: string)
                 answeredCalls,
                 missedCalls,
                 missedRate: totalCalls > 0 ? ((missedCalls / totalCalls) * 100).toFixed(1) : '0',
-                avgDurationSeconds: callStats.length > 0 
-                    ? Math.round(callStats.reduce((s: number, a: any) => s + (a.TotalSeconds || 0), 0) / Math.max(totalCalls, 1))
+                avgDurationSeconds: callStats.length > 0
+                    ? Math.round(
+                        callStats.reduce((s: number, a: any) => s + (a.TotalSeconds || 0), 0) / 
+                        Math.max(callStats.reduce((s: number, a: any) => s + (a.AnsweredCalls || 0), 0), 1)
+                      )
                     : 0,
             }
         };
