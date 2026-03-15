@@ -187,6 +187,12 @@ html {
   color: white;
 }
 
+/* Hide calendar picker icon on date inputs */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  display: none;
+  -webkit-appearance: none;
+}
+
 /* ─── Mobile Compatibility ─── */
 /* Dark mode date/time/color inputs (Safari/Chrome mobile fix) */
 .dark input[type="date"],

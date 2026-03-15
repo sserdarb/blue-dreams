@@ -172,7 +172,7 @@ export async function fetchCallCenterStats(startDate?: string, endDate?: string)
 
         let reqDateFilter = '';
         if (startDate && endDate) {
-            reqDateFilter = `AND r.CREATIONDATE >= '${startDate}' AND r.CREATIONDATE <= '${endDate}'`;
+            reqDateFilter = `AND r.CREATIONDATE >= '${startDate} 00:00:00' AND r.CREATIONDATE <= '${endDate} 23:59:59'`;
         }
 
         // 1. Agent Activity — from REQUEST (who created requests / quotes)
@@ -183,10 +183,12 @@ export async function fetchCallCenterStats(startDate?: string, endDate?: string)
                     ISNULL(u.FIRSTNAME + ' ' + u.LASTNAME, 'Bilinmiyor') as AgentName,
                     ISNULL(u.USERNAME, '-') as AgentExtension,
                     COUNT(DISTINCT r.ID) as TotalCalls,
-                    0 as TotalSeconds,
-                    0 as AvgDuration,
-                    SUM(CASE WHEN r.STATUS LIKE '%CANCEL%' OR r.STATUS LIKE '%IPTAL%' THEN 1 ELSE 0 END) as MissedCalls,
-                    SUM(CASE WHEN r.STATUS NOT LIKE '%CANCEL%' AND (r.STATUS NOT LIKE '%IPTAL%' OR r.STATUS IS NULL) THEN 1 ELSE 0 END) as AnsweredCalls
+                    ISNULL(SUM(DATEDIFF(SECOND, r.CREATIONDATE, ISNULL(r.UPDDATE, r.CREATIONDATE))), 0) as TotalSeconds,
+                    CASE WHEN COUNT(DISTINCT r.ID) > 0 
+                        THEN ISNULL(SUM(DATEDIFF(SECOND, r.CREATIONDATE, ISNULL(r.UPDDATE, r.CREATIONDATE))), 0) / COUNT(DISTINCT r.ID)
+                        ELSE 0 END as AvgDuration,
+                    SUM(CASE WHEN r.RESNO IS NULL THEN 1 ELSE 0 END) as MissedCalls,
+                    SUM(CASE WHEN r.RESNO IS NOT NULL THEN 1 ELSE 0 END) as AnsweredCalls
                 FROM REQUEST r
                 JOIN USERS u ON r.ADDUSER = u.ID
                 WHERE u.FIRSTNAME IS NOT NULL ${reqDateFilter}
@@ -241,7 +243,7 @@ export async function fetchCallCenterStats(startDate?: string, endDate?: string)
                 SELECT 
                     DATEPART(hour, r.CREATIONDATE) as Hour,
                     COUNT(DISTINCT r.ID) as CallCount,
-                    SUM(CASE WHEN r.STATUS LIKE '%CANCEL%' THEN 1 ELSE 0 END) as MissedCount
+                    SUM(CASE WHEN r.RESNO IS NULL THEN 1 ELSE 0 END) as MissedCount
                 FROM REQUEST r
                 WHERE r.CREATIONDATE IS NOT NULL ${reqDateFilter}
                 GROUP BY DATEPART(hour, r.CREATIONDATE)
@@ -257,8 +259,8 @@ export async function fetchCallCenterStats(startDate?: string, endDate?: string)
                 SELECT 
                     CAST(r.CREATIONDATE as DATE) as Date,
                     COUNT(DISTINCT r.ID) as CallCount,
-                    SUM(CASE WHEN r.STATUS LIKE '%CANCEL%' THEN 1 ELSE 0 END) as MissedCount,
-                    SUM(CASE WHEN r.STATUS NOT LIKE '%CANCEL%' THEN 1 ELSE 0 END) as AnsweredCount
+                    SUM(CASE WHEN r.RESNO IS NULL THEN 1 ELSE 0 END) as MissedCount,
+                    SUM(CASE WHEN r.RESNO IS NOT NULL THEN 1 ELSE 0 END) as AnsweredCount
                 FROM REQUEST r
                 WHERE r.CREATIONDATE IS NOT NULL ${reqDateFilter}
                 GROUP BY CAST(r.CREATIONDATE as DATE)
@@ -301,7 +303,9 @@ export async function fetchCallCenterStats(startDate?: string, endDate?: string)
                 answeredCalls,
                 missedCalls,
                 missedRate: totalCalls > 0 ? ((missedCalls / totalCalls) * 100).toFixed(1) : '0',
-                avgDurationSeconds: 0,
+                avgDurationSeconds: callStats.length > 0 
+                    ? Math.round(callStats.reduce((s: number, a: any) => s + (a.TotalSeconds || 0), 0) / Math.max(totalCalls, 1))
+                    : 0,
             }
         };
 
